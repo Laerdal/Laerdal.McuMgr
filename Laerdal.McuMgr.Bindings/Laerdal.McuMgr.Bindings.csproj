@@ -153,7 +153,7 @@
         </PropertyGroup>
 
         <!--  https://stackoverflow.com/a/48155800/863651   its vital to create local.properties with the sdk.dir pointing to the android sdk home folder otherwise the build will fail -->
-<!--        <WriteLinesToFile File="../Laerdal.McuMgr.Bindings.Android/local.properties" Lines="sdk.dir=$(AndroidSdkPath)" Overwrite="true" />-->
+        <WriteLinesToFile File="../Laerdal.McuMgr.Bindings.Android/local.properties" Lines="sdk.dir=$(AndroidSdkPath)" Overwrite="true" />
 
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew   wrapper    --distribution-type=ALL --gradle-version=7.6 " />
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew   wrapper    build   --console plain " />
