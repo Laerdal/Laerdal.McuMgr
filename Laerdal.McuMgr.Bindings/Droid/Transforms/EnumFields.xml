@@ -1,0 +1,8 @@
+﻿<enum-field-mappings>
+    <!-- NO.Laerdal.Mcumgr_laerdal_wrapper.Utils -->
+    <!--    <mapping jni-class="no/laerdal/mcumgr_laerdal_wrapper/utils/EFirmwareUpgradeMode" clr-enum-type="Laerdal.Java.McuMgr.Wrapper.Android.FirmwareUpgradeMode">-->
+    <!--        <bitfield jni-name="TEST_ONLY" clr-name="TestOnly" value="0"/>-->
+    <!--        <bitfield jni-name="CONFIRM_ONLY" clr-name="ConfirmOnly" value="1"/>-->
+    <!--        <bitfield jni-name="TEST_AND_CONFIRM" clr-name="TestAndConfirm" value="2"/>-->
+    <!--    </mapping>-->
+</enum-field-mappings>

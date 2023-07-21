@@ -1,0 +1,220 @@
+<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
+
+    <!-- SHARED -->
+    <PropertyGroup>
+        <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
+        <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
+        <TargetFrameworks Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        
+        <OutputType>Library</OutputType>
+        <OutputPath>bin\</OutputPath>
+        <LangVersion>8.0</LangVersion>
+        <DebugSymbols>true</DebugSymbols>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <Optimized>false</Optimized>
+        <DebugType>full</DebugType>
+        
+        <!-- see : https://github.com/xamarin/xamarin-macios/pull/12694 -->
+        <NoBindingEmbedding>false</NoBindingEmbedding>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) AND '$(Configuration)' == 'Debug' ">
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) AND '$(Configuration)' == 'Release' ">
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Laerdal.McuMgr.Bindings</PackageId>
+        <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
+        <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
+        <PackageVersion>1.0.306</PackageVersion>
+        <PackageOutputPath>../$(RootNamespace).Output</PackageOutputPath>
+        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
+        <!-- package dependencies are being intelligently added automatically to the nuspec so no need to be explicit about it here -->
+        <!-- <PackageReference Include="Laerdal.McuMgr.Core" Version="1.1.0" /> -->
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- sourcelink: Include PDB in the built .nupkg -->
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
+
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <Title>$(PackageId)</Title>
+        <Summary>Xamarin McuMgr Bindings</Summary>
+        <Description>$(PackageDescription)</Description>
+        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
+        <Owners>$(Authors)</Owners>
+        <Copyright>$(Authors)</Copyright>
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>true</IncludeSymbols>
+
+        <!-- see : https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
+        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
+
+        <!-- Laerdal.McuMgr.Droid.targets -->
+        <SourceAar>Droid\Jars\mcumgr-laerdal-wrapper.aar</SourceAar>
+
+        <!-- <ReferenceJarFiles>...</ReferenceJarFiles> -->
+
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\nordicsemi-android-ble-2.6.0-alpha04.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\nordicsemi-android-mcumgr-ble-1.5.1.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\nordicsemi-android-mcumgr-core-1.5.1.jar;</EmbeddedReferenceJarFiles>
+
+        <!-- <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\collection.jar;</EmbeddedReferenceJarFiles>  -->
+        <!-- <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\annotations.jar;</EmbeddedReferenceJarFiles> -->
+
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\slf4j-api.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\resourceinspection-annotation.jar;</EmbeddedReferenceJarFiles>
+
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\jackson-core.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\jackson-databind.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\jackson-annotations.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\jackson-dataformat-cbor.jar;</EmbeddedReferenceJarFiles>
+
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-core.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-rx2.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-rx3.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-jdk8.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-jdk9.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-swing.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-slf4j.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-guava.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-debug.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-javafx.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-reactor.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-android.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-core-jvm.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-reactive.jar;</EmbeddedReferenceJarFiles>
+        <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-play-services.jar;</EmbeddedReferenceJarFiles>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')" />
+        <None Include="../LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <!-- SHARED -->
+    <ItemGroup>
+        <Compile Include="Shared\**\*.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+
+    <!-- NETSTANDARD -->
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+        <Compile Include="NetStandard\**\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+        <Folder Include="Droid\Jars" />
+    </ItemGroup>
+
+    <!-- ANDROID -->
+
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <AndroidJarsFolder>Droid/Jars</AndroidJarsFolder>
+    </PropertyGroup>
+
+    <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin         -->
+    <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended -->
+    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="_CreateBindingResourceArchive" Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+        <!-- TODO  on windows we should set the org.gradle.java.home to -->
+        <!--                                                            -->
+        <!-- TODO  <Exec Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'"
+                         Command="set org.gradle.java.home=C\:\\Program Files\\Microsoft\\jdk-11.0.15.10-hotspot in gradle.properties"
+                         WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" /> -->
+        
+        <PropertyGroup>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' ">$(ANDROID_HOME)</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' ">/Users/$(USERNAME)/Library/Android/sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
+        </PropertyGroup>
+
+        <!--  https://stackoverflow.com/a/48155800/863651   its vital to create local.properties with the sdk.dir pointing to the android sdk home folder otherwise the build will fail -->
+<!--        <WriteLinesToFile File="../Laerdal.McuMgr.Bindings.Android/local.properties" Lines="sdk.dir=$(AndroidSdkPath)" Overwrite="true" />-->
+
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew   wrapper    --distribution-type=ALL --gradle-version=7.6 " />
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew   wrapper    build   --console plain " />
+
+        <Delete Files="$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar" />
+
+        <Copy SourceFiles="../Laerdal.McuMgr.Bindings.Android/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-debug.aar" DestinationFiles="$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar" />
+    </Target>
+
+    <!-- android    download the jar and aar dependencies from maven -->
+    <Target Name="TackleJarDependencies" BeforeTargets="_CreateBindingResourceArchive" Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+
+        <!-- 1. jars go here - notice the :jar postfix -->
+        <!-- <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/collection.jar')                  " DestinationFileName="collection.jar                       " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://maven.google.com/androidx/collection/collection/1.1.0/collection-1.1.0.jar"/> -->
+        <!-- <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/annotations.jar')                 " DestinationFileName="annotations.jar                      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.jar"/> -->
+
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/slf4j-api.jar')                        " DestinationFileName="slf4j-api.jar                        " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.35/slf4j-api-1.7.35.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlin-stdlib.jar')                    " DestinationFileName="kotlin-stdlib.jar                    " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/resourceinspection-annotation.jar')    " DestinationFileName="resourceinspection-annotation.jar    " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://maven.google.com/androidx/resourceinspection/resourceinspection-annotation/1.0.1/resourceinspection-annotation-1.0.1.jar" />
+
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-core.jar')                     " DestinationFileName="jackson-core.jar                     " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.13.3/jackson-core-2.13.3.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-databind.jar')                 " DestinationFileName="jackson-databind.jar                 " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.13.3/jackson-databind-2.13.3.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-annotations.jar')              " DestinationFileName="jackson-annotations.jar              " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.13.3/jackson-annotations-2.13.3.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-dataformat-cbor.jar')          " DestinationFileName="jackson-dataformat-cbor.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.13.3/jackson-dataformat-cbor-2.13.3.jar" />
+
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-rx2.jar')           " DestinationFileName="kotlinx-coroutines-rx2.jar           " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx2/1.6.2/kotlinx-coroutines-rx2-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-rx3.jar')           " DestinationFileName="kotlinx-coroutines-rx3.jar           " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx3/1.6.2/kotlinx-coroutines-rx3-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-jdk8.jar')          " DestinationFileName="kotlinx-coroutines-jdk8.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.6.2/kotlinx-coroutines-jdk8-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-jdk9.jar')          " DestinationFileName="kotlinx-coroutines-jdk9.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk9/1.6.2/kotlinx-coroutines-jdk9-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-core.jar')          " DestinationFileName="kotlinx-coroutines-core.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.6.2/kotlinx-coroutines-core-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-swing.jar')         " DestinationFileName="kotlinx-coroutines-swing.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-swing/1.6.2/kotlinx-coroutines-swing-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-slf4j.jar')         " DestinationFileName="kotlinx-coroutines-slf4j.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-slf4j/1.6.2/kotlinx-coroutines-slf4j-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-guava.jar')         " DestinationFileName="kotlinx-coroutines-guava.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-guava/1.6.2/kotlinx-coroutines-guava-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-debug.jar')         " DestinationFileName="kotlinx-coroutines-debug.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-debug/1.6.2/kotlinx-coroutines-debug-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-javafx.jar')        " DestinationFileName="kotlinx-coroutines-javafx.jar        " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-javafx/1.6.2/kotlinx-coroutines-javafx-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-reactor.jar')       " DestinationFileName="kotlinx-coroutines-reactor.jar       " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-reactor/1.6.2/kotlinx-coroutines-reactor-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-android.jar')       " DestinationFileName="kotlinx-coroutines-android.jar       " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.6.2/kotlinx-coroutines-android-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-core-jvm.jar')      " DestinationFileName="kotlinx-coroutines-core-jvm.jar      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.2/kotlinx-coroutines-core-jvm-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-reactive.jar')      " DestinationFileName="kotlinx-coroutines-reactive.jar      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-reactive/1.6.2/kotlinx-coroutines-reactive-1.6.2.jar" />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-play-services.jar') " DestinationFileName="kotlinx-coroutines-play-services.jar " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-play-services/1.6.2/kotlinx-coroutines-play-services-1.6.2.jar" />
+
+
+        <!-- 2. aars go here - notice the .aar postfix  -->
+
+        <!-- download -->
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.aar')   " DestinationFileName="nordicsemi-android-ble-2.6.0-alpha04.aar                     " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.6.0-alpha04/ble-2.6.0-alpha04.aar      " />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-1.5.1.aar                      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/1.5.1/mcumgr-ble-1.5.1.aar        " />
+        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-1.5.1.aar                     " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/1.5.1/mcumgr-core-1.5.1.aar      " />
+
+        <!-- unzip -->
+        <Unzip Condition="        !Exists('$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar')   " DestinationFolder="$(AndroidJarsFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.aar                            " />
+        <Unzip Condition="        !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar')    " DestinationFolder="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.aar                             " />
+        <Unzip Condition="        !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar')   " DestinationFolder="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.aar                            " />
+
+        <!-- copy -->
+        <Copy Condition="         !Exists('$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar')   " DestinationFiles="$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar   " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-ble/classes.jar                                  " />
+        <Copy Condition="         !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar')    " DestinationFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar    " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           " />
+        <Copy Condition="         !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar')   " DestinationFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar   " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core/classes.jar                          " />
+    </Target>
+
+    <Import Project="../Laerdal.McuMgr.Bindings.Targets/Laerdal.McuMgr.Bindings.Droid.targets" />
+    <Import Project="../Laerdal.McuMgr.Bindings.Targets/Laerdal.McuMgr.Bindings.iOS.targets" />
+
+</Project>

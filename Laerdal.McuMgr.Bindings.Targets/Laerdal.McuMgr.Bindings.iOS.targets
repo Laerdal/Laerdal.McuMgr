@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <!-- IOS -->
+    <PropertyGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+        <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
+        <!-- kick in and take the ApiDefinitions.cs and StructsAndEnums.cs files into account    -->
+        <IsBindingProject>true</IsBindingProject>
+
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
+
+        <NoWarn>CS0114;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+        <!-- nothing to compile for the time being -->
+        <!-- <Compile Include="iOS\*.cs"/> -->
+        <!-- <Compile Include="iOS\Specific\*.cs"/> -->
+
+        <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
+        <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
+
+        <Reference Include="Xamarin.iOS"/>
+        <Reference Include="netstandard"/>
+
+        <PackageReference Include="Xamarin.Swift" Version="1.0.11"/>
+        <PackageReference Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
+    </ItemGroup>
+
+    <Target Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) " Name="PrintBuildInfo" BeforeTargets="CoreCompile">
+        <Message Importance="High" Text="OS:               $(OS)              "/>
+        <Message Importance="High" Text="Platform:         $(Platform)        "/>
+        <Message Importance="High" Text="PackageId:        $(PackageId)       "/>
+        <Message Importance="High" Text="Configuration:    $(Configuration)   "/>
+        <Message Importance="High" Text="PackageVersion:   $(PackageVersion)  "/>
+        <Message Importance="High" Text="TargetFramework:  $(TargetFramework) "/>
+        <Message Importance="High" Text="DefineConstants:  $(DefineConstants) "/>
+    </Target>
+
+    <Target Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) " Name="CompileProxyProjectAndGenerateFatLibs" BeforeTargets="BeforeBuild">
+        <!-- 1. build and generate the fat libs from the proxy swift project -->
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS" Command=" ./ios-compile-and-generate-fat-libs.sh "/>
+
+        <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
+        <PropertyGroup>
+            <SharpieTargetFolder>iOS/ObjcBinding/Sharpie_Generated/</SharpieTargetFolder>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <FilesToClean Include="$(TargetFolder)\**\*"/>
+        </ItemGroup>
+
+        <Delete Files="@(FilesToClean)" ContinueOnError="true"/>
+
+        <!-- 3. copy the sharpie-generated files over to the local project structure -->
+        <ItemGroup>
+            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.iOS/Xamarin/SwiftFrameworkProxy.Binding/**"/>
+        </ItemGroup>
+
+        <Copy
+                SourceFiles="@(SharpieGeneratedFiles)"
+                DestinationFolder="$(SharpieTargetFolder)"
+        />
+
+        <!-- 4. copy .framework directories over to the proper local directory -->
+        <ItemGroup>
+            <FrameworkFilesToClean Include="Frameworks/McuMgrBindingsiOS.framework/**/*"/>
+            <McuMgrBindingsiOSFrameworkFiles Include="../Laerdal.McuMgr.Bindings.iOS/VendorFrameworks/swift-framework-proxy/McuMgrBindingsiOS.framework/**/*.*"/>
+        </ItemGroup>
+
+        <Delete
+                Files="@(FrameworkFilesToClean)"
+                ContinueOnError="true"
+        />
+
+        <Copy
+                SourceFiles="@(McuMgrBindingsiOSFrameworkFiles)"
+                DestinationFolder="Frameworks/McuMgrBindingsiOS.framework/%(RecursiveDir)"
+                SkipUnchangedFiles="true"
+        />
+
+        <!-- to future maintainers     we need to keep this dummy file around in order to ensure that the folder Frameworks/McuMgrBindingsiOS.framework  --> 
+        <!-- to future maintainers     will always be automatically created upon git checkout in the azure pipelines   if we dont do this then the azure -->
+        <!-- to future maintainers     pipelines will generate a nuget without the Frameworks/McuMgrBindingsiOS.framework folder as a <NativeReference>  -->
+        <!-- to future maintainers     causing the iOS nuget to be poisoned and cause cryptic errors in runtime about missing symbols                    -->
+        <Touch  Files="Frameworks/McuMgrBindingsiOS.framework/.keepme_in_git_otherwise_azure_pipelines_will_break" AlwaysCreate="true"/>
+    </Target>
+
+    <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+
+        <!-- McuMgrBindingsiOS.framework -->
+        <NativeReference Include="Frameworks/McuMgrBindingsiOS.framework">
+            <Kind>Framework</Kind>
+            <SmartLink>False</SmartLink>
+            <Frameworks>Foundation</Frameworks>
+        </NativeReference>
+
+    </ItemGroup>
+
+</Project>
