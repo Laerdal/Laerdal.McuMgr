@@ -144,13 +144,22 @@
             <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
             <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
             <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
-            
+
+            <!-- OSX and Linux -->
+            <JavaHome Condition=" ('$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True') AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@11') ">/usr/local/opt/openjdk@11</JavaHome>
+
+            <!-- Windows -->
             <JavaHome Condition=" '$(IsWindows)' == 'True' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-11.0.15.10-hotspot') ">C:\\Program Files\\Microsoft\\jdk-11.0.15.10-hotspot</JavaHome>
             <JavaHome Condition=" '$(IsWindows)' == 'True' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-20.0.1') ">C:\\Program Files\\OpenJDK\\jdk-20.0.1</JavaHome>
-            <JavaHome Condition=" '$(IsWindows)' == 'True' AND '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
+
+            <!-- fallback in case everything else fails -->
+            <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
         </PropertyGroup>
-        
-        <WriteLinesToFile Condition=" '$(AndroidSdkPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' "
+
+        <Error Condition=" '$(JavaHome)' == ''  " Text="** [ERROR] Failed to deduce the JavaHome for this platform!" />
+        <Error Condition=" !Exists($(JavaHome)) " Text="** [ERROR] Java11 not found in '$(JavaHome)' - make sure you have Java11 installed!" />
+
+        <WriteLinesToFile Condition=" '$(AndroidSdkPath)' == '' "
                           File="../Laerdal.McuMgr.Bindings.Android/gradle.properties"
                           Lines="org.gradle.java.home=$(JavaHome)"
                           Overwrite="false" /> 
