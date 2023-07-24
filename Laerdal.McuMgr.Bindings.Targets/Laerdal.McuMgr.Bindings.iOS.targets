@@ -39,6 +39,7 @@
 
     <Target Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) " Name="CompileProxyProjectAndGenerateFatLibs" BeforeTargets="BeforeBuild">
         <!-- 1. build and generate the fat libs from the proxy swift project -->
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS" Command=" chmod +x ./ios-compile-and-generate-fat-libs.sh " />
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS" Command=" ./ios-compile-and-generate-fat-libs.sh "/>
 
         <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
