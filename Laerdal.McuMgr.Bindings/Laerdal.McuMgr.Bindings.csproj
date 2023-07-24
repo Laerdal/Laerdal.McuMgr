@@ -33,7 +33,7 @@
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
         <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageVersion>1.0.306</PackageVersion>
+        <PackageVersion>1.0.308</PackageVersion>
         <PackageOutputPath>../$(RootNamespace).Output</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -145,24 +145,25 @@
             <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
             <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
 
-            <!-- OSX and Linux -->
-            <JavaHome Condition=" ('$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True') AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@11') ">/usr/local/opt/openjdk@11</JavaHome>
+            <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' " >True</IsUnix>
+
+            <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@11 or /opt/homebrew/opt/openjdk@11 by default -->
+            <JavaHome Condition=" '$(IsUnix)' == 'True' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@11')    ">/usr/local/opt/openjdk@11</JavaHome>
+            <JavaHome Condition=" '$(IsUnix)' == 'True' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@11') ">/opt/homebrew/opt/openjdk@11</JavaHome>
 
             <!-- Windows -->
             <JavaHome Condition=" '$(IsWindows)' == 'True' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-11.0.15.10-hotspot') ">C:\\Program Files\\Microsoft\\jdk-11.0.15.10-hotspot</JavaHome>
-            <JavaHome Condition=" '$(IsWindows)' == 'True' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-20.0.1') ">C:\\Program Files\\OpenJDK\\jdk-20.0.1</JavaHome>
-
-            <!-- fallback in case everything else fails -->
+            <JavaHome Condition=" '$(IsWindows)' == 'True' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-20.0.1')               ">C:\\Program Files\\OpenJDK\\jdk-20.0.1</JavaHome>
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
         </PropertyGroup>
 
-        <Error Condition=" '$(JavaHome)' == ''  " Text="** [ERROR] Failed to deduce the JavaHome for this platform!" />
+        <Error Condition=" '$(JavaHome)' == ''  " Text="** [ERROR] Failed to deduce the JavaHome for this platform!" /> 
         <Error Condition=" !Exists($(JavaHome)) " Text="** [ERROR] Java11 not found in '$(JavaHome)' - make sure you have Java11 installed!" />
 
-        <WriteLinesToFile Condition=" '$(AndroidSdkPath)' == '' "
+        <WriteLinesToFile Condition=" '$(JavaHome)' != '' "
                           File="../Laerdal.McuMgr.Bindings.Android/gradle.properties"
                           Lines="org.gradle.java.home=$(JavaHome)"
-                          Overwrite="false" /> 
+                          Overwrite="false" />
 
         <!--  https://stackoverflow.com/a/48155800/863651   its vital to create local.properties with the sdk.dir pointing to the android sdk home folder otherwise the build will fail -->
         <PropertyGroup>
@@ -176,8 +177,10 @@
         <Error Condition=" !Exists($(AndroidSdkPath)) " Text="** [ERROR] Android SDK not found in '$(AndroidSdkPath)' - make sure you have the Android SDK installed!" />
         <WriteLinesToFile File="../Laerdal.McuMgr.Bindings.Android/local.properties" Lines="sdk.dir=$(AndroidSdkPath)" Overwrite="true" />
 
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew   wrapper    --distribution-type=ALL --gradle-version=7.6 " />
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew   wrapper    build   --console plain " />
+        <!-- to make life easier we set permissions right before the invocation of gradlew -->
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Condition=" '$(IsUnix)' == 'True' " Command=" chmod +x ./gradlew " />
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew    wrapper    --distribution-type=ALL  --gradle-version=7.6 " />
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew    wrapper    build   --console plain                       " />
 
         <Delete Files="$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar" />
 
