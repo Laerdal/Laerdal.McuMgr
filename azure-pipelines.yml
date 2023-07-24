@@ -19,7 +19,7 @@ resources:
       ref: refs/heads/develop
 
 jobs:
-  - job: Build Agent
+  - job: Build
     displayName: Build Agent
     pool:
       name: Azure Pipelines
