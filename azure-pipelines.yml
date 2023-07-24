@@ -10,7 +10,7 @@ trigger:
       - '*'
 
 pool:
-  vmImage: 'macOS 12'
+  vmImage: 'macos-11'
   
 resources:
   repositories:
