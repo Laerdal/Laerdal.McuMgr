@@ -103,7 +103,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.306" />
+        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.308" />
     </ItemGroup>
 
 </Project>

@@ -180,7 +180,6 @@
         <!-- to make life easier we set permissions right before the invocation of gradlew -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Condition=" '$(IsUnix)' == 'True' " Command=" chmod +x ./gradlew " />
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command="   gradle     wrapper    --distribution-type=ALL  --gradle-version=7.6 " />
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew    wrapper    --distribution-type=ALL  --gradle-version=7.6 " />
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.Android/" Command=" ./gradlew    wrapper    build   --console plain                       " />
 
         <Delete Files="$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar" />
