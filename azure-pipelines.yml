@@ -10,8 +10,8 @@ trigger:
       - '*'
 
 pool:
-  vmImage: 'macOS-12'
-
+  vmImage: 'macos latest'
+  
 resources:
   repositories:
     - repository: self
