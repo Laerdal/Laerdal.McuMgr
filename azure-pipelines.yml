@@ -9,6 +9,10 @@ trigger:
     include:
       - '*'
 
+pool:
+  name: Azure Pipelines
+  vmImage: 'macOS-12'
+
 resources:
   repositories:
     - repository: self
@@ -18,10 +22,6 @@ resources:
 jobs:
   - job: Build
     displayName: Build Agent
-
-    pool:
-      name: Azure Pipelines
-      vmImage: 'macOS-12'
 
     steps:
       - checkout: self
