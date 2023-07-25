@@ -9,9 +9,6 @@ trigger:
     include:
       - '*'
 
-pool:
-  vmImage: 'macOS-12'
-
 resources:
   repositories:
     - repository: self
@@ -21,8 +18,11 @@ resources:
 jobs:
   - job: Build
     displayName: Build Agent
+
     pool:
       name: Azure Pipelines
+      vmImage: 'macOS-12'
+
     steps:
       - checkout: self
         clean: true
@@ -61,18 +61,18 @@ jobs:
             # this is vital in order to have gradle work as intended
             # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android/gradle.properties"
             
-            echo            
-            echo    "--------------------------------------------------"            
-            cat    Laerdal.McuMgr.Bindings.Android/gradle.properties            
-            echo    "--------------------------------------------------"            
+            echo
+            echo    "--------------------------------------------------"
+            cat    Laerdal.McuMgr.Bindings.Android/gradle.properties
+            echo    "--------------------------------------------------"
             
-            # this is vital in order to select the ios 16.1+            
+            # this is vital in order to select the ios 16.1+
             ls  -ld  /Applications/Xcode*
             
             sudo   xcode-select   -s  /Applications/Xcode_14.2.app/Contents/Developer
             
-            echo            
-            echo "** Java Version:"            
+            echo
+            echo "** Java Version:"
             java               -version
             echo
             
