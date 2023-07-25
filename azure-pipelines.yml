@@ -168,14 +168,6 @@ jobs:
           targetType: inline
           script: ls -l "$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/"
 
-      - task: NuGetCommand@2
-        displayName: NuGet Sources Add
-        inputs:
-          command: custom
-          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
-          feedRestore: f6688993-ddd5-40f9-b320-7595108be7c8
-          arguments: sources    Add   -Name   LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/"     
-
       - task: Bash@3
         displayName: Tweak 'Laerdal.McuMgr.csproj' to reference the 'Laerdal.McuMgr.Bindings.nupkg' that was just generated
         inputs:
@@ -186,10 +178,13 @@ jobs:
                     's/Include="Laerdal\.McuMgr\.Bindings" Version=".*"/Include="Laerdal\.McuMgr\.Bindings"     Version="$(Build.BuildNumber)"/gi'      \
                     "Laerdal.McuMgr/Laerdal.McuMgr.csproj"
 
-      - task: NuGetToolInstaller@1
-        displayName: 'Use NuGet '
+      - task: NuGetCommand@2
+        displayName: NuGet Sources Add
         inputs:
-          checkLatest: true
+          command: custom
+          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
+          feedRestore: f6688993-ddd5-40f9-b320-7595108be7c8
+          arguments: sources    Add   -Name   LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output"     
 
       # TODO  replace the credentials with those of the components-team account
       - task: NuGetCommand@2
