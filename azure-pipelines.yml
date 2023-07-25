@@ -60,8 +60,8 @@ jobs:
 
             brew   install   java11
             
-            # this is vital in order to have gradle work as intended in the context of the azure pipeline
-            echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android/gradle.properties"
+            # this is handled by the build system
+            # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android/gradle.properties"
             
             echo
 

@@ -139,6 +139,7 @@
     <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin         -->
     <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended -->
     <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="_CreateBindingResourceArchive" Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly otherwise the build will fail -->
         <PropertyGroup>
             <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
