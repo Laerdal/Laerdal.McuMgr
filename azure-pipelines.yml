@@ -159,7 +159,7 @@ jobs:
         inputs:
           solution: Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj
           configuration: Release
-          msbuildArguments: -p:PackageVersion="$(Build.BuildNumber)" -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/"
+          msbuildArguments: '-p:PackageVersion="$(Build.BuildNumber)"      -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/" '
           clean: true
 
       - task: Bash@3
@@ -169,12 +169,12 @@ jobs:
           script: ls -l "$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/"
 
       - task: NuGetCommand@2
-        displayName: NuGet Push 'Laerdal.McuMgr.Bindings.Output'
+        displayName: NuGet Sources Add
         inputs:
-          command: push
-          searchPatternPush: $(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/**/*.symbols.nupkg
-          feedPublish: f6688993-ddd5-40f9-b320-7595108be7c8
-          allowPackageConflicts: true
+          command: custom
+          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
+          feedRestore: f6688993-ddd5-40f9-b320-7595108be7c8
+          arguments: sources    Add   -Name   LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/"     
 
       - task: Bash@3
         displayName: Tweak 'Laerdal.McuMgr.csproj' to reference the 'Laerdal.McuMgr.Bindings.nupkg' that was just generated
@@ -191,11 +191,12 @@ jobs:
         inputs:
           checkLatest: true
 
+      # TODO  replace the credentials with those of the components-team account
       - task: NuGetCommand@2
-        displayName: NuGet sources add
+        displayName: NuGet Sources Add
         inputs:
           command: custom
-          solution: Laerdal.Ble/Laerdal.Ble.csproj
+          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
           feedRestore: f6688993-ddd5-40f9-b320-7595108be7c8
           arguments: sources  Add   -Name  LaerdalMedical   -Source         https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json    -username    kyriakos.sidiropoulos@laerdal.com  -password     jy5sriu6qti4vtjc7tkmd6dvkujjlhtrouo7yuzpb34dsy3eineq
 
@@ -219,6 +220,14 @@ jobs:
           targetType: inline
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Output/"
 
+      # now that we know everything has been successfully we can push the nugets across
+      - task: NuGetCommand@2
+        displayName: NuGet Push 'Laerdal.McuMgr.Bindings.Output'
+        inputs:
+          command: push
+          searchPatternPush: $(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/Laerdal.McuMgr.Bindings.Output/**/*.symbols.nupkg
+          feedPublish: f6688993-ddd5-40f9-b320-7595108be7c8
+          allowPackageConflicts: true
       - task: NuGetCommand@2
         displayName: NuGet Push 'Laerdal.McuMgr.Output'
         inputs:
