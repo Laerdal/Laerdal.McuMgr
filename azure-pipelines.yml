@@ -154,7 +154,7 @@ jobs:
         displayName: NuGet Sources Add
         inputs:
           command: custom
-          arguments: sources  Add   -Name  LaerdalMedical   -Source         https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json    -username    kyriakos.sidiropoulos@laerdal.com  -password     jy5sriu6qti4vtjc7tkmd6dvkujjlhtrouo7yuzpb34dsy3eineq
+          arguments: sources  Add   -Name  LaerdalMedical   -Source         https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json    -username    components.team@laerdal.onmicrosoft.com    -password     xzsy2galjqs2il6sqvomtpj7ec37y2jkha3pu2o26h336xrby6ca
 
       - task: NuGetCommand@2
         displayName: NuGet Restore for 'Laerdal.McuMgr.Bindings'
