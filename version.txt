@@ -1,0 +1,11 @@
+Laerdal_Version_Major=1
+Laerdal_Version_Minor=0
+Laerdal_Version_Patch=0
+Laerdal_Version_Suffix=ksidirop-MAN-183-transpile-cpp-to-csharp
+Laerdal_Version_Revision=39
+Laerdal_Version_BuildId=364
+Laerdal_Version_Core=1.15.1
+Laerdal_Version_Extension=-ksidirop-MAN-183-transpile-cpp-to-csharp-39.364
+Laerdal_Version_Full=1.15.1-ksidirop-MAN-183-transpile-cpp-to-csharp-39.364
+Laerdal_Version_Assembly=1.15.1.39
+Laerdal_Version_BranchName=ksidirop/MAN-183-transpile-cpp-to-csharp
