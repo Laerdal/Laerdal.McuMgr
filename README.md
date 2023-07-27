@@ -42,7 +42,15 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ❗️ Salient Points
 
-- **For the firmware-upgrade to actually persist through the rebooting of the device its absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
+- **This library requires .Net7+ runtime to run.**
+
+- **At the time of this writing (2023) and for the next few years up it's meant to be used directly (as a nuget) by next-gen Laerdal apps such as SkillReporter.**
+
+- **The long-term intention is to have the library cloud-hosted as an http-service or similar.**
+
+- **If you're maintaining legacy C++ codebases you're probably better off using the original C++ library or (alternatively) you can try making http-calls over to the cloud-hosted service (but this is not something technically possible on all legacy C++ products and solutions of Laerdal!)**
+
+- **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
 in case you try to perform a firmware-upgrade on the desired device.**
