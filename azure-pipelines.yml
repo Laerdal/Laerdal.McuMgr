@@ -1,9 +1,3 @@
-# 'Allow scripts to access the OAuth token' was selected in pipeline.  Add the following YAML to any steps requiring access:
-#       env:
-#           MY_ACCESS_TOKEN: $(System.AccessToken)
-# Variable 'GITHUB_ACCESS_TOKEN' was defined in the Variables tab
-# Variable 'IOS_SDK_VERSION' was defined in the Variables tab
-
 trigger:
   branches:
     include:
@@ -12,6 +6,9 @@ trigger:
 pool:
   name: Azure Pipelines
   vmImage: 'macOS-12'
+
+variables:
+  - group: shared-variables  # needed for the github access token which is used to create new releases in github
 
 resources:
   repositories:

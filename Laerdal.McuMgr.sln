@@ -8,6 +8,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		LICENSE = LICENSE
 		.gitignore = .gitignore
 		azure-pipelines.yml = azure-pipelines.yml
+		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.CreateNewReleaseInGithub.sh
+		Laerdal.McuMgr.Builder.csproj = Laerdal.McuMgr.Builder.csproj
+		version.txt = version.txt
+		Laerdal.Version.sh = Laerdal.Version.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings", "Laerdal.McuMgr.Bindings\Laerdal.McuMgr.Bindings.csproj", "{083FA408-2B7E-41D1-ADBB-C5280A97A096}"
