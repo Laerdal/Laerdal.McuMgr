@@ -107,6 +107,8 @@
 
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Version=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);FileVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);AssemblyVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
+
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
