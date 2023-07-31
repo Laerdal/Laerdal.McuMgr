@@ -169,10 +169,6 @@ jobs:
           command: custom
           arguments:  restore   "Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj"  -ConfigFile   "/Users/runner/.config/NuGet/NuGet.Config"      
 
-#          command: restore
-#          solution: Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj
-#          selectOrConfig: config
-
       - task: MSBuild@1
         displayName: Build Project 'Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj'
         inputs:
@@ -202,10 +198,6 @@ jobs:
         inputs:
           command: custom
           arguments:  restore   "Laerdal.McuMgr/Laerdal.McuMgr.csproj"   -ConfigFile   "/Users/runner/.config/NuGet/NuGet.Config"      
-
-#          command: restore
-#          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
-#          selectOrConfig: config
 
       - task: MSBuild@1
         displayName: Build Project 'Laerdal.McuMgr/Laerdal.McuMgr.csproj'
