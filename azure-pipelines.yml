@@ -146,8 +146,7 @@ jobs:
         inputs:
           checkLatest: true
 
-      - script: |
-          mkdir '$(Build.ArtifactStagingDirectory)/Output'
+      - script: mkdir '$(Build.ArtifactStagingDirectory)/Output'
         displayName: 'Create Directory $(Build.ArtifactStagingDirectory)/Output'
 
       # todo  refactor this task to use our own custom utility-task later on
@@ -155,7 +154,7 @@ jobs:
         displayName: NuGet Sources Add
         inputs:
           command: custom
-          arguments: sources   Add    -Name LaerdalMedical   -Source       https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json   -username     $(LAERDAL_COMPONENTS_TEAM_EMAIL)     -password     $(LAERDAL_COMPONENTS_TEAM_NUGET_FEED_ACCESS_TOKEN)
+          arguments: sources   Add    -Name LaerdalMedical   -Source    https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json   -username     $(LAERDAL_COMPONENTS_TEAM_EMAIL)     -password     $(LAERDAL_COMPONENTS_TEAM_NUGET_FEED_ACCESS_TOKEN)
 
       - task: NuGetCommand@2
         displayName: NuGet Sources Add
@@ -163,49 +162,11 @@ jobs:
           command: custom
           arguments:  sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Output"
 
-      - task: NuGetCommand@2
-        displayName: NuGet Restore for 'Laerdal.McuMgr.Bindings'
-        inputs:
-          command: custom
-          arguments:  restore   "Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj"  -ConfigFile   "/Users/runner/.config/NuGet/NuGet.Config"      
-
       - task: MSBuild@1
-        displayName: Build Project 'Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj'
+        displayName: MSBuild
         inputs:
-          clean: true
-          solution: Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj
-          configuration: Release
-          msbuildArguments: '-p:PackageVersion="$(Build.BuildNumber)"      -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/" '
-
-      - task: Bash@3
-        displayName: Print Nugets in 'Output'
-        inputs:
-          targetType: inline
-          script: ls -l "$(Build.ArtifactStagingDirectory)/Output/"
-
-      - task: Bash@3
-        displayName: Tweak 'Laerdal.McuMgr.csproj' to reference the 'Laerdal.McuMgr.Bindings.nupkg' that was just generated
-        inputs:
-          targetType: inline
-          script: >
-            sed                                            \
-                    -i.bak                                 \
-                    's/Include="Laerdal\.McuMgr\.Bindings" Version=".*"/Include="Laerdal\.McuMgr\.Bindings"     Version="$(Build.BuildNumber)"/gi'      \
-                    "Laerdal.McuMgr/Laerdal.McuMgr.csproj"
-
-      - task: NuGetCommand@2
-        displayName: NuGet Restore for 'Laerdal.McuMgr'
-        inputs:
-          command: custom
-          arguments:  restore   "Laerdal.McuMgr/Laerdal.McuMgr.csproj"   -ConfigFile   "/Users/runner/.config/NuGet/NuGet.Config"      
-
-      - task: MSBuild@1
-        displayName: Build Project 'Laerdal.McuMgr/Laerdal.McuMgr.csproj'
-        inputs:
-          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
-          configuration: Release
-          msbuildArguments: '-p:PackageVersion="$(Build.BuildNumber)"      -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/" '
-          clean: true
+          solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
+          msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/"  '
 
       - task: Bash@3
         displayName: Print Nugets in 'Output'
@@ -221,5 +182,12 @@ jobs:
           searchPatternPush: $(Build.ArtifactStagingDirectory)/Output/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/Output/**/*.symbols.nupkg
           feedPublish: f6688993-ddd5-40f9-b320-7595108be7c8
           allowPackageConflicts: true
-          allowPackageOverwrites: true  
+          allowPackageOverwrites: true
+
+# TODO
+#      - publish: $(Build.ArtifactStagingDirectory)
+#        artifact: output
+#
+#      - publish: $(Build.SourcesDirectory)
+#        artifact: source
 ...
