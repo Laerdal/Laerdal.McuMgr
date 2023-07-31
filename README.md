@@ -22,6 +22,7 @@
    [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
 
 
+
 # Summary
 
 The project generates two Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings' respectively. The goal is to have 'Laerdal.McuMgr'
@@ -39,6 +40,8 @@ The following types of operations are supported on devices running on Nordic's n
 - Rebooting ('Resetting') the device
 - Downloading one or more files from the device
 - Uploading one or more files over to the device
+
+
 
 ## ❗️ Salient Points
 
@@ -58,6 +61,8 @@ in case you try to perform a firmware-upgrade on the desired device.**
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
 to the device.**
 
+
+
 ## 🚀 Getting started
 
 Add the following Nuget packages to ALL your projects, not just the Core/Forms/Shared one:
@@ -66,6 +71,8 @@ Add the following Nuget packages to ALL your projects, not just the Core/Forms/S
        Laerdal.McuMgr.Bindings
 
 Make sure to always get the latest versions of the above packages.
+
+
 
 ### 🤖 Android
 
@@ -564,6 +571,8 @@ private void CleanupDeviceResetter()
     }
 ```
 
+
+
 ### 📱 iOS
 
 Same as in Android with the only difference being that the constructors change a bit:
@@ -576,9 +585,13 @@ _firmwareUpgrader = new Laerdal.McuMgr.FirmwareUpgrader.FirmwareUpgrader(desired
 _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.CbPeripheral);
 ```
 
+
+
 ### 💻 Windows
 
 Not supported yet.
+
+
 
 ### 🏗 IDE Setup / Generating Builds on Local-dev
 
@@ -618,6 +631,14 @@ If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (
 ### 8) Open 'Laerdal.McuMgr.sln' and build it.
 
 You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `Laerdal.McuMgr.Bindings.Output/`.
+
+    Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings first and building just that project
+    and then bumping the package version of Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building Laerdal.McuMgr.csproj.
+
+    If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings won't be picked up by Laerdal.McuMgr because it will still
+    use the cached nuget package of Laerdal.McuMgr.Bindings.
+
+
 
 ### Known issues
 
