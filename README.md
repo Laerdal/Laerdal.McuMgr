@@ -14,12 +14,14 @@
 
 - Release Build Status:
 
-   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=master)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=228&branchName=master)
+   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
 
 
 - Beta Build Status:
 
-   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=228&branchName=develop)
+   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
+
+
 
 # Summary
 
@@ -39,15 +41,27 @@ The following types of operations are supported on devices running on Nordic's n
 - Downloading one or more files from the device
 - Uploading one or more files over to the device
 
+
+
 ## ❗️ Salient Points
 
-- **For the firmware-upgrade to actually persist through the rebooting of the device its absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
+- **This library requires .Net7+ runtime to run.**
+
+- **At the time of this writing (2023) and for the next few years up it's meant to be used directly (as a nuget) by next-gen Laerdal apps such as SkillReporter.**
+
+- **The long-term intention is to have the library cloud-hosted as an http-service or similar.**
+
+- **If you're maintaining legacy C++ codebases you're probably better off using the original C++ library or (alternatively) you can try making http-calls over to the cloud-hosted service (but this is not something technically possible on all legacy C++ products and solutions of Laerdal!)**
+
+- **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
 in case you try to perform a firmware-upgrade on the desired device.**
 
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
 to the device.**
+
+
 
 ## 🚀 Getting started
 
@@ -57,6 +71,8 @@ Add the following Nuget packages to ALL your projects, not just the Core/Forms/S
        Laerdal.McuMgr.Bindings
 
 Make sure to always get the latest versions of the above packages.
+
+
 
 ### 🤖 Android
 
@@ -555,6 +571,8 @@ private void CleanupDeviceResetter()
     }
 ```
 
+
+
 ### 📱 iOS
 
 Same as in Android with the only difference being that the constructors change a bit:
@@ -567,9 +585,13 @@ _firmwareUpgrader = new Laerdal.McuMgr.FirmwareUpgrader.FirmwareUpgrader(desired
 _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.CbPeripheral);
 ```
 
+
+
 ### 💻 Windows
 
 Not supported yet.
+
+
 
 ### 🏗 IDE Setup / Generating Builds on Local-dev
 
@@ -609,6 +631,22 @@ If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (
 ### 8) Open 'Laerdal.McuMgr.sln' and build it.
 
 You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `Laerdal.McuMgr.Bindings.Output/`.
+
+    Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings first and building just that project
+    and then bumping the package version of Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building Laerdal.McuMgr.csproj.
+
+    If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings won't be picked up by Laerdal.McuMgr because it will still
+    use the cached nuget package of Laerdal.McuMgr.Bindings.
+
+    To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
+
+    msbuild                                                           \
+         Laerdal.McuMgr.Builder.csproj                                \
+         '"/p:Laerdal_Version_Full=1.0.x.0"'
+
+    Make sure to +1 the 'x' number each time in the scriptlet above before running it.
+
+
 
 ### Known issues
 
