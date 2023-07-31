@@ -48,7 +48,7 @@
         </PropertyGroup>
 
         <ItemGroup>
-            <FilesToClean Include="$(TargetFolder)\**\*"/>
+            <FilesToClean Include="$(SharpieTargetFolder)\**\*"/>
         </ItemGroup>
 
         <Delete Files="@(FilesToClean)" ContinueOnError="true"/>

@@ -33,7 +33,7 @@
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
         <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageVersion>1.0.313</PackageVersion>
+        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.313</PackageVersion>
         <PackageOutputPath>../$(RootNamespace).Output</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -48,7 +48,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <Version Condition=" '$(Version)' == '' ">1.0.0.0</Version>
+        <FileVersion Condition=" '$(FileVersion)' == '' ">1.0.0.0</FileVersion>
+        <AssemblyVersion Condition=" '$(AssemblyVersion)' == '' ">1.0.0.0</AssemblyVersion>
+        
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings</Summary>
         <Description>$(PackageDescription)</Description>
