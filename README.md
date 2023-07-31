@@ -638,6 +638,14 @@ You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `La
     If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings won't be picked up by Laerdal.McuMgr because it will still
     use the cached nuget package of Laerdal.McuMgr.Bindings.
 
+    To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
+
+    msbuild                                                           \
+         Laerdal.McuMgr.Builder.csproj                                \
+         '"/p:Laerdal_Version_Full=1.0.x.0"'
+
+    Make sure to +1 the 'x' number each time in the scriptlet above before running it.
+
 
 
 ### Known issues

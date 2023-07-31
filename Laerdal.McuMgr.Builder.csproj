@@ -60,7 +60,10 @@
 
         <Message Importance="High" Text="  bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters)  "/>
 
-        <Exec EchoOff="true"
+        <!-- its useful to allow specifying the version through the command line for testing and development purposes on localdev -->
+        <Exec Condition=" '$(Laerdal_Version_Full)' == '' "
+
+              EchoOff="true"
               Command=" bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters) "
               ConsoleToMSBuild="true"
               WorkingDirectory="$(MSBuildThisFileDirectory)">
