@@ -23,6 +23,8 @@
 <Project DefaultTargets="BuildProjects">
 
     <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.McuMgr.Output/`))</PackageOutputPath>
 
@@ -32,6 +34,7 @@
     </PropertyGroup>
 
     <Target Name="PrintConfiguration" BeforeTargets="BuildProjects">
+        <Message Importance="High" Text="** Configuration                 ='$(Configuration)'"/>
         <Message Importance="High" Text="** PackageOutputPath             ='$(PackageOutputPath)'"/>
 
         <Message Importance="High" Text="** Laerdal_Repository            ='$(Laerdal_Repository)'"/>
@@ -100,8 +103,6 @@
 
         <!-- build mcumgr.bindings -->
         <PropertyGroup>
-            <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr.Bindings/</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
 
@@ -115,6 +116,7 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
+        
         <MSBuild Projects="Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Build"/>
 
         <!-- build mcumgr -->
