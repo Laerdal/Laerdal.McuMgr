@@ -134,20 +134,12 @@ jobs:
 
             /Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
 
-      - task: Bash@3
-        displayName: CalculateVersion
-        inputs:
-          targetType: inline
-          filePath: calculateVersion.azure.sh
-          script: "#!/bin/bash\n \nif [[ \"$(Build.Reason)\" != \"PullRequest\" ]]; then\n    branch_name=`echo $(Build.SourceBranch) | sed 's/refs\\/heads\\///g'`\nelse\n    branch_name=`echo $(System.PullRequest.SourceBranch) | sed 's/refs\\/heads\\///g'`\nfi\necho \"branch_name=$branch_name\"\n\nmaster_branch=\"master\"\ndevelop_branch=\"develop\"\nfirst_commit=`git rev-list --max-parents=0 HEAD`\necho \"first_commit=$first_commit\"\nmajor=1\nminor=0\npatch=0\nsuffix=\nversion_core=$major.$minor.$patch\nversion_extension=\n \nif [ \"$branch_name\" == \"$master_branch\" ]; then\n    minor=`git rev-list $first_commit..HEAD --count --first-parent --ancestry-path`\nelif [ \"$branch_name\" == \"$develop_branch\" ]; then\n    develop_master_point=`git rev-list origin/$master_branch --merges --before=\\`git show -s --format=%ct HEAD\\` --first-parent --max-count=1`\n    if [ -z $develop_master_point ]; then\n        # has never been merged,\n        develop_master_point=`git merge-base origin/$master_branch HEAD --fork-point`\n    fi\n \n    minor=`git rev-list $first_commit..$develop_master_point --count --first-parent --ancestry-path`\n    patch=`git rev-list $first_commit..HEAD --count --first-parent --ancestry-path --not \\`git rev-list $first_commit..HEAD --before=\\\\\\`git show -s --format=%ct $develop_master_point --first-parent --ancestry-path\\\\\\`\\``\nelse\n    head_develop_point=`git rev-list origin/$develop_branch --merges --before=\\`git show -s --format=%ct HEAD\\` --first-parent --max-count=1`\n    if [ -z $head_develop_point ]; then\n        # has never been merged,\n        head_develop_point=`git merge-base origin/$develop_branch HEAD --fork-point`\n    fi\n \n    develop_master_point=`git rev-list origin/$master_branch --merges --before=\\`git show -s --format=%ct $head_develop_point\\` --first-parent --max-count=1`\n    if [ -z $develop_master_point ]; then\n        # has never been merged,\n        develop_master_point=`git merge-base origin/$master_branch $head_develop_point --fork-point`\n    fi \n    minor=`git rev-list $first_commit..$develop_master_point --count --first-parent --ancestry-path`\n    patch=`git rev-list $first_commit..$head_develop_point --count --first-parent --ancestry-path --not \\`git rev-list $first_commit..$head_develop_point --before=\\\\\\`git show -s --format=%ct $develop_master_point --first-parent --ancestry-path\\\\\\`\\``\n    clean_branch_name=`echo $branch_name | sed 's/\\//-/'`\n \n    suffix=$clean_branch_name\n    version_extension=\"-$suffix.$(Build.BuildId)\"\nfi\n\nversion_core=$major.$minor.$patch\necho \"##vso[task.setvariable variable=version.major;]$major\"\necho \"version.major=$major\"\necho \"##vso[task.setvariable variable=version.minor;]$minor\"\necho \"version.minor=$minor\"\necho \"##vso[task.setvariable variable=version.patch;]$patch\"\necho \"version.patch=$patch\"\necho \"##vso[task.setvariable variable=version.suffix;]$suffix\"\necho \"version.suffix=$suffix\"\necho \"##vso[task.setvariable variable=version.revision;]$(Build.BuildId)\"\necho \"version.revision=$(Build.BuildId)\"\necho \"##vso[task.setvariable variable=version.core;]$version_core\"\necho \"version.core=$version_core\"\necho \"##vso[task.setvariable variable=version.extension;]$version_extension\"\necho \"version.extension=$version_extension\"\necho \"##vso[build.updatebuildnumber]$version_core$version_extension\"\n\nexit 0"
-
       - task: NuGetToolInstaller@1
         displayName: 'Use NuGet '
         inputs:
           checkLatest: true
 
-      - script: |
-          mkdir '$(Build.ArtifactStagingDirectory)/Output'
+      - script: mkdir '$(Build.ArtifactStagingDirectory)/Output'
         displayName: 'Create Directory $(Build.ArtifactStagingDirectory)/Output'
 
       # todo  refactor this task to use our own custom utility-task later on
@@ -155,7 +147,7 @@ jobs:
         displayName: NuGet Sources Add
         inputs:
           command: custom
-          arguments: sources   Add    -Name LaerdalMedical   -Source       https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json   -username     $(LAERDAL_COMPONENTS_TEAM_EMAIL)     -password     $(LAERDAL_COMPONENTS_TEAM_NUGET_FEED_ACCESS_TOKEN)
+          arguments: sources   Add    -Name LaerdalMedical   -Source    https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json   -username     $(LAERDAL_COMPONENTS_TEAM_EMAIL)     -password     $(LAERDAL_COMPONENTS_TEAM_NUGET_FEED_ACCESS_TOKEN)
 
       - task: NuGetCommand@2
         displayName: NuGet Sources Add
@@ -163,57 +155,11 @@ jobs:
           command: custom
           arguments:  sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Output"
 
-      - task: NuGetCommand@2
-        displayName: NuGet Restore for 'Laerdal.McuMgr.Bindings'
-        inputs:
-          command: custom
-          arguments:  restore   "Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj"  -ConfigFile   "/Users/runner/.config/NuGet/NuGet.Config"      
-
-#          command: restore
-#          solution: Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj
-#          selectOrConfig: config
-
       - task: MSBuild@1
-        displayName: Build Project 'Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj'
+        displayName: MSBuild
         inputs:
-          clean: true
-          solution: Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj
-          configuration: Release
-          msbuildArguments: '-p:PackageVersion="$(Build.BuildNumber)"      -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/" '
-
-      - task: Bash@3
-        displayName: Print Nugets in 'Output'
-        inputs:
-          targetType: inline
-          script: ls -l "$(Build.ArtifactStagingDirectory)/Output/"
-
-      - task: Bash@3
-        displayName: Tweak 'Laerdal.McuMgr.csproj' to reference the 'Laerdal.McuMgr.Bindings.nupkg' that was just generated
-        inputs:
-          targetType: inline
-          script: >
-            sed                                            \
-                    -i.bak                                 \
-                    's/Include="Laerdal\.McuMgr\.Bindings" Version=".*"/Include="Laerdal\.McuMgr\.Bindings"     Version="$(Build.BuildNumber)"/gi'      \
-                    "Laerdal.McuMgr/Laerdal.McuMgr.csproj"
-
-      - task: NuGetCommand@2
-        displayName: NuGet Restore for 'Laerdal.McuMgr'
-        inputs:
-          command: custom
-          arguments:  restore   "Laerdal.McuMgr/Laerdal.McuMgr.csproj"   -ConfigFile   "/Users/runner/.config/NuGet/NuGet.Config"      
-
-#          command: restore
-#          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
-#          selectOrConfig: config
-
-      - task: MSBuild@1
-        displayName: Build Project 'Laerdal.McuMgr/Laerdal.McuMgr.csproj'
-        inputs:
-          solution: Laerdal.McuMgr/Laerdal.McuMgr.csproj
-          configuration: Release
-          msbuildArguments: '-p:PackageVersion="$(Build.BuildNumber)"      -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/" '
-          clean: true
+          solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
+          msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/"  '
 
       - task: Bash@3
         displayName: Print Nugets in 'Output'
@@ -221,13 +167,10 @@ jobs:
           targetType: inline
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Output/"
 
-      # now that we know everything has been successfully we can push the nugets across
-      - task: NuGetCommand@2
-        displayName: NuGet Push 'Output'
+      # bare in mind that this task doesnt support wildcards
+      - task: PublishBuildArtifacts@1
         inputs:
-          command: push
-          searchPatternPush: $(Build.ArtifactStagingDirectory)/Output/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/Output/**/*.symbols.nupkg
-          feedPublish: f6688993-ddd5-40f9-b320-7595108be7c8
-          allowPackageConflicts: true
-          allowPackageOverwrites: true  
+          ArtifactName: 'drop'
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/Output/
+          publishLocation: 'Container'
 ...

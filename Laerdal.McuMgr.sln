@@ -10,7 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		azure-pipelines.yml = azure-pipelines.yml
 		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.CreateNewReleaseInGithub.sh
 		Laerdal.McuMgr.Builder.csproj = Laerdal.McuMgr.Builder.csproj
-		version.txt = version.txt
 		Laerdal.Version.sh = Laerdal.Version.sh
 	EndProjectSection
 EndProject
