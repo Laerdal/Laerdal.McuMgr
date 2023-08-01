@@ -1,5 +1,6 @@
 #!/bin/bash
-usage(){
+
+function usage(){
     echo "usage: ./Laerdal.Version.sh [--master-branch master] [--develop-branch develop] [--major 1] [--minor 0] [--patch 0] [--revision 0] [--build-id 0] [--commit HEAD] [--branch branchname] [-o | --output version.txt] [-h | --help]"
     echo "parameters:"
     echo "  --master-branch [branch]           Name of the master branch (default is master)"
@@ -15,18 +16,18 @@ usage(){
     echo "  -v | --verbose                     Verbose mode"
 }
 
-master_branch="master"
-develop_branch="develop"
-major=1
-minor=0
-patch=0
-revision=0
-build_id=0
-commit="HEAD"
-output="version.txt"
-version_core=$major.$minor.$patch
-version_extension=
-version_full=$version_core$version_extension
+declare master_branch="master"
+declare develop_branch="develop"
+declare major=1
+declare minor=0
+declare patch=0
+declare revision=0
+declare build_id=0
+declare commit="HEAD"
+declare output="version.txt"
+declare version_core=$major.$minor.$patch
+declare version_extension=
+declare version_full=$version_core$version_extension
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -80,6 +81,14 @@ done
 function log () {
     if [[ $verbose -eq 1 ]]; then
         echo "$@"
+    fi
+}
+
+function warn () {
+    if [ "${TF_BUILD:=}" != "" ]; then
+        echo "##vso[task.logissue type=warning]$@"
+    else
+        echo "WARNING : $@"
     fi
 }
 
