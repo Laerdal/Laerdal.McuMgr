@@ -174,9 +174,10 @@ jobs:
           targetType: inline
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Output/"
 
+      # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
         inputs:
           ArtifactName: 'drop'
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/Output/*.nupkg
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/Output/
           publishLocation: 'Container'
 ...
