@@ -47,12 +47,6 @@ The following types of operations are supported on devices running on Nordic's n
 
 - **This library requires .Net7+ runtime to run.**
 
-- **At the time of this writing (2023) and for the next few years up it's meant to be used directly (as a nuget) by next-gen Laerdal apps such as SkillReporter.**
-
-- **The long-term intention is to have the library cloud-hosted as an http-service or similar.**
-
-- **If you're maintaining legacy C++ codebases you're probably better off using the original C++ library or (alternatively) you can try making http-calls over to the cloud-hosted service (but this is not something technically possible on all legacy C++ products and solutions of Laerdal!)**
-
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
@@ -647,10 +641,25 @@ You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `La
     Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
 
-
 ### Known issues
 
 - Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
+
+### Lead Maintainers
+
+- [Kyriakos Sidiropoulos (@dsidirop)](https://github.com/dsidirop)
+
+- [Francois Raminosona (@framinosona)](https://github.com/framinosona)
+
+
+### Credits
+
+Special thanks goes to:
+
+- [Francois Raminosona](https://www.linkedin.com/in/francois-raminosona/) for his insights and guidance on the entire spectrum of Xamarin development and underlying build system. This project would have 
+  been impossible to bring to fruition in such a short period of time without his wisdom.  
+
+- [Geir-Inge T.](https://www.linkedin.com/in/geir-inge-t-68749629) for his immense contributions in field-testing the library and providing invaluable feedback and insights.
