@@ -47,12 +47,6 @@ The following types of operations are supported on devices running on Nordic's n
 
 - **This library requires .Net7+ runtime to run.**
 
-- **At the time of this writing (2023) and for the next few years up it's meant to be used directly (as a nuget) by next-gen Laerdal apps such as SkillReporter.**
-
-- **The long-term intention is to have the library cloud-hosted as an http-service or similar.**
-
-- **If you're maintaining legacy C++ codebases you're probably better off using the original C++ library or (alternatively) you can try making http-calls over to the cloud-hosted service (but this is not something technically possible on all legacy C++ products and solutions of Laerdal!)**
-
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
@@ -76,121 +70,161 @@ Make sure to always get the latest versions of the above packages.
 
 ### 🤖 Android
 
-- Upgrade the firmware:
+- Installing a firmware:
 
 ```c#
 
-private Laerdal.McuMgr.FirmwareUpgrader.IFirmwareUpgrader _firmwareUpgrader;
+private Laerdal.McuMgr.FirmwareInstaller.IFirmwareInstaller _firmwareInstaller;
 
-public void UpgradeFirmware()
+public async Task InstallFirmwareAsync()
 {
     var firmwareRawBytes = ...; //byte[]
-    var desiredBluetoothDevice = await Laerdal.Ble.Scanner.Instance.WaitForDeviceToAppearAsync(/*device id here*/); 
+    var desiredBluetoothDevice = ...; //android bluetooth device here 
 
-    _firmwareUpgrader = new Laerdal.McuMgr.FirmwareUpgrader.FirmwareUpgrader(desiredBluetoothDevice.BluetoothDevice);
+    try
+    {
+        _firmwareInstaller = new FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice);
     
-    ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: true);
+        ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: true);
     
-    var verdict = _firmwareUpgrader.BeginUpgrade(data: firmwareRawBytes, estimatedSwapTimeInMilliseconds: 50 * 1000); //milliseconds
-    if (verdict == IFirmwareUpgrader.EFirmwareUpgradeVerdict.Success)
+        await _firmwareInstaller.InstallAsync(
+            data: firmwareRawBytes,
+            pipelineDepth: FirmwareInstallationPipelineDepth, //ios only
+            byteAlignment: FirmwareInstallationByteAlignment, //ios only
+            windowCapacity: FirmwareInstallationWindowCapacity, //android only
+            memoryAlignment: FirmwareInstallationMemoryAlignment, //android only
+            estimatedSwapTimeInMilliseconds: FirmwareInstallationEstimatedSwapTimeInSecs * 1000
+        );
+    }
+    catch (FirmwareInstallationCancelledException) //order
+    {
+        App.DisplayAlert(
+            title: "Firmware-Installation Cancelled",
+            message: "Operation cancelled!"
+        );
         return;
-            
-    var lastErrorMessage = _firmwareUpgrader.LastErrorMessage;
-    
-    CleanupFirmwareUpgrader();
-    
-    ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
-            
-    App.DisplayAlert(title: "Error", message: $"Failed to Upgrade firmware '{verdict}'. Error message: {lastErrorMessage}");
-    
-    ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
+    }
+    catch (FirmwareInstallationErroredOutImageSwapTimeoutException) //order
+    {
+        App.DisplayAlert(
+            title: "Firmware-Installation Failed",
+            message: $"The firmware was installed but the device didn't confirm it within {FirmwareInstallationEstimatedSwapTimeInSecs}secs. " +
+                     "This means that the new firmware will only last for just one power-cycle of the device."
+        );
+        return;
+    }
+    catch (FirmwareInstallationErroredOutException ex) //order
+    {
+        App.DisplayAlert(
+            title: "Firmware-Installation Failed",
+            message: $"An error occurred:{Environment.NewLine}{Environment.NewLine}{ex}"
+        );
+        return;
+    }
+    catch (Exception ex) //order
+    {
+        App.DisplayAlert(
+            title: "[BUG] Firmware-Installation Failed",
+            message: $"An unexpected error occurred:{Environment.NewLine}{Environment.NewLine}{ex}"
+        );
+        return;
+    }
+    finally
+    {
+        ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: false);
+        CleanupFirmwareInstaller();
+    }
 }
 
-void ToggleSubscriptionsOnFirmwareUpgraderEvents(bool subscribeNotUnsubscribe)
+private void ToggleSubscriptionsOnFirmwareInstallerEvents(bool subscribeNotUnsubscribe)
 {
-    if (_firmwareUpgrader == null)
+    if (_firmwareInstaller == null)
         return;
     
     if (subscribeNotUnsubscribe)
     {
-        _firmwareUpgrader.Error += FirmwareUpgrader_Error;
-        _firmwareUpgrader.Cancelled += FirmwareUpgrader_Cancelled;
-        _firmwareUpgrader.StateChanged += FirmwareUpgrader_StateChanged;
-        _firmwareUpgrader.FirmwareUploadProgressPercentageAndDataThroughputChanged += FirmwareUpgrader_FirmwareUploadProgressPercentageAndDataThroughputChanged;
-        //firmwareUpgrader.BusyStateChanged += FirmwareUpgrader_BusyStateChanged;
+        _firmwareInstaller.LogEmitted += FirmwareInstaller_LogEmitted;
+        _firmwareInstaller.StateChanged += FirmwareInstaller_StateChanged;
+        _firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged += FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged;
     }
     else
     {
-        _firmwareUpgrader.Error -= FirmwareUpgrader_Error;
-        _firmwareUpgrader.Cancelled -= FirmwareUpgrader_Cancelled;
-        _firmwareUpgrader.StateChanged -= FirmwareUpgrader_StateChanged;
-        _firmwareUpgrader.FirmwareUploadProgressPercentageAndDataThroughputChanged -= FirmwareUpgrader_FirmwareUploadProgressPercentageAndDataThroughputChanged;
-        //firmwareUpgrader.BusyStateChanged -= FirmwareUpgrader_BusyStateChanged;
+        _firmwareInstaller.LogEmitted -= FirmwareInstaller_LogEmitted;
+        _firmwareInstaller.StateChanged -= FirmwareInstaller_StateChanged;
+        _firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged -= FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged;
     }
 }
 
-private void FirmwareUpgrader_Error(object sender, FirmwareUpgrader.Events.ErrorEventArgs ea)
+private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs ea)
 {
-    CleanupFirmwareUpgrader();
+    FirmwareInstallationStage = ea.NewState.ToString();
 
-    App.DisplayAlert(title: "Upgrade Error", message: ea.ErrorMessage);
-}
-
-private void FirmwareUpgrader_Cancelled(object sender, CancelledEventArgs ea)
-{
-    ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
-
-    CleanupFirmwareUpgrader();
-
-    App.DisplayAlert(title: "Info", message: "Upgrade Cancelled");
-}
-
-private void FirmwareUpgrader_StateChanged(object sender, FirmwareUpgrader.Events.StateChangedEventArgs ea)
-{
-    FirmwareUpgradeStage = ea.NewState.ToString();
-    if (ea.NewState != IFirmwareUpgrader.EFirmwareUpgradeState.Complete)
+    if (ea.NewState != IFirmwareInstaller.EFirmwareInstallationState.Complete)
         return;
 
-    ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
+    ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: false);
 
-    App.DisplayAlert(title: "Upgrade Complete", message: "Firmware Upgrade Completed Successfully!");
+    App.DisplayAlert(title: "Installation Complete", message: "Firmware Installation Completed Successfully!");
 
-    CleanupFirmwareUpgrader();
+    CleanupFirmwareInstaller();
 }
 
-private void FirmwareUpgrader_FirmwareUploadProgressPercentageAndDataThroughputChanged(object sender, FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
+private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(object sender, FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
 {
-    if (ea.ProgressPercentage < ProgressPercentage)
+    if (ea.ProgressPercentage < FirmwareUploadProgressPercentage)
         return;
 
-    // ProgressPercentage = ea.ProgressPercentage;
-    // AverageThroughputInKilobytes = ea.AverageThroughput;
+    FirmwareUploadProgressPercentage = ea.ProgressPercentage;
+    FirmwareUploadAverageThroughputInKilobytes = ea.AverageThroughput;
 }
 
-void CleanupFirmwareUpgrader()
+private void CleanupFirmwareInstaller()
 {
-    // ProgressPercentage = 0;
-    // AverageThroughputInKilobytes = 0;
-    
-    _firmwareUpgrader?.Disconnect(); //vital to cleanup the connection otherwise the device will get locked up
-    _firmwareUpgrader = null;
+    _firmwareInstaller?.Disconnect();
+    _firmwareInstaller = null;
 }
 ```
 
 - To erase a specific firmware:
 
 ```c#
-private Laerdal.McuMgr.FirmwareEraser.IFirmwareEraser _firmwareEraser;
+private IFirmwareEraser _firmwareEraser;
 
-private void EraseFirmware()
+public async Task EraseFirmwareAsync()
 {
-    var desiredBluetoothDevice = await Laerdal.Ble.Scanner.Instance.WaitForDeviceToAppearAsync(/*device id here*/); 
+    var desiredBluetoothDevice = ...; //android bluetooth device here 
 
-    _firmwareEraser = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice.BluetoothDevice);
+    try
+    {
+        _firmwareEraser = new FirmwareEraser.FirmwareEraser(desiredBluetoothDevice);
+        
+        ToggleSubscriptionsOnFirmwareEraserEvents(subscribeNotUnsubscribe: true);
 
-    ToggleSubscriptionsOnFirmwareEraserEvents(subscribeNotUnsubscribe: true);
-
-    _firmwareEraser.BeginErasure(imageIndex: 1); //this can either be 0 (for the first image which is active) or 1 (for the second image which is typically inactive)
+        await _firmwareEraser.EraseAsync(imageIndex: IndexOfFirmwareImageToErase);
+    }
+    catch (FirmwareErasureErroredOutException ex)
+    {
+        App.DisplayAlert(
+            title: "File-Erasure Failed",
+            message: $"An error occurred:{Environment.NewLine}{Environment.NewLine}{ex}"
+        );
+        return;
+    }
+    catch (Exception ex)
+    {
+        App.DisplayAlert(
+            title: "[BUG] File-Erasure Failed",
+            message: $"An unexpected error occurred:{Environment.NewLine}{Environment.NewLine}{ex}"
+        );
+        return;
+    }
+    finally
+    {
+        ToggleSubscriptionsOnFirmwareEraserEvents(subscribeNotUnsubscribe: false); //  order
+        CleanupFirmwareEraser(); //                                                    order
+    }
+    
+    App.DisplayAlert(title: "Erasure Complete", message: "Firmware Erasure Completed Successfully!");
 }
 
 private void ToggleSubscriptionsOnFirmwareEraserEvents(bool subscribeNotUnsubscribe)
@@ -200,36 +234,28 @@ private void ToggleSubscriptionsOnFirmwareEraserEvents(bool subscribeNotUnsubscr
 
     if (subscribeNotUnsubscribe)
     {
-        _firmwareEraser.Error += FirmwareEraser_Error;
+        _firmwareEraser.LogEmitted += FirmwareEraser_LogEmitted;
         _firmwareEraser.StateChanged += FirmwareEraser_StateChanged;
         // _firmwareEraser.BusyStateChanged += FirmwareEraser_BusyStateChanged;
+        // _firmwareEraser.FatalErrorOccurred += FirmwareEraser_FatalErrorOccurred;
     }
     else
     {
-        _firmwareEraser.Error -= FirmwareEraser_Error;
+        _firmwareEraser.LogEmitted -= FirmwareEraser_LogEmitted;
         _firmwareEraser.StateChanged -= FirmwareEraser_StateChanged;
         // _firmwareEraser.BusyStateChanged -= FirmwareEraser_BusyStateChanged;
+        // _firmwareEraser.FatalErrorOccurred -= FirmwareEraser_FatalErrorOccurred;
     }
+}
+
+private void FirmwareEraser_LogEmitted(object sender, LogEmittedEventArgs ea)
+{
+    Console.Error.WriteLine($"** {nameof(FirmwareEraser_LogEmitted)} [category={ea.Category}, level={ea.Level}]: {ea.Message}");
 }
 
 private void FirmwareEraser_StateChanged(object sender, StateChangedEventArgs ea)
 {
     FirmwareErasureStage = ea.NewState.ToString();
-    if (ea.NewState != IFirmwareEraser.EFirmwareErasureState.Complete)
-        return;
-
-    ToggleSubscriptionsOnFirmwareEraserEvents(subscribeNotUnsubscribe: false);
-
-    CleanupFirmwareEraser();
-
-    App.DisplayAlert(title: "Erasure Complete", message: "Firmware Erasure Completed Successfully!");
-}
-
-private void FirmwareEraser_Error(object sender, ErrorEventArgs ea)
-{
-    CleanupFirmwareEraser();
-
-    App.DisplayAlert(title: "Image Erasure Error", message: ea.ErrorMessage);
 }
 
 private void CleanupFirmwareEraser()
@@ -341,18 +367,6 @@ private void CleanupDeviceResetter()
                 );
             }
 
-            var invalidFiles = selectedFilesAndTheirRawBytes
-                .Where(x => !ValidateFileForMassUploadingForDevice(x.Key))
-                .ToArray();
-            if (invalidFiles.Any())
-            {
-                App.DisplayAlert(
-                    title: "Error",
-                    message: $"Files '{string.Join(", ", invalidFiles)}' are not valid for the given device."
-                );
-                return;
-            }
-
             _massFileUploadSelectedFileNamesAndTheirRawBytes = selectedFilesAndTheirRawBytes;
 
             MassFileUploaderTotalNumberOfFilesToUpload = _massFileUploadSelectedFileNamesAndTheirRawBytes.Count;
@@ -377,34 +391,15 @@ private void CleanupDeviceResetter()
 
     private async Task MassUploadSelectedFilesButtonClickedAsync()
     {
-        if (!EnsureNoOtherOperationIsInProgress())
-            return;
-
         if (_massFileUploadSelectedFileNamesAndTheirRawBytes == null || !_massFileUploadSelectedFileNamesAndTheirRawBytes.Any())
         {
             App.DisplayAlert(title: "Forbidden", message: "No files specified for uploading!");
             return;
         }
 
-        MassUploadResetUIToDefaultValues();
-
         try
-        {
-            await Device.ConnectAsync();
-            if (!Device.IsConnected)
-            {
-                App.DisplayAlert(title: "Error", message: "Failed to connect to device!");
-                return;
-            }
-            
-            await Device.AuthenticateIfNeededAsync(); //00
-            if (!Device.IsAuthenticated)
-            {
-                App.DisplayAlert(title: "Error", message: "Failed to authenticate to device!");
-                return;
-            }
-            
-            _massFileUploader = _platformSpecificMcumgrFactoryService.SpawnFileUploader(Device);
+        {            
+            _massFileUploader = new FileUploader.FileUploader(/*Android or iOS device*/);
 
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: true);
 
@@ -541,8 +536,6 @@ private void CleanupDeviceResetter()
 
     private void MassFileUploader_StateChanged(object sender, StateChangedEventArgs ea)
     {
-        Console.Error.WriteLine($"** {nameof(MassFileUploader_StateChanged)}: OldState='{ea.OldState}' NewState='{ea.NewState}'");
-
         MassFileUploaderStage = ea.NewState.ToString();
 
         switch (ea.NewState)
@@ -563,8 +556,6 @@ private void CleanupDeviceResetter()
 
     private void MassFileUploader_FileUploadProgressPercentageAndDataThroughputChanged(object sender, FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
     {
-        Console.Error.WriteLine($"** {nameof(MassFileUploader_FileUploadProgressPercentageAndDataThroughputChanged)}: File='{ea.RemoteFilePath}' MassFileUploadProgressPercentage='{ea.ProgressPercentage}' AverageThroughput='{ea.AverageThroughput}'");
-
         MassFileUploadProgressPercentage = ea.ProgressPercentage;
         MassFileUploadCurrentlyUploadedFile = Path.GetFileName(ea.RemoteFilePath);
         MassFileUploadAverageThroughputInKilobytes = ea.AverageThroughput;
@@ -580,7 +571,7 @@ Same as in Android with the only difference being that the constructors change a
 ```c#
 _fileUploader = new Laerdal.McuMgr.FileUploader.FileUploader(desiredBluetoothDevice.CbPeripheral);
 _firmwareEraser   = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice.CbPeripheral);
-_firmwareUpgrader = new Laerdal.McuMgr.FirmwareUpgrader.FirmwareUpgrader(desiredBluetoothDevice.CbPeripheral);
+_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice.CbPeripheral);
 
 _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.CbPeripheral);
 ```
@@ -647,10 +638,25 @@ You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `La
     Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
 
-
 ### Known issues
 
 - Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
+
+### Lead Maintainers
+
+- [Kyriakos Sidiropoulos (@dsidirop)](https://github.com/dsidirop)
+
+- [Francois Raminosona (@framinosona)](https://github.com/framinosona)
+
+
+### Credits
+
+Special thanks goes to:
+
+- [Francois Raminosona](https://www.linkedin.com/in/francois-raminosona/) for his insights and guidance on the entire spectrum of Xamarin development and underlying build system. This project would have 
+  been impossible to bring to fruition in such a short period of time without his wisdom.  
+
+- [Geir-Inge T.](https://www.linkedin.com/in/geir-inge-t-68749629) for his immense contributions in field-testing the library and providing invaluable feedback and insights.
