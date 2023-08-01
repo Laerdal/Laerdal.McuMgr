@@ -38,9 +38,6 @@
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
 
-        <!-- package dependencies are being intelligently added automatically to the nuspec so no need to be explicit about it here -->
-        <!-- <PackageReference Include="Laerdal.McuMgr.Core" Version="1.1.0" /> -->
-
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
