@@ -392,3 +392,5 @@ Package.resolved
 
 **/.gradle/**
 local.properties
+
+version.txt
