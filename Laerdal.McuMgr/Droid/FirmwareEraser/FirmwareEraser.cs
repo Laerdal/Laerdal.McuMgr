@@ -2,10 +2,12 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
+
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.FirmwareEraser.Events;
 
@@ -14,9 +16,18 @@ namespace Laerdal.McuMgr.FirmwareEraser
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
-        private readonly AndroidFirmwareEraser _androidFirmwareEraser;
+        private readonly IAndroidFirmwareEraser _androidFirmwareEraser;
 
-        public FirmwareEraser(BluetoothDevice bleDevice, Context androidContext = null)
+        public FirmwareEraser(BluetoothDevice bleDevice, Context androidContext = null) : this(
+            bleDevice,
+            androidContext,
+            customAndroidFirmwareEraserProxy: null
+        )
+        {
+        }
+
+        //this overload is needed by the testsuite which absolutely needs to mock away the IAndroidFirmwareEraser
+        internal FirmwareEraser(BluetoothDevice bleDevice, Context androidContext = null, IAndroidFirmwareEraser customAndroidFirmwareEraserProxy = null)
         {
             if (bleDevice == null)
                 throw new ArgumentNullException(nameof(bleDevice));
@@ -25,7 +36,8 @@ namespace Laerdal.McuMgr.FirmwareEraser
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidFirmwareEraser = new AndroidFirmwareEraserProxy(this, androidContext, bleDevice);
+            //todo  use the decorator pattern here to extract the AndroidFirmwareEraser outside the proxy
+            _androidFirmwareEraser = customAndroidFirmwareEraserProxy ?? new AndroidFirmwareEraserProxy(this, androidContext, bleDevice);
         }
 
         public string LastFatalErrorMessage => _androidFirmwareEraser?.LastFatalErrorMessage;
@@ -33,7 +45,21 @@ namespace Laerdal.McuMgr.FirmwareEraser
         public void Disconnect() => _androidFirmwareEraser.Disconnect();
         public void BeginErasure(int imageIndex = 1) => _androidFirmwareEraser.BeginErasure(imageIndex);
 
-        private sealed class AndroidFirmwareEraserProxy : AndroidFirmwareEraser
+        internal interface IAndroidFirmwareEraser
+        {
+            // ReSharper disable UnusedMember.Global
+            string LastFatalErrorMessage { get; }
+
+            void Disconnect();
+            void BeginErasure(int imageIndex);
+            
+            void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState);
+            void BusyStateChangedAdvertisement(bool busyNotIdle);
+            void FatalErrorOccurredAdvertisement(string errorMessage);
+            // ReSharper restore UnusedMember.Global
+        }
+
+        internal sealed class AndroidFirmwareEraserProxy : AndroidFirmwareEraser, IAndroidFirmwareEraser
         {
             private readonly FirmwareEraser _eraser;
 
@@ -71,7 +97,8 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _eraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
             }
 
-            static private IFirmwareEraser.EFirmwareErasureState TranslateEAndroidFirmwareEraserState(EAndroidFirmwareEraserState state)
+            // ReSharper disable once MemberCanBePrivate.Global
+            static internal IFirmwareEraser.EFirmwareErasureState TranslateEAndroidFirmwareEraserState(EAndroidFirmwareEraserState state)
             {
                 if (state == EAndroidFirmwareEraserState.None)
                 {
