@@ -139,8 +139,8 @@ jobs:
         inputs:
           checkLatest: true
 
-      - script: mkdir '$(Build.ArtifactStagingDirectory)/Output'
-        displayName: 'Create Directory $(Build.ArtifactStagingDirectory)/Output'
+      - script: mkdir '$(Build.ArtifactStagingDirectory)/Artifacts'
+        displayName: 'Create Directory $(Build.ArtifactStagingDirectory)/Artifacts'
 
       # todo  refactor this task to use our own custom utility-task later on
       - task: NuGetCommand@2
@@ -153,24 +153,24 @@ jobs:
         displayName: NuGet Sources Add
         inputs:
           command: custom
-          arguments:  sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Output"
+          arguments:  sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts"
 
       - task: MSBuild@1
         displayName: MSBuild
         inputs:
           solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
-          msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Output/"  '
+          msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/"  '
 
       - task: Bash@3
         displayName: Print Nugets in 'Output'
         inputs:
           targetType: inline
-          script: ls    -l   "$(Build.ArtifactStagingDirectory)/Output/"
+          script: ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"
 
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
         inputs:
           ArtifactName: 'drop'
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/Output/
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/Artifacts/
           publishLocation: 'Container'
 ...
