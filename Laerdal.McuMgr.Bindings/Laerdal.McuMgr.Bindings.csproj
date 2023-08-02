@@ -31,12 +31,13 @@
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings</PackageId>
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
-        <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.314</PackageVersion>
-        <PackageOutputPath>../$(RootNamespace).Output</PackageOutputPath>
-        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
+
+        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.314</PackageVersion>
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
