@@ -1,5 +1,7 @@
 # 🏠 Laerdal.McuMgr
 
+![Platforms](https://img.shields.io/badge/platforms-Xamarin%20|%20iOS%20|%20Android-blue.svg)
+
 - Latest Nugets:
 
 
