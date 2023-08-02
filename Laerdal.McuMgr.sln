@@ -1,7 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F-B6EC-4C2C-BEA0-8534D539E124}"
 	ProjectSection(SolutionItems) = preProject
-		Laerdal.McuMgr.Bindings.iOS\ios-compile-and-generate-fat-libs.sh = Laerdal.McuMgr.Bindings.iOS\ios-compile-and-generate-fat-libs.sh
 		Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.Droid.targets = Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.Droid.targets
 		Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.iOS.targets = Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.iOS.targets
 		README.md = README.md
@@ -11,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.CreateNewReleaseInGithub.sh
 		Laerdal.McuMgr.Builder.csproj = Laerdal.McuMgr.Builder.csproj
 		Laerdal.Version.sh = Laerdal.Version.sh
+		Laerdal.McuMgr.Bindings.iOS\Laerdal.IOS.CompileAndGenerateFatLibs.sh = Laerdal.McuMgr.Bindings.iOS\Laerdal.IOS.CompileAndGenerateFatLibs.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings", "Laerdal.McuMgr.Bindings\Laerdal.McuMgr.Bindings.csproj", "{083FA408-2B7E-41D1-ADBB-C5280A97A096}"
