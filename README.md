@@ -76,7 +76,7 @@ to the device.**
 
 
 
-### 🚀 Using the Nugets in your Projects
+## 🚀 Using the Nugets in your Projects
 
 Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to ALL of your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
 
@@ -87,7 +87,7 @@ Make sure to always get the latest versions of the above packages.
 
 
 
-### 🤖 Android
+## 🤖 Android
 
 - Installing a firmware:
 
@@ -583,7 +583,7 @@ private void CleanupDeviceResetter()
 
 
 
-### 📱 iOS
+## 📱 iOS
 
 Same as in Android with the only difference being that the constructors change a bit:
 
@@ -597,13 +597,13 @@ _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBlueto
 
 
 
-### 💻 Windows / UWP
+## 💻 Windows / UWP
 
 Not supported yet.
 
 
 
-### 🏗 IDE Setup / Generating Builds on Local-dev
+## 🏗 IDE Setup / Generating Builds on Local-dev
 
 
     Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
@@ -618,7 +618,7 @@ _
 
 To build the nugets from source follow these instructions:
 
-### 1) Checkout
+## 1) Checkout
 
 ```bash
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
@@ -628,23 +628,23 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-### 2) Make sure that Java11 is installed on your machine along with Gradle and Maven.
+## 2) Make sure that Java11 is installed on your machine along with Gradle and Maven.
 
-### 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
+## 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
-### 4) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
+## 4) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
 
      Note: You can grab the appropriate Mono release for MacOS from https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.182.macos10.xamarin.universal.pkg
 
 If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
 
-### 5) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+## 5) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
-### 6) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
+## 6) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
-### 7) Open 'Laerdal.McuMgr.sln' and build it.
+## 7) Open 'Laerdal.McuMgr.sln' and build it.
 
 You'll find the resulting nugets in the folder `Artifacts/`.
 
@@ -669,21 +669,21 @@ You'll find the resulting nugets in the folder `Artifacts/`.
     Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
 
-### Known issues
+## Known issues
 
 - Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
 
-### Lead Maintainers
+## Lead Maintainers
 
 - [Kyriakos Sidiropoulos (@dsidirop)](https://github.com/dsidirop)
 
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
 
-### Credits
+## Credits
 
 Special thanks goes to:
 
