@@ -96,7 +96,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
         /// <param name="byteAlignment">When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
-        /// <param name="timeoutInMs">The amount of time to wait for the operation to complete before bailing out.</param>
+        /// <param name="timeoutInMs">The amount of time to wait for the operation to complete before bailing out. If set to zero or negative then the operation will wait indefinitely.</param>
         Task InstallAsync(
             byte[] data,
             EFirmwareInstallationMode mode = IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm,
