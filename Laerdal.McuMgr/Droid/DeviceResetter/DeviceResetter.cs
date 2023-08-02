@@ -16,12 +16,12 @@ namespace Laerdal.McuMgr.DeviceResetter
     {
         private readonly AndroidDeviceResetter _androidDeviceResetter;
 
-        public DeviceResetter(BluetoothDevice bleDevice)
+        public DeviceResetter(BluetoothDevice bleDevice, Context androidContext = null)
         {
             if (bleDevice == null)
                 throw new ArgumentNullException(nameof(bleDevice));
 
-            var androidContext = Application.Context;
+            androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 

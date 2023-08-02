@@ -18,12 +18,12 @@ namespace Laerdal.McuMgr.FileUploader
     {
         private readonly AndroidFileUploader _androidFileUploaderProxy;
 
-        public FileUploader(BluetoothDevice bleDevice)
+        public FileUploader(BluetoothDevice bleDevice, Context androidContext = null)
         {
             if (bleDevice == null)
                 throw new ArgumentNullException(nameof(bleDevice));
 
-            var androidContext = Application.Context;
+            androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
@@ -32,8 +32,6 @@ namespace Laerdal.McuMgr.FileUploader
                 context: androidContext,
                 bluetoothDevice: bleDevice
             );
-
-            //todo   improve context  https://github.com/jamesmontemagno/MediaPlugin/blob/master/src/Media.Plugin/Android/MediaImplementation.cs#L355-L359
         }
 
         public string LastFatalErrorMessage => _androidFileUploaderProxy?.LastFatalErrorMessage;
