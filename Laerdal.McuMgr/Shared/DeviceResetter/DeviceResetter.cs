@@ -69,11 +69,10 @@ namespace Laerdal.McuMgr.DeviceResetter
             
             void ResetAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState == IDeviceResetter.EDeviceResetterState.Complete)
-                {
-                    taskCompletionSource.TrySetResult(true);
+                if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
                     return;
-                }
+                
+                taskCompletionSource.TrySetResult(true);
             }
 
             void ResetAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
@@ -82,6 +81,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             }
         }
 
+        // ReSharper disable once UnusedMember.Local
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
