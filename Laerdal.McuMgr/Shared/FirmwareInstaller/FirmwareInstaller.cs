@@ -113,7 +113,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 if (verdict != IFirmwareInstaller.EFirmwareInstallationVerdict.Success)
                     throw new ArgumentException(verdict.ToString());
 
-                _ = timeoutInMs < 0
+                _ = timeoutInMs <= 0
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }

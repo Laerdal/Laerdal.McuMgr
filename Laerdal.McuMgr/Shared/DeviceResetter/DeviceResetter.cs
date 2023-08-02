@@ -57,7 +57,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
                 BeginReset();
 
-                _ = timeoutInMs < 0
+                _ = timeoutInMs <= 0
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
