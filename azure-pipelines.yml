@@ -142,13 +142,6 @@ jobs:
       - script: mkdir '$(Build.ArtifactStagingDirectory)/Artifacts'
         displayName: 'Create Directory $(Build.ArtifactStagingDirectory)/Artifacts'
 
-      # todo  refactor this task to use our own custom utility-task later on
-      - task: NuGetCommand@2
-        displayName: NuGet Sources Add
-        inputs:
-          command: custom
-          arguments: sources   Add    -Name LaerdalMedical   -Source    https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json   -username     $(LAERDAL_COMPONENTS_TEAM_EMAIL)     -password     $(LAERDAL_COMPONENTS_TEAM_NUGET_FEED_ACCESS_TOKEN)
-
       - task: NuGetCommand@2
         displayName: NuGet Sources Add
         inputs:
