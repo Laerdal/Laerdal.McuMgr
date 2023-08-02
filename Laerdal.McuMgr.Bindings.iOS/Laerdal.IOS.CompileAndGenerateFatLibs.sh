@@ -4,17 +4,17 @@
 #
 # Derived from https://github.com/xamcat/xamarin-binding-swift-framework/blob/master/Swift/Scripts/build.fat.sh#L3-L14
 
-IOS_SDK_VERSION="${IOS_SDK_VERSION:-16.4}" # xcodebuild -showsdks
+declare IOS_SDK_VERSION="${IOS_SDK_VERSION:-16.4}" # xcodebuild -showsdks
 
-SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
-SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
-SWIFT_OUTPUT_PATH="./VendorFrameworks/swift-framework-proxy"
-SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
-SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
-SWIFT_PACKAGES_PATH="./packages"
-SWIFT_BUILD_CONFIGURATION="Release"
+declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
+declare SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
+declare SWIFT_OUTPUT_PATH="./VendorFrameworks/swift-framework-proxy"
+declare SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
+declare SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
+declare SWIFT_PACKAGES_PATH="./packages"
+declare SWIFT_BUILD_CONFIGURATION="Release"
 
-XAMARIN_BINDING_PATH="Xamarin/SwiftFrameworkProxy.Binding"
+declare XAMARIN_BINDING_PATH="Xamarin/SwiftFrameworkProxy.Binding"
 
 function print_macos_sdks() {
   xcodebuild -showsdks
@@ -39,8 +39,9 @@ function build() {
     -configuration "$SWIFT_BUILD_CONFIGURATION" \
     -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
     -resolvePackageDependencies
+  local exitCode=$?
 
-  if [ $? -ne 0 ]; then
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to download dependencies for 'iphoneos$IOS_SDK_VERSION'"
     exit 1
   fi
@@ -59,8 +60,9 @@ function build() {
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
+  local exitCode=$?
 
-  if [ $? -ne 0 ]; then
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to build 'iphoneos$IOS_SDK_VERSION'"
     exit 1
   fi
@@ -74,8 +76,9 @@ function build() {
     -configuration "$SWIFT_BUILD_CONFIGURATION" \
     -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
     -resolvePackageDependencies
+  local exitCode=$?
 
-  if [ $? -ne 0 ]; then
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to download dependencies for 'iphonesimulator$IOS_SDK_VERSION'"
     exit 1
   fi
@@ -95,8 +98,9 @@ function build() {
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
+  local exitCode=$?
 
-  if [ $? -ne 0 ]; then
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to build 'iphonesimulator$IOS_SDK_VERSION'"
     exit 1
   fi
@@ -110,7 +114,9 @@ function create_fat_binaries() {
     -R \
     "$SWIFT_BUILD_PATH/Build/Products/Release-iphoneos" \
     "$SWIFT_BUILD_PATH/Release-fat"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to copy"
     exit 1
   fi
@@ -120,7 +126,9 @@ function create_fat_binaries() {
     -R \
     "$SWIFT_BUILD_PATH/Build/Products/Release-iphonesimulator/$SWIFT_PROJECT_NAME.framework/Modules/$SWIFT_PROJECT_NAME.swiftmodule/" \
     "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/Modules/$SWIFT_PROJECT_NAME.swiftmodule/"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to copy"
     exit 1
   fi
@@ -138,7 +146,9 @@ function create_fat_binaries() {
     -output "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
     "$SWIFT_BUILD_PATH/Build/Products/Release-iphoneos/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
     "$SWIFT_BUILD_PATH/Build/Products/Release-iphonesimulator/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to combine configurations"
     exit 1
   fi
@@ -150,7 +160,9 @@ function create_fat_binaries() {
   lipo \
     -info \
     "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to verify results"
     exit 1
   fi
@@ -161,7 +173,9 @@ function create_fat_binaries() {
     cp -Rf \
       "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework" \
       "$SWIFT_OUTPUT_PATH"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to copy fat frameworks"
     exit 1
   fi
@@ -174,7 +188,9 @@ function create_fat_binaries() {
     --output="$SWIFT_OUTPUT_PATH/XamarinApiDef" \
     --namespace="$SWIFT_PROJECT_NAME" \
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to generate binding api definitions and structs"
     exit 1
   fi
@@ -185,7 +201,9 @@ function create_fat_binaries() {
       -Rf \
       "$SWIFT_OUTPUT_PATH/XamarinApiDef/." \
       "$XAMARIN_BINDING_PATH/"
-  if [ $? -ne 0 ]; then
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to replace existing metadata with the updated ones"
     exit 1
   fi

@@ -33,6 +33,21 @@ to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-s
 
 - [Android-nRF-Connect-Device-Manager](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager)
 
+From the respective 'Readme' files of these projects:
+
+<< nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview),
+a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html),
+[Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.
+
+**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, NordicDFU,
+serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
+
+McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests
+from compatible devices. The SMP Transport definition for Bluetooth Low Energy, which this library implements,
+[can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
+
+The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport. >>
+
 The following types of operations are supported on devices running on Nordic's nRF5x series of BLE chips:
 
 - Upgrading the firmware
@@ -41,11 +56,11 @@ The following types of operations are supported on devices running on Nordic's n
 - Downloading one or more files from the device
 - Uploading one or more files over to the device
 
+      Note: The library doesn't support Windows/UWP yet.
+
 
 
 ## ❗️ Salient Points
-
-- **This library requires .Net7+ runtime to run.**
 
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
@@ -55,11 +70,13 @@ in case you try to perform a firmware-upgrade on the desired device.**
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
 to the device.**
 
+- **At the time of this writing the generated nugets target iOS 16.4.**
 
 
-## 🚀 Getting started
 
-Add the following Nuget packages to ALL your projects, not just the Core/Forms/Shared one:
+### 🚀 Using the Nugets in your Projects
+
+Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to ALL of your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
 
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings
@@ -578,7 +595,7 @@ _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBlueto
 
 
 
-### 💻 Windows
+### 💻 Windows / UWP
 
 Not supported yet.
 
@@ -586,10 +603,18 @@ Not supported yet.
 
 ### 🏗 IDE Setup / Generating Builds on Local-dev
 
-     Forward Warning: If you want to build the nugets for both Android and iOS you'll have to use a Mac - if you
-     use Windows you will only be able to build nugets for Android (since iOS requires XCode).
 
-To build 'Laerdal.McuMgr' from source follow the instructions specified in:
+    Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
+_
+
+    Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK11 installed - have a look at the .yml file to see how you
+    can install java easily using 'brew'.
+
+_
+
+    Note#3 If you build on Windows the build system will work but the generated nugets *will only work on Android* but they will error out on iOS considering that the 'iOS part' of the build gets skipped in Windows.
+
+To build the nugets from source follow these instructions:
 
 ### 1) Checkout
 
@@ -603,9 +628,9 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop 
 
 ### 2) Make sure that Java11 is installed on your machine along with Gradle and Maven.
 
-### 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Laerdal.McuMgr.Bindings.Output'
+### 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
-Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Laerdal.McuMgr.Output'.
+Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
 ### 4) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
 
@@ -613,15 +638,13 @@ Same goes for the testbed-ui app. If you want to build it locally you'll have to
 
 If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
 
-### 5) On Mac make sure to install SDK 14.2+ (if you have multiple XCodes installed then make SDK 14.2+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+### 5) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
-### 6) On Windows you will also have to edit 'Java/LaerdalMcuMgrWrapperAndSampleApp/gradle.properties' and set the property 'org.gradle.java.home' to the folder-path of the JDK11.
+### 6) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
-### 7) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
+### 7) Open 'Laerdal.McuMgr.sln' and build it.
 
-### 8) Open 'Laerdal.McuMgr.sln' and build it.
-
-You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `Laerdal.McuMgr.Bindings.Output/`.
+You'll find the resulting nugets in the folder `Artifacts/`.
 
     Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings first and building just that project
     and then bumping the package version of Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building Laerdal.McuMgr.csproj.
@@ -631,9 +654,15 @@ You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `La
 
     To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
 
+    # on macos
     msbuild                                                           \
          Laerdal.McuMgr.Builder.csproj                                \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
+
+    # on windows powershell
+    & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"       ^
+            Laerdal.McuMgr.Builder.csproj    ^
+            /p:Laerdal_Version_Full=1.0.x.0
 
     Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
@@ -656,7 +685,7 @@ You'll find the resulting nugets in the folders `Laerdal.McuMgr.Output/` and `La
 
 Special thanks goes to:
 
-- [Francois Raminosona](https://www.linkedin.com/in/francois-raminosona/) for his insights and guidance on the entire spectrum of Xamarin development and underlying build system. This project would have 
-  been impossible to bring to fruition in such a short period of time without his wisdom.  
+- [Francois Raminosona](https://www.linkedin.com/in/francois-raminosona/) for his insights and guidance on the entire spectrum of Xamarin development and underlying build system. This project
+  would have been impossible to bring to fruition in such a short period of time without Francois' know-how.  
 
-- [Geir-Inge T.](https://www.linkedin.com/in/geir-inge-t-68749629) for his immense contributions in field-testing the library and providing invaluable feedback and insights.
+- [Geir-Inge T.](https://www.linkedin.com/in/geir-inge-t-68749629) for his immense contributions in terms of field-testing the library and providing invaluable feedback and insights.
