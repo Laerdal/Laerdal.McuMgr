@@ -618,7 +618,7 @@ _
 
 To build the nugets from source follow these instructions:
 
-## 1) Checkout
+#### 1) Checkout
 
 ```bash
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
@@ -628,23 +628,23 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-## 2) Make sure that Java11 is installed on your machine along with Gradle and Maven.
+#### 2) Make sure that Java11 is installed on your machine along with Gradle and Maven.
 
-## 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
+#### 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
-## 4) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
+#### 4) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
 
      Note: You can grab the appropriate Mono release for MacOS from https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.182.macos10.xamarin.universal.pkg
 
 If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
 
-## 5) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 5) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
-## 6) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
+#### 6) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
-## 7) Open 'Laerdal.McuMgr.sln' and build it.
+#### 7) Open 'Laerdal.McuMgr.sln' and build it.
 
 You'll find the resulting nugets in the folder `Artifacts/`.
 
