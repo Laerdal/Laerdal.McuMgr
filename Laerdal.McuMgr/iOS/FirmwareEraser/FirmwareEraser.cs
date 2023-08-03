@@ -27,11 +27,6 @@ namespace Laerdal.McuMgr.FirmwareEraser
             );
         }
 
-        public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
-
-        public void Disconnect() => _nativeFirmwareEraserProxy.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _nativeFirmwareEraserProxy.BeginErasure(imageIndex);
-
         // ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFirmwareEraserProxy : IOSListenerForFirmwareEraser, INativeFirmwareEraserProxy
         {

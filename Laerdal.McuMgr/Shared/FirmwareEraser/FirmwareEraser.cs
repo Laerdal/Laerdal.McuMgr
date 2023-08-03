@@ -70,7 +70,11 @@ namespace Laerdal.McuMgr.FirmwareEraser
             _nativeFirmwareEraserProxy = nativeFirmwareEraserProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserProxy));
             _nativeFirmwareEraserProxy.GenericFirmwareEraser = this; //vital
         }
+        
+        public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
 
+        public void Disconnect() => _nativeFirmwareEraserProxy?.Disconnect();
+        public void BeginErasure(int imageIndex = 1) => _nativeFirmwareEraserProxy?.BeginErasure(imageIndex);
         
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;

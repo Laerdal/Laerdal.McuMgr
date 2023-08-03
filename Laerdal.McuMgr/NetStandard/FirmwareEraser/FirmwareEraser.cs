@@ -12,10 +12,5 @@ namespace Laerdal.McuMgr.FirmwareEraser
         {
             throw new NotImplementedException();
         }
-
-        public string LastFatalErrorMessage => throw new NotImplementedException();
-
-        public void Disconnect() => throw new NotImplementedException();
-        public void BeginErasure(int imageIndex = 1) => throw new NotImplementedException();
     }
 }

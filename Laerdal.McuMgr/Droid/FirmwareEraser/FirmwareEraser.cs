@@ -36,11 +36,6 @@ namespace Laerdal.McuMgr.FirmwareEraser
             );
         }
 
-        public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
-
-        public void Disconnect() => _nativeFirmwareEraserProxy?.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _nativeFirmwareEraserProxy?.BeginErasure(imageIndex);
-
         internal sealed class AndroidNativeFirmwareEraserAdapterProxy : AndroidFirmwareEraser, INativeFirmwareEraserProxy
         {
             private readonly INativeFirmwareEraserCallbacksProxy _eraserCallbacksProxy;
