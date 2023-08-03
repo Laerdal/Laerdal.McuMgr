@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Events;
+using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Exceptions;
 
 namespace Laerdal.McuMgr.FirmwareEraser
@@ -13,29 +14,6 @@ namespace Laerdal.McuMgr.FirmwareEraser
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
-        internal interface INativeFirmwareEraserProxy : INativeFirmwareEraserCommandsProxy, INativeFirmwareEraserCallbacksProxy
-        {
-        }
-
-        internal interface INativeFirmwareEraserCommandsProxy
-        {
-            // ReSharper disable UnusedMember.Global
-            string LastFatalErrorMessage { get; }
-
-            void Disconnect();
-            void BeginErasure(int imageIndex);
-        }
-
-        internal interface INativeFirmwareEraserCallbacksProxy
-        {
-            FirmwareEraser GenericFirmwareEraser { get; set; }
-            
-            void LogMessageAdvertisement(string message, string category, ELogLevel level);
-            void StateChangedAdvertisement(IFirmwareEraser.EFirmwareErasureState oldState, IFirmwareEraser.EFirmwareErasureState newState);
-            void BusyStateChangedAdvertisement(bool busyNotIdle);
-            void FatalErrorOccurredAdvertisement(string errorMessage);
-        }
-
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareEraserProxy
         internal class GenericNativeFirmwareEraserCallbacksProxy : INativeFirmwareEraserCallbacksProxy
         {

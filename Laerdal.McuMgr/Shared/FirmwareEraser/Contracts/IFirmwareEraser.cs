@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Events;
 
-namespace Laerdal.McuMgr.FirmwareEraser
+namespace Laerdal.McuMgr.FirmwareEraser.Contracts
 {
     public interface IFirmwareEraser
     {

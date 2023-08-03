@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using Laerdal.McuMgr.FirmwareEraser.Contracts;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {

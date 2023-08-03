@@ -9,7 +9,9 @@ using Android.Content;
 using Android.Runtime;
 
 using Laerdal.Java.McuMgr.Wrapper.Android;
+
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FirmwareEraser.Contracts;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {
