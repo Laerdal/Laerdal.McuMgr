@@ -9,92 +9,109 @@ using Android.Content;
 using Android.Runtime;
 
 using Laerdal.Java.McuMgr.Wrapper.Android;
-using Laerdal.McuMgr.FirmwareEraser.Events;
+using Laerdal.McuMgr.Common;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
-        private readonly IAndroidFirmwareEraser _androidFirmwareEraser;
-
-        public FirmwareEraser(BluetoothDevice bleDevice, Context androidContext = null) : this(
-            bleDevice,
-            androidContext,
-            customAndroidFirmwareEraserProxy: null
-        )
-        {
+        public FirmwareEraser(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
+        { 
         }
 
-        //this overload is needed by the testsuite which absolutely needs to mock away the IAndroidFirmwareEraser
-        internal FirmwareEraser(BluetoothDevice bleDevice, Context androidContext = null, IAndroidFirmwareEraser customAndroidFirmwareEraserProxy = null)
+        static private INativeFirmwareEraserProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
 
             androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            //todo  use the decorator pattern here to extract the AndroidFirmwareEraser outside the proxy
-            _androidFirmwareEraser = customAndroidFirmwareEraserProxy ?? new AndroidFirmwareEraserProxy(this, androidContext, bleDevice);
+            return new AndroidNativeFirmwareEraserAdapterProxy(
+                androidContext: androidContext,
+                bluetoothDevice: bluetoothDevice,
+                eraserCallbacksProxy: new GenericNativeFirmwareEraserCallbacksProxy()
+            );
         }
 
-        public string LastFatalErrorMessage => _androidFirmwareEraser?.LastFatalErrorMessage;
+        public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
 
-        public void Disconnect() => _androidFirmwareEraser.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _androidFirmwareEraser.BeginErasure(imageIndex);
+        public void Disconnect() => _nativeFirmwareEraserProxy?.Disconnect();
+        public void BeginErasure(int imageIndex = 1) => _nativeFirmwareEraserProxy?.BeginErasure(imageIndex);
 
-        internal interface IAndroidFirmwareEraser
+        internal sealed class AndroidNativeFirmwareEraserAdapterProxy : AndroidFirmwareEraser, INativeFirmwareEraserProxy
         {
-            // ReSharper disable UnusedMember.Global
-            string LastFatalErrorMessage { get; }
-
-            void Disconnect();
-            void BeginErasure(int imageIndex);
-            
-            void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState);
-            void BusyStateChangedAdvertisement(bool busyNotIdle);
-            void FatalErrorOccurredAdvertisement(string errorMessage);
-            // ReSharper restore UnusedMember.Global
-        }
-
-        internal sealed class AndroidFirmwareEraserProxy : AndroidFirmwareEraser, IAndroidFirmwareEraser
-        {
-            private readonly FirmwareEraser _eraser;
+            private readonly INativeFirmwareEraserCallbacksProxy _eraserCallbacksProxy;
 
             // ReSharper disable once UnusedMember.Local
-            private AndroidFirmwareEraserProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+            private AndroidNativeFirmwareEraserAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             {
             }
 
-            internal AndroidFirmwareEraserProxy(FirmwareEraser eraser, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            internal AndroidNativeFirmwareEraserAdapterProxy(INativeFirmwareEraserCallbacksProxy eraserCallbacksProxy, Context androidContext, BluetoothDevice bluetoothDevice)
+                : base(androidContext, bluetoothDevice)
             {
-                _eraser = eraser ?? throw new ArgumentNullException(nameof(eraser));
+                if (bluetoothDevice == null)
+                    throw new ArgumentNullException(nameof(bluetoothDevice));
+
+                androidContext ??= Application.Context;
+                if (androidContext == null)
+                    throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
+                
+                _eraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
+            }
+            
+            public FirmwareEraser GenericFirmwareEraser
+            {
+                get => _eraserCallbacksProxy.GenericFirmwareEraser;
+                set => _eraserCallbacksProxy.GenericFirmwareEraser = value;
             }
 
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)
             {
                 base.StateChangedAdvertisement(oldState, newState);
                 
-                _eraser.OnStateChanged(new StateChangedEventArgs(
-                    newState: TranslateEAndroidFirmwareEraserState(newState),
-                    oldState: TranslateEAndroidFirmwareEraserState(oldState)
-                ));
+                StateChangedAdvertisement(newState: TranslateEAndroidFirmwareEraserState(newState), oldState: TranslateEAndroidFirmwareEraserState(oldState));
+            }
+            
+            //keep this override   its needed to conform to the interface
+            public void StateChangedAdvertisement(IFirmwareEraser.EFirmwareErasureState oldState, IFirmwareEraser.EFirmwareErasureState newState)
+            {
+                _eraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
             
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
                 base.BusyStateChangedAdvertisement(busyNotIdle); //just in case
 
-                _eraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+                _eraserCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
                 
-                _eraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                _eraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
+            }
+            
+            // todo   introduce this in the java side for the sake of completeness even if its not being used in the eraser
+            // public override void LogMessageAdvertisement(string message, string category, string level)
+            // {
+            //     base.LogMessageAdvertisement(message, category, level);
+            //
+            //     LogMessageAdvertisement(
+            //         message: message,
+            //         category: category,
+            //         level: HelpersAndroid.TranslateEAndroidLogLevel(level)
+            //     );
+            // }
+
+            //keep this override   its needed to conform to the interface
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level)
+            {
+                _eraserCallbacksProxy.LogMessageAdvertisement(message, category, level);
             }
 
             // ReSharper disable once MemberCanBePrivate.Global
