@@ -26,7 +26,7 @@
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
-        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.McuMgr.Output/`))</PackageOutputPath>
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Artifacts/`))</PackageOutputPath>
 
         <Laerdal_Source_Branch Condition="  '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
 
