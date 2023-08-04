@@ -5,39 +5,39 @@ using System;
 using System.Threading.Tasks;
 
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FirmwareEraser.Events;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
-using Laerdal.McuMgr.FirmwareEraser.Exceptions;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {
     /// <inheritdoc cref="IFirmwareEraser"/>
-    public partial class FirmwareEraser : IFirmwareEraser
+    public partial class FirmwareEraser : IFirmwareEraser, IFirmwareEraserEventEmitters
     {
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareEraserProxy
         internal class GenericNativeFirmwareEraserCallbacksProxy : INativeFirmwareEraserCallbacksProxy
         {
-            public FirmwareEraser GenericFirmwareEraser { get; set; }
+            public IFirmwareEraserEventEmitters GenericFirmwareEraserEventEmitters { get; set; }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
-                => GenericFirmwareEraser.OnLogEmitted(new LogEmittedEventArgs(
+                => GenericFirmwareEraserEventEmitters.OnLogEmitted(new LogEmittedEventArgs(
                     level: level,
                     message: message,
                     category: category,
                     resource: "firmware-eraser"
                 ));
             
-            public void StateChangedAdvertisement(IFirmwareEraser.EFirmwareErasureState oldState, IFirmwareEraser.EFirmwareErasureState newState)
-                => GenericFirmwareEraser.OnStateChanged(new StateChangedEventArgs(
+            public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
+                => GenericFirmwareEraserEventEmitters.OnStateChanged(new StateChangedEventArgs(
                     newState: newState,
                     oldState: oldState
                 ));
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
-                => GenericFirmwareEraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+                => GenericFirmwareEraserEventEmitters.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
             public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => GenericFirmwareEraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                => GenericFirmwareEraserEventEmitters.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
         }
         
         private readonly INativeFirmwareEraserProxy _nativeFirmwareEraserProxy;
@@ -46,7 +46,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
         internal FirmwareEraser(INativeFirmwareEraserProxy nativeFirmwareEraserProxy = null)
         {
             _nativeFirmwareEraserProxy = nativeFirmwareEraserProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserProxy));
-            _nativeFirmwareEraserProxy.GenericFirmwareEraser = this; //vital
+            _nativeFirmwareEraserProxy.GenericFirmwareEraserEventEmitters = this; //vital
         }
         
         public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
@@ -120,9 +120,11 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 FatalErrorOccurred -= EraseAsyncOnFatalErrorOccurred;
             }
 
+            return;
+
             void EraseAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState != IFirmwareEraser.EFirmwareErasureState.Complete)
+                if (ea.NewState != EFirmwareErasureState.Complete)
                     return;
 
                 taskCompletionSource.TrySetResult(true);
@@ -135,9 +137,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
         }
 
         // ReSharper disable once UnusedMember.Local
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        public void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        public void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        public void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        public void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
     }
 }

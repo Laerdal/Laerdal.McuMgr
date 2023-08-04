@@ -1,6 +1,6 @@
 using System;
 
-namespace Laerdal.McuMgr.FirmwareEraser.Exceptions
+namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions
 {
     public sealed class FirmwareErasureErroredOutException : Exception
     {

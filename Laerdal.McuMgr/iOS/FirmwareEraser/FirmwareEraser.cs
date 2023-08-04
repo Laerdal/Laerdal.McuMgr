@@ -34,7 +34,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             private readonly IOSFirmwareEraser _nativeFirmwareEraser;
             private readonly INativeFirmwareEraserCallbacksProxy _eraserCallbacksProxy;
 
-            internal IOSNativeFirmwareEraserProxy(GenericNativeFirmwareEraserCallbacksProxy eraserCallbacksProxy, CBPeripheral bluetoothDevice)
+            internal IOSNativeFirmwareEraserProxy(INativeFirmwareEraserCallbacksProxy eraserCallbacksProxy, CBPeripheral bluetoothDevice)
             {
                 if (bluetoothDevice == null)
                     throw new ArgumentNullException(paramName: nameof(bluetoothDevice));
@@ -52,15 +52,15 @@ namespace Laerdal.McuMgr.FirmwareEraser
             #endregion
 
             #region INativeFirmwareEraseCallbacksProxy
-            public FirmwareEraser GenericFirmwareEraser //keep this to conform to the interface
+            public IFirmwareEraserEventEmitters GenericFirmwareEraserEventEmitters //keep this to conform to the interface
             {
-                get => _eraserCallbacksProxy?.GenericFirmwareEraser;
+                get => _eraserCallbacksProxy?.GenericFirmwareEraserEventEmitters;
                 set
                 {
                     if (_eraserCallbacksProxy == null)
                         return;
 
-                    _eraserCallbacksProxy.GenericFirmwareEraser = value;
+                    _eraserCallbacksProxy.GenericFirmwareEraserEventEmitters = value;
                 }
             }
 
@@ -84,7 +84,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     newState: TranslateEIOSFirmwareEraserState(newState),
                     oldState: TranslateEIOSFirmwareEraserState(oldState)
                 );
-            public void StateChangedAdvertisement(IFirmwareEraser.EFirmwareErasureState oldState, IFirmwareEraser.EFirmwareErasureState newState) //keep this to conform to the interface
+            public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState) //keep this to conform to the interface
                 => _eraserCallbacksProxy?.StateChangedAdvertisement(
                     newState: newState,
                     oldState: oldState
@@ -95,12 +95,12 @@ namespace Laerdal.McuMgr.FirmwareEraser
             #endregion
 
             // ReSharper disable once InconsistentNaming
-            static private IFirmwareEraser.EFirmwareErasureState TranslateEIOSFirmwareEraserState(EIOSFirmwareEraserState state) => state switch
+            static private EFirmwareErasureState TranslateEIOSFirmwareEraserState(EIOSFirmwareEraserState state) => state switch
             {
-                EIOSFirmwareEraserState.None => IFirmwareEraser.EFirmwareErasureState.None,
-                EIOSFirmwareEraserState.Idle => IFirmwareEraser.EFirmwareErasureState.Idle,
-                EIOSFirmwareEraserState.Erasing => IFirmwareEraser.EFirmwareErasureState.Erasing,
-                EIOSFirmwareEraserState.Complete => IFirmwareEraser.EFirmwareErasureState.Complete,
+                EIOSFirmwareEraserState.None => EFirmwareErasureState.None,
+                EIOSFirmwareEraserState.Idle => EFirmwareErasureState.Idle,
+                EIOSFirmwareEraserState.Erasing => EFirmwareErasureState.Erasing,
+                EIOSFirmwareEraserState.Complete => EFirmwareErasureState.Complete,
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
             };
         }

@@ -60,10 +60,16 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _eraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
             
-            public FirmwareEraser GenericFirmwareEraser
+            public IFirmwareEraserEventEmitters GenericFirmwareEraserEventEmitters //keep this to conform to the interface
             {
-                get => _eraserCallbacksProxy.GenericFirmwareEraser;
-                set => _eraserCallbacksProxy.GenericFirmwareEraser = value;
+                get => _eraserCallbacksProxy?.GenericFirmwareEraserEventEmitters;
+                set
+                {
+                    if (_eraserCallbacksProxy == null)
+                        return;
+
+                    _eraserCallbacksProxy.GenericFirmwareEraserEventEmitters = value;
+                }
             }
 
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)
@@ -74,7 +80,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             }
             
             //keep this override   its needed to conform to the interface
-            public void StateChangedAdvertisement(IFirmwareEraser.EFirmwareErasureState oldState, IFirmwareEraser.EFirmwareErasureState newState)
+            public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
             {
                 _eraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
@@ -112,26 +118,26 @@ namespace Laerdal.McuMgr.FirmwareEraser
             }
 
             // ReSharper disable once MemberCanBePrivate.Global
-            static internal IFirmwareEraser.EFirmwareErasureState TranslateEAndroidFirmwareEraserState(EAndroidFirmwareEraserState state)
+            static internal EFirmwareErasureState TranslateEAndroidFirmwareEraserState(EAndroidFirmwareEraserState state)
             {
                 if (state == EAndroidFirmwareEraserState.None)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.None;
+                    return EFirmwareErasureState.None;
                 }
                 
                 if (state == EAndroidFirmwareEraserState.Idle)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.Idle;
+                    return EFirmwareErasureState.Idle;
                 }
 
                 if (state == EAndroidFirmwareEraserState.Erasing)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.Erasing;
+                    return EFirmwareErasureState.Erasing;
                 }
 
                 if (state == EAndroidFirmwareEraserState.Complete)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.Complete;
+                    return EFirmwareErasureState.Complete;
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);
