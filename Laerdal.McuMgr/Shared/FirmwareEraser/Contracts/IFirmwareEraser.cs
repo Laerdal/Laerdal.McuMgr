@@ -8,7 +8,7 @@ using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts
 {
-    public interface IFirmwareEraser : IFirmwareEraserEvents, IFirmwareEraserCommands
+    public interface IFirmwareEraser : IFirmwareEraserEvents, IFirmwareEraserCommands // dont add IFirmwareEraserEventEmitters here   its supposed to be internal only
     {
     }
 

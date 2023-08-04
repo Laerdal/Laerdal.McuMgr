@@ -4,7 +4,7 @@ namespace Laerdal.McuMgr.FirmwareEraser.Contracts
 {
     internal interface INativeFirmwareEraserCallbacksProxy
     {
-        IFirmwareEraserEventEmitters GenericFirmwareEraserEventEmitters { get; set; }
+        IFirmwareEraserEventEmitters FirmwareEraser { get; set; }
             
         void LogMessageAdvertisement(string message, string category, ELogLevel level);
         void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState);

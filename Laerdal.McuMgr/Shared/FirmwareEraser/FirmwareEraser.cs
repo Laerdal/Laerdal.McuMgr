@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using Laerdal.McuMgr.Common;
@@ -9,6 +10,7 @@ using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
 
+[assembly: InternalsVisibleTo("Laerdal.McuMgr.Tests")]
 namespace Laerdal.McuMgr.FirmwareEraser
 {
     /// <inheritdoc cref="IFirmwareEraser"/>
@@ -17,10 +19,10 @@ namespace Laerdal.McuMgr.FirmwareEraser
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareEraserProxy
         internal class GenericNativeFirmwareEraserCallbacksProxy : INativeFirmwareEraserCallbacksProxy
         {
-            public IFirmwareEraserEventEmitters GenericFirmwareEraserEventEmitters { get; set; }
+            public IFirmwareEraserEventEmitters FirmwareEraser { get; set; }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
-                => GenericFirmwareEraserEventEmitters.OnLogEmitted(new LogEmittedEventArgs(
+                => FirmwareEraser.OnLogEmitted(new LogEmittedEventArgs(
                     level: level,
                     message: message,
                     category: category,
@@ -28,25 +30,25 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 ));
             
             public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
-                => GenericFirmwareEraserEventEmitters.OnStateChanged(new StateChangedEventArgs(
+                => FirmwareEraser.OnStateChanged(new StateChangedEventArgs(
                     newState: newState,
                     oldState: oldState
                 ));
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
-                => GenericFirmwareEraserEventEmitters.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+                => FirmwareEraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
             public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => GenericFirmwareEraserEventEmitters.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                => FirmwareEraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
         }
         
         private readonly INativeFirmwareEraserProxy _nativeFirmwareEraserProxy;
 
         //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFirmwareEraserProxy
-        internal FirmwareEraser(INativeFirmwareEraserProxy nativeFirmwareEraserProxy = null)
+        internal FirmwareEraser(INativeFirmwareEraserProxy nativeFirmwareEraserProxy)
         {
             _nativeFirmwareEraserProxy = nativeFirmwareEraserProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserProxy));
-            _nativeFirmwareEraserProxy.GenericFirmwareEraserEventEmitters = this; //vital
+            _nativeFirmwareEraserProxy.FirmwareEraser = this; //vital
         }
         
         public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
@@ -113,6 +115,10 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _ = timeoutInMs <= 0
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
+            }
+            catch (Exception ex) when (!(ex is FirmwareErasureErroredOutException) && !(ex is TimeoutException)) //we dont want to wrap our own exceptions
+            {
+                throw new FirmwareErasureErroredOutException(ex.Message, ex);
             }
             finally
             {
