@@ -18,10 +18,10 @@ namespace Laerdal.McuMgr.FileUploader
     {
         private readonly AndroidFileUploader _androidFileUploaderProxy;
 
-        public FileUploader(BluetoothDevice bleDevice, Context androidContext = null)
+        public FileUploader(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
 
             androidContext ??= Application.Context;
             if (androidContext == null)
@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.FileUploader
             _androidFileUploaderProxy = new AndroidFileUploaderProxy(
                 uploader: this,
                 context: androidContext,
-                bluetoothDevice: bleDevice
+                bluetoothDevice: bluetoothDevice
             );
         }
 

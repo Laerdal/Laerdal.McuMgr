@@ -8,7 +8,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
     /// <inheritdoc cref="IFirmwareInstaller"/>
     public partial class FirmwareInstaller : IFirmwareInstaller
     {
-        public FirmwareInstaller(object bleDevice)
+        public FirmwareInstaller(object bluetoothDevice)
         {
             throw new NotImplementedException();
         }

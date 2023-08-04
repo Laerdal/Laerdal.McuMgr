@@ -18,16 +18,16 @@ namespace Laerdal.McuMgr.FirmwareInstaller
     {
         private readonly AndroidFirmwareInstallerProxy _androidFirmwareInstallerProxy;
 
-        public FirmwareInstaller(BluetoothDevice bleDevice, Context androidContext = null)
+        public FirmwareInstaller(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
 
             androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidFirmwareInstallerProxy = new AndroidFirmwareInstallerProxy(this, androidContext, bleDevice);
+            _androidFirmwareInstallerProxy = new AndroidFirmwareInstallerProxy(this, androidContext, bluetoothDevice);
         }
 
         public string LastFatalErrorMessage => _androidFirmwareInstallerProxy?.LastFatalErrorMessage;

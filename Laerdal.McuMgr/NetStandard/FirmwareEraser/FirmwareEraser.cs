@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
-        public FirmwareEraser(object bleDevice)
+        public FirmwareEraser(object bluetoothDevice)
         {
             throw new NotImplementedException();
         }

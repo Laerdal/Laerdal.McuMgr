@@ -15,14 +15,14 @@ namespace Laerdal.McuMgr.FileUploader
     {
         private readonly IOSFileUploader _iosFileUploaderProxy;
         
-        public FileUploader(CBPeripheral bleDevice)
+        public FileUploader(CBPeripheral bluetoothDevice)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
             
             _iosFileUploaderProxy = new IOSFileUploader(
                 listener: new IOSFileUploaderListenerProxy(this),
-                cbPeripheral: bleDevice
+                cbPeripheral: bluetoothDevice
             );
         }
 

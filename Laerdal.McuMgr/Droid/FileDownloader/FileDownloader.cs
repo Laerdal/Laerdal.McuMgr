@@ -19,10 +19,10 @@ namespace Laerdal.McuMgr.FileDownloader
     {
         private readonly AndroidFileDownloaderProxy _androidFileDownloaderProxy;
 
-        public FileDownloader(BluetoothDevice bleDevice, Context androidContext = null)
+        public FileDownloader(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
 
             androidContext ??= Application.Context;
             if (androidContext == null)
@@ -31,7 +31,7 @@ namespace Laerdal.McuMgr.FileDownloader
             _androidFileDownloaderProxy = new AndroidFileDownloaderProxy(
                 downloader: this,
                 context: androidContext,
-                bluetoothDevice: bleDevice
+                bluetoothDevice: bluetoothDevice
             );
         }
 

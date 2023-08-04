@@ -9,7 +9,8 @@
 
         <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
         <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <!-- <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks> -->
+        <TargetFrameworks>$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
 
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -115,7 +116,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="$(Laerdal_McuMgr_Bindings_Package_Version)" />
+        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.28.0-ksidirop-MAN-205-yaml-pipeline-plus-enchancements.43000" />
     </ItemGroup>
 
 </Project>
