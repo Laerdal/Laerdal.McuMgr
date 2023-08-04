@@ -116,7 +116,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.28.0-ksidirop-MAN-205-yaml-pipeline-plus-enchancements.43000" />
+        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="$(Laerdal_McuMgr_Bindings_Package_Version)" />
     </ItemGroup>
 
 </Project>
