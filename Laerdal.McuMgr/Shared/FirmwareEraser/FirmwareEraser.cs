@@ -136,10 +136,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
             }
         }
 
-        // ReSharper disable once UnusedMember.Local
-        public void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        public void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        public void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        public void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFirmwareEraserEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea); //       we made these interface implementations
+        void IFirmwareEraserEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea); // explicit to avoid making them public
+        void IFirmwareEraserEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFirmwareEraserEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
     }
 }
