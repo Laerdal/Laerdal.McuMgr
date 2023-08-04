@@ -154,12 +154,22 @@ jobs:
           solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
           msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/"  '
 
+      - task: VSTest@3
+        inputs:
+          searchFolder: '$(System.DefaultWorkingDirectory)'
+          testSelector: 'testAssemblies'
+          testAssemblyVer2: |
+            **\*test*.dll
+            **\*Tests.dll
+            !**\*TestAdapter.dll
+            !**\obj\**
+
       - task: Bash@3
         displayName: Print Nugets in 'Output'
         inputs:
           targetType: inline
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"
-
+          
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
         inputs:

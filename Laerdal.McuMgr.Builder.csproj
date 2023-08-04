@@ -116,7 +116,6 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
-        
         <MSBuild Projects="Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Build"/>
 
         <!-- build mcumgr -->

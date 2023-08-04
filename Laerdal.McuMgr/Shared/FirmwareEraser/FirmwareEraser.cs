@@ -116,9 +116,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (Exception ex) when (!(ex is FirmwareErasureErroredOutException) && !(ex is TimeoutException)) //we dont want to wrap our own exceptions
+            catch (Exception ex) when (!(ex is FirmwareErasureErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
             {
-                throw new FirmwareErasureErroredOutException(ex.Message, ex);
+                throw new FirmwareErasureErroredOutException("[BUG] " + ex.Message, ex);
             }
             finally
             {
@@ -140,6 +140,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
             {
                 taskCompletionSource.TrySetException(new FirmwareErasureErroredOutException(ea.ErrorMessage)); //generic
             }
+            
+            //00  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
         void IFirmwareEraserEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea); //       we made these interface implementations
