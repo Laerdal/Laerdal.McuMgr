@@ -39,7 +39,7 @@
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
     </PropertyGroup>
 
-    <Target Name="PrintConfiguration" BeforeTargets="BuildProjects">
+    <Target Name="PrintConfiguration">
         <Message Importance="High" Text="** Configuration                 ='$(Configuration)'"/>
         <Message Importance="High" Text="** PackageOutputPath             ='$(PackageOutputPath)'"/>
 
@@ -50,7 +50,7 @@
     </Target>
 
     <!-- VERSION -->
-    <Target Name="GenerateVersionFile" BeforeTargets="PrintConfiguration">
+    <Target Name="DeduceVersion" DependsOnTargets="PrintConfiguration">
 
         <PropertyGroup>
             <Laerdal_Version_Major Condition=" '$(Laerdal_Version_Major)' == '' ">1</Laerdal_Version_Major>
@@ -99,7 +99,7 @@
     </Target>
 
     <!-- BUILD -->
-    <Target Name="BuildProjects">
+    <Target Name="BuildProjects" DependsOnTargets="DeduceVersion">
         <Error Text="'Laerdal_Version_Assembly' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Assembly=...'"
                Condition=" '$(Laerdal_Version_Assembly)' == '' "/>
 
