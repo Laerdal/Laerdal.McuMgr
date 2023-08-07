@@ -8,7 +8,7 @@ using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
 using Xunit;
 
-namespace Laerdal.McuMgr.Tests
+namespace Laerdal.McuMgr.Tests.FirmwareEraser
 {
     public class FirmwareEraserShould
     {

@@ -131,6 +131,19 @@
 
         <MSBuild Projects="Laerdal.McuMgr/Laerdal.McuMgr.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Build"/>
     </Target>
+    
+    <!-- TESTS -->
+    <Target Name="RunTests" AfterTargets="BuildProjects" BeforeTargets="CreateGithubReleaseWithTag">
+        <PropertyGroup>
+            <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Configuration=$(Configuration)</_Laerdal_Testbed_Parameters>
+            <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);TestResultsDirectory=TestResults/</_Laerdal_Testbed_Parameters>
+            <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Testbed_Parameters>
+        </PropertyGroup>
+
+        <MSBuild Targets="Restore;Test"
+                 Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
+                 Properties="$(_Laerdal_Testbed_Parameters)" />
+    </Target>
 
     <!-- GITHUB RELEASE -->
     <Target Name="CreateGithubReleaseWithTag"

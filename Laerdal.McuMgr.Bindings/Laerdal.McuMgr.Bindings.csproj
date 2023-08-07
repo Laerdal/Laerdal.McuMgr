@@ -41,7 +41,7 @@
         <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
-        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.314</PackageVersion>
+        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.315</PackageVersion>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
