@@ -111,7 +111,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <Laerdal_McuMgr_Bindings_Package_Version Condition=" '$(Laerdal_McuMgr_Bindings_Package_Version)' == '' ">1.0.313</Laerdal_McuMgr_Bindings_Package_Version>
+        <Laerdal_McuMgr_Bindings_Package_Version Condition=" '$(Laerdal_McuMgr_Bindings_Package_Version)' == '' ">1.0.314</Laerdal_McuMgr_Bindings_Package_Version>
     </PropertyGroup>
     
     <ItemGroup>
