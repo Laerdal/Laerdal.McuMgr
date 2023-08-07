@@ -164,6 +164,10 @@ namespace Laerdal.McuMgr.FileUploader
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
                 }
+                catch (Exception ex) when (!(ex is UploadErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
+                {
+                    throw new UploadErroredOutException(ex.Message, ex);
+                }
                 finally
                 {
                     StateChanged -= UploadAsyncOnStateChanged;
@@ -220,9 +224,12 @@ namespace Laerdal.McuMgr.FileUploader
             }
             
             if (isCancellationRequested) //vital
-                throw new UploadCancelledException(); //00
+                throw new UploadCancelledException(); //10
 
-            //00  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
+            //00  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
+            //
+            //10  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
             //    in cases where the ble connection bites the dust and is unrecoverable because in that case the file uploader will just keep
             //    on trying in vain forever for like 50 retries or something and pressing the cancel button wont have any effect because
             //    the upload cannot commence to begin with

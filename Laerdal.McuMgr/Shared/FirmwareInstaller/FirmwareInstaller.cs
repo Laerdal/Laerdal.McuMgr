@@ -117,12 +117,18 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
+            catch (Exception ex) when (!(ex is FirmwareInstallationErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
+            {
+                throw new FirmwareInstallationErroredOutException(ex.Message, ex);
+            }
             finally
             {
                 Cancelled -= FirmwareInstallationAsyncOnCancelled;
                 StateChanged -= FirmwareInstallationAsyncOnStateChanged;
                 FatalErrorOccurred -= FirmwareInstallationAsyncOnFatalErrorOccurred;
             }
+
+            return;
 
             void FirmwareInstallationAsyncOnCancelled(object sender, CancelledEventArgs ea)
             {
@@ -131,11 +137,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState == IFirmwareInstaller.EFirmwareInstallationState.Complete)
-                {
-                    taskCompletionSource.TrySetResult(true);
+                if (ea.NewState != IFirmwareInstaller.EFirmwareInstallationState.Complete)
                     return;
-                }
+
+                taskCompletionSource.TrySetResult(true);
             }
 
             void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
@@ -148,6 +153,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 
                 taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException(ea.ErrorMessage));
             }
+            
+            //00  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);

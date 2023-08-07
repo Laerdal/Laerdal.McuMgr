@@ -61,12 +61,18 @@ namespace Laerdal.McuMgr.DeviceResetter
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
+            catch (Exception ex) when (!(ex is DeviceResetterErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
+            {
+                throw new DeviceResetterErroredOutException(ex.Message, ex);
+            }
             finally
             {
                 StateChanged -= ResetAsyncOnStateChanged;
                 FatalErrorOccurred -= ResetAsyncOnFatalErrorOccurred;
             }
-            
+
+            return;
+
             void ResetAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
                 if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
@@ -79,6 +85,9 @@ namespace Laerdal.McuMgr.DeviceResetter
             {
                 taskCompletionSource.TrySetException(new DeviceResetterErroredOutException(ea.ErrorMessage)); //generic
             }
+            
+            //00  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
         // ReSharper disable once UnusedMember.Local
