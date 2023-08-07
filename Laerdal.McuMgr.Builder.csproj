@@ -140,7 +140,11 @@
             <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Testbed_Parameters>
         </PropertyGroup>
 
-        <MSBuild Targets="Restore;Test"
+        <MSBuild Targets="Restore"
+                 Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
+                 Properties="$(_Laerdal_Testbed_Parameters)" />
+
+        <MSBuild Targets="Test"
                  Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
                  Properties="$(_Laerdal_Testbed_Parameters)" />
     </Target>
