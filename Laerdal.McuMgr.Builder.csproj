@@ -121,15 +121,16 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
-        <MSBuild Projects="Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Build"/>
+        <!-- notice that we rebuild bindings   merely building the project doesnt really cut it -->
+        <MSBuild Projects="Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
-        <!-- build mcumgr -->
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
-        <MSBuild Projects="Laerdal.McuMgr/Laerdal.McuMgr.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Build"/>
+        <!-- notice that we rebuild mcumgr   merely building the project doesnt really cut it -->
+        <MSBuild Projects="Laerdal.McuMgr/Laerdal.McuMgr.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
     </Target>
     
     <!-- TESTS -->
@@ -146,7 +147,7 @@
         <!--          Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"                   -->
         <!--          Properties="$(_Laerdal_Testbed_Parameters);RestorePackagesPath=packages/" />  -->
         
-        <!-- this is the only way to reliably restore nuget packages -->
+        <!-- this is the only way to reliably restore nuget packages for dotnet framework projects -->
         <Exec Command=" nuget  restore   Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj  -PackagesDirectory packages/ " />
 
         <MSBuild Targets="Test"

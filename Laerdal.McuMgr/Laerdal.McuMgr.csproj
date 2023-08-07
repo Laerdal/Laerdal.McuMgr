@@ -23,7 +23,7 @@
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
         <PackageDescription>Xamarin managed wrapper around 'Laerdal.McuMgr.Bindings' for iOS and Android.</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.503</PackageVersion>
+        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.507</PackageVersion>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -111,7 +111,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <Laerdal_McuMgr_Bindings_Package_Version Condition=" '$(Laerdal_McuMgr_Bindings_Package_Version)' == '' ">1.0.315</Laerdal_McuMgr_Bindings_Package_Version>
+        <Laerdal_McuMgr_Bindings_Package_Version Condition=" '$(Laerdal_McuMgr_Bindings_Package_Version)' == '' ">1.0.508</Laerdal_McuMgr_Bindings_Package_Version>
     </PropertyGroup>
     
     <ItemGroup>

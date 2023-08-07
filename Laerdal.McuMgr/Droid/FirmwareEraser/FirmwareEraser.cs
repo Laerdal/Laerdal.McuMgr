@@ -99,17 +99,16 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _eraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
             }
             
-            // todo   introduce this in the java side for the sake of completeness even if its not being used in the eraser
-            // public override void LogMessageAdvertisement(string message, string category, string level)
-            // {
-            //     base.LogMessageAdvertisement(message, category, level);
-            //
-            //     LogMessageAdvertisement(
-            //         message: message,
-            //         category: category,
-            //         level: HelpersAndroid.TranslateEAndroidLogLevel(level)
-            //     );
-            // }
+            public override void LogMessageAdvertisement(string message, string category, string level)
+            {
+                base.LogMessageAdvertisement(message, category, level);
+
+                LogMessageAdvertisement(
+                    level: HelpersAndroid.TranslateEAndroidLogLevel(level),
+                    message: message,
+                    category: category
+                );
+            }
 
             //keep this override   its needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)

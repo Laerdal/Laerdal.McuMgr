@@ -82,6 +82,10 @@ public class AndroidFirmwareEraser {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    public void logMessageAdvertisement(String message, String category, String level) {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
     public void busyStateChangedAdvertisement(boolean busyNotIdle) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
