@@ -136,13 +136,18 @@
     <Target Name="RunTests" AfterTargets="BuildProjects" BeforeTargets="CreateGithubReleaseWithTag">
         <PropertyGroup>
             <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Configuration=$(Configuration)</_Laerdal_Testbed_Parameters>
-            <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);TestResultsDirectory=TestResults/</_Laerdal_Testbed_Parameters>
             <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Testbed_Parameters>
         </PropertyGroup>
 
-        <MSBuild Targets="Restore"
-                 Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
-                 Properties="$(_Laerdal_Testbed_Parameters)" />
+        <!-- in azure pipelines this doesnt work as intended for net framework projects because     -->
+        <!-- quite simply they dont have any target called 'Restore' like net7+ projects do ;)      -->
+        <!--                                                                                        -->
+        <!-- <MSBuild Targets="Restore"                                                             -->
+        <!--          Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"                   -->
+        <!--          Properties="$(_Laerdal_Testbed_Parameters);RestorePackagesPath=packages/" />  -->
+        
+        <!-- this is the only way to reliably restore nuget packages -->
+        <Exec Command=" nuget  restore   Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj  -PackagesDirectory packages/ " />
 
         <MSBuild Targets="Test"
                  Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
