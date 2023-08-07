@@ -154,15 +154,15 @@ jobs:
           solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
           msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/"  '
 
-      - task: VSTest@3
+#     running tests like so is only supported in windows agents but we are
+#     using a macos agent so we need to use the dotnet test command instead
+#
+#     - task: VSTest@3
+#       inputs: ...
+      - task: DotNetCoreCLI@2
         inputs:
-          searchFolder: '$(System.DefaultWorkingDirectory)'
-          testSelector: 'testAssemblies'
-          testAssemblyVer2: |
-            **\*test*.dll
-            **\*Tests.dll
-            !**\*TestAdapter.dll
-            !**\obj\**
+          command: 'test'
+          projects: 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj' 
 
       - task: Bash@3
         displayName: Print Nugets in 'Output'
