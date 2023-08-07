@@ -9,8 +9,7 @@
 
         <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
         <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
-        <!-- <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks> -->
-        <TargetFrameworks>$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks> 
 
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
