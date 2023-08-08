@@ -30,7 +30,7 @@
 
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-        
+
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Artifacts/`))</PackageOutputPath>
 
@@ -60,6 +60,9 @@
 
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
+
+            <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
+            <Laerdal_McuMgrBindings_ProjectFile>Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj</Laerdal_McuMgrBindings_ProjectFile>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
@@ -98,8 +101,56 @@
         <Message Importance="High" Text="##vso[build.updatebuildnumber]$(Laerdal_Version_Full)"/>
     </Target>
 
+    <!-- UPDATE PROJECT FILES WITH NEW PACKAGE AND ASSEMBLY VERSIONS -->
+    <Target Name="WriteUpdatedPackageVersionsInCsprojFiles" DependsOnTargets="DeduceVersion">
+        <ItemGroup>
+            <ProjectFiles Include="$(Laerdal_McuMgr_ProjectFile)"/>
+            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile)"/>
+        </ItemGroup>
+
+        <!-- https://stackoverflow.com/a/1294679/863651 -->
+        <MsBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="_updatePackageVersionsInCsprojFile"
+                 Properties="ProjectFile=$(Laerdal_McuMgr_ProjectFile);Version=$(Laerdal_Version_Assembly);"/>
+        <MsBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="_updatePackageVersionsInCsprojFile"
+                 Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile);Version=$(Laerdal_Version_Assembly);"/>
+    </Target>
+
+    <Target Name="_updatePackageVersionsInCsprojFile">
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;Version&gt;.*?&lt;/Version&gt;" ReplacementText="&lt;Version&gt;$(Version)&lt;/Version&gt;" />
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;FileVersion&gt;.*?&lt;/FileVersion&gt;" ReplacementText="&lt;FileVersion&gt;$(Version)&lt;/FileVersion&gt;" />
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;PackageVersion&gt;.*?&lt;/PackageVersion&gt;" ReplacementText="&lt;PackageVersion&gt;$(Version)&lt;/PackageVersion&gt;" />
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;AssemblyVersion&gt;.*?&lt;/AssemblyVersion&gt;" ReplacementText="&lt;AssemblyVersion&gt;$(Version)&lt;/AssemblyVersion&gt;" />
+
+        <!-- this affects only laerdal.mcumgr.csproj -->
+        <_replaceRegexInFile InputFile="$(ProjectFile)"
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings&quot; Version=&quot;$(Version)&quot;" />
+    </Target>
+
+    <UsingTask
+            TaskName="_replaceRegexInFile"
+            TaskFactory="CodeTaskFactory"
+            AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <Regex ParameterType="System.String" Required="true" />
+            <InputFile ParameterType="System.String" Required="true" />
+            <ReplacementText ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                    string fileText = System.IO.File.ReadAllText(InputFile);
+                    string eventualText = System.Text.RegularExpressions.Regex.Replace(fileText, Regex, ReplacementText);
+                    System.IO.File.WriteAllText(InputFile, eventualText, System.Text.Encoding.UTF8);
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
     <!-- BUILD -->
-    <Target Name="BuildProjects" DependsOnTargets="DeduceVersion">
+    <Target Name="BuildProjects" DependsOnTargets="WriteUpdatedPackageVersionsInCsprojFiles">
         <Error Text="'Laerdal_Version_Assembly' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Assembly=...'"
                Condition=" '$(Laerdal_Version_Assembly)' == '' "/>
 
@@ -117,8 +168,6 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Version=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);FileVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);AssemblyVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
-
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
         <!-- notice that we rebuild bindings   merely building the project doesnt really cut it -->
@@ -132,7 +181,7 @@
         <!-- notice that we rebuild mcumgr   merely building the project doesnt really cut it -->
         <MSBuild Projects="Laerdal.McuMgr/Laerdal.McuMgr.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
     </Target>
-    
+
     <!-- TESTS -->
     <Target Name="RunTests" AfterTargets="BuildProjects" BeforeTargets="CreateGithubReleaseWithTag">
         <PropertyGroup>
@@ -146,13 +195,13 @@
         <!-- <MSBuild Targets="Restore"                                                             -->
         <!--          Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"                   -->
         <!--          Properties="$(_Laerdal_Testbed_Parameters);RestorePackagesPath=packages/" />  -->
-        
+
         <!-- this is the only way to reliably restore nuget packages for dotnet framework projects -->
-        <Exec Command=" nuget  restore   Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj  -PackagesDirectory packages/ " />
+        <Exec Command=" nuget  restore   Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj  -PackagesDirectory packages/ "/>
 
         <MSBuild Targets="Test"
                  Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
-                 Properties="$(_Laerdal_Testbed_Parameters)" />
+                 Properties="$(_Laerdal_Testbed_Parameters)"/>
     </Target>
 
     <!-- GITHUB RELEASE -->
