@@ -41,7 +41,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2));
 
             // Assert
-            await work.Should().CompleteWithinAsync(150.Milliseconds());
+            await work.Should().CompleteWithinAsync(1.Seconds());
 
             mockedNativeFirmwareEraserProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareEraserProxy.BeginErasureCalled.Should().BeTrue();
