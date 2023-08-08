@@ -16,7 +16,8 @@ import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 @SuppressWarnings("unused")
 public class AndroidFirmwareEraser {
 
-    private final ImageManager _imageManager;
+    private ImageManager _imageManager;
+    private final McuMgrBleTransport _transport;
 
     /**
      * Constructs a firmware installer for a specific android-context and bluetooth-device.
@@ -25,9 +26,7 @@ public class AndroidFirmwareEraser {
      * @param bluetoothDevice the device to perform the firmware-install on
      */
     public AndroidFirmwareEraser(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
-        final McuMgrTransport transport = new McuMgrBleTransport(context, bluetoothDevice);
-
-        _imageManager = new ImageManager(transport); //todo   move this into beginErasure()
+        _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
     public void beginErasure(final int imageIndex) {
@@ -35,6 +34,7 @@ public class AndroidFirmwareEraser {
 
         setState(EAndroidFirmwareEraserState.ERASING);
 
+        _imageManager = new ImageManager(_transport);
         _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrResponse>() {
             @Override
             public void onResponse(@NonNull final McuMgrResponse response) {
