@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2));
 
             // Assert
-            await work.Should().CompleteWithinAsync(1.Seconds());
+            await work.Should().CompleteWithinAsync(0.5.Seconds());
 
             mockedNativeFirmwareEraserProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareEraserProxy.BeginErasureCalled.Should().BeTrue();
@@ -88,6 +88,26 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
                 throw new Exception("foobar");
             }
         }
+        
+        [Fact]
+        public async Task ShouldThrowTimeoutException_GivenTooSmallTimeout()
+        {
+            // Arrange
+            var mockedNativeFirmwareEraserProxy = new MockedGreenNativeFirmwareEraserProxy(new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy());
+            var firmwareEraser = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(mockedNativeFirmwareEraserProxy);
+
+            // Act
+            var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2, timeoutInMs: 1));
+
+            // Assert
+            await work.Should().ThrowAsync<TimeoutException>();
+
+            mockedNativeFirmwareEraserProxy.DisconnectCalled.Should().BeFalse(); //00
+            mockedNativeFirmwareEraserProxy.BeginErasureCalled.Should().BeTrue();
+
+            //00 we dont want to disconnect the device regardless of the outcome
+        }
+
 
         private class MockedNativeFirmwareEraserProxy : INativeFirmwareEraserProxy
         {
