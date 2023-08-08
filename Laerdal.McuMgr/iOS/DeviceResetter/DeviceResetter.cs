@@ -14,14 +14,14 @@ namespace Laerdal.McuMgr.DeviceResetter
     {
         private readonly IOSDeviceResetter _iosDeviceResetter;
 
-        public DeviceResetter(CBPeripheral bleDevice)
+        public DeviceResetter(CBPeripheral bluetoothDevice)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
             
             _iosDeviceResetter = new IOSDeviceResetter(
                 listener: new IOSDeviceResetterListenerProxy(this),
-                cbPeripheral: bleDevice
+                cbPeripheral: bluetoothDevice
             );
         }
 

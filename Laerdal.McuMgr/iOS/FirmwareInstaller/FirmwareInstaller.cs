@@ -15,14 +15,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
     {
         private readonly IOSFirmwareInstaller _iosFirmwareInstallerProxy;
 
-        public FirmwareInstaller(CBPeripheral bleDevice)
+        public FirmwareInstaller(CBPeripheral bluetoothDevice)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
 
             _iosFirmwareInstallerProxy = new IOSFirmwareInstaller(
                 listener: new IOSFirmwareInstallerListenerProxy(this),
-                cbPeripheral: bleDevice
+                cbPeripheral: bluetoothDevice
             );
         }
 

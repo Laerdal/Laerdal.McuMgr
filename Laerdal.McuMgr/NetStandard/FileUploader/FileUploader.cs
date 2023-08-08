@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FileUploader
     /// <inheritdoc cref="IFileUploader"/>
     public partial class FileUploader : IFileUploader
     {
-        public FileUploader(object bleDevice) => throw new NotImplementedException();
+        public FileUploader(object bluetoothDevice) => throw new NotImplementedException();
 
         public string LastFatalErrorMessage => throw new NotImplementedException();
 

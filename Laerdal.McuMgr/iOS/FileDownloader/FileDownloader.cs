@@ -15,14 +15,14 @@ namespace Laerdal.McuMgr.FileDownloader
     {
         private readonly IOSFileDownloader _iosFileDownloaderProxy;
 
-        public FileDownloader(CBPeripheral bleDevice)
+        public FileDownloader(CBPeripheral bluetoothDevice)
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
 
             _iosFileDownloaderProxy = new IOSFileDownloader(
                 listener: new IOSFileDownloaderListenerProxy(this),
-                cbPeripheral: bleDevice
+                cbPeripheral: bluetoothDevice
             );
         }
 

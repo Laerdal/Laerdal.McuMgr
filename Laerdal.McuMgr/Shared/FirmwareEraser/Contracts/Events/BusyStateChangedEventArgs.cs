@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Laerdal.McuMgr.FirmwareEraser.Events
+namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Events
 {
     public sealed class BusyStateChangedEventArgs : EventArgs
     {

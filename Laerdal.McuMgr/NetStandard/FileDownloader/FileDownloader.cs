@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FileDownloader
     /// <inheritdoc cref="IFileDownloader"/>
     public partial class FileDownloader : IFileDownloader
     {
-        public FileDownloader(object bleDevice) => throw new NotImplementedException();
+        public FileDownloader(object bluetoothDevice) => throw new NotImplementedException();
 
         public string LastFatalErrorMessage => throw new NotImplementedException();
 

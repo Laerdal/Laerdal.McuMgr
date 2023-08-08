@@ -1,10 +1,15 @@
-<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
+﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
 
     <!-- SHARED -->
     <PropertyGroup>
+        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
+        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
+        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
+        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+
         <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
         <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
-        <TargetFrameworks Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
 
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -36,7 +41,6 @@
         <PackageDescription>Xamarin wrapper around Nordic's 'mcumgr-ble.aar' for iOS and Android.</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
-        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.314</PackageVersion>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -46,9 +50,11 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
-        <Version Condition=" '$(Version)' == '' ">1.0.0.0</Version>
-        <FileVersion Condition=" '$(FileVersion)' == '' ">1.0.0.0</FileVersion>
-        <AssemblyVersion Condition=" '$(AssemblyVersion)' == '' ">1.0.0.0</AssemblyVersion>
+        <!-- these versions are getting replaced by the build script in one swift pass --> 
+        <Version>1.0.515.0</Version>
+        <FileVersion>1.0.515.0</FileVersion>
+        <PackageVersion>1.0.515.0</PackageVersion>
+        <AssemblyVersion>1.0.515.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings</Summary>
@@ -143,12 +149,6 @@
 
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly otherwise the build will fail -->
         <PropertyGroup>
-            <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
-            <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
-            <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
-
-            <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
-
             <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@11 or /opt/homebrew/opt/openjdk@11 by default -->
             <JavaHome Condition=" '$(IsUnix)' == 'True' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@11')    ">/usr/local/opt/openjdk@11</JavaHome>
             <JavaHome Condition=" '$(IsUnix)' == 'True' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@11') ">/opt/homebrew/opt/openjdk@11</JavaHome>
