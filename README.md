@@ -23,7 +23,9 @@
 
    [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
 
+# Forward Licensing Disclaimer
 
+Read the LICENSE file before you begin.
 
 # Summary
 
