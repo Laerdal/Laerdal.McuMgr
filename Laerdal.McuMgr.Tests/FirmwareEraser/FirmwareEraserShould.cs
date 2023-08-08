@@ -41,16 +41,21 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             {
                 base.BeginErasure(imageIndex);
 
-                Task.Delay(10).GetAwaiter().GetResult();
-                StateChangedAdvertisement(EFirmwareErasureState.Idle, EFirmwareErasureState.Erasing);
+                Task.Run(() => //00 vital
+                {
+                    Task.Delay(10).GetAwaiter().GetResult();
+                    StateChangedAdvertisement(EFirmwareErasureState.Idle, EFirmwareErasureState.Erasing);
 
-                Task.Delay(20).GetAwaiter().GetResult();
-                StateChangedAdvertisement(EFirmwareErasureState.Erasing, EFirmwareErasureState.Complete);
+                    Task.Delay(20).GetAwaiter().GetResult();
+                    StateChangedAdvertisement(EFirmwareErasureState.Erasing, EFirmwareErasureState.Complete);
+                });
+                
+                //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native eraser
             }
         }
 
         [Fact]
-        public async Task ShouldErrorOut_GivenErroneousNativeFirmwareEraser()
+        public async Task ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFirmwareEraser()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedErroneousNativeFirmwareEraserProxy(new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy());
@@ -113,12 +118,6 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             public virtual void BeginErasure(int imageIndex)
             {
                 BeginErasureCalled = true;
-
-                Task.Delay(10).GetAwaiter().GetResult();
-                StateChangedAdvertisement(EFirmwareErasureState.Idle, EFirmwareErasureState.Erasing);
-
-                Task.Delay(20).GetAwaiter().GetResult();
-                StateChangedAdvertisement(EFirmwareErasureState.Erasing, EFirmwareErasureState.Complete);
             }
 
             public virtual void Disconnect()
