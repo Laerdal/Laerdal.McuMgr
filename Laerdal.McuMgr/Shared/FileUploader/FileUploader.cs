@@ -144,7 +144,7 @@ namespace Laerdal.McuMgr.FileUploader
                     StateChanged += UploadAsyncOnStateChanged;
                     FatalErrorOccurred += UploadAsyncOnFatalErrorOccurred;
 
-                    var verdict = BeginUpload(remoteFilePath, localData);
+                    var verdict = BeginUpload(remoteFilePath, localData); //00 dont use task.run here for now
                     if (verdict != IFileUploader.EFileUploaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
@@ -164,7 +164,7 @@ namespace Laerdal.McuMgr.FileUploader
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
                 }
-                catch (Exception ex) when (!(ex is UploadErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
+                catch (Exception ex) when (!(ex is UploadErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
                 {
                     throw new UploadErroredOutException(ex.Message, ex);
                 }
@@ -187,7 +187,7 @@ namespace Laerdal.McuMgr.FileUploader
                             taskCompletionSource.TrySetException(new UploadCancelledException());
                             return;
 
-                        case IFileUploader.EFileUploaderState.Cancelling: //00
+                        case IFileUploader.EFileUploaderState.Cancelling: //20
                             if (isCancellationRequested)
                                 return;
 
@@ -226,10 +226,14 @@ namespace Laerdal.McuMgr.FileUploader
             if (isCancellationRequested) //vital
                 throw new UploadCancelledException(); //10
 
-            //00  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
+            //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
+            //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
+            //
+            //10  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
             //
-            //10  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
+            //20  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
             //    in cases where the ble connection bites the dust and is unrecoverable because in that case the file uploader will just keep
             //    on trying in vain forever for like 50 retries or something and pressing the cancel button wont have any effect because
             //    the upload cannot commence to begin with

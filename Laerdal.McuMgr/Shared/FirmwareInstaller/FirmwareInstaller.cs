@@ -100,7 +100,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 StateChanged += FirmwareInstallationAsyncOnStateChanged;
                 FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
 
-                var verdict = BeginInstallation(
+                var verdict = BeginInstallation( //00 dont use task.run here for now
                     data: data,
                     mode: mode,
                     pipelineDepth: pipelineDepth,
@@ -117,7 +117,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (Exception ex) when (!(ex is FirmwareInstallationErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
+            catch (Exception ex) when (!(ex is FirmwareInstallationErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
             {
                 throw new FirmwareInstallationErroredOutException(ex.Message, ex);
             }
@@ -154,7 +154,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException(ea.ErrorMessage));
             }
             
-            //00  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
+            //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
+            //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
+            //
+            //10  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
