@@ -118,7 +118,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             }
             catch (Exception ex) when (!(ex is FirmwareErasureErroredOutException) && !(ex is TimeoutException)) //00 wops probably missing native lib symbols!
             {
-                throw new FirmwareErasureErroredOutException("[BUG] " + ex.Message, ex);
+                throw new FirmwareErasureErroredOutException(ex.Message, ex);
             }
             finally
             {
