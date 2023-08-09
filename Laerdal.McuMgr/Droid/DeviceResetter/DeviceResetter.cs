@@ -7,17 +7,19 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
+using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
-using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter
     {
-        private readonly AndroidDeviceResetter _androidDeviceResetter;
-
-        public DeviceResetter(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        public DeviceResetter(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
+        {
+        }
+        
+        static private INativeDeviceResetterProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
             if (bluetoothDevice == null)
                 throw new ArgumentNullException(nameof(bluetoothDevice));
@@ -26,47 +28,80 @@ namespace Laerdal.McuMgr.DeviceResetter
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidDeviceResetter = new AndroidDeviceResetterProxy(this, androidContext, bluetoothDevice);
+            return new AndroidNativeDeviceResetterAdapterProxy(new GenericNativeDeviceResetterCallbacksProxy(), androidContext, bluetoothDevice);
         }
 
-        public string LastFatalErrorMessage => _androidDeviceResetter?.LastFatalErrorMessage;
-
-        public EDeviceResetterState State => AndroidDeviceResetterProxy.TranslateEAndroidDeviceResetterState(
-            _androidDeviceResetter?.State ?? EAndroidDeviceResetterState.None
+        public EDeviceResetterState State => AndroidNativeDeviceResetterAdapterProxy.TranslateEAndroidDeviceResetterState(
+            (EAndroidDeviceResetterState)(_nativeDeviceResetterProxy?.State ?? EAndroidDeviceResetterState.None)
         );
-        
-        public void BeginReset() => _androidDeviceResetter.BeginReset();
-        public void Disconnect() => _androidDeviceResetter.Disconnect();
 
-        private sealed class AndroidDeviceResetterProxy : AndroidDeviceResetter
+        private sealed class AndroidNativeDeviceResetterAdapterProxy : AndroidDeviceResetter, INativeDeviceResetterProxy
         {
-            private readonly DeviceResetter _resetter;
+            private readonly INativeDeviceResetterCallbacksProxy _deviceResetterCallbacksProxy;
+
+            public IDeviceResetterEventEmitters DeviceResetter //keep this to conform to the interface
+            {
+                get => _deviceResetterCallbacksProxy?.DeviceResetter;
+                set
+                {
+                    if (_deviceResetterCallbacksProxy == null)
+                        return;
+
+                    _deviceResetterCallbacksProxy.DeviceResetter = value;
+                }
+            }
+
+            public new object State => base.State; //we convert the native state to a mere object because otherwise we would have to resort to generics 
 
             // ReSharper disable once UnusedMember.Local
-            private AndroidDeviceResetterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+            private AndroidNativeDeviceResetterAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             {
             }
 
-            internal AndroidDeviceResetterProxy(DeviceResetter resetter, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            internal AndroidNativeDeviceResetterAdapterProxy(INativeDeviceResetterCallbacksProxy deviceResetterCallbacksProxy, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
             {
-                _resetter = resetter ?? throw new ArgumentNullException(nameof(resetter));
+                _deviceResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy));
             }
 
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
                 
-                _resetter.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                _deviceResetterCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
             }
 
             public override void StateChangedAdvertisement(EAndroidDeviceResetterState oldState, EAndroidDeviceResetterState newState)
             {
                 base.StateChangedAdvertisement(oldState: oldState, currentState: newState);
-                
-                _resetter.OnStateChanged(new StateChangedEventArgs(
+
+                StateChangedAdvertisement(
                     newState: TranslateEAndroidDeviceResetterState(newState),
                     oldState: TranslateEAndroidDeviceResetterState(oldState)
-                ));
+                );
+            }
+
+            //keep this method to adhere to the interface
+            public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
+            {
+                _deviceResetterCallbacksProxy.StateChangedAdvertisement(newState, oldState);
+            }
+            
+            // todo   implement in this android too
+            // public override void LogMessageAdvertisement(string message, string category, string level)
+            // {
+            //     base.LogMessageAdvertisement(message, category, level);
+            //
+            //     LogMessageAdvertisement(
+            //         level: HelpersAndroid.TranslateEAndroidLogLevel(level),
+            //         message: message,
+            //         category: category
+            //     );
+            // }
+
+            //keep this override   its needed to conform to the interface
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level)
+            {
+                _deviceResetterCallbacksProxy.LogMessageAdvertisement(message, category, level);
             }
 
             static public EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)

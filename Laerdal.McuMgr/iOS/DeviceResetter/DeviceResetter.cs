@@ -5,7 +5,6 @@ using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
-using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.DeviceResetter
@@ -13,49 +12,87 @@ namespace Laerdal.McuMgr.DeviceResetter
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter
     {
-        private readonly IOSDeviceResetter _iosDeviceResetter;
+        public DeviceResetter(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
+        {
+        }
 
-        public DeviceResetter(CBPeripheral bluetoothDevice)
+        static private INativeDeviceResetterProxy ValidateArgumentsAndConstructProxy(CBPeripheral bluetoothDevice)
         {
             if (bluetoothDevice == null)
                 throw new ArgumentNullException(nameof(bluetoothDevice));
-            
-            _iosDeviceResetter = new IOSDeviceResetter(
-                listener: new IOSDeviceResetterListenerProxy(this),
-                cbPeripheral: bluetoothDevice
+
+            return new IOSNativeDeviceResetterProxy(
+                bluetoothDevice: bluetoothDevice,
+                deviceResetterCallbacksProxy: new GenericNativeDeviceResetterCallbacksProxy()
             );
         }
 
-        public string LastFatalErrorMessage => _iosDeviceResetter?.LastFatalErrorMessage;
-
-        public EDeviceResetterState State => IOSDeviceResetterListenerProxy.TranslateEIOSDeviceResetterState(_iosDeviceResetter?.State ?? EIOSDeviceResetterState.None);
-
-        public void BeginReset() => _iosDeviceResetter?.BeginReset();
-        public void Disconnect() => _iosDeviceResetter?.Disconnect();
+        public EDeviceResetterState State => IOSNativeDeviceResetterProxy.TranslateEIOSDeviceResetterState(
+            (EIOSDeviceResetterState)(_nativeDeviceResetterProxy?.State ?? EIOSDeviceResetterState.None)
+        );
 
         // ReSharper disable once InconsistentNaming
-        private sealed class IOSDeviceResetterListenerProxy : IOSListenerForDeviceResetter
+        private sealed class IOSNativeDeviceResetterProxy : IOSListenerForDeviceResetter, INativeDeviceResetterProxy
         {
-            private readonly DeviceResetter _resetter;
+            private readonly IOSDeviceResetter _deviceResetter;
+            private readonly INativeDeviceResetterCallbacksProxy _nativeResetterCallbacksProxy;
 
-            internal IOSDeviceResetterListenerProxy(DeviceResetter resetter)
+            internal IOSNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy deviceResetterCallbacksProxy, CBPeripheral bluetoothDevice)
             {
-                _resetter = resetter ?? throw new ArgumentNullException(nameof(resetter));
+                if (bluetoothDevice == null)
+                    throw new ArgumentNullException(paramName: nameof(bluetoothDevice));
+                
+                _nativeResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy)); //composition-over-inheritance
+
+                _deviceResetter = new IOSDeviceResetter(cbPeripheral: bluetoothDevice, listener: this); //composition-over-inheritance
             }
 
-            public override void LogMessageAdvertisement(string message, string category, string level) => _resetter.OnLogEmitted(new LogEmittedEventArgs(
-                level: HelpersIOS.TranslateEIOSLogLevel(level),
-                message: message,
-                category: category,
-                resource: "device-resetter"
-            ));
+            public object State => _deviceResetter?.State;
+            public string LastFatalErrorMessage => _deviceResetter?.LastFatalErrorMessage;
+            public void Disconnect() => _deviceResetter.Disconnect();
+            public void BeginReset() => _deviceResetter.BeginReset();
             
-            public override void FatalErrorOccurredAdvertisement(string errorMessage) => _resetter.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            public IDeviceResetterEventEmitters DeviceResetter //keep this to conform to the interface
+            {
+                get => _nativeResetterCallbacksProxy?.DeviceResetter;
+                set
+                {
+                    if (_nativeResetterCallbacksProxy == null)
+                        return;
 
-            public override void StateChangedAdvertisement(EIOSDeviceResetterState oldState, EIOSDeviceResetterState newState) => _resetter.OnStateChanged(new StateChangedEventArgs(
-                newState: TranslateEIOSDeviceResetterState(newState),
-                oldState: TranslateEIOSDeviceResetterState(oldState)
-            ));
+                    _nativeResetterCallbacksProxy.DeviceResetter = value;
+                }
+            }
+
+            //we are simply forwarding the calls up towards the surface world of csharp here
+            public override void LogMessageAdvertisement(string message, string category, string level)
+                => LogMessageAdvertisement(
+                    level: HelpersIOS.TranslateEIOSLogLevel(level),
+                    message: message,
+                    category: category
+                );
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level)
+                => _nativeResetterCallbacksProxy?.LogMessageAdvertisement(
+                    level: level,
+                    message: message,
+                    category: category
+                );
+
+            public override void StateChangedAdvertisement(EIOSDeviceResetterState oldState, EIOSDeviceResetterState newState)
+                => StateChangedAdvertisement(
+                    newState: TranslateEIOSDeviceResetterState(newState),
+                    oldState: TranslateEIOSDeviceResetterState(oldState)
+                );
+            public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
+                => _nativeResetterCallbacksProxy?.StateChangedAdvertisement(
+                    newState: newState,
+                    oldState: oldState
+                );
+
+            public override void FatalErrorOccurredAdvertisement(string errorMessage)
+                => _nativeResetterCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    errorMessage: errorMessage
+                );
 
             // ReSharper disable once InconsistentNaming
             static public EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch

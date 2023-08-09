@@ -13,12 +13,7 @@ namespace Laerdal.McuMgr.DeviceResetter
         {
             throw new NotImplementedException();
         }
-
-        public string LastFatalErrorMessage => throw new NotImplementedException();
         
         public EDeviceResetterState State => throw new NotImplementedException();
-
-        public void BeginReset() => throw new NotImplementedException();
-        public void Disconnect() => throw new NotImplementedException();
     }
 }
