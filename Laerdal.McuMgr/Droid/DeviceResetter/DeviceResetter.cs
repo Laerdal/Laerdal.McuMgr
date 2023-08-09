@@ -85,18 +85,17 @@ namespace Laerdal.McuMgr.DeviceResetter
             {
                 _deviceResetterCallbacksProxy.StateChangedAdvertisement(newState, oldState);
             }
-            
-            // todo   implement in this android too
-            // public override void LogMessageAdvertisement(string message, string category, string level)
-            // {
-            //     base.LogMessageAdvertisement(message, category, level);
-            //
-            //     LogMessageAdvertisement(
-            //         level: HelpersAndroid.TranslateEAndroidLogLevel(level),
-            //         message: message,
-            //         category: category
-            //     );
-            // }
+
+            public override void LogMessageAdvertisement(string message, string category, string level)
+            {
+                base.LogMessageAdvertisement(message, category, level);
+
+                LogMessageAdvertisement(
+                    level: HelpersAndroid.TranslateEAndroidLogLevel(level),
+                    message: message,
+                    category: category
+                );
+            }
 
             //keep this override   its needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
