@@ -96,20 +96,19 @@
     </ItemGroup>
 
     <!-- NETSTANDARD -->
-    <PropertyGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-    </PropertyGroup>
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+        <Compile Include="NetStandard\**\*.cs" />
+    </ItemGroup>
+
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
         <AndroidLinkMode>Full</AndroidLinkMode>
     </PropertyGroup>
+
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
         <AndroidLinkMode>Full</AndroidLinkMode>
     </PropertyGroup>
-
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-        <Compile Include="NetStandard\**\*.cs" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.515.0" />
