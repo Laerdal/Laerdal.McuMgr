@@ -7,7 +7,7 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
-using Laerdal.McuMgr.DeviceResetter.Events;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {

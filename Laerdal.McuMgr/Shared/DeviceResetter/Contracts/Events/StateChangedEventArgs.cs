@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Laerdal.McuMgr.DeviceResetter.Events
+namespace Laerdal.McuMgr.DeviceResetter.Contracts.Events
 {
     public sealed class StateChangedEventArgs : EventArgs
     {

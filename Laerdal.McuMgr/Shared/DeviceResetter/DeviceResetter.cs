@@ -4,8 +4,8 @@
 using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.DeviceResetter.Events;
-using Laerdal.McuMgr.DeviceResetter.Exceptions;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {

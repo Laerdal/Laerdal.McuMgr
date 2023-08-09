@@ -1,6 +1,6 @@
 using System;
 
-namespace Laerdal.McuMgr.DeviceResetter.Exceptions
+namespace Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions
 {
     public sealed class DeviceResetterErroredOutException : Exception
     {

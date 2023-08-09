@@ -19,7 +19,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
     public partial class FirmwareEraser : IFirmwareEraser
     {
         public FirmwareEraser(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
-        { 
+        {
         }
 
         static private INativeFirmwareEraserProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
@@ -102,7 +102,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             public override void LogMessageAdvertisement(string message, string category, string level)
             {
                 base.LogMessageAdvertisement(message, category, level);
-
+            
                 LogMessageAdvertisement(
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
                     message: message,

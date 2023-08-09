@@ -4,7 +4,7 @@
 using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.DeviceResetter.Events;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.DeviceResetter
