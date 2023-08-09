@@ -4,6 +4,7 @@
 using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using McuMgrBindingsiOS;
 
@@ -27,7 +28,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
         public string LastFatalErrorMessage => _iosDeviceResetter?.LastFatalErrorMessage;
 
-        public IDeviceResetter.EDeviceResetterState State => IOSDeviceResetterListenerProxy.TranslateEIOSDeviceResetterState(_iosDeviceResetter?.State ?? EIOSDeviceResetterState.None);
+        public EDeviceResetterState State => IOSDeviceResetterListenerProxy.TranslateEIOSDeviceResetterState(_iosDeviceResetter?.State ?? EIOSDeviceResetterState.None);
 
         public void BeginReset() => _iosDeviceResetter?.BeginReset();
         public void Disconnect() => _iosDeviceResetter?.Disconnect();
@@ -57,13 +58,13 @@ namespace Laerdal.McuMgr.DeviceResetter
             ));
 
             // ReSharper disable once InconsistentNaming
-            static public IDeviceResetter.EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch
+            static public EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch
             {
-                EIOSDeviceResetterState.None => IDeviceResetter.EDeviceResetterState.None,
-                EIOSDeviceResetterState.Idle => IDeviceResetter.EDeviceResetterState.Idle,
-                EIOSDeviceResetterState.Failed => IDeviceResetter.EDeviceResetterState.Failed,
-                EIOSDeviceResetterState.Complete => IDeviceResetter.EDeviceResetterState.Complete,
-                EIOSDeviceResetterState.Resetting => IDeviceResetter.EDeviceResetterState.Resetting,
+                EIOSDeviceResetterState.None => EDeviceResetterState.None,
+                EIOSDeviceResetterState.Idle => EDeviceResetterState.Idle,
+                EIOSDeviceResetterState.Failed => EDeviceResetterState.Failed,
+                EIOSDeviceResetterState.Complete => EDeviceResetterState.Complete,
+                EIOSDeviceResetterState.Resetting => EDeviceResetterState.Resetting,
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
             };
         }

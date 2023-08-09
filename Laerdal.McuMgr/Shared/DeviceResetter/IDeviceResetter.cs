@@ -4,21 +4,13 @@
 using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {
     public interface IDeviceResetter
     {
-        public enum EDeviceResetterState
-        {
-            None = 0,
-            Idle = 1,
-            Resetting = 2,
-            Complete = 3,
-            Failed = 4
-        }
-        
         event EventHandler<LogEmittedEventArgs> LogEmitted;
         event EventHandler<StateChangedEventArgs> StateChanged;
         event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred;

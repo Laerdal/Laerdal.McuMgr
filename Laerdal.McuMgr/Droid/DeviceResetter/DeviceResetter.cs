@@ -7,6 +7,7 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter
@@ -30,7 +31,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
         public string LastFatalErrorMessage => _androidDeviceResetter?.LastFatalErrorMessage;
 
-        public IDeviceResetter.EDeviceResetterState State => AndroidDeviceResetterProxy.TranslateEAndroidDeviceResetterState(
+        public EDeviceResetterState State => AndroidDeviceResetterProxy.TranslateEAndroidDeviceResetterState(
             _androidDeviceResetter?.State ?? EAndroidDeviceResetterState.None
         );
         
@@ -68,31 +69,31 @@ namespace Laerdal.McuMgr.DeviceResetter
                 ));
             }
 
-            static public IDeviceResetter.EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
+            static public EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
             {
                 if (state == EAndroidDeviceResetterState.None)
                 {
-                    return IDeviceResetter.EDeviceResetterState.None;
+                    return EDeviceResetterState.None;
                 }
                 
                 if (state == EAndroidDeviceResetterState.Idle)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Idle;
+                    return EDeviceResetterState.Idle;
                 }
 
                 if (state == EAndroidDeviceResetterState.Resetting)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Resetting;
+                    return EDeviceResetterState.Resetting;
                 }
 
                 if (state == EAndroidDeviceResetterState.Complete)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Complete;
+                    return EDeviceResetterState.Complete;
                 }
                 
                 if (state == EAndroidDeviceResetterState.Failed)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Failed;
+                    return EDeviceResetterState.Failed;
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);

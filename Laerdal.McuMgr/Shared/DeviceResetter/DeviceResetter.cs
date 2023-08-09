@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
 
@@ -75,7 +76,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             void ResetAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
+                if (ea.NewState != EDeviceResetterState.Complete)
                     return;
                 
                 taskCompletionSource.TrySetResult(true);

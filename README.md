@@ -334,7 +334,7 @@ private void DeviceResetter_Error(object sender, DeviceResetter.Events.ErrorEven
 private void DeviceResetter_StateChanged(object sender, DeviceResetter.Events.StateChangedEventArgs ea)
 {
     DeviceResettingStage = ea.NewState.ToString();
-    if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
+    if (ea.NewState != EDeviceResetterState.Complete)
         return;
 
     ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
