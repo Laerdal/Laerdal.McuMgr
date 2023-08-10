@@ -154,6 +154,17 @@ namespace Laerdal.McuMgr.FileDownloader
                         ? await taskCompletionSource.Task
                         : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutForDownloadInMs);
                 }
+                catch (Exception ex) when (!(ex is DownloadErroredOutException) && !(ex is TimeoutException) && !(ex is ArgumentException)) //10 wops probably missing native lib symbols!
+                {
+                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: IFileDownloader.EFileDownloaderState.None,
+                        newState: IFileDownloader.EFileDownloaderState.Error
+                    ));
+
+                    //OnFatalErrorOccurred(); //better not   it would be a bit confusing to have the error reported in two different ways
+                
+                    throw new DownloadErroredOutException(ex.Message, ex);
+                }
                 catch (DownloadErroredOutException ex)
                 {
                     if (ex is DownloadErroredOutRemoteFileNotFoundException) //no point to retry if the remote file is not there
@@ -167,10 +178,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
                 }
-                catch (Exception ex) when (!(ex is DownloadErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
-                {
-                    throw new DownloadErroredOutException(ex.Message, ex);
-                }
+
                 finally
                 {
                     Cancelled -= DownloadAsyncOnCancelled;

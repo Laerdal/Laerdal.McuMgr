@@ -154,6 +154,18 @@ namespace Laerdal.McuMgr.FileUploader
 
                     break;
                 }
+                catch (Exception ex) when (!(ex is UploadErroredOutException) && !(ex is TimeoutException) && !(ex is ArgumentException)) //10 wops probably missing native lib symbols!
+                {
+                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: IFileUploader.EFileUploaderState.None,
+                        newState: IFileUploader.EFileUploaderState.Error,
+                        remoteFilePath: remoteFilePath
+                    ));
+
+                    // OnFatalErrorOccurred(); //better not   it would be a bit confusing to have the error reported in two different ways
+
+                    throw new UploadErroredOutException(ex.Message, ex);
+                }
                 catch (UploadErroredOutException ex) //errors with codes unknown(1) and in_value(3) happen all the time in android when multiuploading files
                 {
                     if (++retry > maxRetriesPerUpload)
@@ -163,10 +175,6 @@ namespace Laerdal.McuMgr.FileUploader
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
-                }
-                catch (Exception ex) when (!(ex is UploadErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
-                {
-                    throw new UploadErroredOutException(ex.Message, ex);
                 }
                 finally
                 {
