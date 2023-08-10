@@ -5,8 +5,10 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
 using Xunit;
+using GenericNativeDeviceResetterCallbacksProxy_ = Laerdal.McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter
 {
@@ -16,8 +18,10 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ShouldCompleteSuccessfully_GivenGreenNativeDeviceResetter()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxy(new McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy());
-            var deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
+            var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
+            
+            using var eventsMonitor = deviceResetter.Monitor();
 
             // Act
             var work = new Func<Task>(() => deviceResetter.ResetAsync());
@@ -27,6 +31,9 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();
+            
+            eventsMonitor.Should().Raise(nameof(deviceResetter.StateChanged));
+            eventsMonitor.Should().NotRaise(nameof(deviceResetter.FatalErrorOccurred));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -44,10 +51,10 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 Task.Run(() => //00 vital
                 {
                     Task.Delay(10).GetAwaiter().GetResult();
-                    StateChangedAdvertisement(EDeviceResetterState.Idle, EDeviceResetterState.Resetting);
+                    StateChangedAdvertisement(oldState: EDeviceResetterState.Idle, newState: EDeviceResetterState.Resetting);
 
-                    Task.Delay(20).GetAwaiter().GetResult();
-                    StateChangedAdvertisement(EDeviceResetterState.Resetting, EDeviceResetterState.Complete);
+                    Task.Delay(1_000).GetAwaiter().GetResult();
+                    StateChangedAdvertisement(oldState: EDeviceResetterState.Resetting, newState: EDeviceResetterState.Complete);
                 });
                 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native resetter
@@ -55,27 +62,38 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         }
 
         [Fact]
-        public async Task ShouldThrowDeviceResetterErroredOutException_GivenErroneousNativeDeviceResetter()
+        public async Task ShouldThrowDeviceResetterErroredOutException_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedErroneousNativeDeviceResetterProxy(new Laerdal.McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy());
-            var deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
+            var mockedNativeDeviceResetterProxy = new MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
+            using var eventsMonitor = deviceResetter.Monitor();
 
             // Act
             var work = new Func<Task>(() => deviceResetter.ResetAsync());
 
             // Assert
-            (await work.Should().ThrowAsync<DeviceResetterErroredOutException>()).WithInnerExceptionExactly<Exception>("foobar");
+            (await work.Should().ThrowExactlyAsync<DeviceResetterErroredOutException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();
 
+            eventsMonitor
+                .Should().Raise(nameof(deviceResetter.StateChanged))
+                .WithSender(deviceResetter)
+                .WithArgs<StateChangedEventArgs>(args => args.NewState == EDeviceResetterState.Failed);
+
+            eventsMonitor
+                .Should().Raise(nameof(deviceResetter.FatalErrorOccurred))
+                .WithSender(deviceResetter)
+                .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "native symbols not loaded blah blah");
+
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousNativeDeviceResetterProxy : MockedNativeDeviceResetterProxy
+        private class MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxy : MockedNativeDeviceResetterProxy
         {
-            public MockedErroneousNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
+            public MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
             {
             }
 
@@ -85,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 
                 Thread.Sleep(100);
 
-                throw new Exception("foobar");
+                throw new Exception("native symbols not loaded blah blah");
             }
         }
         
@@ -93,11 +111,12 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ShouldThrowTimeoutException_GivenTooSmallTimeout()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxy(new Laerdal.McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy());
-            var deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
-
+            var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
+            using var eventsMonitor = deviceResetter.Monitor();
+            
             // Act
-            var work = new Func<Task>(() => deviceResetter.ResetAsync(timeoutInMs: 1));
+            var work = new Func<Task>(() => deviceResetter.ResetAsync(timeoutInMs: 200));
 
             // Assert
             await work.Should().ThrowAsync<TimeoutException>();
@@ -105,6 +124,13 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();
 
+            eventsMonitor
+                .Should().Raise(nameof(deviceResetter.StateChanged))
+                .WithSender(deviceResetter)
+                .WithArgs<StateChangedEventArgs>(args => args.NewState == EDeviceResetterState.Resetting);
+
+            eventsMonitor.Should().NotRaise(nameof(deviceResetter.FatalErrorOccurred));
+            
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
