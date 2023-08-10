@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             return new IOSNativeDeviceResetterProxy(
                 bluetoothDevice: bluetoothDevice,
-                deviceResetterCallbacksProxy: new GenericNativeDeviceResetterCallbacksProxy()
+                nativeResetterCallbacksProxy: new GenericNativeDeviceResetterCallbacksProxy()
             );
         }
 
@@ -37,20 +37,20 @@ namespace Laerdal.McuMgr.DeviceResetter
             private readonly IOSDeviceResetter _deviceResetter;
             private readonly INativeDeviceResetterCallbacksProxy _nativeResetterCallbacksProxy;
 
-            internal IOSNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy deviceResetterCallbacksProxy, CBPeripheral bluetoothDevice)
+            internal IOSNativeDeviceResetterProxy(CBPeripheral bluetoothDevice, INativeDeviceResetterCallbacksProxy nativeResetterCallbacksProxy)
             {
-                if (bluetoothDevice == null)
-                    throw new ArgumentNullException(paramName: nameof(bluetoothDevice));
-                
-                _nativeResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy)); //composition-over-inheritance
+                bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+                nativeResetterCallbacksProxy = nativeResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeResetterCallbacksProxy));
 
-                _deviceResetter = new IOSDeviceResetter(cbPeripheral: bluetoothDevice, listener: this); //composition-over-inheritance
+                _deviceResetter = new IOSDeviceResetter(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeResetterCallbacksProxy = nativeResetterCallbacksProxy; //composition-over-inheritance
             }
 
             public object State => _deviceResetter?.State;
             public string LastFatalErrorMessage => _deviceResetter?.LastFatalErrorMessage;
-            public void Disconnect() => _deviceResetter.Disconnect();
-            public void BeginReset() => _deviceResetter.BeginReset();
+
+            public void Disconnect() => _deviceResetter?.Disconnect();
+            public void BeginReset() => _deviceResetter?.BeginReset();
             
             public IDeviceResetterEventEmitters DeviceResetter //keep this to conform to the interface
             {

@@ -66,6 +66,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="DeviceResetter\DeviceResetterShould.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserShould.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
