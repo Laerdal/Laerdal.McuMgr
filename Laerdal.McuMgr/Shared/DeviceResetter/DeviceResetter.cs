@@ -106,7 +106,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                     newState: EDeviceResetterState.Failed
                 ));
 
-                (this as IDeviceResetterEventEmitters).OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(ex.Message)); //for consistency
+                //OnFatalErrorOccurred();  //better not   it would be a bit confusing to have the error reported in two different ways
                 
                 throw new DeviceResetterErroredOutException(ex.Message, innerException: ex);
             }
