@@ -101,7 +101,14 @@ namespace Laerdal.McuMgr.DeviceResetter
             }
             catch (Exception ex) when (!(ex is DeviceResetterErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
             {
-                throw new DeviceResetterErroredOutException(ex.Message, ex);
+                (this as IDeviceResetterEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EDeviceResetterState.None,
+                    newState: EDeviceResetterState.Failed
+                ));
+
+                (this as IDeviceResetterEventEmitters).OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(ex.Message)); //for consistency
+                
+                throw new DeviceResetterErroredOutException(ex.Message, innerException: ex);
             }
             finally
             {
