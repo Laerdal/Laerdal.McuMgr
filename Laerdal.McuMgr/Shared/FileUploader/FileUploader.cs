@@ -164,7 +164,11 @@ namespace Laerdal.McuMgr.FileUploader
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
                 }
-                catch (Exception ex) when (!(ex is UploadErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
+                catch (Exception ex) when (
+                    !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                    && !(ex is TimeoutException)
+                    && !(ex is UploadErroredOutException)
+                )
                 {
                     throw new UploadErroredOutException(ex.Message, ex);
                 }

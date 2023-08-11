@@ -167,7 +167,11 @@ namespace Laerdal.McuMgr.FileDownloader
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
                 }
-                catch (Exception ex) when (!(ex is DownloadErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
+                catch (Exception ex) when (
+                    !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                    && !(ex is TimeoutException)
+                    && !(ex is DownloadErroredOutException)
+                )
                 {
                     throw new DownloadErroredOutException(ex.Message, ex);
                 }

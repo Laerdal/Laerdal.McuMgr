@@ -116,7 +116,11 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (Exception ex) when (!(ex is FirmwareErasureErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
+            catch (Exception ex) when (
+                !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                && !(ex is TimeoutException)
+                && !(ex is FirmwareErasureErroredOutException)
+            )
             {
                 throw new FirmwareErasureErroredOutException(ex.Message, ex);
             }

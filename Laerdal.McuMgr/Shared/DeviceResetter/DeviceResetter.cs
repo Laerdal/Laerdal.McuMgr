@@ -99,7 +99,11 @@ namespace Laerdal.McuMgr.DeviceResetter
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (Exception ex) when (!(ex is DeviceResetterErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
+            catch (Exception ex) when (
+                !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                && !(ex is TimeoutException)
+                && !(ex is DeviceResetterErroredOutException)
+            )
             {
                 throw new DeviceResetterErroredOutException(ex.Message, ex);
             }
