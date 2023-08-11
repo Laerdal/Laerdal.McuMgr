@@ -162,7 +162,7 @@ namespace Laerdal.McuMgr.FileUploader
                         remoteFilePath: remoteFilePath
                     ));
 
-                    throw; // todo   better throw our our custom timeout exception
+                    throw; // todo   better throw our own custom timeout exception here
                 }
                 catch (UploadErroredOutException ex) //errors with codes unknown(1) and in_value(3) happen all the time in android when multiuploading files
                 {
@@ -180,6 +180,14 @@ namespace Laerdal.McuMgr.FileUploader
                     && !(ex is UploadErroredOutException)
                 )
                 {
+                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: IFileUploader.EFileUploaderState.None,
+                        newState: IFileUploader.EFileUploaderState.Error,
+                        remoteFilePath: remoteFilePath
+                    ));
+
+                    // OnFatalErrorOccurred(); //better not   too much fuss
+                    
                     throw new UploadErroredOutException(ex.Message, ex); //todo   better throw our own custom internal error exception here
                 }
                 finally

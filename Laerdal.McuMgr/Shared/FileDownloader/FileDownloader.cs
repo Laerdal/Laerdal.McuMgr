@@ -160,7 +160,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         oldState: IFileDownloader.EFileDownloaderState.None, //better not use this.State here because the native call might fail
                         newState: IFileDownloader.EFileDownloaderState.Error
                     ));
-                
+
                     throw; // todo   better throw our our custom timeout exception
                 }
                 catch (DownloadErroredOutException ex)
@@ -182,6 +182,13 @@ namespace Laerdal.McuMgr.FileDownloader
                     && !(ex is DownloadErroredOutException)
                 )
                 {
+                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: IFileDownloader.EFileDownloaderState.None,
+                        newState: IFileDownloader.EFileDownloaderState.Error
+                    ));
+
+                    //OnFatalErrorOccurred(); //not worth it in this case  
+
                     throw new DownloadErroredOutException(ex.Message, ex);
                 }
                 finally

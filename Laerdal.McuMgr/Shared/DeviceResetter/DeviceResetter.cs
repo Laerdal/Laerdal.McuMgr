@@ -114,7 +114,14 @@ namespace Laerdal.McuMgr.DeviceResetter
                 && !(ex is DeviceResetterErroredOutException)
             )
             {
-                throw new DeviceResetterErroredOutException(ex.Message, ex);
+                (this as IDeviceResetterEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EDeviceResetterState.None,
+                    newState: EDeviceResetterState.Failed
+                ));
+
+                //OnFatalErrorOccurred();  //better not   it would be a bit confusing to have the error reported in two different ways
+                
+                throw new DeviceResetterErroredOutException(ex.Message, innerException: ex);
             }
             finally
             {

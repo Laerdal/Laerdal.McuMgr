@@ -24,7 +24,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
 
             return new IOSNativeFirmwareEraserProxy(
                 bluetoothDevice: bluetoothDevice,
-                eraserCallbacksProxy: new GenericNativeFirmwareEraserCallbacksProxy()
+                nativeFirmwareEraserCallbacksProxy: new GenericNativeFirmwareEraserCallbacksProxy()
             );
         }
 
@@ -34,14 +34,13 @@ namespace Laerdal.McuMgr.FirmwareEraser
             private readonly IOSFirmwareEraser _firmwareEraser;
             private readonly INativeFirmwareEraserCallbacksProxy _nativeFirmwareEraserCallbacksProxy;
 
-            internal IOSNativeFirmwareEraserProxy(INativeFirmwareEraserCallbacksProxy eraserCallbacksProxy, CBPeripheral bluetoothDevice)
+            internal IOSNativeFirmwareEraserProxy(CBPeripheral bluetoothDevice, INativeFirmwareEraserCallbacksProxy nativeFirmwareEraserCallbacksProxy)
             {
-                if (bluetoothDevice == null)
-                    throw new ArgumentNullException(paramName: nameof(bluetoothDevice));
-                
-                _nativeFirmwareEraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
+                bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+                nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserCallbacksProxy));
 
-                _firmwareEraser = new IOSFirmwareEraser(cbPeripheral: bluetoothDevice, listener: this); //composition-over-inheritance
+                _firmwareEraser = new IOSFirmwareEraser(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserCallbacksProxy)); //composition-over-inheritance
             }
 
             #region INativeFirmwareEraserCommandsProxy
