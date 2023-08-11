@@ -99,6 +99,15 @@ namespace Laerdal.McuMgr.DeviceResetter
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
+            catch (TimeoutException)
+            {
+                (this as IDeviceResetterEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EDeviceResetterState.None, //better not use this.State here because the native call might fail
+                    newState: EDeviceResetterState.Failed
+                ));
+                
+                throw; // todo   better throw our our custom timeout exception
+            }
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!
                 && !(ex is TimeoutException)
