@@ -463,7 +463,7 @@ private void CleanupDeviceResetter()
             );
             return;
         }
-        catch (TimeoutException) //order
+        catch (UploadTimeoutException) //order
         {
             App.DisplayAlert(
                 title: "File-Upload Failed",

@@ -117,14 +117,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
                 OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: IFirmwareInstaller.EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
                     newState: IFirmwareInstaller.EFirmwareInstallationState.Error
                 ));
 
-                throw; // todo   better throw our our custom timeout exception
+                throw new FirmwareInstallationTimeoutException(timeoutInMs, ex);
             }
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!

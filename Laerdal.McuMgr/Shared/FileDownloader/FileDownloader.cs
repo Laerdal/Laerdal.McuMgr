@@ -154,14 +154,14 @@ namespace Laerdal.McuMgr.FileDownloader
                         ? await taskCompletionSource.Task
                         : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutForDownloadInMs);
                 }
-                catch (TimeoutException)
+                catch (TimeoutException ex)
                 {
                     OnStateChanged(new StateChangedEventArgs( //for consistency
                         oldState: IFileDownloader.EFileDownloaderState.None, //better not use this.State here because the native call might fail
                         newState: IFileDownloader.EFileDownloaderState.Error
                     ));
 
-                    throw; // todo   better throw our our custom timeout exception
+                    throw new DownloadTimeoutException(remoteFilePath, timeoutForDownloadInMs, ex);
                 }
                 catch (DownloadErroredOutException ex)
                 {

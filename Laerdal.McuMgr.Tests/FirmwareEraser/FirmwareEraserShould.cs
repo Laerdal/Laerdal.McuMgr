@@ -103,16 +103,16 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2, timeoutInMs: 100));
 
             // Assert
-            await work.Should().ThrowAsync<TimeoutException>();
+            await work.Should().ThrowAsync<FirmwareErasureTimeoutException>();
 
             mockedNativeFirmwareEraserProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareEraserProxy.BeginErasureCalled.Should().BeTrue();
-            
+
             eventsMonitor
                 .Should().Raise(nameof(firmwareEraser.StateChanged))
                 .WithSender(firmwareEraser)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareErasureState.Erasing);
-            
+
             eventsMonitor
                 .Should().Raise(nameof(firmwareEraser.StateChanged))
                 .WithSender(firmwareEraser)

@@ -1,5 +1,3 @@
-using System;
-
 namespace Laerdal.McuMgr.FileUploader.Exceptions
 {
     public sealed class UploadErroredOutRemoteFolderNotFoundException : UploadErroredOutException

@@ -115,14 +115,14 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
                 (this as IFirmwareEraserEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EFirmwareErasureState.None, //better not use this.State here because the native call might fail
                     newState: EFirmwareErasureState.Failed
                 ));
 
-                throw; // todo   better throw our our custom timeout exception
+                throw new FirmwareErasureTimeoutException(timeoutInMs, ex);
             }
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!
