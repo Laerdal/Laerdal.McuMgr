@@ -105,8 +105,8 @@ namespace Laerdal.McuMgr.DeviceResetter
                     oldState: EDeviceResetterState.None, //better not use this.State here because the native call might fail
                     newState: EDeviceResetterState.Failed
                 ));
-                
-                throw; // todo   better throw our our custom timeout exception
+
+                throw new DeviceResetTimeoutException(timeoutInMs);
             }
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!
