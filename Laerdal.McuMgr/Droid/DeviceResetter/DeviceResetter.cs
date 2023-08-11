@@ -83,7 +83,10 @@ namespace Laerdal.McuMgr.DeviceResetter
             //keep this method to adhere to the interface
             public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
             {
-                _deviceResetterCallbacksProxy.StateChangedAdvertisement(newState, oldState);
+                _deviceResetterCallbacksProxy.StateChangedAdvertisement(
+                    oldState: oldState,
+                    newState: newState
+                );
             }
 
             public override void LogMessageAdvertisement(string message, string category, string level)
