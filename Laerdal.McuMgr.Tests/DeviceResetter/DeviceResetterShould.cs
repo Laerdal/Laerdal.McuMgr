@@ -18,7 +18,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ShouldCompleteSuccessfully_GivenGreenNativeDeviceResetter()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
             
             using var eventsMonitor = deviceResetter.Monitor();
@@ -38,9 +38,9 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeDeviceResetterProxy : MockedNativeDeviceResetterProxy
+        private class MockedGreenNativeDeviceResetterProxySpy : MockedNativeDeviceResetterProxySpy
         {
-            public MockedGreenNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
+            public MockedGreenNativeDeviceResetterProxySpy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
             {
             }
 
@@ -65,7 +65,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ShouldThrowDeviceResetterErroredOutException_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var mockedNativeDeviceResetterProxy = new MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
             using var eventsMonitor = deviceResetter.Monitor();
 
@@ -94,9 +94,9 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             //   exotic that its not worth it to complicate matters so much 
         }
 
-        private class MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxy : MockedNativeDeviceResetterProxy
+        private class MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxySpy : MockedNativeDeviceResetterProxySpy
         {
-            public MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
+            public MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxySpy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
             {
             }
 
@@ -114,7 +114,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ShouldThrowDeviceResetterErroredOutException_GivenBluetoothErrorDuringReset()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedErroneousDueToBluetoothNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var mockedNativeDeviceResetterProxy = new MockedErroneousDueToBluetoothNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
             using var eventsMonitor = deviceResetter.Monitor();
 
@@ -143,9 +143,9 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousDueToBluetoothNativeDeviceResetterProxy : MockedNativeDeviceResetterProxy
+        private class MockedErroneousDueToBluetoothNativeDeviceResetterProxySpy : MockedNativeDeviceResetterProxySpy
         {
-            public MockedErroneousDueToBluetoothNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
+            public MockedErroneousDueToBluetoothNativeDeviceResetterProxySpy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
             {
             }
 
@@ -171,7 +171,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ShouldThrowTimeoutException_GivenTooSmallTimeout()
         {
             // Arrange
-            var mockedNativeDeviceResetterProxy = new MockedGreenButSlowNativeDeviceResetterProxy(new GenericNativeDeviceResetterCallbacksProxy_());
+            var mockedNativeDeviceResetterProxy = new MockedGreenButSlowNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
             using var eventsMonitor = deviceResetter.Monitor();
             
@@ -189,14 +189,19 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 .WithSender(deviceResetter)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EDeviceResetterState.Resetting);
 
+            eventsMonitor
+                .Should().Raise(nameof(deviceResetter.StateChanged))
+                .WithSender(deviceResetter)
+                .WithArgs<StateChangedEventArgs>(args => args.NewState == EDeviceResetterState.Failed);
+
             eventsMonitor.Should().NotRaise(nameof(deviceResetter.FatalErrorOccurred));
             
             //00 we dont want to disconnect the device regardless of the outcome
         }
         
-        private class MockedGreenButSlowNativeDeviceResetterProxy : MockedNativeDeviceResetterProxy
+        private class MockedGreenButSlowNativeDeviceResetterProxySpy : MockedNativeDeviceResetterProxySpy
         {
-            public MockedGreenButSlowNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
+            public MockedGreenButSlowNativeDeviceResetterProxySpy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
             {
             }
 
@@ -217,7 +222,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             }
         }
 
-        private class MockedNativeDeviceResetterProxy : INativeDeviceResetterProxy
+        private class MockedNativeDeviceResetterProxySpy : INativeDeviceResetterProxy
         {
             private readonly INativeDeviceResetterCallbacksProxy _resetterCallbacksProxy;
 
@@ -240,7 +245,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 }
             }
 
-            protected MockedNativeDeviceResetterProxy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy)
+            protected MockedNativeDeviceResetterProxySpy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy)
             {
                 _resetterCallbacksProxy = resetterCallbacksProxy;
             }

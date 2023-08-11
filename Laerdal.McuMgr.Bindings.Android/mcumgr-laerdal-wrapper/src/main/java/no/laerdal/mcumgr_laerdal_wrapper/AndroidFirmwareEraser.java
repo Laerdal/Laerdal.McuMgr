@@ -2,11 +2,8 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-
 import androidx.annotation.NonNull;
-
 import io.runtime.mcumgr.McuMgrCallback;
-import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
@@ -38,6 +35,13 @@ public class AndroidFirmwareEraser {
         _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrResponse>() {
             @Override
             public void onResponse(@NonNull final McuMgrResponse response) {
+                if (!response.isSuccess()) { // check for an error return code
+                    fatalErrorOccurredAdvertisement("Erasure failed (error-code '" + response.getReturnCode().toString() + "')");
+
+                    setState(EAndroidFirmwareEraserState.FAILED);
+                    return;
+                }
+
                 readImageErasure();
 
                 setState(EAndroidFirmwareEraserState.COMPLETE);
@@ -45,7 +49,7 @@ public class AndroidFirmwareEraser {
 
             @Override
             public void onError(@NonNull final McuMgrException error) {
-                fatalErrorOccurredAdvertisement(error.getMessage());
+                fatalErrorOccurredAdvertisement("Erasure failed '" + error.getMessage() + "'");
 
                 busyStateChangedAdvertisement(false);
 

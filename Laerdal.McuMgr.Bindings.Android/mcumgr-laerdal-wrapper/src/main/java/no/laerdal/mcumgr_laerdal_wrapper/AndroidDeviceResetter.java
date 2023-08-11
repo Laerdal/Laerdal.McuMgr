@@ -2,17 +2,14 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-
 import androidx.annotation.NonNull;
-
-import org.jetbrains.annotations.NotNull;
-
 import io.runtime.mcumgr.McuMgrCallback;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
 import io.runtime.mcumgr.response.McuMgrResponse;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class AndroidDeviceResetter {

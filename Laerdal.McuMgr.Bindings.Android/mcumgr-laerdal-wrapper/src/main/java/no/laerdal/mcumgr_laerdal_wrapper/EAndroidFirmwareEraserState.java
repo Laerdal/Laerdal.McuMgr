@@ -4,5 +4,6 @@ public enum EAndroidFirmwareEraserState {
     NONE,
     IDLE,
     ERASING,
-    COMPLETE
+    COMPLETE,
+    FAILED
 }

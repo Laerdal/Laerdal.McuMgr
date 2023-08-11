@@ -139,6 +139,11 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     return EFirmwareErasureState.Complete;
                 }
                 
+                if (state == EAndroidFirmwareEraserState.Failed)
+                {
+                    return EFirmwareErasureState.Failed;
+                }
+                
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);
             }
         }
