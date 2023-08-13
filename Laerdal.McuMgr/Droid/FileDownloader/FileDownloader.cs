@@ -2,167 +2,171 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
-
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts;
-using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
     /// <inheritdoc cref="IFileDownloader"/>
     public partial class FileDownloader : IFileDownloader
     {
-        private readonly AndroidFileDownloaderProxy _androidFileDownloaderProxy;
-
-        public FileDownloader(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        public FileDownloader(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
-            if (bluetoothDevice == null)
-                throw new ArgumentNullException(nameof(bluetoothDevice));
+        }
+        
+        static private INativeFileDownloaderProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        {
+            bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
 
             androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidFileDownloaderProxy = new AndroidFileDownloaderProxy(
-                downloader: this,
+            return new AndroidFileDownloaderProxy(
                 context: androidContext,
-                bluetoothDevice: bluetoothDevice
+                bluetoothDevice: bluetoothDevice,
+                fileDownloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy()
             );
         }
 
-        public string LastFatalErrorMessage => _androidFileDownloaderProxy?.LastFatalErrorMessage;
-
-        public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
-        {           
-            if (string.IsNullOrWhiteSpace(remoteFilePath))
-                throw new ArgumentException($"The {nameof(remoteFilePath)} parameter is dud!");
-
-            remoteFilePath = remoteFilePath.Trim();
-            if (remoteFilePath.EndsWith("/")) //00
-                throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
-
-            if (!remoteFilePath.StartsWith("/")) //10
-            {
-                remoteFilePath = $"/{remoteFilePath}";
-            }
-
-            _androidFileDownloaderProxy.RemoteFilePath = remoteFilePath;
-            var verdict = _androidFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath);
-
-            return TranslateFileDownloaderVerdict(verdict);
-
-            //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
-            //10  the target file path must be absolute   if its not then we make it so   relative paths cause exotic errors
-        }
-
-        public void Cancel() => _androidFileDownloaderProxy?.Cancel();
-        public void Disconnect() => _androidFileDownloaderProxy?.Disconnect();
-
-        static private EFileDownloaderVerdict TranslateFileDownloaderVerdict(EAndroidFileDownloaderVerdict verdict)
-        {
-            if (verdict == EAndroidFileDownloaderVerdict.Success) //0
-            {
-                return EFileDownloaderVerdict.Success;
-            }
-            
-            if (verdict == EAndroidFileDownloaderVerdict.FailedInvalidSettings)
-            {
-                return EFileDownloaderVerdict.FailedInvalidSettings;
-            }
-            
-            if (verdict == EAndroidFileDownloaderVerdict.FailedDownloadAlreadyInProgress)
-            {
-                return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
-
-            //0 we have to separate enums
-            //
-            //  - EFileDownloaderVerdict which is publicly exposed and used by both android and ios
-            //  - EAndroidFileDownloaderVerdict which is specific to android and should not be used by the api surface or the end users
-        }
-
-        private sealed class AndroidFileDownloaderProxy : AndroidFileDownloader
+        private sealed class AndroidFileDownloaderProxy : AndroidFileDownloader, INativeFileDownloaderProxy 
         {
             public string RemoteFilePath { get; set; }
+
+            private readonly INativeFileDownloaderCallbacksProxy _fileDownloaderCallbacksProxy;
             
-            private readonly FileDownloader _fileDownloader;
+            public IFileDownloaderEventEmitters FileDownloader //keep this to conform to the interface
+            {
+                get => _fileDownloaderCallbacksProxy?.FileDownloader;
+                set
+                {
+                    if (_fileDownloaderCallbacksProxy == null)
+                        return;
+
+                    _fileDownloaderCallbacksProxy.FileDownloader = value;
+                }
+            }
 
             // ReSharper disable once UnusedMember.Local
             private AndroidFileDownloaderProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             {
             }
-
-            internal AndroidFileDownloaderProxy(FileDownloader downloader, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            
+            internal AndroidFileDownloaderProxy(INativeFileDownloaderCallbacksProxy fileDownloaderCallbacksProxy, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
             {
-                _fileDownloader = downloader ?? throw new ArgumentNullException(nameof(downloader));
+                _fileDownloaderCallbacksProxy = fileDownloaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileDownloaderCallbacksProxy));
+            }
+
+            public new EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            {
+                return TranslateFileDownloaderVerdict(base.BeginDownload(remoteFilePath));
             }
 
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
 
-                _fileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
             }
             
+            //todo   add remotefilepath as a parameter to this method and delete the property altogether
             public override void LogMessageAdvertisement(string message, string category, string level)
             {
                 base.LogMessageAdvertisement(message, category, level);
 
-                _fileDownloader?.OnLogEmitted(new LogEmittedEventArgs(
+                LogMessageAdvertisement(
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
                     message: message,
                     category: category,
                     resource: RemoteFilePath
-                ));
+                );
+            }
+
+            // keep this around to conform to the interface
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+            {
+                _fileDownloaderCallbacksProxy?.LogMessageAdvertisement(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: resource
+                );
             }
 
             public override void CancelledAdvertisement()
             {
                 base.CancelledAdvertisement(); //just in case
                 
-                _fileDownloader?.OnCancelled(new CancelledEventArgs());
+                _fileDownloaderCallbacksProxy?.CancelledAdvertisement();
             }
-            
+
             public override void DownloadCompletedAdvertisement(byte[] data)
             {
                 base.DownloadCompletedAdvertisement(data); //just in case
-                
-                _fileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(data));
+
+                _fileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(data);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
                 base.BusyStateChangedAdvertisement(busyNotIdle); //just in case
                 
-                _fileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+                _fileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
             public override void StateChangedAdvertisement(EAndroidFileDownloaderState oldState, EAndroidFileDownloaderState newState) 
             {
                 base.StateChangedAdvertisement(oldState, newState); //just in case
 
-                _fileDownloader?.OnStateChanged(new StateChangedEventArgs(
+                StateChangedAdvertisement(
                     newState: TranslateEAndroidFileDownloaderState(newState),
                     oldState: TranslateEAndroidFileDownloaderState(oldState)
-                ));
+                );
+            }
+
+            public void StateChangedAdvertisement(EFileDownloaderState oldState, EFileDownloaderState newState)
+            {
+                _fileDownloaderCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
 
             public override void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
             {
                 base.FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput); //just in case
 
-                _fileDownloader?.OnFileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
+                _fileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
-                ));
+                );
+            }
+
+            static private EFileDownloaderVerdict TranslateFileDownloaderVerdict(EAndroidFileDownloaderVerdict verdict)
+            {
+                if (verdict == EAndroidFileDownloaderVerdict.Success) //0
+                {
+                    return EFileDownloaderVerdict.Success;
+                }
+            
+                if (verdict == EAndroidFileDownloaderVerdict.FailedInvalidSettings)
+                {
+                    return EFileDownloaderVerdict.FailedInvalidSettings;
+                }
+            
+                if (verdict == EAndroidFileDownloaderVerdict.FailedDownloadAlreadyInProgress)
+                {
+                    return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
+
+                //0 we have to separate enums
+                //
+                //  - EFileDownloaderVerdict which is publicly exposed and used by both android and ios
+                //  - EAndroidFileDownloaderVerdict which is specific to android and should not be used by the api surface or the end users
             }
 
             static private EFileDownloaderState TranslateEAndroidFileDownloaderState(EAndroidFileDownloaderState state)

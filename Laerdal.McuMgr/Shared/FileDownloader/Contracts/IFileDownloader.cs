@@ -86,4 +86,15 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <summary>Disconnects the file-downloader from the targeted device</summary>
         void Disconnect();
     }
+    
+    internal interface IFileDownloaderEventEmitters
+    {
+        void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea);
+        void OnCancelled(CancelledEventArgs ea);
+        void OnLogEmitted(LogEmittedEventArgs ea);
+        void OnStateChanged(StateChangedEventArgs ea);
+        void OnBusyStateChanged(BusyStateChangedEventArgs ea);
+        void OnDownloadCompleted(DownloadCompletedEventArgs ea);
+        void OnFileDownloadProgressPercentageAndThroughputDataChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea);        
+    }
 }

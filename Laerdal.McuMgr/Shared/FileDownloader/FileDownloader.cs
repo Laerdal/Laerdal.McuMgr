@@ -13,8 +13,45 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 namespace Laerdal.McuMgr.FileDownloader
 {
     /// <inheritdoc cref="IFileDownloader"/>
-    public partial class FileDownloader : IFileDownloader
+    public partial class FileDownloader : IFileDownloader, IFileDownloaderEventEmitters
     {
+        private readonly INativeFileDownloaderProxy _nativeFileDownloaderProxy;
+
+        //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFileDownloaderProxy
+        internal FileDownloader(INativeFileDownloaderProxy nativeFileDownloaderProxy)
+        {
+            _nativeFileDownloaderProxy = nativeFileDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFileDownloaderProxy));
+            _nativeFileDownloaderProxy.FileDownloader = this; //vital
+        }
+
+        public string LastFatalErrorMessage => _nativeFileDownloaderProxy?.LastFatalErrorMessage;
+
+        public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+        {           
+            if (string.IsNullOrWhiteSpace(remoteFilePath))
+                throw new ArgumentException($"The {nameof(remoteFilePath)} parameter is dud!");
+
+            remoteFilePath = remoteFilePath.Trim();
+            if (remoteFilePath.EndsWith("/")) //00
+                throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
+
+            if (!remoteFilePath.StartsWith("/")) //10
+            {
+                remoteFilePath = $"/{remoteFilePath}";
+            }
+
+            _nativeFileDownloaderProxy.RemoteFilePath = remoteFilePath; //                              order
+            var verdict = _nativeFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath); //  order
+
+            return verdict;
+
+            //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
+            //10  the target file path must be absolute   if its not then we make it so   relative paths cause exotic errors
+        }
+
+        public void Cancel() => _nativeFileDownloaderProxy?.Cancel();
+        public void Disconnect() => _nativeFileDownloaderProxy?.Disconnect();
+
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
@@ -102,7 +139,7 @@ namespace Laerdal.McuMgr.FileDownloader
         {
             var results = remoteFilePaths.ToDictionary(
                 keySelector: x => x,
-                elementSelector: x => (byte[]) null
+                elementSelector: x => (byte[])null
             );
 
             foreach (var x in results)
@@ -115,7 +152,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
                     );
-                    
+
                     results[x.Key] = data;
                 }
                 catch (DownloadErroredOutRemoteFileNotFoundException)
@@ -157,7 +194,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 catch (TimeoutException ex)
                 {
-                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                    (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
                         oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail
                         newState: EFileDownloaderState.Error
                     ));
@@ -168,7 +205,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     if (ex is DownloadErroredOutRemoteFileNotFoundException) //no point to retry if the remote file is not there
                         throw;
-                    
+
                     if (++retry > maxRetriesCount)
                         throw new DownloadErroredOutException($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount} times", innerException: ex);
 
@@ -183,7 +220,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     && !(ex is DownloadErroredOutException)
                 )
                 {
-                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                    (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
                         oldState: EFileDownloaderState.None,
                         newState: EFileDownloaderState.Error
                     ));
@@ -249,10 +286,10 @@ namespace Laerdal.McuMgr.FileDownloader
                     taskCompletionSource.TrySetException(new DownloadErroredOutException(ea.ErrorMessage)); //generic
                 }
             }
-            
+
             if (isCancellationRequested) //vital
                 throw new DownloadCancelledException(); //20
-            
+
             return result;
 
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
@@ -267,13 +304,52 @@ namespace Laerdal.McuMgr.FileDownloader
             //    on trying in vain forever for like 50 retries or something and pressing the cancel button wont have any effect because
             //    the upload cannot commence to begin with
         }
-        
-        private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        private void OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnFileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+
+        void IFileDownloaderEventEmitters.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        void IFileDownloaderEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IFileDownloaderEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmitters.OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
+        void IFileDownloaderEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFileDownloaderEventEmitters.OnFileDownloadProgressPercentageAndThroughputDataChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+
+
+        //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileDownloaderProxy
+        internal class GenericNativeFileDownloaderCallbacksProxy : INativeFileDownloaderCallbacksProxy
+        {
+            public IFileDownloaderEventEmitters FileDownloader { get; set; }
+
+            public void CancelledAdvertisement()
+                => FileDownloader?.OnCancelled(new CancelledEventArgs());
+
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+                => FileDownloader?.OnLogEmitted(new LogEmittedEventArgs(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: resource
+                ));
+
+            public void StateChangedAdvertisement(EFileDownloaderState oldState, EFileDownloaderState newState)
+                => FileDownloader?.OnStateChanged(new StateChangedEventArgs(
+                    newState: newState,
+                    oldState: oldState
+                ));
+
+            public void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => FileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+
+            public void DownloadCompletedAdvertisement(byte[] data)
+                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(data));
+
+            public void FatalErrorOccurredAdvertisement(string errorMessage)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+
+            public void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => FileDownloader?.OnFileDownloadProgressPercentageAndThroughputDataChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
+                    averageThroughput: averageThroughput,
+                    progressPercentage: progressPercentage
+                ));
+        }
     }
 }

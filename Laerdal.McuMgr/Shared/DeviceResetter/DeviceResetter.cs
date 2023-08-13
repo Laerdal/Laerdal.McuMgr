@@ -19,7 +19,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             public IDeviceResetterEventEmitters DeviceResetter { get; set; }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
-                => DeviceResetter.OnLogEmitted(new LogEmittedEventArgs(
+                => DeviceResetter?.OnLogEmitted(new LogEmittedEventArgs(
                     level: level,
                     message: message,
                     category: category,
@@ -27,13 +27,13 @@ namespace Laerdal.McuMgr.DeviceResetter
                 ));
             
             public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
-                => DeviceResetter.OnStateChanged(new StateChangedEventArgs(
+                => DeviceResetter?.OnStateChanged(new StateChangedEventArgs(
                     newState: newState,
                     oldState: oldState
                 ));
 
             public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => DeviceResetter.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                => DeviceResetter?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
         }
 
         private readonly INativeDeviceResetterProxy _nativeDeviceResetterProxy;

@@ -10,12 +10,5 @@ namespace Laerdal.McuMgr.FileDownloader
     public partial class FileDownloader : IFileDownloader
     {
         public FileDownloader(object bluetoothDevice) => throw new NotImplementedException();
-
-        public string LastFatalErrorMessage => throw new NotImplementedException();
-
-        public EFileDownloaderVerdict BeginDownload(string path) => throw new NotImplementedException();
-
-        public void Cancel() => throw new NotImplementedException();
-        public void Disconnect() => throw new NotImplementedException();
     }
 }

@@ -21,14 +21,16 @@ namespace Laerdal.McuMgr.DeviceResetter
         
         static private INativeDeviceResetterProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
-            if (bluetoothDevice == null)
-                throw new ArgumentNullException(nameof(bluetoothDevice));
-
+            bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+            
             androidContext ??= Application.Context;
-            if (androidContext == null)
-                throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
+            //androidContext = androidContext ?? throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird"); //impossible
 
-            return new AndroidNativeDeviceResetterAdapterProxy(new GenericNativeDeviceResetterCallbacksProxy(), androidContext, bluetoothDevice);
+            return new AndroidNativeDeviceResetterAdapterProxy(
+                context: androidContext,
+                bluetoothDevice: bluetoothDevice,
+                deviceResetterCallbacksProxy: new GenericNativeDeviceResetterCallbacksProxy()
+            );
         }
 
         public EDeviceResetterState State => AndroidNativeDeviceResetterAdapterProxy.TranslateEAndroidDeviceResetterState(
@@ -67,7 +69,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
                 
-                _deviceResetterCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
+                _deviceResetterCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
             }
 
             public override void StateChangedAdvertisement(EAndroidDeviceResetterState oldState, EAndroidDeviceResetterState newState)
@@ -83,7 +85,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             //keep this method to adhere to the interface
             public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
             {
-                _deviceResetterCallbacksProxy.StateChangedAdvertisement(
+                _deviceResetterCallbacksProxy?.StateChangedAdvertisement(
                     oldState: oldState,
                     newState: newState
                 );
@@ -103,7 +105,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             //keep this override   its needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
             {
-                _deviceResetterCallbacksProxy.LogMessageAdvertisement(message, category, level);
+                _deviceResetterCallbacksProxy?.LogMessageAdvertisement(message, category, level);
             }
 
             static public EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
