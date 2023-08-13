@@ -1,4 +1,4 @@
-namespace Laerdal.McuMgr.FileDownloader.Exceptions
+namespace Laerdal.McuMgr.FileDownloader.Contracts.Exceptions
 {
     public sealed class DownloadErroredOutRemoteFileNotFoundException : DownloadErroredOutException
     {

@@ -10,7 +10,7 @@ using Android.Runtime;
 
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileDownloader.Events;
+using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader
 {

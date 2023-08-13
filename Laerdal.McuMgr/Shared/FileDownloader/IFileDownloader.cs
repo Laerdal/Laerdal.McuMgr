@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileDownloader.Events;
+using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader
 {

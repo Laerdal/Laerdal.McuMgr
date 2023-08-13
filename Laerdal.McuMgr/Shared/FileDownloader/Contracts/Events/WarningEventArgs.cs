@@ -1,6 +1,6 @@
 using System;
 
-namespace Laerdal.McuMgr.FileDownloader.Events
+namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
     public sealed class WarningEventArgs : EventArgs
     {
