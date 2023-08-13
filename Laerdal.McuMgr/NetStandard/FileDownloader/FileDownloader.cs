@@ -2,7 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Linq;
+using Laerdal.McuMgr.FileDownloader.Contracts;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public string LastFatalErrorMessage => throw new NotImplementedException();
 
-        public IFileDownloader.EFileDownloaderVerdict BeginDownload(string path) => throw new NotImplementedException();
+        public EFileDownloaderVerdict BeginDownload(string path) => throw new NotImplementedException();
 
         public void Cancel() => throw new NotImplementedException();
         public void Disconnect() => throw new NotImplementedException();

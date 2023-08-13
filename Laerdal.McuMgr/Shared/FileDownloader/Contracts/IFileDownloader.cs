@@ -7,35 +7,16 @@ using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
-namespace Laerdal.McuMgr.FileDownloader
+namespace Laerdal.McuMgr.FileDownloader.Contracts
 {
     /// <summary>Downloads a file on a specific Nordic-chip-based BLE device</summary>
     /// <remarks>For the file-downloading process to even commence you need to be authenticated with the AED device that's being targeted.</remarks>
-    public interface IFileDownloader
+    public interface IFileDownloader : IFileDownloaderEvents, IFileDownloaderCommands
     {
-        [Flags]
-        public enum EFileDownloaderVerdict //this must mirror the java enum values of E[Android|iOS]FileDownloaderVerdict
-        {
-            Success = 0,
-            FailedInvalidSettings = 1,
-            FailedDownloadAlreadyInProgress = 2,
-        }
-       
-        public enum EFileDownloaderState //these must mirror the java enum values of EFileDownloaderState on both android and ios
-        {
-            None = 0,
-            Idle = 1,
-            Downloading = 2,
-            Paused = 3,
-            Complete = 4,
-            Cancelled = 5,
-            Error = 6,
-            Cancelling = 7,
-        }
+    }
 
-        /// <summary>Holds the last error message emitted</summary>
-        public string LastFatalErrorMessage { get; }
-
+    public interface IFileDownloaderEvents
+    {
         /// <summary>Event raised when an error occurs</summary>
         public event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred;
 
@@ -56,6 +37,12 @@ namespace Laerdal.McuMgr.FileDownloader
         
         /// <summary>Event raised when the firmware-installation process progresses in terms of downloading the firmware files across</summary>
         public event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> FileDownloadProgressPercentageAndDataThroughputChanged;
+    }
+
+    public interface IFileDownloaderCommands
+    {
+        /// <summary>Holds the last error message emitted</summary>
+        public string LastFatalErrorMessage { get; }
 
         /// <summary>
         /// Begins the file-downloading process on multiple files. Files that cannot be downloaded due to errors will have a null entry in the returned dictionary. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.

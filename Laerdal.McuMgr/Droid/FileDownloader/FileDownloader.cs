@@ -10,6 +10,7 @@ using Android.Runtime;
 
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader
@@ -37,7 +38,7 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public string LastFatalErrorMessage => _androidFileDownloaderProxy?.LastFatalErrorMessage;
 
-        public IFileDownloader.EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+        public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
         {           
             if (string.IsNullOrWhiteSpace(remoteFilePath))
                 throw new ArgumentException($"The {nameof(remoteFilePath)} parameter is dud!");
@@ -63,21 +64,21 @@ namespace Laerdal.McuMgr.FileDownloader
         public void Cancel() => _androidFileDownloaderProxy?.Cancel();
         public void Disconnect() => _androidFileDownloaderProxy?.Disconnect();
 
-        static private IFileDownloader.EFileDownloaderVerdict TranslateFileDownloaderVerdict(EAndroidFileDownloaderVerdict verdict)
+        static private EFileDownloaderVerdict TranslateFileDownloaderVerdict(EAndroidFileDownloaderVerdict verdict)
         {
             if (verdict == EAndroidFileDownloaderVerdict.Success) //0
             {
-                return IFileDownloader.EFileDownloaderVerdict.Success;
+                return EFileDownloaderVerdict.Success;
             }
             
             if (verdict == EAndroidFileDownloaderVerdict.FailedInvalidSettings)
             {
-                return IFileDownloader.EFileDownloaderVerdict.FailedInvalidSettings;
+                return EFileDownloaderVerdict.FailedInvalidSettings;
             }
             
             if (verdict == EAndroidFileDownloaderVerdict.FailedDownloadAlreadyInProgress)
             {
-                return IFileDownloader.EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
+                return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
             }
 
             throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
@@ -164,46 +165,46 @@ namespace Laerdal.McuMgr.FileDownloader
                 ));
             }
 
-            static private IFileDownloader.EFileDownloaderState TranslateEAndroidFileDownloaderState(EAndroidFileDownloaderState state)
+            static private EFileDownloaderState TranslateEAndroidFileDownloaderState(EAndroidFileDownloaderState state)
             {
                 if (state == EAndroidFileDownloaderState.None)
                 {
-                    return IFileDownloader.EFileDownloaderState.None;
+                    return EFileDownloaderState.None;
                 }
                 
                 if (state == EAndroidFileDownloaderState.Idle)
                 {
-                    return IFileDownloader.EFileDownloaderState.Idle;
+                    return EFileDownloaderState.Idle;
                 }
 
                 if (state == EAndroidFileDownloaderState.Downloading)
                 {
-                    return IFileDownloader.EFileDownloaderState.Downloading;
+                    return EFileDownloaderState.Downloading;
                 }
 
                 if (state == EAndroidFileDownloaderState.Paused)
                 {
-                    return IFileDownloader.EFileDownloaderState.Paused;
+                    return EFileDownloaderState.Paused;
                 }
 
                 if (state == EAndroidFileDownloaderState.Complete)
                 {
-                    return IFileDownloader.EFileDownloaderState.Complete;
+                    return EFileDownloaderState.Complete;
                 }
                 
                 if (state == EAndroidFileDownloaderState.Cancelled)
                 {
-                    return IFileDownloader.EFileDownloaderState.Cancelled;
+                    return EFileDownloaderState.Cancelled;
                 }
                 
                 if (state == EAndroidFileDownloaderState.Error)
                 {
-                    return IFileDownloader.EFileDownloaderState.Error;
+                    return EFileDownloaderState.Error;
                 }
 
                 if (state == EAndroidFileDownloaderState.Cancelling)
                 {
-                    return IFileDownloader.EFileDownloaderState.Cancelling;
+                    return EFileDownloaderState.Cancelling;
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);

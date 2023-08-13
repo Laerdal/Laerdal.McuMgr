@@ -7,10 +7,10 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
     public sealed class StateChangedEventArgs : EventArgs
     {
-        public IFileDownloader.EFileDownloaderState NewState { get; }
-        public IFileDownloader.EFileDownloaderState OldState { get; }
+        public EFileDownloaderState NewState { get; }
+        public EFileDownloaderState OldState { get; }
 
-        public StateChangedEventArgs(IFileDownloader.EFileDownloaderState oldState, IFileDownloader.EFileDownloaderState newState)
+        public StateChangedEventArgs(EFileDownloaderState oldState, EFileDownloaderState newState)
         {
             NewState = newState;
             OldState = oldState;

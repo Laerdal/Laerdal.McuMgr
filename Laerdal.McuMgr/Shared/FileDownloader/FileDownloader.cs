@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 
@@ -147,7 +148,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     FatalErrorOccurred += DownloadAsyncOnFatalErrorOccurred;
 
                     var verdict = BeginDownload(remoteFilePath); //00 dont use task.run here for now
-                    if (verdict != IFileDownloader.EFileDownloaderVerdict.Success)
+                    if (verdict != EFileDownloaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
                     result = timeoutForDownloadInMs < 0
@@ -157,8 +158,8 @@ namespace Laerdal.McuMgr.FileDownloader
                 catch (TimeoutException ex)
                 {
                     OnStateChanged(new StateChangedEventArgs( //for consistency
-                        oldState: IFileDownloader.EFileDownloaderState.None, //better not use this.State here because the native call might fail
-                        newState: IFileDownloader.EFileDownloaderState.Error
+                        oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail
+                        newState: EFileDownloaderState.Error
                     ));
 
                     throw new DownloadTimeoutException(remoteFilePath, timeoutForDownloadInMs, ex);
@@ -183,8 +184,8 @@ namespace Laerdal.McuMgr.FileDownloader
                 )
                 {
                     OnStateChanged(new StateChangedEventArgs( //for consistency
-                        oldState: IFileDownloader.EFileDownloaderState.None,
-                        newState: IFileDownloader.EFileDownloaderState.Error
+                        oldState: EFileDownloaderState.None,
+                        newState: EFileDownloaderState.Error
                     ));
 
                     //OnFatalErrorOccurred(); //not worth it in this case  
@@ -208,7 +209,7 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void DownloadAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
                 {
-                    if (ea.NewState != IFileDownloader.EFileDownloaderState.Cancelling || isCancellationRequested)
+                    if (ea.NewState != EFileDownloaderState.Cancelling || isCancellationRequested)
                         return;
 
                     isCancellationRequested = true;
