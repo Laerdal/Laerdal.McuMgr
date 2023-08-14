@@ -194,6 +194,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 catch (TimeoutException ex)
                 {
                     (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        resource: remoteFilePath,
                         oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail
                         newState: EFileDownloaderState.Error
                     ));
@@ -220,6 +221,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 )
                 {
                     (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        resource: remoteFilePath,
                         oldState: EFileDownloaderState.None,
                         newState: EFileDownloaderState.Error
                     ));
@@ -329,8 +331,9 @@ namespace Laerdal.McuMgr.FileDownloader
                     resource: resource
                 ));
 
-            public void StateChangedAdvertisement(EFileDownloaderState oldState, EFileDownloaderState newState)
+            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
                 => FileDownloader?.OnStateChanged(new StateChangedEventArgs(
+                    resource: resource,
                     newState: newState,
                     oldState: oldState
                 ));

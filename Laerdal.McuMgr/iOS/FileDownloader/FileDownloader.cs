@@ -81,13 +81,15 @@ namespace Laerdal.McuMgr.FileDownloader
                     resource: resource
                 );
 
-            public override void StateChangedAdvertisement(EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
+            public override void StateChangedAdvertisement(string resource, EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
                 => StateChangedAdvertisement(
+                    resource: resource, //essentially the remote filepath
                     newState: TranslateEIOSFileDownloaderState(newState),
                     oldState: TranslateEIOSFileDownloaderState(oldState)
                 );
-            public void StateChangedAdvertisement(EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
+            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.StateChangedAdvertisement(
+                    resource: resource, //essentially the remote filepath
                     newState: newState,
                     oldState: oldState
                 );

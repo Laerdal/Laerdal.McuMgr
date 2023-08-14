@@ -191,7 +191,13 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState) // (final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
+    //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
+    public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
+    {
+        stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState);
+    }
+
+    public void stateChangedAdvertisement(final String resource, final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -207,12 +213,12 @@ public class AndroidFileDownloader
     }
 
     //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
-    public void logMessageAdvertisement(final String warningMessage, final String category, final String level)
+    private void logMessageAdvertisement(final String message, final String category, final String level)
     {
-        logMessageAdvertisement(warningMessage, category, level, _remoteFilePathSanitized);
+        logMessageAdvertisement(message, category, level, _remoteFilePathSanitized);
     }
 
-    public void logMessageAdvertisement(final String warningMessage, final String category, final String level, final String resource) //wrapper method
+    public void logMessageAdvertisement(final String message, final String category, final String level, final String resource) //wrapper method
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

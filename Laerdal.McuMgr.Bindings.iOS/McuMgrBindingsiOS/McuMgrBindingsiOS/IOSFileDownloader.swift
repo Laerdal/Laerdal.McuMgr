@@ -133,7 +133,7 @@ public class IOSFileDownloader: NSObject {
             _ oldState: EIOSFileDownloaderState,
             _ newState: EIOSFileDownloaderState
     ) {
-        _listener.stateChangedAdvertisement(oldState, newState)
+        _listener.stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState)
     }
 
     //@objc   dont

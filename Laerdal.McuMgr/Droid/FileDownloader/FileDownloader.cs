@@ -83,7 +83,7 @@ namespace Laerdal.McuMgr.FileDownloader
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
             {
-                base.LogMessageAdvertisement(message, category, level);
+                base.LogMessageAdvertisement(message, category, level, resource);
 
                 LogMessageAdvertisement(
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
@@ -100,7 +100,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     level: level,
                     message: message,
                     category: category,
-                    resource: resource
+                    resource: resource //essentially the remote filepath
                 );
             }
 
@@ -125,19 +125,23 @@ namespace Laerdal.McuMgr.FileDownloader
                 _fileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(EAndroidFileDownloaderState oldState, EAndroidFileDownloaderState newState) 
+            public override void StateChangedAdvertisement(string resource, EAndroidFileDownloaderState oldState, EAndroidFileDownloaderState newState) 
             {
-                base.StateChangedAdvertisement(oldState, newState); //just in case
+                base.StateChangedAdvertisement(resource, oldState, newState); //just in case
 
                 StateChangedAdvertisement(
-                    newState: TranslateEAndroidFileDownloaderState(newState),
-                    oldState: TranslateEAndroidFileDownloaderState(oldState)
+                    resource: resource, //essentially the remote filepath
+                    oldState: TranslateEAndroidFileDownloaderState(oldState),
+                    newState: TranslateEAndroidFileDownloaderState(newState)
                 );
             }
 
-            public void StateChangedAdvertisement(EFileDownloaderState oldState, EFileDownloaderState newState)
+            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
             {
-                _fileDownloaderCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState);
+                _fileDownloaderCallbacksProxy?.StateChangedAdvertisement(
+                    resource: resource,
+                    oldState: oldState,
+                    newState: newState);
             }
 
             public override void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)

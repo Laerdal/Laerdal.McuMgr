@@ -8,7 +8,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
 
         void CancelledAdvertisement();
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
-        void StateChangedAdvertisement(EFileDownloaderState oldState, EFileDownloaderState newState);
+        void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void DownloadCompletedAdvertisement(byte[] data);
         void FatalErrorOccurredAdvertisement(string errorMessage);
