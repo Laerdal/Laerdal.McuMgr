@@ -49,7 +49,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.DownloadCompleted))
                 .WithSender(fileDownloader)
-                .WithArgs<DownloadCompletedEventArgs>(args => args.Data == mockedFileData);
+                .WithArgs<DownloadCompletedEventArgs>(args => args.Data == mockedFileData); //todo  enrich DownloadCompletedEventArgs with the remote file path
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
