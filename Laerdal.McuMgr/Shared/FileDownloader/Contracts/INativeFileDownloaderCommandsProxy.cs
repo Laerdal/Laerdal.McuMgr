@@ -2,7 +2,6 @@
 {
     internal interface INativeFileDownloaderCommandsProxy
     {
-        string RemoteFilePath { get; set; }
         string LastFatalErrorMessage { get; }
 
         void Cancel();

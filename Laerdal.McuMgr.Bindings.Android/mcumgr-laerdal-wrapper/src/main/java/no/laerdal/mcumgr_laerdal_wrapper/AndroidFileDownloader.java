@@ -22,6 +22,7 @@ public class AndroidFileDownloader
 
     private int _initialBytes;
     private long _downloadStartTimestamp;
+    private String _remoteFilePathSanitized = "";
     private EAndroidFileDownloaderState _currentState = EAndroidFileDownloaderState.NONE;
 
     public AndroidFileDownloader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
@@ -84,6 +85,7 @@ public class AndroidFileDownloader
 
         _initialBytes = 0;
 
+        _remoteFilePathSanitized = remoteFilePathSanitized;
         _controller = _fileSystemManager.fileDownload(remoteFilePathSanitized, new FileDownloaderCallbackProxy());
 
         return EAndroidFileDownloaderVerdict.SUCCESS;
@@ -204,7 +206,13 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
     public void logMessageAdvertisement(final String warningMessage, final String category, final String level)
+    {
+        logMessageAdvertisement(warningMessage, category, level, _remoteFilePathSanitized);
+    }
+
+    public void logMessageAdvertisement(final String warningMessage, final String category, final String level, final String resource) //wrapper method
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

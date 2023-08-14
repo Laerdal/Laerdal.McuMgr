@@ -12,6 +12,7 @@ public class IOSFileDownloader: NSObject {
 
     private var _lastBytesSend: Int = -1
     private var _lastBytesSendTimestamp: Date? = nil
+    private var _remoteFilePathSanitized: String
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFileDownloader!) {
@@ -19,11 +20,15 @@ public class IOSFileDownloader: NSObject {
         _transporter = McuMgrBleTransport(cbPeripheral)
         _currentState = .none
         _lastFatalErrorMessage = ""
+        _remoteFilePathSanitized = ""
     }
 
     @objc
     public func beginDownload(_ remoteFilePath: String) -> EIOSFileDownloadingInitializationVerdict {
-        if _currentState != .none && _currentState != .cancelled && _currentState != .complete && _currentState != .error { //if another download is already in progress we bail out
+        if _currentState != .none
+                   && _currentState != .error
+                   && _currentState != .complete
+                   && _currentState != .cancelled { //if another download is already in progress we bail out
             return EIOSFileDownloadingInitializationVerdict.failedDownloadAlreadyInProgress
         }
 
@@ -58,6 +63,7 @@ public class IOSFileDownloader: NSObject {
         busyStateChangedAdvertisement(true)
         fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0)
 
+        _remoteFilePathSanitized = remoteFilePath
         let success = _fileSystemManager.download(name: remoteFilePath, delegate: self)
         if !success {
             setState(EIOSFileDownloaderState.error)
@@ -109,7 +115,7 @@ public class IOSFileDownloader: NSObject {
 
     //@objc   dont
     private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
-        _listener.logMessageAdvertisement(message, category, level)
+        _listener.logMessageAdvertisement(message, category, level, _remoteFilePathSanitized)
     }
 
     //@objc   dont

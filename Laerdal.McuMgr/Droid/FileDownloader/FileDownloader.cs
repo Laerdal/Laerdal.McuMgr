@@ -36,8 +36,6 @@ namespace Laerdal.McuMgr.FileDownloader
 
         private sealed class AndroidFileDownloaderProxy : AndroidFileDownloader, INativeFileDownloaderProxy 
         {
-            public string RemoteFilePath { get; set; }
-
             private readonly INativeFileDownloaderCallbacksProxy _fileDownloaderCallbacksProxy;
             
             public IFileDownloaderEventEmitters FileDownloader //keep this to conform to the interface
@@ -61,12 +59,21 @@ namespace Laerdal.McuMgr.FileDownloader
             {
                 _fileDownloaderCallbacksProxy = fileDownloaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileDownloaderCallbacksProxy));
             }
+            
+            
+            #region commands 
 
             public new EFileDownloaderVerdict BeginDownload(string remoteFilePath)
             {
                 return TranslateFileDownloaderVerdict(base.BeginDownload(remoteFilePath));
             }
+            
+            #endregion commands
+            
 
+
+            #region android callbacks -> csharp event emitters
+            
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
@@ -74,8 +81,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
             }
             
-            //todo   add remotefilepath as a parameter to this method and delete the property altogether
-            public override void LogMessageAdvertisement(string message, string category, string level)
+            public override void LogMessageAdvertisement(string message, string category, string level, string resource)
             {
                 base.LogMessageAdvertisement(message, category, level);
 
@@ -83,7 +89,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
                     message: message,
                     category: category,
-                    resource: RemoteFilePath
+                    resource: resource //this is the remote-file-path essentially
                 );
             }
 
@@ -143,6 +149,8 @@ namespace Laerdal.McuMgr.FileDownloader
                     progressPercentage: progressPercentage
                 );
             }
+            
+            #endregion android callbacks -> csharp event emitters -> helpers
 
             static private EFileDownloaderVerdict TranslateFileDownloaderVerdict(EAndroidFileDownloaderVerdict verdict)
             {

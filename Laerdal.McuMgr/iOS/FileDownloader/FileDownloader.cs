@@ -46,8 +46,6 @@ namespace Laerdal.McuMgr.FileDownloader
             
 
             #region commands
-
-            public string RemoteFilePath { get; set; }
             
             public string LastFatalErrorMessage => _nativeIosFileDownloader?.LastFatalErrorMessage;
             
@@ -63,17 +61,17 @@ namespace Laerdal.McuMgr.FileDownloader
             
             
             
-            #region listener callbacks -> event emitters
+            #region ios listener callbacks -> csharp event emitters
             
             public override void CancelledAdvertisement()
                 => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement();
 
-            public override void LogMessageAdvertisement(string message, string category, string level)
+            public override void LogMessageAdvertisement(string message, string category, string level, string resource)
                 => LogMessageAdvertisement(
                     message,
                     category,
                     HelpersIOS.TranslateEIOSLogLevel(level),
-                    RemoteFilePath //todo   this should be emitted by the ios native code really
+                    resource
                 );
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.LogMessageAdvertisement(

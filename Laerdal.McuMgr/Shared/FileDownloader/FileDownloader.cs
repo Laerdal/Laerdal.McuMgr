@@ -40,8 +40,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 remoteFilePath = $"/{remoteFilePath}";
             }
 
-            _nativeFileDownloaderProxy.RemoteFilePath = remoteFilePath; //                              order
-            var verdict = _nativeFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath); //  order
+            var verdict = _nativeFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath);
 
             return verdict;
 
