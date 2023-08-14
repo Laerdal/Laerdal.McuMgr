@@ -190,6 +190,8 @@ namespace Laerdal.McuMgr.FileDownloader
                     result = timeoutForDownloadInMs < 0
                         ? await taskCompletionSource.Task
                         : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutForDownloadInMs);
+
+                    break;
                 }
                 catch (TimeoutException ex)
                 {
@@ -238,8 +240,6 @@ namespace Laerdal.McuMgr.FileDownloader
                     FatalErrorOccurred -= DownloadAsyncOnFatalErrorOccurred;
                 }
 
-                continue;
-
                 void DownloadAsyncOnCancelled(object sender, CancelledEventArgs ea)
                 {
                     taskCompletionSource.TrySetException(new DownloadCancelledException());
@@ -274,8 +274,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void DownloadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutRemoteFileNotFound = ea.ErrorMessage?
-                        .ToUpperInvariant()
+                    var isAboutRemoteFileNotFound = ea.ErrorMessage
+                        ?.ToUpperInvariant()
                         .Replace("NO_ENTRY (5)", "NO ENTRY (5)") //normalize the error for android so that it will be the same as in ios
                         .Contains("NO ENTRY (5)") ?? false;
                     if (isAboutRemoteFileNotFound)
