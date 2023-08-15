@@ -68,14 +68,23 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="DeviceResetter\DeviceResetterShould.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowTimeoutExceptionOnResetAsync_GivenTooSmallTimeout.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenBluetoothErrorDuringReset.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldCompleteSuccessfullyOnResetAsync_GivenGreenNativeDeviceResetter.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.cs" />
-        <Compile Include="FileDownloader\FileDownloaderShould.FileDownloaderShould.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader.cs" />
+        <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowArgumentExceptionOnBeginDownload_GivenInvalidRemoteFilePath.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowArgumentExceptionOnDownloadAsync_GivenEmptyRemoteFilePath.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowFirmwareErasureErroredOutExceptionOnDownloadAsync_GivenErroneousNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowTimeoutExceptionOnDownloadAsync_GivenTooSmallTimeout.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserShould.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldThrowTimeoutExceptionOnEraseAsync_GivenTooSmallTimeout.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldThrowFirmwareErasureErroredOutExceptionOnEraseAsync_GivenErroneousNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldCompleteSuccessfullyOnEraseAsync_GivenGreenNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFirmwareEraser.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
