@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
     public class FirmwareEraserShould
     {
         [Fact]
-        public async Task ShouldCompleteSuccessfully_GivenGreenNativeFirmwareEraser()
+        public async Task ShouldCompleteSuccessfullyOnEraseAsync_GivenGreenNativeFirmwareEraser()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedGreenNativeFirmwareEraserProxySpy(new GenericNativeFirmwareEraserCallbacksProxy_());
@@ -57,7 +57,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
         }
 
         [Fact]
-        public async Task ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFirmwareEraser()
+        public async Task ShouldThrowFirmwareErasureErroredOutExceptionOnEraseAsync_GivenErroneousNativeFirmwareEraser()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedErroneousNativeFirmwareEraserProxySpy(new GenericNativeFirmwareEraserCallbacksProxy_());
@@ -92,7 +92,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
         }
         
         [Fact]
-        public async Task ShouldThrowTimeoutException_GivenTooSmallTimeout()
+        public async Task ShouldThrowTimeoutExceptionOnEraseAsync_GivenTooSmallTimeout()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedGreenButSlowNativeFirmwareEraserProxySpy(new GenericNativeFirmwareEraserCallbacksProxy_());

@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
     public class DeviceResetterShould
     {
         [Fact]
-        public async Task ShouldCompleteSuccessfully_GivenGreenNativeDeviceResetter()
+        public async Task ShouldCompleteSuccessfullyOnResetAsync_GivenGreenNativeDeviceResetter()
         {
             // Arrange
             var mockedNativeDeviceResetterProxy = new MockedGreenNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
@@ -62,7 +62,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         }
 
         [Fact]
-        public async Task ShouldThrowDeviceResetterErroredOutException_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
+        public async Task ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
         {
             // Arrange
             var mockedNativeDeviceResetterProxy = new MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
@@ -111,7 +111,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         }
         
         [Fact]
-        public async Task ShouldThrowDeviceResetterErroredOutException_GivenBluetoothErrorDuringReset()
+        public async Task ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenBluetoothErrorDuringReset()
         {
             // Arrange
             var mockedNativeDeviceResetterProxy = new MockedErroneousDueToBluetoothNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());
@@ -168,7 +168,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         }
         
         [Fact]
-        public async Task ShouldThrowTimeoutException_GivenTooSmallTimeout()
+        public async Task ShouldThrowTimeoutExceptionOnResetAsync_GivenTooSmallTimeout()
         {
             // Arrange
             var mockedNativeDeviceResetterProxy = new MockedGreenButSlowNativeDeviceResetterProxySpy(new GenericNativeDeviceResetterCallbacksProxy_());

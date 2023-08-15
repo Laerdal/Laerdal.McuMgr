@@ -16,7 +16,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public class FileDownloaderShould
     {
         [Fact]
-        public async Task ShouldThrowArgumentExceptionException_GivenEmptyRemoteFilePath()
+        public async Task ShouldThrowArgumentExceptionExceptionOnDownloadAsync_GivenEmptyRemoteFilePath()
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         }
         
         [Fact]
-        public async Task ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader()
+        public async Task ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader()
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -114,7 +114,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         }
 
         [Fact]
-        public async Task ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFileDownloader()
+        public async Task ShouldThrowFirmwareErasureErroredOutExceptionOnDownloadAsync_GivenErroneousNativeFileDownloader()
         {
             // Arrange
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_());
@@ -150,7 +150,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         }
         
         [Fact]
-        public async Task ShouldThrowTimeoutException_GivenTooSmallTimeout()
+        public async Task ShouldThrowTimeoutExceptionOnDownloadAsync_GivenTooSmallTimeout()
         {
             // Arrange
             const string remoteFilePath = "/path/to/file.bin";
