@@ -14,6 +14,18 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 {
     public class DeviceResetterShould
     {
+        [Fact] 
+        public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader()
+        {
+            // Arrange
+
+            // Act
+            var work = new Func<IDeviceResetter>(() => new McuMgr.DeviceResetter.DeviceResetter(null));
+
+            // Assert
+            work.Should().ThrowExactly<ArgumentNullException>();
+        }
+        
         [Fact]
         public async Task ShouldCompleteSuccessfullyOnResetAsync_GivenGreenNativeDeviceResetter()
         {

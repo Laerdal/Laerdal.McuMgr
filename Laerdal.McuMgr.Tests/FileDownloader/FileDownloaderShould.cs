@@ -15,12 +15,24 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 {
     public class FileDownloaderShould
     {
+        [Fact] 
+        public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader()
+        {
+            // Arrange
+
+            // Act
+            var work = new Func<IFileDownloader>(() => new McuMgr.FileDownloader.FileDownloader(null));
+
+            // Assert
+            work.Should().ThrowExactly<ArgumentNullException>();
+        }
+        
         [Theory]
         [InlineData("")]
         [InlineData(null)]
         [InlineData("foo/bar/")] //  paths are not allowed
         [InlineData("/foo/bar/")] // to end with a slash 
-        public void ShouldThrowArgumentExceptionExceptionOnBeginDownload_GivenInvalidRemoteFilePath(string remoteFilePath)
+        public void ShouldThrowArgumentExceptionOnBeginDownload_GivenInvalidRemoteFilePath(string remoteFilePath)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -47,7 +59,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         }
         
         [Fact]
-        public async Task ShouldThrowArgumentExceptionExceptionOnDownloadAsync_GivenEmptyRemoteFilePath()
+        public async Task ShouldThrowArgumentExceptionOnDownloadAsync_GivenEmptyRemoteFilePath()
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -135,9 +147,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
 
                     Task.Delay(20).GetAwaiter().GetResult();
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
-                    
                     DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData);
+                    
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
                 });
 
                 return verdict;

@@ -14,6 +14,18 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
 {
     public class FirmwareEraserShould
     {
+        [Fact] 
+        public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFirmwareEraser()
+        {
+            // Arrange
+
+            // Act
+            var work = new Func<IFirmwareEraser>(() => new McuMgr.FirmwareEraser.FirmwareEraser(null));
+
+            // Assert
+            work.Should().ThrowExactly<ArgumentNullException>();
+        }
+        
         [Fact]
         public async Task ShouldCompleteSuccessfullyOnEraseAsync_GivenGreenNativeFirmwareEraser()
         {
