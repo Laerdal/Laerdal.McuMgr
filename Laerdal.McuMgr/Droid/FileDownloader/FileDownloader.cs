@@ -111,11 +111,11 @@ namespace Laerdal.McuMgr.FileDownloader
                 _fileDownloaderCallbacksProxy?.CancelledAdvertisement();
             }
 
-            public override void DownloadCompletedAdvertisement(byte[] data)
+            public override void DownloadCompletedAdvertisement(string resource, byte[] data)
             {
-                base.DownloadCompletedAdvertisement(data); //just in case
+                base.DownloadCompletedAdvertisement(resource, data); //just in case
 
-                _fileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(data);
+                _fileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resource, data);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)

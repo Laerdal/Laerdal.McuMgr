@@ -341,8 +341,8 @@ namespace Laerdal.McuMgr.FileDownloader
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void DownloadCompletedAdvertisement(byte[] data)
-                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(data));
+            public void DownloadCompletedAdvertisement(string resource, byte[] data)
+                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
 
             public void FatalErrorOccurredAdvertisement(string errorMessage)
                 => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));

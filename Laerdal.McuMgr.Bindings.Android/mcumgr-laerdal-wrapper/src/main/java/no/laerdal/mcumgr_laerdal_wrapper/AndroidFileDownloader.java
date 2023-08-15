@@ -207,7 +207,7 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void downloadCompletedAdvertisement(final byte[] data)
+    public void downloadCompletedAdvertisement(final String resource, final byte[] data)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -278,8 +278,8 @@ public class AndroidFileDownloader
         {
             //fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
 
-            downloadCompletedAdvertisement(data); //             order  vital
-            setState(EAndroidFileDownloaderState.COMPLETE); //   order  vital
+            downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
+            setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
 
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);

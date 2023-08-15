@@ -145,8 +145,8 @@ public class IOSFileDownloader: NSObject {
     }
     
     //@objc   dont
-    private func downloadCompletedAdvertisement(_ data: [UInt8]) {
-        _listener.downloadCompletedAdvertisement(data)
+    private func downloadCompletedAdvertisement(_ resource: String, _ data: [UInt8]) {
+        _listener.downloadCompletedAdvertisement(resource, data)
     }
 
     private func setState(_ newState: EIOSFileDownloaderState) {
@@ -192,7 +192,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
 
     public func download(of name: String, didFinish data: Data) {
         setState(EIOSFileDownloaderState.complete)
-        downloadCompletedAdvertisement([UInt8](data))
+        downloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
         busyStateChangedAdvertisement(false)
     }
 
