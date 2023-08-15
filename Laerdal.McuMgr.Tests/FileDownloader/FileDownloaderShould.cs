@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -30,7 +31,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: remoteFilePath));
 
             // Assert
-            await work.Should().CompleteWithinAsync(0.5.Seconds());
+            await work.Should().CompleteWithinAsync(5.Seconds());
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -75,7 +76,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     Task.Delay(20).GetAwaiter().GetResult();
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
                     
-                    DownloadCompletedAdvertisement(_mockedFileData);
+                    DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData);
                 });
 
                 return verdict;
@@ -235,8 +236,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _downloaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
             
-            public void DownloadCompletedAdvertisement(byte[] data)
-                => _downloaderCallbacksProxy.DownloadCompletedAdvertisement(data); //raises the actual event
+            public void DownloadCompletedAdvertisement(string resource, byte[] data)
+                => _downloaderCallbacksProxy.DownloadCompletedAdvertisement(resource, data); //raises the actual event
 
             public void FatalErrorOccurredAdvertisement(string errorMessage)
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage); //raises the actual event

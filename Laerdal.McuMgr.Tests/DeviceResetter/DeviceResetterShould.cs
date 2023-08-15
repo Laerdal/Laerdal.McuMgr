@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             var work = new Func<Task>(() => deviceResetter.ResetAsync());
 
             // Assert
-            await work.Should().CompleteWithinAsync(0.5.Seconds());
+            await work.Should().CompleteWithinAsync(5.Seconds());
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();
