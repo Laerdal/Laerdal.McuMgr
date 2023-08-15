@@ -74,12 +74,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             //00 we dont want to disconnect the device regardless of the outcome
         }
         
-        [Fact]
-        public async Task ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader()
+        [Theory]
+        [InlineData("path/to/file.bin")] // this should be normalized to /path/to/file.bin
+        [InlineData("/path/to/file.bin")]
+        public async Task ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader(string remoteFilePath)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-            const string remoteFilePath = "/path/to/file.bin";
+            var expectedRemoteFilepath = remoteFilePath.StartsWith("/") ? remoteFilePath : $"/{remoteFilePath}";
             
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
@@ -99,17 +101,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
+                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Downloading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.DownloadCompleted))
                 .WithSender(fileDownloader)
-                .WithArgs<DownloadCompletedEventArgs>(args => args.Resource == remoteFilePath && args.Data.SequenceEqual(mockedFileData));
+                .WithArgs<DownloadCompletedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.Data.SequenceEqual(mockedFileData));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
