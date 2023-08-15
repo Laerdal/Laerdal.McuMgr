@@ -215,7 +215,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                             isCancellationRequested = true;
 
-                            _ = Task.Run(async () =>
+                            Task.Run(async () =>
                             {
                                 try
                                 {

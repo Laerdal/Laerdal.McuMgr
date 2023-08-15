@@ -214,6 +214,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     if (sleepTimeBetweenRetriesInMs > 0)
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
+                        continue;
                     }
                 }
                 catch (Exception ex) when (
@@ -252,19 +253,23 @@ namespace Laerdal.McuMgr.FileDownloader
 
                     isCancellationRequested = true;
 
-                    _ = Task.Run(async () =>
+                    Task.Run(async () =>
                     {
                         try
                         {
-                            await Task.Delay(5_000); //                                                 we first wait to allow the cancellation to occur normally
-                            taskCompletionSource.TrySetException(new DownloadCancelledException()); //  but if it takes too long we give the killing blow manually
+                            await Task.Delay(5_000); 
+                            taskCompletionSource.TrySetException(new DownloadCancelledException());
                         }
                         catch // (Exception ex)
                         {
                             // ignored
                         }
                     });
+
                     return;
+                    
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
+                    //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
                 }
 
                 void DownloadAsyncOnDownloadCompleted(object sender, DownloadCompletedEventArgs ea)

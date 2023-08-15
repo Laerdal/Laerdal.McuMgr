@@ -52,12 +52,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             {
                 base.BeginErasure(imageIndex);
 
-                Task.Run(() => //00 vital
+                Task.Run(async () => //00 vital
                 {
-                    Task.Delay(10).GetAwaiter().GetResult();
+                    await Task.Delay(10);
                     StateChangedAdvertisement(oldState: EFirmwareErasureState.Idle, newState: EFirmwareErasureState.Erasing);
 
-                    Task.Delay(1_000).GetAwaiter().GetResult();
+                    await Task.Delay(1_000);
                     StateChangedAdvertisement(oldState: EFirmwareErasureState.Erasing, newState: EFirmwareErasureState.Complete);
                 });
 

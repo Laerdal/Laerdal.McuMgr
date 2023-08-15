@@ -70,12 +70,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
                 var verdict = base.BeginDownload(remoteFilePath);
 
-                Task.Run(() => //00 vital
+                Task.Run(async () => //00 vital
                 {
-                    Task.Delay(10).GetAwaiter().GetResult();
+                    await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
 
-                    Task.Delay(20).GetAwaiter().GetResult();
+                    await Task.Delay(20);
                     DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData);
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);

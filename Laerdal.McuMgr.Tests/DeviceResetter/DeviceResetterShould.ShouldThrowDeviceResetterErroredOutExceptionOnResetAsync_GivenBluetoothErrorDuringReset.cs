@@ -55,12 +55,12 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             {
                 base.BeginReset();
 
-                Task.Run(() => //00
+                Task.Run(async () => //00
                 {
-                    Thread.Sleep(10);
+                    await Task.Delay(10);
                     StateChangedAdvertisement(oldState: EDeviceResetterState.Idle, newState: EDeviceResetterState.Resetting);
 
-                    Thread.Sleep(20);
+                    await Task.Delay(20);
                     StateChangedAdvertisement(oldState: EDeviceResetterState.Resetting, newState: EDeviceResetterState.Failed);
                     FatalErrorOccurredAdvertisement("bluetooth error blah blah");
 

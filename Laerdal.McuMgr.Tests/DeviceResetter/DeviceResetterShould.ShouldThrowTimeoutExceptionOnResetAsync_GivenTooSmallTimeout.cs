@@ -54,12 +54,12 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             {
                 base.BeginReset();
 
-                Task.Run(() => //00 vital
+                Task.Run(async () => //00 vital
                 {
-                    Task.Delay(10).GetAwaiter().GetResult();
+                    await Task.Delay(10);
                     StateChangedAdvertisement(oldState: EDeviceResetterState.Idle, newState: EDeviceResetterState.Resetting);
 
-                    Task.Delay(1_000).GetAwaiter().GetResult();
+                    await Task.Delay(1_000);
                     StateChangedAdvertisement(oldState: EDeviceResetterState.Resetting, newState: EDeviceResetterState.Complete);
                 });
 
