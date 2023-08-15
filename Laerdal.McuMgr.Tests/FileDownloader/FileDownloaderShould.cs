@@ -16,6 +16,34 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public class FileDownloaderShould
     {
         [Fact]
+        public void ShouldThrowArgumentExceptionExceptionOnBeginDownload_GivenEmptyRemoteFilePath()
+        {
+            // Arrange
+            var mockedFileData = new byte[] { 1, 2, 3 };
+            const string remoteFilePath = "";
+            
+            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
+            var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
+
+            using var eventsMonitor = fileDownloader.Monitor();
+
+            // Act
+            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
+
+            // Assert
+            work.Should().ThrowExactly<ArgumentException>();
+
+            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
+            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
+            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeFalse();
+            
+            eventsMonitor.Should().NotRaise(nameof(fileDownloader.StateChanged));
+            eventsMonitor.Should().NotRaise(nameof(fileDownloader.DownloadCompleted));
+
+            //00 we dont want to disconnect the device regardless of the outcome
+        }
+        
+        [Fact]
         public async Task ShouldThrowArgumentExceptionExceptionOnDownloadAsync_GivenEmptyRemoteFilePath()
         {
             // Arrange
