@@ -4,16 +4,18 @@ using FluentAssertions;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Xunit;
 
+#pragma warning disable xUnit1026
+
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
     public partial class FileDownloaderShould
     {
         [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        [InlineData("foo/bar/")] //  paths are not allowed
-        [InlineData("/foo/bar/")] // to end with a slash 
-        public void ShouldThrowArgumentExceptionOnBeginDownload_GivenInvalidRemoteFilePath(string remoteFilePath)
+        [InlineData("FDS.STAEOBD.GIRFP.010", "")]
+        [InlineData("FDS.STAEOBD.GIRFP.020", null)]
+        [InlineData("FDS.STAEOBD.GIRFP.030", "foo/bar/")] //  paths are not allowed
+        [InlineData("FDS.STAEOBD.GIRFP.040", "/foo/bar/")] // to end with a slash 
+        public void ShouldThrowArgumentExceptionOnBeginDownload_GivenInvalidRemoteFilePath(string testcaseNickname, string remoteFilePath)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };

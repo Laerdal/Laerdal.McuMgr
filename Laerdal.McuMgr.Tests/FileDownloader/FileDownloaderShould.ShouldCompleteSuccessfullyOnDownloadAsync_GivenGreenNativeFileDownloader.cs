@@ -7,14 +7,16 @@ using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Xunit;
 
+#pragma warning disable xUnit1026
+
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
     public partial class FileDownloaderShould
     {
         [Theory]
-        [InlineData("path/to/file.bin")] // this should be normalized to /path/to/file.bin
-        [InlineData("/path/to/file.bin")]
-        public async Task ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader(string remoteFilePath)
+        [InlineData("FDS.SCSODA.GGNFD.010", "path/to/file.bin")] // this should be normalized to /path/to/file.bin
+        [InlineData("FDS.SCSODA.GGNFD.020", "/path/to/file.bin")]
+        public async Task ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader(string testcaseNickname, string remoteFilePath)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
