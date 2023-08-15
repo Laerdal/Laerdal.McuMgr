@@ -220,7 +220,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 catch (Exception ex) when (
                     !(ex is ArgumentException) //10 wops probably missing native lib symbols!
                     && !(ex is TimeoutException)
-                    && !(ex is IDownloadRelatedException) //this accounts for both cancellation and download exceptions!
+                    && !(ex is IDownloadRelatedException) //this accounts for both cancellations and download exceptions!
                 )
                 {
                     (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
