@@ -15,40 +15,15 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 {
     public class FileDownloaderShould
     {
-        [Fact]
-        public void ShouldReturnSuccessVerdictOnBeginDownload_GivenEmptyDataBytes()
-        {
-            // Arrange
-            var mockedFileData = new byte[] { };
-            const string remoteFilePath = "/some/path/to/file.bin";
-            
-            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
-            var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
-
-            using var eventsMonitor = fileDownloader.Monitor();
-
-            // Act
-            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
-
-            // Assert
-            work.Should().NotThrow().Subject.Should().Be(EFileDownloaderVerdict.Success);
-
-            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
-            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
-            
-            eventsMonitor.Should().NotRaise(nameof(fileDownloader.StateChanged));
-            eventsMonitor.Should().NotRaise(nameof(fileDownloader.DownloadCompleted));
-
-            //00 we dont want to disconnect the device regardless of the outcome
-        }
-        
-        [Fact]
-        public void ShouldThrowArgumentExceptionExceptionOnBeginDownload_GivenEmptyRemoteFilePath()
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("foo/bar/")] //  paths are not allowed
+        [InlineData("/foo/bar/")] // to end with a slash 
+        public void ShouldThrowArgumentExceptionExceptionOnBeginDownload_GivenInvalidRemoteFilePath(string remoteFilePath)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-            const string remoteFilePath = "";
             
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
