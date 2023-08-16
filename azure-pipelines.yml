@@ -151,7 +151,7 @@ jobs:
       - task: MSBuild@1
         displayName: MSBuild
         inputs:
-          solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
+          solution: Laerdal.McuMgr.Builder.targets
           msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/"  '
 
       - task: Bash@3
