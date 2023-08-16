@@ -29,7 +29,7 @@
 <Project DefaultTargets="BuildProjects">
 
     <PropertyGroup>
-        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Artifacts/`))</PackageOutputPath>
@@ -160,14 +160,9 @@
         <!-- build mcumgr.bindings -->
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr.Bindings/</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
-
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Configuration=$(Configuration)</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageOutputPath=$(PackageOutputPath)</_Laerdal_Build_Parameters>
-
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Version=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);FileVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);AssemblyVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
         <!-- notice that we are actually rebuilding bindings   merely building the project doesnt really cut it -->
