@@ -170,16 +170,16 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);AssemblyVersion=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
-        <!-- notice that we rebuild bindings   merely building the project doesnt really cut it -->
-        <MSBuild Projects="Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <!-- notice that we are actually rebuilding bindings   merely building the project doesnt really cut it -->
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
-        <!-- notice that we rebuild mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="Laerdal.McuMgr/Laerdal.McuMgr.csproj" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
     </Target>
 
     <!-- TESTS -->
