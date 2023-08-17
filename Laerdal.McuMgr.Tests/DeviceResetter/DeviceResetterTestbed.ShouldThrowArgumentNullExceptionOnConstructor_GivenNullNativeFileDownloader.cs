@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter
 {
-    public partial class DeviceResetterShould
+    public partial class DeviceResetterTestbed
     {
         [Fact]
         public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader()

@@ -67,12 +67,12 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="DeviceResetter\DeviceResetterShould.cs" />
-        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowTimeoutExceptionOnResetAsync_GivenTooSmallTimeout.cs" />
-        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenBluetoothErrorDuringReset.cs" />
-        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy.cs" />
-        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldCompleteSuccessfullyOnResetAsync_GivenGreenNativeDeviceResetter.cs" />
-        <Compile Include="DeviceResetter\DeviceResetterShould.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.ShouldThrowTimeoutExceptionOnResetAsync_GivenTooSmallTimeout.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenBluetoothErrorDuringReset.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.ShouldCompleteSuccessfullyOnResetAsync_GivenGreenNativeDeviceResetter.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader.cs" />

@@ -4,7 +4,7 @@ using GenericNativeDeviceResetterCallbacksProxy_ = Laerdal.McuMgr.DeviceResetter
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter
 {
-    public partial class DeviceResetterShould
+    public partial class DeviceResetterTestbed
     {
         private class MockedNativeDeviceResetterProxySpy : INativeDeviceResetterProxy // template class for other spies
         {

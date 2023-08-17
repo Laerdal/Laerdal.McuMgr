@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter
 {
-    public partial class DeviceResetterShould
+    public partial class DeviceResetterTestbed
     {
         [Fact]
         public async Task ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
