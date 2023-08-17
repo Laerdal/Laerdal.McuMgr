@@ -4,6 +4,7 @@ using FluentAssertions;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Xunit;
+using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
@@ -16,7 +17,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "";
 
-            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy2(new McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy(), mockedFileData);
+            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy2(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             using var eventsMonitor = fileDownloader.Monitor();

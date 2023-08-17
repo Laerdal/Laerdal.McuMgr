@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Xunit;
+using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
 
@@ -20,7 +21,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
 
-            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy1(new McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy(), mockedFileData);
+            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy1(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             using var eventsMonitor = fileDownloader.Monitor();

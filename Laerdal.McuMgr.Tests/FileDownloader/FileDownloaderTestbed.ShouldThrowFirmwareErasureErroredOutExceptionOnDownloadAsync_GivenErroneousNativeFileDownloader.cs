@@ -5,6 +5,7 @@ using FluentAssertions;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Xunit;
+using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
@@ -14,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         public async Task ShouldThrowFirmwareErasureErroredOutExceptionOnDownloadAsync_GivenErroneousNativeFileDownloader()
         {
             // Arrange
-            var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy(new McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy());
+            var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_());
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             // Act

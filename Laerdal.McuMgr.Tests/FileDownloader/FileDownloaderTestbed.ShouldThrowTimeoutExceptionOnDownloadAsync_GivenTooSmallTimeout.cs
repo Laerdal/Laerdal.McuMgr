@@ -7,6 +7,7 @@ using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Xunit;
+using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
@@ -18,7 +19,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             // Arrange
             const string remoteFilePath = "/path/to/file.bin";
 
-            var mockedNativeFileDownloaderProxy = new MockedGreenButSlowNativeFileDownloaderProxySpy(new McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy());
+            var mockedNativeFileDownloaderProxy = new MockedGreenButSlowNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_());
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             using var eventsMonitor = fileDownloader.Monitor();
