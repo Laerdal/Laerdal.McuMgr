@@ -259,7 +259,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         try
                         {
                             await Task.Delay(5_000); 
-                            taskCompletionSource.TrySetException(new DownloadCancelledException());
+                            taskCompletionSource.TrySetException(new DownloadCancelledException()); //00
                         }
                         catch // (Exception ex)
                         {
@@ -309,7 +309,7 @@ namespace Laerdal.McuMgr.FileDownloader
             //20  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
             //    in cases where the ble connection bites the dust and is unrecoverable because in that case the file downloader will just keep
             //    on trying in vain forever for like 50 retries or something and pressing the cancel button wont have any effect because
-            //    the upload cannot commence to begin with
+            //    the download cannot commence to begin with
         }
 
         void IFileDownloaderEventEmitters.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);

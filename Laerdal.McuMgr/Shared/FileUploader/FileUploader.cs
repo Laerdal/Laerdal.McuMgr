@@ -173,6 +173,8 @@ namespace Laerdal.McuMgr.FileUploader
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
+
+                    continue;
                 }
                 catch (Exception ex) when (
                     !(ex is ArgumentException) //10 wops probably missing native lib symbols!
