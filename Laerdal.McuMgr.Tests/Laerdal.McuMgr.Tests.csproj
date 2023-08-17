@@ -81,6 +81,7 @@
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowDownloadCancelledExceptionOnDownloadAsync_GivenCancellationRequestMidflight.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowDownloadErroredOutExceptionOnDownloadAsync_GivenFatalErrorMidflight.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowFirmwareErasureErroredOutExceptionOnDownloadAsync_GivenErroneousNativeFileDownloader.cs" />
+        <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowRemoteFileNotFoundExceptionOnDownloadAsync_GivenNonExistentFilepath.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowTimeoutExceptionOnDownloadAsync_GivenTooSmallTimeout.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.ShouldThrowTimeoutExceptionOnEraseAsync_GivenTooSmallTimeout.cs" />
