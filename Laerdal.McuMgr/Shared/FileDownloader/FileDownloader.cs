@@ -214,8 +214,9 @@ namespace Laerdal.McuMgr.FileDownloader
                     if (sleepTimeBetweenRetriesInMs > 0)
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
-                        continue;
                     }
+
+                    continue;
                 }
                 catch (Exception ex) when (
                     !(ex is ArgumentException) //10 wops probably missing native lib symbols!
