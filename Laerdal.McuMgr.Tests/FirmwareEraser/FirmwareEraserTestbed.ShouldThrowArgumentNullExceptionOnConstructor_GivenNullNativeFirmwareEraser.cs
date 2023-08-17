@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FirmwareEraser
 {
-    public partial class FirmwareEraserShould
+    public partial class FirmwareEraserTestbed
     {
         [Fact]
         public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFirmwareEraser()

@@ -82,11 +82,11 @@
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowDownloadErroredOutExceptionOnDownloadAsync_GivenFatalErrorMidflight.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowFirmwareErasureErroredOutExceptionOnDownloadAsync_GivenErroneousNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.ShouldThrowTimeoutExceptionOnDownloadAsync_GivenTooSmallTimeout.cs" />
-        <Compile Include="FirmwareEraser\FirmwareEraserShould.cs" />
-        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldThrowTimeoutExceptionOnEraseAsync_GivenTooSmallTimeout.cs" />
-        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldThrowFirmwareErasureErroredOutExceptionOnEraseAsync_GivenErroneousNativeFirmwareEraser.cs" />
-        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldCompleteSuccessfullyOnEraseAsync_GivenGreenNativeFirmwareEraser.cs" />
-        <Compile Include="FirmwareEraser\FirmwareEraserShould.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.ShouldThrowTimeoutExceptionOnEraseAsync_GivenTooSmallTimeout.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.ShouldThrowFirmwareErasureErroredOutExceptionOnEraseAsync_GivenErroneousNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.ShouldCompleteSuccessfullyOnEraseAsync_GivenGreenNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFirmwareEraser.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

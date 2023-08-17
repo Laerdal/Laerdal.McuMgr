@@ -4,7 +4,7 @@ using GenericNativeFirmwareEraserCallbacksProxy_ = Laerdal.McuMgr.FirmwareEraser
 
 namespace Laerdal.McuMgr.Tests.FirmwareEraser
 {
-    public partial class FirmwareEraserShould
+    public partial class FirmwareEraserTestbed
     {
         private class MockedNativeFirmwareEraserProxySpy : INativeFirmwareEraserProxy // template class for all spies
         {
