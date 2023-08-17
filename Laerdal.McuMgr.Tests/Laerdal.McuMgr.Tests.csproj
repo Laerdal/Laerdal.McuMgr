@@ -79,6 +79,7 @@
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowArgumentExceptionOnBeginDownload_GivenInvalidRemoteFilePath.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowArgumentExceptionOnDownloadAsync_GivenEmptyRemoteFilePath.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowDownloadCancelledExceptionOnDownloadAsync_GivenCancellationRequestMidflight.cs" />
+        <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowDownloadErroredOutExceptionOnDownloadAsync_GivenFatalErrorMidflight.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowFirmwareErasureErroredOutExceptionOnDownloadAsync_GivenErroneousNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderShould.ShouldThrowTimeoutExceptionOnDownloadAsync_GivenTooSmallTimeout.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserShould.cs" />

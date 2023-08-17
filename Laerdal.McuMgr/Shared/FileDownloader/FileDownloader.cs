@@ -209,7 +209,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         throw;
 
                     if (++retry > maxRetriesCount)
-                        throw new DownloadErroredOutException($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount} times", innerException: ex);
+                        throw new DownloadErroredOutException($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount + 1} times", innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0)
                     {
