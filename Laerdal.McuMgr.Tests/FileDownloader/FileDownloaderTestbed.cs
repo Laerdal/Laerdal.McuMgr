@@ -4,7 +4,7 @@ using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
-    public partial class FileDownloaderShould
+    public partial class FileDownloaderTestbed
     {
         private class MockedNativeFileDownloaderProxySpy : INativeFileDownloaderProxy //template class for all spies
         {

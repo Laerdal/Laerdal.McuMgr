@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
-    public partial class FileDownloaderShould
+    public partial class FileDownloaderTestbed
     {
         [Theory]
         [InlineData("FDS.SCSODA.GGNFD.010", "path/to/file.bin")] // this should be normalized to /path/to/file.bin

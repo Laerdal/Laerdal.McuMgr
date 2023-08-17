@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
-    public partial class FileDownloaderShould
+    public partial class FileDownloaderTestbed
     {
         [Theory]
         [InlineData("FDS.STAEOBD.GIRFP.010", "")]

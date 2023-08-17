@@ -12,7 +12,7 @@ using Xunit;
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
     [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters")]
-    public partial class FileDownloaderShould
+    public partial class FileDownloaderTestbed
     {
         [Theory]
         [InlineData("FDS.STDEOEODA.GFEM.010", 0)]

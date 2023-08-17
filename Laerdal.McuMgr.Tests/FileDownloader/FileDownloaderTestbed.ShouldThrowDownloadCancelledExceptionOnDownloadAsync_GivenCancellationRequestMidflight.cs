@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
-    public partial class FileDownloaderShould
+    public partial class FileDownloaderTestbed
     {
         [Fact]
         public async Task ShouldThrowDownloadCancelledExceptionOnDownloadAsync_GivenCancellationRequestMidflight()
