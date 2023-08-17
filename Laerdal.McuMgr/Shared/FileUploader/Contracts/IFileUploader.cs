@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileUploader.Events;
+using Laerdal.McuMgr.FileUploader.Contracts.Events;
 
-namespace Laerdal.McuMgr.FileUploader
+namespace Laerdal.McuMgr.FileUploader.Contracts
 {
     /// <summary>Uploads a file on a specific Nordic-chip-based BLE device</summary>
     /// <remarks>For the file-uploading process to even commence you need to be authenticated with the AED device that's being targeted.</remarks>

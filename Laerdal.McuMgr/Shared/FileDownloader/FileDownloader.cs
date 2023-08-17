@@ -195,6 +195,8 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 catch (TimeoutException ex)
                 {
+                    //todo   silently cancel the download here on best effort basis
+                    
                     (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
                         resource: remoteFilePath,
                         oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail

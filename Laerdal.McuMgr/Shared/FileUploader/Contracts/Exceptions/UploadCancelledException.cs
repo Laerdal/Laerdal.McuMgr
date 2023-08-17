@@ -1,6 +1,6 @@
 using System;
 
-namespace Laerdal.McuMgr.FileUploader.Exceptions
+namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
     public class UploadCancelledException : Exception, IUploadRelatedException
     {

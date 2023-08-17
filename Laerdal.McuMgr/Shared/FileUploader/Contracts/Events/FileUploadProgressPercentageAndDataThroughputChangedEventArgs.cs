@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Laerdal.McuMgr.FileUploader.Events
+namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
     public sealed class FileUploadProgressPercentageAndDataThroughputChangedEventArgs : EventArgs
     {

@@ -2,7 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Linq;
+using Laerdal.McuMgr.FileUploader.Contracts;
 
 namespace Laerdal.McuMgr.FileUploader
 {

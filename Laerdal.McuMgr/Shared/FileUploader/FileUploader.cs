@@ -7,8 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileUploader.Events;
-using Laerdal.McuMgr.FileUploader.Exceptions;
+using Laerdal.McuMgr.FileUploader.Contracts;
+using Laerdal.McuMgr.FileUploader.Contracts.Events;
+using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileUploader
 {

@@ -1,6 +1,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
-namespace Laerdal.McuMgr.FileUploader.Exceptions
+namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
     public sealed class UploadErroredOutRemoteFolderNotFoundException : UploadErroredOutException, IUploadRelatedException
     {
