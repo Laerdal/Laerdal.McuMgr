@@ -131,9 +131,9 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public async Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
-            int sleepTimeBetweenRetriesInMs = 0,
             int timeoutPerDownloadInMs = -1,
-            int maxRetriesPerDownload = 10
+            int maxRetriesPerDownload = 10,
+            int sleepTimeBetweenRetriesInMs = 0
         )
         {
             var results = (remoteFilePaths ?? Enumerable.Empty<string>()).ToDictionary(

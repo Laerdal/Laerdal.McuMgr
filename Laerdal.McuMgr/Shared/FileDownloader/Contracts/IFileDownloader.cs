@@ -54,9 +54,9 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
         Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
-            int sleepTimeBetweenRetriesInMs = 1_000,
             int timeoutPerDownloadInMs = -1,
-            int maxRetriesPerDownload = 10
+            int maxRetriesPerDownload = 10,
+            int sleepTimeBetweenRetriesInMs = 0
         );
         
         /// <summary>
