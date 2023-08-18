@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
     public partial class DeviceResetterTestbed
     {
         [Fact]
-        public async Task ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
+        public async Task ResetAsync_ShouldThrowDeviceResetterErroredOutException_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy()
         {
             // Arrange
             var mockedNativeDeviceResetterProxy = new MockedErroneousDueToMissingSymbolsNativeDeviceResetterProxySpy(new McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy());

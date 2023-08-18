@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
     public partial class DeviceResetterTestbed
     {
         [Fact]
-        public async Task ShouldThrowDeviceResetterErroredOutExceptionOnResetAsync_GivenBluetoothErrorDuringReset()
+        public async Task ResetAsync_ShouldThrowDeviceResetterErroredOutException_GivenBluetoothErrorDuringReset()
         {
             // Arrange
             var mockedNativeDeviceResetterProxy = new MockedErroneousDueToBluetoothNativeDeviceResetterProxySpy(new McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy());

@@ -8,7 +8,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
     public partial class DeviceResetterTestbed
     {
         [Fact]
-        public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader()
+        public void DeviceResetterConstructor_ShouldThrowArgumentNullException_GivenNullNativeFileDownloader()
         {
             // Arrange
 
