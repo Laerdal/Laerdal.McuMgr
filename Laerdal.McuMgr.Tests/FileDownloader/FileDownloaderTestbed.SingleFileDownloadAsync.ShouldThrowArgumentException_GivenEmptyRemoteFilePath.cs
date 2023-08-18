@@ -11,7 +11,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task ShouldThrowArgumentExceptionOnDownloadAsync_GivenEmptyRemoteFilePath()
+        public async Task SingleFileDownloadAsync_ShouldThrowArgumentException_GivenEmptyRemoteFilePath()
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };

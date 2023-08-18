@@ -8,7 +8,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFileDownloader()
+        public void FileDownloaderConstructor_ShouldThrowArgumentNullException_GivenNullNativeFileDownloader()
         {
             // Arrange
 

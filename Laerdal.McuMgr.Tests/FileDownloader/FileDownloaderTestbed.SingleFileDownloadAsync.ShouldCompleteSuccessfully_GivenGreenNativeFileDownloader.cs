@@ -22,7 +22,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         [InlineData("FDS.SCSODA.GGNFD.050", "/path/to/file.bin", 2, -100)]
         [InlineData("FDS.SCSODA.GGNFD.060", "/path/to/file.bin", 2, +000)]
         [InlineData("FDS.SCSODA.GGNFD.070", "/path/to/file.bin", 2, +100)]
-        public async Task ShouldCompleteSuccessfullyOnDownloadAsync_GivenGreenNativeFileDownloader(string testcaseNickname, string remoteFilePath, int maxRetriesCount, int sleepTimeBetweenRetriesInMs)
+        public async Task SingleFileDownloadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader(string testcaseNickname, string remoteFilePath, int maxRetriesCount, int sleepTimeBetweenRetriesInMs)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };

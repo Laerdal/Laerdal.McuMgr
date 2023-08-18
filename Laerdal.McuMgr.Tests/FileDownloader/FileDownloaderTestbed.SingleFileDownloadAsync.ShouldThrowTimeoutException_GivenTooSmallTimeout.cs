@@ -14,7 +14,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task ShouldThrowTimeoutExceptionOnDownloadAsync_GivenTooSmallTimeout()
+        public async Task SingleFileDownloadAsync_ShouldThrowTimeoutException_GivenTooSmallTimeout()
         {
             // Arrange
             const string remoteFilePath = "/path/to/file.bin";

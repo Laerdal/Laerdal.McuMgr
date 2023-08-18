@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task ShouldThrowDownloadCancelledExceptionOnDownloadAsync_GivenCancellationRequestMidflight()
+        public async Task SingleFileDownloadAsync_ShouldThrowDownloadCancelledException_GivenCancellationRequestMidflight()
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
