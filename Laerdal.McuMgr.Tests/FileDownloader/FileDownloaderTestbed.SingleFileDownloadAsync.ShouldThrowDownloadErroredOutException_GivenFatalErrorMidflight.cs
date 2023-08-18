@@ -16,8 +16,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDS.STDEOEODA.GFEM.010", 0)]
-        [InlineData("FDS.STDEOEODA.GFEM.010", 1)]
+        [InlineData("FDS.SFDA.STDEOE.GFEM.010", 0)]
+        [InlineData("FDS.SFDA.STDEOE.GFEM.020", 1)]
         public async Task SingleFileDownloadAsync_ShouldThrowDownloadErroredOutException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
         {
             // Arrange

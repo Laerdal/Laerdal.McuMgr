@@ -15,13 +15,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDS.SCSODA.GGNFD.010", "path/to/file.bin", 00, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FDS.SCSODA.GGNFD.020", "/path/to/file.bin", 1, -100)] // negative sleep time should be interpreted as 0
-        [InlineData("FDS.SCSODA.GGNFD.030", "/path/to/file.bin", 1, +000)]
-        [InlineData("FDS.SCSODA.GGNFD.040", "/path/to/file.bin", 1, +100)]
-        [InlineData("FDS.SCSODA.GGNFD.050", "/path/to/file.bin", 2, -100)]
-        [InlineData("FDS.SCSODA.GGNFD.060", "/path/to/file.bin", 2, +000)]
-        [InlineData("FDS.SCSODA.GGNFD.070", "/path/to/file.bin", 2, +100)]
+        [InlineData("FDS.SFDA.SCS.GGNFD.010", "path/to/file.bin", 00, +100)] // this should be normalized to /path/to/file.bin
+        [InlineData("FDS.SFDA.SCS.GGNFD.020", "/path/to/file.bin", 1, -100)] // negative sleep time should be interpreted as 0
+        [InlineData("FDS.SFDA.SCS.GGNFD.030", "/path/to/file.bin", 1, +000)]
+        [InlineData("FDS.SFDA.SCS.GGNFD.040", "/path/to/file.bin", 1, +100)]
+        [InlineData("FDS.SFDA.SCS.GGNFD.050", "/path/to/file.bin", 2, -100)]
+        [InlineData("FDS.SFDA.SCS.GGNFD.060", "/path/to/file.bin", 2, +000)]
+        [InlineData("FDS.SFDA.SCS.GGNFD.070", "/path/to/file.bin", 2, +100)]
         public async Task SingleFileDownloadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader(string testcaseNickname, string remoteFilePath, int maxRetriesCount, int sleepTimeBetweenRetriesInMs)
         {
             // Arrange

@@ -12,10 +12,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDS.STAEOBD.GIRFP.010", "")]
-        [InlineData("FDS.STAEOBD.GIRFP.020", null)]
-        [InlineData("FDS.STAEOBD.GIRFP.030", "foo/bar/")] //  paths are not allowed
-        [InlineData("FDS.STAEOBD.GIRFP.040", "/foo/bar/")] // to end with a slash 
+        [InlineData("FDS.BD.STAE.GIRFP.010", "")]
+        [InlineData("FDS.BD.STAE.GIRFP.020", null)]
+        [InlineData("FDS.BD.STAE.GIRFP.030", "foo/bar/")] //  paths are not allowed
+        [InlineData("FDS.BD.STAE.GIRFP.040", "/foo/bar/")] // to end with a slash 
         public void BeginDownload_ShouldThrowArgumentException_GivenInvalidRemoteFilePath(string testcaseNickname, string remoteFilePath)
         {
             // Arrange

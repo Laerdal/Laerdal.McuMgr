@@ -17,10 +17,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDT.STRFNFEODA.GNEF.010", "NO ENTRY (5)", 0)] //android
-        [InlineData("FDT.STRFNFEODA.GNEF.020", "NO ENTRY (5)", 1)] //android
-        [InlineData("FDT.STRFNFEODA.GNEF.030", "NO ENTRY (5)", 2)] //android
-        [InlineData("FDT.STRFNFEODA.GNEF.040", "NO_ENTRY (5)", 1)] //ios
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.010", "NO ENTRY (5)", 0)] //android
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.020", "NO ENTRY (5)", 1)] //android
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.030", "NO ENTRY (5)", 2)] //android
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.040", "NO_ENTRY (5)", 1)] //ios
         public async Task SingleFileDownloadAsync_ShouldThrowRemoteFileNotFoundException_GivenNonExistentFilepath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxRetriesCount)
         {
             // Arrange
