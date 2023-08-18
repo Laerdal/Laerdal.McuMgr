@@ -136,23 +136,30 @@ namespace Laerdal.McuMgr.FileDownloader
             int sleepTimeBetweenRetriesInMs = 0
         )
         {
-            var results = (remoteFilePaths ?? Enumerable.Empty<string>()).ToDictionary(
-                keySelector: x => x,
-                elementSelector: x => (byte[])null
-            );
+            var sanitizedRemoteFilesPaths = (remoteFilePaths ?? Enumerable.Empty<string>())
+                .GroupBy(p => p) //unique ones only   todo   normalize the paths here
+                .Select(p => p.First())
+                .ToArray();
+            
+            if (sanitizedRemoteFilesPaths.Any(s => string.IsNullOrWhiteSpace(s) || s.EndsWith("/")))
+                throw new ArgumentException($"The {nameof(remoteFilePaths)} parameter contains duds and/or paths that end with '/'!", nameof(remoteFilePaths));
 
-            foreach (var x in results)
+            var results = new Dictionary<string, byte[]>(sanitizedRemoteFilesPaths.Length);
+            foreach (var path in sanitizedRemoteFilesPaths) //00 impossible to parallelize
             {
+                if (results.ContainsKey(path)) //already processed
+                    continue;
+                
                 try
                 {
                     var data = await DownloadAsync(
-                        remoteFilePath: x.Key,
+                        remoteFilePath: path,
                         maxRetriesCount: maxRetriesPerDownload,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
                     );
 
-                    results[x.Key] = data;
+                    results[path] = data;
                 }
                 catch (DownloadErroredOutRemoteFileNotFoundException)
                 {
@@ -161,6 +168,8 @@ namespace Laerdal.McuMgr.FileDownloader
             }
 
             return results;
+            
+            //0 we would love to parallelize all this but the native side simply reverts to queuing the requests so its pointless
         }
 
         public async Task<byte[]> DownloadAsync(
