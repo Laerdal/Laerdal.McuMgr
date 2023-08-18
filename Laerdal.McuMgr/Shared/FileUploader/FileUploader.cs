@@ -93,6 +93,7 @@ namespace Laerdal.McuMgr.FileUploader
             if (remoteFilePathsAndTheirDataBytes == null)
                 throw new ArgumentNullException(nameof(remoteFilePathsAndTheirDataBytes));
 
+            //todo  normalize paths here and detect duds and paths that end with a slash
             var filesThatDidntGetUploadedYet = new HashSet<string>(remoteFilePathsAndTheirDataBytes.Select(x => x.Key));
 
             foreach (var x in remoteFilePathsAndTheirDataBytes)
