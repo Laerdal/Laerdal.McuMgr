@@ -136,7 +136,7 @@ namespace Laerdal.McuMgr.FileDownloader
             int maxRetriesPerDownload = 10
         )
         {
-            var results = remoteFilePaths.ToDictionary(
+            var results = (remoteFilePaths ?? Enumerable.Empty<string>()).ToDictionary(
                 keySelector: x => x,
                 elementSelector: x => (byte[])null
             );
