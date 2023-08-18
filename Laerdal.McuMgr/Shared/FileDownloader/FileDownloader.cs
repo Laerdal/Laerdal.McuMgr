@@ -129,7 +129,7 @@ namespace Laerdal.McuMgr.FileDownloader
             remove => _fileDownloadProgressPercentageAndDataThroughputChanged -= value;
         }
 
-        public async Task<Dictionary<string, byte[]>> DownloadAsync(
+        public async Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
             int sleepTimeBetweenRetriesInMs = 0,
             int timeoutPerDownloadInMs = -1,
@@ -146,7 +146,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 try
                 {
                     var data = await DownloadAsync(
-                        x.Key,
+                        remoteFilePath: x.Key,
                         maxRetriesCount: maxRetriesPerDownload,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs

@@ -52,7 +52,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <param name="maxRetriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
-        Task<Dictionary<string, byte[]>> DownloadAsync(
+        Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
             int sleepTimeBetweenRetriesInMs = 1_000,
             int timeoutPerDownloadInMs = -1,
