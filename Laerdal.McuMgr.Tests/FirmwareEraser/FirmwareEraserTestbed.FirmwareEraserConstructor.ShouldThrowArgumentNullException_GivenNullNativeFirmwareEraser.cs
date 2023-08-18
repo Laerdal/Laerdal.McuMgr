@@ -8,7 +8,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
     public partial class FirmwareEraserTestbed
     {
         [Fact]
-        public void ShouldThrowArgumentNullExceptionOnConstructor_GivenNullNativeFirmwareEraser()
+        public void FirmwareEraserConstructor_ShouldThrowArgumentNullException_GivenNullNativeFirmwareEraser()
         {
             // Arrange
 

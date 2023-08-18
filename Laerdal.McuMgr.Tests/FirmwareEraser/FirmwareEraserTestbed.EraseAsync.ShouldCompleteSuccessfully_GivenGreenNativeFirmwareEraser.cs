@@ -10,7 +10,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
     public partial class FirmwareEraserTestbed
     {
         [Fact]
-        public async Task ShouldCompleteSuccessfullyOnEraseAsync_GivenGreenNativeFirmwareEraser()
+        public async Task EraseAsync_ShouldCompleteSuccessfully_GivenGreenNativeFirmwareEraser()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedGreenNativeFirmwareEraserProxySpy1(new McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy());

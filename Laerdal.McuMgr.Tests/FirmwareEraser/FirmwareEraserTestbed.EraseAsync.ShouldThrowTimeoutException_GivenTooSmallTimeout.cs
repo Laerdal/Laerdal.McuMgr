@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
     public partial class FirmwareEraserTestbed
     {
         [Fact]
-        public async Task ShouldThrowTimeoutExceptionOnEraseAsync_GivenTooSmallTimeout()
+        public async Task EraseAsync_ShouldThrowTimeoutException_GivenTooSmallTimeout()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedGreenButSlowNativeFirmwareEraserProxySpy(new McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy());
