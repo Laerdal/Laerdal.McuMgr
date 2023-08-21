@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts;
@@ -124,26 +123,12 @@ namespace Laerdal.McuMgr.FileDownloader
             int sleepTimeBetweenRetriesInMs = 0
         )
         {
-            remoteFilePaths = remoteFilePaths ?? throw new ArgumentNullException(nameof(remoteFilePaths));
-            
-            var sanitizedRemoteFilesPaths = remoteFilePaths
-                .Select(path =>
-                {
-                    RemoteFilePathHelpers.ValidateRemoteFilePath(path); //        order
-                    path = RemoteFilePathHelpers.SanitizeRemoteFilePath(path); // order
-                    
-                    return path; //unique ones only
-                })
-                .GroupBy(path => path)
-                .Select(group => group.First())
-                .ToArray();
+            RemoteFilePathHelpers.ValidateRemoteFilePaths(remoteFilePaths); //                                        order
+            var sanitizedUniqueRemoteFilesPaths = RemoteFilePathHelpers.SanitizeRemoteFilePaths(remoteFilePaths); //  order
 
-            var results = new Dictionary<string, byte[]>(sanitizedRemoteFilesPaths.Length);
-            foreach (var path in sanitizedRemoteFilesPaths) //00 impossible to parallelize
+            var results = new Dictionary<string, byte[]>(sanitizedUniqueRemoteFilesPaths.Length);
+            foreach (var path in sanitizedUniqueRemoteFilesPaths) //00 impossible to parallelize
             {
-                if (results.ContainsKey(path)) //already processed
-                    continue;
-                
                 try
                 {
                     var data = await DownloadAsync(
