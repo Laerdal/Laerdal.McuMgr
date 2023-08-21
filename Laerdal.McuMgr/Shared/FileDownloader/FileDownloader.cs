@@ -136,7 +136,9 @@ namespace Laerdal.McuMgr.FileDownloader
             int sleepTimeBetweenRetriesInMs = 0
         )
         {
-            var sanitizedRemoteFilesPaths = (remoteFilePaths ?? Enumerable.Empty<string>())
+            remoteFilePaths = remoteFilePaths ?? throw new ArgumentNullException(nameof(remoteFilePaths));
+            
+            var sanitizedRemoteFilesPaths = remoteFilePaths
                 .GroupBy(p => p) //unique ones only   todo   normalize the paths here
                 .Select(p => p.First())
                 .ToArray();

@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Xunit;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
@@ -15,21 +14,20 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task MultipleFilesDownloadAsync_ShouldCompleteSuccessfully_GivenNoFilesToDownload()
+        public async Task ShouldThrowNullArgumentException_GivenNullForFilesToDownload()
         {
             // Arrange
-            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy5(new GenericNativeFileDownloaderCallbacksProxy_());
+            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy10(new GenericNativeFileDownloaderCallbacksProxy_());
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(Enumerable.Empty<string>()));
+            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(remoteFilePaths: null));
 
             // Assert
-            var results = (await work.Should().CompleteWithinAsync(10.Milliseconds())).Which;
+            await work.Should().ThrowAsync<ArgumentNullException>().WithTimeoutInMs(100);
 
-            results.Should().BeEmpty();
             eventsMonitor.OccurredEvents.Should().HaveCount(0);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
@@ -39,9 +37,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileDownloaderProxySpy5 : MockedNativeFileDownloaderProxySpy
+        private class MockedGreenNativeFileDownloaderProxySpy10 : MockedNativeFileDownloaderProxySpy
         {
-            public MockedGreenNativeFileDownloaderProxySpy5(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy) : base(downloaderCallbacksProxy)
+            public MockedGreenNativeFileDownloaderProxySpy10(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy) : base(downloaderCallbacksProxy)
             {
             }
 
