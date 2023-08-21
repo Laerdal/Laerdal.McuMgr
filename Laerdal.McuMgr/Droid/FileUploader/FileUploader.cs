@@ -39,30 +39,15 @@ namespace Laerdal.McuMgr.FileUploader
 
         public IFileUploader.EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
         {
-            // if (data == null || !data.Any())
-            //     throw new InvalidOperationException($"The '{nameof(data)}' byte-array parameter is null or empty");
-
-            if (string.IsNullOrWhiteSpace(remoteFilePath))
-                throw new InvalidOperationException($"The {nameof(remoteFilePath)} parameter is dud!");
-
-            remoteFilePath = remoteFilePath.Trim();
-            if (remoteFilePath.EndsWith("/")) //00
-                throw new InvalidOperationException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
-
-            if (!remoteFilePath.StartsWith("/")) //10
-            {
-                remoteFilePath = $"/{remoteFilePath}";
-            }
-
-            if (data == null || !data.Any())
-                throw new InvalidOperationException("The data byte-array parameter is null or empty");
+            if (data == null) //its ok if the data is empty   but it cant be null
+                throw new InvalidOperationException("The data byte-array parameter is null");
+            
+            RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
+            remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
             var verdict = _androidFileUploaderProxy.BeginUpload(remoteFilePath: remoteFilePath, data: data);
 
             return TranslateFileUploaderVerdict(verdict);
-
-            //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
-            //10  the target file path must be absolute   if its not then we make it so   relative paths cause exotic errors
         }
 
         public void Cancel() => _androidFileUploaderProxy?.Cancel();

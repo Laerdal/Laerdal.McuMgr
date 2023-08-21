@@ -27,25 +27,13 @@ namespace Laerdal.McuMgr.FileDownloader
         public string LastFatalErrorMessage => _nativeFileDownloaderProxy?.LastFatalErrorMessage;
 
         public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
-        {           
-            if (string.IsNullOrWhiteSpace(remoteFilePath))
-                throw new ArgumentException($"The {nameof(remoteFilePath)} parameter is dud!");
-
-            remoteFilePath = remoteFilePath.Trim();
-            if (remoteFilePath.EndsWith("/")) //00
-                throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
-
-            if (!remoteFilePath.StartsWith("/")) //10
-            {
-                remoteFilePath = $"/{remoteFilePath}";
-            }
+        {
+            RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
+            remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
             var verdict = _nativeFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath);
 
             return verdict;
-
-            //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
-            //10  the target file path must be absolute   if its not then we make it so   relative paths cause exotic errors
         }
 
         public void Cancel() => _nativeFileDownloaderProxy?.Cancel();
