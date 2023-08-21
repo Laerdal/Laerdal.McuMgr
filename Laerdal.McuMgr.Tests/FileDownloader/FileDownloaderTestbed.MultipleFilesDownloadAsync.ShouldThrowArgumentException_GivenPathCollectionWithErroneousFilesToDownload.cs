@@ -16,6 +16,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         [Theory]
         [InlineData("FDS.MFDA.STAE.GPCWEFTD.010", new[] { "/foo/bar.bin", "" })]
         [InlineData("FDS.MFDA.STAE.GPCWEFTD.020", new[] { "/foo/bar.bin", null })]
+        [InlineData("FDS.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\f/pong.bin" })]
+        [InlineData("FDS.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\r/pong.bin" })]
+        [InlineData("FDS.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping\n/pong.bin" })]
+        [InlineData("FDS.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "/ping\r\n/pong.bin" })]
         [InlineData("FDS.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "ping/pong.bin/" })]
         [InlineData("FDS.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping/pong.bin/" })]
         [InlineData("FDS.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "  ping/pong.bin/  " })] //2nd path gets normalized to  "/ping/pong.bin/" which is invalid due to the trailing slash 
