@@ -90,16 +90,13 @@ namespace Laerdal.McuMgr.FileUploader
             int maxRetriesPerUpload = 10
         )
         {
-            remoteFilePathsAndTheirDataBytes = remoteFilePathsAndTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsAndTheirDataBytes));
+            RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
+            var sanitizedRemoteFilePathsAndTheirDataBytes = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
 
-            //todo  normalize paths here and detect duds and paths that end with a slash
-            var filesThatDidntGetUploadedYet = new HashSet<string>(remoteFilePathsAndTheirDataBytes.Select(x => x.Key));
+            var filesThatDidntGetUploadedYet = new HashSet<string>(sanitizedRemoteFilePathsAndTheirDataBytes.Select(x => x.Key));
 
-            foreach (var x in remoteFilePathsAndTheirDataBytes)
+            foreach (var x in sanitizedRemoteFilePathsAndTheirDataBytes)
             {
-                if (!filesThatDidntGetUploadedYet.Contains(x.Key))
-                    continue;
-
                 try
                 {
                     await UploadAsync(
