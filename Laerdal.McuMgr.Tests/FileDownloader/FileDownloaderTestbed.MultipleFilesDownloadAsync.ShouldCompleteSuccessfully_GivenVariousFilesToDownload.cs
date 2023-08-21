@@ -33,7 +33,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
                 "some/file/that/exists.bin",
                 "/some/file/that/exists.bin",
-                "/some/file/that/exists.bin", //intentionally included multiple times to test whether the mechanism will attempt to download the file only once 
+                "/some/file/that/exists.bin",
+                "  some/file/that/exists.bin   ", //intentionally included multiple times to test whether the mechanism will attempt to download the file only once 
                 "Some/File/That/Exists.bin",
                 "/Some/File/That/Exists.bin",
                 "/Some/File/That/Exists.bin", //intentionally included multiple times to test that we handle case sensitivity correctly

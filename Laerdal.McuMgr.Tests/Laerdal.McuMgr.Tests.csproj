@@ -76,6 +76,7 @@
         <Compile Include="FileDownloader\FileDownloaderTestbed.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.MultipleFilesDownloadAsync.ShouldCompleteSuccessfully_GivenNoFilesToDownload.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.MultipleFilesDownloadAsync.ShouldCompleteSuccessfully_GivenVariousFilesToDownload.cs" />
+        <Compile Include="FileDownloader\FileDownloaderTestbed.MultipleFilesDownloadAsync.ShouldThrowArgumentException_GivenPathCollectionWithErroneousFilesToDownload.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.MultipleFilesDownloadAsync.ShouldThrowNullArgumentException_GivenNullForFilesToDownload.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowArgumentException_GivenEmptyRemoteFilePath.cs" />
