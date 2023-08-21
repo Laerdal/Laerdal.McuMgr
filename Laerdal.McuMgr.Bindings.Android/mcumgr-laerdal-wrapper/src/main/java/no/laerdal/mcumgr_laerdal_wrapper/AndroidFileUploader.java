@@ -88,8 +88,8 @@ public class AndroidFileUploader
 
         _initialBytes = 0;
         setState(EAndroidFileUploaderState.IDLE);
-        busyStateChangedAdvertisement(_remoteFilePathSanitized, true);
-        fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(_remoteFilePathSanitized, 0, 0);
+        busyStateChangedAdvertisement(true);
+        fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
 
         _controller = new FileUploader( //00
                 _fileSystemManager,
@@ -114,7 +114,7 @@ public class AndroidFileUploader
         setState(EAndroidFileUploaderState.PAUSED);
         setLoggingEnabled(true);
         transferController.pause();
-        busyStateChangedAdvertisement(_remoteFilePathSanitized, false);
+        busyStateChangedAdvertisement(false);
     }
 
     public void resume()
@@ -125,7 +125,7 @@ public class AndroidFileUploader
 
         setState(EAndroidFileUploaderState.UPLOADING);
 
-        busyStateChangedAdvertisement(_remoteFilePathSanitized, true);
+        busyStateChangedAdvertisement(true);
         _initialBytes = 0;
 
         setLoggingEnabled(false);
@@ -177,7 +177,7 @@ public class AndroidFileUploader
 
         if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(_remoteFilePathSanitized, 100, 0);
+            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -195,12 +195,17 @@ public class AndroidFileUploader
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void busyStateChangedAdvertisement(final String remoteFilePath, boolean busyNotIdle)
+    public void busyStateChangedAdvertisement(final boolean busyNotIdle)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void cancelledAdvertisement(final String remoteFilePath)
+    public void uploadCompletedAdvertisement(final String remoteFilePath)
+    {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    public void cancelledAdvertisement()
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -210,7 +215,7 @@ public class AndroidFileUploader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(final String remoteFilePath, final int progressPercentage, final float averageThroughput)
+    public void fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -245,7 +250,6 @@ public class AndroidFileUploader
             }
 
             fileUploadProgressPercentageAndThroughputDataChangedAdvertisement( // convert to percent
-                    _remoteFilePathSanitized,
                     fileUploadProgressPercentage,
                     transferSpeed
             );
@@ -254,21 +258,21 @@ public class AndroidFileUploader
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(_remoteFilePathSanitized, 0, 0);
+            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
             setState(EAndroidFileUploaderState.ERROR);
             fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
             setLoggingEnabled(true);
-            busyStateChangedAdvertisement(_remoteFilePathSanitized, false);
+            busyStateChangedAdvertisement(false);
         }
 
         @Override
         public void onUploadCanceled()
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(_remoteFilePathSanitized, 0, 0);
+            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
             setState(EAndroidFileUploaderState.CANCELLED);
-            cancelledAdvertisement(_remoteFilePathSanitized);
+            cancelledAdvertisement();
             setLoggingEnabled(true);
-            busyStateChangedAdvertisement(_remoteFilePathSanitized, false);
+            busyStateChangedAdvertisement(false);
         }
 
         @Override
@@ -276,8 +280,9 @@ public class AndroidFileUploader
         {
             //fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
             setState(EAndroidFileUploaderState.COMPLETE);
+            uploadCompletedAdvertisement(_remoteFilePathSanitized);
             setLoggingEnabled(true);
-            busyStateChangedAdvertisement(_remoteFilePathSanitized, false);
+            busyStateChangedAdvertisement(false);
         }
     }
 }

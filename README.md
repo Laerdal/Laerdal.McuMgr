@@ -561,15 +561,15 @@ private void CleanupDeviceResetter()
 
         switch (ea.NewState)
         {
-            case IFileUploader.EFileUploaderState.Idle:
+            case EFileUploaderState.Idle:
                 MassUploadResetUIToDefaultValues();
                 return;
             
-            case IFileUploader.EFileUploaderState.Error:
+            case EFileUploaderState.Error:
                 MassFileUploaderNumberOfFailuresToUploadCurrentFile += 1;
                 return;
             
-            case IFileUploader.EFileUploaderState.Complete:
+            case EFileUploaderState.Complete:
                 MassFileUploaderNumberOfFilesUploadedSuccessfully += 1;
                 return;
         }

@@ -4,12 +4,10 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
     public sealed class UploadCompletedEventArgs : EventArgs
     {
-        public byte[] Data { get; }
         public string Resource { get; }
 
-        public UploadCompletedEventArgs(string resource, byte[] data)
+        public UploadCompletedEventArgs(string resource)
         {
-            Data = data;
             Resource = resource;
         }
     }

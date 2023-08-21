@@ -123,12 +123,17 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func cancelledAdvertisement() {
-        _listener.cancelledAdvertisement(_remoteFilePathSanitized)
+        _listener.cancelledAdvertisement()
+    }
+
+    //@objc   dont
+    private func uploadCompletedAdvertisement() {
+        _listener.uploadCompletedAdvertisement(_remoteFilePathSanitized)
     }
 
     //@objc   dont
     private func busyStateChangedAdvertisement(_ busyNotIdle: Bool) {
-        _listener.busyStateChangedAdvertisement(_remoteFilePathSanitized, busyNotIdle)
+        _listener.busyStateChangedAdvertisement(busyNotIdle)
     }
 
     //@objc   dont
@@ -145,7 +150,6 @@ public class IOSFileUploader: NSObject {
             _ averageThroughput: Float32
     ) {
         _listener.fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(
-                _remoteFilePathSanitized,
                 progressPercentage,
                 averageThroughput
         )
@@ -195,6 +199,7 @@ extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadDidFinish() {
         setState(EIOSFileUploaderState.complete)
+        uploadCompletedAdvertisement()
         busyStateChangedAdvertisement(false)
     }
 

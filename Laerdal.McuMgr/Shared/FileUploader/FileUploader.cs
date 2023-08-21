@@ -18,6 +18,8 @@ namespace Laerdal.McuMgr.FileUploader
     {
         private readonly INativeFileUploaderProxy _nativeFileUploaderProxy;
 
+        public string LastFatalErrorMessage => _nativeFileUploaderProxy?.LastFatalErrorMessage;
+
         //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFileUploaderProxy
         internal FileUploader(INativeFileUploaderProxy nativeFileUploaderProxy)
         {
@@ -25,7 +27,7 @@ namespace Laerdal.McuMgr.FileUploader
             _nativeFileUploaderProxy.FileUploader = this; //vital
         }
 
-        public EFileUploaderVerdict BeginDownload(string remoteFilePath, byte[] data)
+        public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
         {
             data = data ?? throw new ArgumentNullException(nameof(data));
             
@@ -36,6 +38,9 @@ namespace Laerdal.McuMgr.FileUploader
 
             return verdict;
         }
+        
+        public void Cancel() => _nativeFileUploaderProxy?.Cancel();
+        public void Disconnect() => _nativeFileUploaderProxy?.Disconnect();
         
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
@@ -317,8 +322,8 @@ namespace Laerdal.McuMgr.FileUploader
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void UploadCompletedAdvertisement(string resource, byte[] data)
-                => FileUploader?.OnUploadCompleted(new UploadCompletedEventArgs(resource, data));
+            public void UploadCompletedAdvertisement(string resource)
+                => FileUploader?.OnUploadCompleted(new UploadCompletedEventArgs(resource));
 
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
                 => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
