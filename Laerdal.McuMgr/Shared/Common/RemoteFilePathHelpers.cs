@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Laerdal.McuMgr.Common
 {
@@ -9,9 +10,12 @@ namespace Laerdal.McuMgr.Common
             if (string.IsNullOrWhiteSpace(remoteFilePath))
                 throw new ArgumentException($"The {nameof(remoteFilePath)} parameter is dud!");
 
-            remoteFilePath = remoteFilePath.Trim();
+            remoteFilePath = remoteFilePath.Trim(); //order
             if (remoteFilePath.EndsWith("/")) //00
                 throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
+
+            if (remoteFilePath.Contains('\r') || remoteFilePath.Contains('\n') || remoteFilePath.Contains('\f')) //order
+                throw new ArgumentException($"The given {nameof(remoteFilePath)} contains newline characters!");
 
             //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
         }
