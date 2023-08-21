@@ -13,27 +13,6 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
     /// <remarks>For the file-uploading process to even commence you need to be authenticated with the AED device that's being targeted.</remarks>
     public interface IFileUploader
     {
-        [Flags]
-        public enum EFileUploaderVerdict //this must mirror the java enum values of E[Android|iOS]FileUploaderVerdict
-        {
-            Success = 0,
-            FailedInvalidSettings = 1,
-            FailedInvalidData = 2,
-            FailedOtherUploadAlreadyInProgress = 3,
-        }
-       
-        public enum EFileUploaderState //these must mirror the java enum values of EFileUploaderState on both android and ios
-        {
-            None = 0,
-            Idle = 1,
-            Uploading = 2,
-            Paused = 3,
-            Complete = 4,
-            Cancelled = 5,
-            Error = 6,
-            Cancelling = 7,
-        }
-
         /// <summary>Holds the last error message emitted</summary>
         public string LastFatalErrorMessage { get; }
 

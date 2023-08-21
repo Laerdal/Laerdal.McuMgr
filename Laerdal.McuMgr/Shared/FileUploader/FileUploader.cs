@@ -14,11 +14,33 @@ using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 namespace Laerdal.McuMgr.FileUploader
 {
     /// <inheritdoc cref="IFileUploader"/>
-    public partial class FileUploader : IFileUploader
+    public partial class FileUploader : IFileUploader, IFileUploaderEventEmitters
     {
+        private readonly INativeFileUploaderProxy _nativeFileUploaderProxy;
+
+        //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFileUploaderProxy
+        internal FileUploader(INativeFileUploaderProxy nativeFileUploaderProxy)
+        {
+            _nativeFileUploaderProxy = nativeFileUploaderProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderProxy));
+            _nativeFileUploaderProxy.FileUploader = this; //vital
+        }
+
+        public EFileUploaderVerdict BeginDownload(string remoteFilePath, byte[] data)
+        {
+            data = data ?? throw new ArgumentNullException(nameof(data));
+            
+            RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
+            remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
+
+            var verdict = _nativeFileUploaderProxy.BeginUpload(remoteFilePath, data);
+
+            return verdict;
+        }
+        
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
+        private event EventHandler<UploadCompletedEventArgs> _uploadCompleted;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
         private event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> _fileUploadProgressPercentageAndDataThroughputChanged;
@@ -143,7 +165,7 @@ namespace Laerdal.McuMgr.FileUploader
                     FatalErrorOccurred += UploadAsyncOnFatalErrorOccurred;
 
                     var verdict = BeginUpload(remoteFilePath, localData); //00 dont use task.run here for now
-                    if (verdict != IFileUploader.EFileUploaderVerdict.Success)
+                    if (verdict != EFileUploaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
                     _ = timeoutForUploadInMs < 0
@@ -154,10 +176,10 @@ namespace Laerdal.McuMgr.FileUploader
                 }
                 catch (TimeoutException ex)
                 {
-                    OnStateChanged(new StateChangedEventArgs( //for consistency
-                        oldState: IFileUploader.EFileUploaderState.None, //better not use this.State here because the native call might fail
-                        newState: IFileUploader.EFileUploaderState.Error,
-                        remoteFilePath: remoteFilePath
+                    (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: EFileUploaderState.None, //better not use this.State here because the native call might fail
+                        newState: EFileUploaderState.Error,
+                        resource: remoteFilePath
                     ));
 
                     throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
@@ -165,7 +187,7 @@ namespace Laerdal.McuMgr.FileUploader
                 catch (UploadErroredOutException ex) //errors with codes unknown(1) and in_value(3) happen all the time in android when multiuploading files
                 {
                     if (++retry > maxRetriesPerUpload)
-                        throw new UploadErroredOutException($"Failed to upload '{remoteFilePath}' after trying {maxRetriesPerUpload} times", innerException: ex);
+                        throw new UploadErroredOutException($"Failed to upload '{remoteFilePath}' after trying {maxRetriesPerUpload + 1} time(s)", innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0)
                     {
@@ -180,10 +202,10 @@ namespace Laerdal.McuMgr.FileUploader
                     && !(ex is IUploadRelatedException) //this accounts for both cancellations and upload errors
                 )
                 {
-                    OnStateChanged(new StateChangedEventArgs( //for consistency
-                        oldState: IFileUploader.EFileUploaderState.None,
-                        newState: IFileUploader.EFileUploaderState.Error,
-                        remoteFilePath: remoteFilePath
+                    (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: EFileUploaderState.None,
+                        newState: EFileUploaderState.Error,
+                        resource: remoteFilePath
                     ));
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
@@ -201,15 +223,15 @@ namespace Laerdal.McuMgr.FileUploader
                 {
                     switch (ea.NewState)
                     {
-                        case IFileUploader.EFileUploaderState.Complete:
+                        case EFileUploaderState.Complete:
                             taskCompletionSource.TrySetResult(true);
                             return;
 
-                        case IFileUploader.EFileUploaderState.Cancelled:
+                        case EFileUploaderState.Cancelled:
                             taskCompletionSource.TrySetException(new UploadCancelledException());
                             return;
 
-                        case IFileUploader.EFileUploaderState.Cancelling: //20
+                        case EFileUploaderState.Cancelling: //20
                             if (isCancellationRequested)
                                 return;
 
@@ -261,11 +283,51 @@ namespace Laerdal.McuMgr.FileUploader
             //    the upload cannot commence to begin with
         }
 
-        private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnFileUploadProgressPercentageAndThroughputDataChangedAdvertisement(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnUploadCompleted(UploadCompletedEventArgs ea) => _uploadCompleted?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFileUploaderEventEmitters.OnFileUploadProgressPercentageAndThroughputDataChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        
+        //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileUploaderProxy
+        internal class GenericNativeFileUploaderCallbacksProxy : INativeFileUploaderCallbacksProxy
+        {
+            public IFileUploaderEventEmitters FileUploader { get; set; }
+
+            public void CancelledAdvertisement()
+                => FileUploader?.OnCancelled(new CancelledEventArgs());
+
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+                => FileUploader?.OnLogEmitted(new LogEmittedEventArgs(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: resource
+                ));
+
+            public void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState)
+                => FileUploader?.OnStateChanged(new StateChangedEventArgs(
+                    resource: resource,
+                    newState: newState,
+                    oldState: oldState
+                ));
+
+            public void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+
+            public void UploadCompletedAdvertisement(string resource, byte[] data)
+                => FileUploader?.OnUploadCompleted(new UploadCompletedEventArgs(resource, data));
+
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
+                => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
+
+            public void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => FileUploader?.OnFileUploadProgressPercentageAndThroughputDataChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
+                    averageThroughput: averageThroughput,
+                    progressPercentage: progressPercentage
+                ));
+        }
     }
 }

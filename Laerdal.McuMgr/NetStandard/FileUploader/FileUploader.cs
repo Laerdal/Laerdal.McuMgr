@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.FileUploader
 
         public string LastFatalErrorMessage => throw new NotImplementedException();
 
-        public IFileUploader.EFileUploaderVerdict BeginUpload(string path, byte[] data) => throw new NotImplementedException();
+        public EFileUploaderVerdict BeginUpload(string path, byte[] data) => throw new NotImplementedException();
 
         public void Cancel() => throw new NotImplementedException();
         public void Disconnect() => throw new NotImplementedException();

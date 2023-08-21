@@ -17,27 +17,28 @@ namespace Laerdal.McuMgr.FileUploader
     /// <inheritdoc cref="IFileUploader"/>
     public partial class FileUploader : IFileUploader
     {
-        private readonly AndroidFileUploader _androidFileUploaderProxy;
-
-        public FileUploader(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        public FileUploader(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
-            if (bluetoothDevice == null)
-                throw new ArgumentNullException(nameof(bluetoothDevice));
+        }
+
+        static private INativeFileUploaderProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        {
+            bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
 
             androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidFileUploaderProxy = new AndroidFileUploaderProxy(
-                uploader: this,
+            return new AndroidFileUploaderProxy(
                 context: androidContext,
-                bluetoothDevice: bluetoothDevice
+                bluetoothDevice: bluetoothDevice,
+                fileUploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy()
             );
         }
 
         public string LastFatalErrorMessage => _androidFileUploaderProxy?.LastFatalErrorMessage;
 
-        public IFileUploader.EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+        public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
         {
             if (data == null) //its ok if the data is empty   but it cant be null
                 throw new InvalidOperationException("The data byte-array parameter is null");
@@ -53,26 +54,26 @@ namespace Laerdal.McuMgr.FileUploader
         public void Cancel() => _androidFileUploaderProxy?.Cancel();
         public void Disconnect() => _androidFileUploaderProxy?.Disconnect();
 
-        static private IFileUploader.EFileUploaderVerdict TranslateFileUploaderVerdict(EAndroidFileUploaderVerdict verdict)
+        static private EFileUploaderVerdict TranslateFileUploaderVerdict(EAndroidFileUploaderVerdict verdict)
         {
             if (verdict == EAndroidFileUploaderVerdict.Success) //0
             {
-                return IFileUploader.EFileUploaderVerdict.Success;
+                return EFileUploaderVerdict.Success;
             }
             
             if (verdict == EAndroidFileUploaderVerdict.FailedInvalidSettings)
             {
-                return IFileUploader.EFileUploaderVerdict.FailedInvalidSettings;
+                return EFileUploaderVerdict.FailedInvalidSettings;
             }
 
             if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
             {
-                return IFileUploader.EFileUploaderVerdict.FailedInvalidData;
+                return EFileUploaderVerdict.FailedInvalidData;
             }
             
             if (verdict == EAndroidFileUploaderVerdict.FailedOtherUploadAlreadyInProgress)
             {
-                return IFileUploader.EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
+                return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
             }
 
             throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
@@ -135,7 +136,7 @@ namespace Laerdal.McuMgr.FileUploader
             {
                 base.BusyStateChangedAdvertisement(remoteFilePath, busyNotIdle); //just in case
                 
-                _fileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(remoteFilePath, busyNotIdle));  
+                _fileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));  
             }
 
             public override void StateChangedAdvertisement(string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
@@ -145,7 +146,7 @@ namespace Laerdal.McuMgr.FileUploader
                 _fileUploader?.OnStateChanged(new StateChangedEventArgs(
                     newState: TranslateEAndroidFileUploaderState(newState),
                     oldState: TranslateEAndroidFileUploaderState(oldState),
-                    remoteFilePath: remoteFilePath
+                    resource: remoteFilePath
                 ));
             }
 
@@ -153,53 +154,49 @@ namespace Laerdal.McuMgr.FileUploader
             {
                 base.FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(remoteFilePath, progressPercentage, averageThroughput); //just in case
 
-                _fileUploader?.OnFileUploadProgressPercentageAndThroughputDataChangedAdvertisement(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
-                    remoteFilePath: remoteFilePath,
-                    averageThroughput: averageThroughput,
-                    progressPercentage: progressPercentage
-                ));
+                _fileUploader?.OnFileUploadProgressPercentageAndThroughputDataChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(progressPercentage: progressPercentage, averageThroughput: averageThroughput));
             }
 
-            static private IFileUploader.EFileUploaderState TranslateEAndroidFileUploaderState(EAndroidFileUploaderState state)
+            static private EFileUploaderState TranslateEAndroidFileUploaderState(EAndroidFileUploaderState state)
             {
                 if (state == EAndroidFileUploaderState.None)
                 {
-                    return IFileUploader.EFileUploaderState.None;
+                    return EFileUploaderState.None;
                 }
                 
                 if (state == EAndroidFileUploaderState.Idle)
                 {
-                    return IFileUploader.EFileUploaderState.Idle;
+                    return EFileUploaderState.Idle;
                 }
 
                 if (state == EAndroidFileUploaderState.Uploading)
                 {
-                    return IFileUploader.EFileUploaderState.Uploading;
+                    return EFileUploaderState.Uploading;
                 }
 
                 if (state == EAndroidFileUploaderState.Paused)
                 {
-                    return IFileUploader.EFileUploaderState.Paused;
+                    return EFileUploaderState.Paused;
                 }
 
                 if (state == EAndroidFileUploaderState.Complete)
                 {
-                    return IFileUploader.EFileUploaderState.Complete;
+                    return EFileUploaderState.Complete;
                 }
                 
                 if (state == EAndroidFileUploaderState.Cancelled)
                 {
-                    return IFileUploader.EFileUploaderState.Cancelled;
+                    return EFileUploaderState.Cancelled;
                 }
 
                 if (state == EAndroidFileUploaderState.Error)
                 {
-                    return IFileUploader.EFileUploaderState.Error;
+                    return EFileUploaderState.Error;
                 }
                 
                 if (state == EAndroidFileUploaderState.Cancelling)
                 {
-                    return IFileUploader.EFileUploaderState.Cancelling;
+                    return EFileUploaderState.Cancelling;
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);

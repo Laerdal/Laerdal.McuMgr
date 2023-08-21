@@ -8,12 +8,10 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Events
     public sealed class BusyStateChangedEventArgs : EventArgs
     {
         public bool BusyNotIdle { get; }
-        public string RemoteFilePath { get; }
 
-        public BusyStateChangedEventArgs(string remoteFilePath, bool busyNotIdle)
+        public BusyStateChangedEventArgs(bool busyNotIdle)
         {
             BusyNotIdle = busyNotIdle;
-            RemoteFilePath = remoteFilePath;
         }
     }
 }
