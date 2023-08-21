@@ -127,12 +127,16 @@ namespace Laerdal.McuMgr.FileDownloader
             remoteFilePaths = remoteFilePaths ?? throw new ArgumentNullException(nameof(remoteFilePaths));
             
             var sanitizedRemoteFilesPaths = remoteFilePaths
-                .GroupBy(p => p) //unique ones only   todo   normalize the paths here
-                .Select(p => p.First())
+                .Select(path =>
+                {
+                    RemoteFilePathHelpers.ValidateRemoteFilePath(path); //        order
+                    path = RemoteFilePathHelpers.SanitizeRemoteFilePath(path); // order
+                    
+                    return path; //unique ones only
+                })
+                .GroupBy(path => path)
+                .Select(group => group.First())
                 .ToArray();
-            
-            if (sanitizedRemoteFilesPaths.Any(s => string.IsNullOrWhiteSpace(s) || s.EndsWith("/")))
-                throw new ArgumentException($"The {nameof(remoteFilePaths)} parameter contains duds and/or paths that end with '/'!", nameof(remoteFilePaths));
 
             var results = new Dictionary<string, byte[]>(sanitizedRemoteFilesPaths.Length);
             foreach (var path in sanitizedRemoteFilesPaths) //00 impossible to parallelize

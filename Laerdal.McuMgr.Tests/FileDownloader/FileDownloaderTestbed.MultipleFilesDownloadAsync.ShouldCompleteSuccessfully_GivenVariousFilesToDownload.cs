@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
@@ -11,7 +12,7 @@ using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
-    public partial class FileDownloaderTestbed //todo  add tests for null/empty paths and paths that end with a slash
+    public partial class FileDownloaderTestbed
     {
         [Fact]
         public async Task MultipleFilesDownloadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToDownload()
@@ -20,8 +21,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var expectedResults = new Dictionary<string, byte[]>
             {
                 { "/some/file/that/exists.bin", new byte[] { 1 } },
+                { "/Some/File/That/Exists.bin", new byte[] { 2 } },
                 { "/some/file/that/doesnt/exist.bin", null },
-                { "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin", new byte[] { 2 } },
+                { "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin", new byte[] { 3 } },
                 { "/some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin", null },
             };
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy6(new GenericNativeFileDownloaderCallbacksProxy_(), expectedResults);
@@ -32,6 +34,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 "some/file/that/exists.bin",
                 "/some/file/that/exists.bin",
                 "/some/file/that/exists.bin", //intentionally included multiple times to test whether the mechanism will attempt to download the file only once 
+                "Some/File/That/Exists.bin",
+                "/Some/File/That/Exists.bin",
+                "/Some/File/That/Exists.bin", //intentionally included multiple times to test that we handle case sensitivity correctly
                 "some/file/that/doesnt/exist.bin",
                 "/some/file/that/doesnt/exist.bin", //intentionally included multiple times to test whether the mechanism will attempt to download the file only once
                 "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin",
@@ -50,11 +55,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             results.Should().BeEquivalentTo(expectedResults);
 
-            eventsMonitor.OccurredEvents.Should().HaveCount(0);
+            eventsMonitor.OccurredEvents
+                .Count(args => args.EventName == nameof(fileDownloader.DownloadCompleted))
+                .Should()
+                .Be(expectedResults.Count);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeFalse();
+            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
