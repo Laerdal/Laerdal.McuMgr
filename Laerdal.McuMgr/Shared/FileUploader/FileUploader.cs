@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileUploader.Contracts;
@@ -120,7 +119,7 @@ namespace Laerdal.McuMgr.FileUploader
             remove => _fileUploadProgressPercentageAndDataThroughputChanged -= value;
         }
 
-        public async Task UploadAsync(
+        public async Task<IEnumerable<string>> UploadAsync(
             IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
@@ -130,7 +129,7 @@ namespace Laerdal.McuMgr.FileUploader
             RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
             var sanitizedRemoteFilePathsAndTheirDataBytes = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
 
-            var filesThatDidntGetUploadedYet = new HashSet<string>(sanitizedRemoteFilePathsAndTheirDataBytes.Select(x => x.Key));
+            var filesThatFailedToBeUploaded = new List<string>(2);
 
             foreach (var x in sanitizedRemoteFilePathsAndTheirDataBytes)
             {
@@ -143,19 +142,14 @@ namespace Laerdal.McuMgr.FileUploader
                         timeoutForUploadInMs: timeoutPerUploadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
                     );
-
-                    filesThatDidntGetUploadedYet.Remove(x.Key);
                 }
                 catch (UploadErroredOutException) //00
                 {
+                    filesThatFailedToBeUploaded.Add(x.Key);
                 }
             }
 
-            if (filesThatDidntGetUploadedYet.Any())
-                throw new UploadErroredOutException(
-                    $"The following files failed to be uploaded:{Environment.NewLine}{Environment.NewLine}" +
-                    $"{string.Join(Environment.NewLine, filesThatDidntGetUploadedYet)}"
-                );
+            return filesThatFailedToBeUploaded;
 
             //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
             //    tactic because failures are fairly common when uploading 50 files or more over to aed devices and we wanted to ensure

@@ -14,13 +14,15 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         public event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> FileUploadProgressPercentageAndDataThroughputChanged;
 
         /// <summary>
-        /// Begins the file-uploading process for multiple files. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
+        /// Begins the file-uploading process for multiple files.
+        ///
+        /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
         /// <param name="remoteFilePathsAndTheirDataBytes">The files to upload.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
-        /// <param name="maxRetriesPerUpload">Maximum amount of retries per upload before bailing out.</param>
-        Task UploadAsync(
+        /// <param name="maxRetriesPerUpload">Maximum amount of retries per upload before bailing out. In case of errors the mechanism will try "1 + maxRetriesPerUpload" before bailing out.</param>
+        Task<IEnumerable<string>> UploadAsync(
             IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,

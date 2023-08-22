@@ -20,7 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
         [InlineData("FDT.SFDA.STRFNFE.GNEF.010", "UNKNOWN (1)", 0)] //android + ios
         [InlineData("FDT.SFDA.STRFNFE.GNEF.020", "UNKNOWN (1)", 1)] //android + ios
         [InlineData("FDT.SFDA.STRFNFE.GNEF.030", "UNKNOWN (1)", 2)] //android + ios
-        public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistentFilepath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxRetriesCount)
+        public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxRetriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
