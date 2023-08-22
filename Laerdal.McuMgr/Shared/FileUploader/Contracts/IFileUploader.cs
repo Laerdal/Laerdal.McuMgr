@@ -28,6 +28,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <summary>Event raised when the file-uploading state changes</summary>
         public event EventHandler<StateChangedEventArgs> StateChanged;
         
+        /// <summary>Event raised when the file-uploading completes successfully</summary>
+        public event EventHandler<UploadCompletedEventArgs> UploadCompleted;
+        
         /// <summary>Event raised when the file-uploading busy-state changes which happens when data start or stop being transmitted</summary>
         public event EventHandler<BusyStateChangedEventArgs> BusyStateChanged;
         

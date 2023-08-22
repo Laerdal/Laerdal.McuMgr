@@ -89,7 +89,7 @@ namespace Laerdal.McuMgr.FileUploader
             }
             remove => _busyStateChanged -= value;
         }
-
+        
         public event EventHandler<StateChangedEventArgs> StateChanged
         {
             add
@@ -98,6 +98,16 @@ namespace Laerdal.McuMgr.FileUploader
                 _stateChanged += value;
             }
             remove => _stateChanged -= value;
+        }
+        
+        public event EventHandler<UploadCompletedEventArgs> UploadCompleted
+        {
+            add
+            {
+                _uploadCompleted -= value;
+                _uploadCompleted += value;
+            }
+            remove => _uploadCompleted -= value;
         }
 
         public event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> FileUploadProgressPercentageAndDataThroughputChanged
