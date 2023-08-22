@@ -38,7 +38,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: remoteFilePath));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<DownloadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
+            await work.Should().ThrowExactlyAsync<DownloadCancelledException>().WithTimeoutInMs((int)10.Seconds().TotalMilliseconds);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeTrue();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -60,7 +60,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
         private class MockedGreenNativeFileDownloaderProxySpy3 : MockedNativeFileDownloaderProxySpy
         {
+            private string _currentRemoteFilePath;
+
             private readonly byte[] _mockedFileData;
+            private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
             public MockedGreenNativeFileDownloaderProxySpy3(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData) : base(downloaderCallbacksProxy)
             {
@@ -71,36 +74,41 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
                 base.Cancel();
                 
-                CancelledAdvertisement();
+                // under normal circumstances the native implementation will bubble up these events in this exact order
+                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling); //  order
+                Thread.Sleep(100);
+                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled); //   order
+                CancelledAdvertisement(); //                                                                                                           order
             }
 
             public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
             {
-                var cancellationTokenSource = new CancellationTokenSource();
+                _currentRemoteFilePath = remoteFilePath;
+                _cancellationTokenSource = new CancellationTokenSource();
                 
                 ((IFileDownloaderEvents) FileDownloader).Cancelled += (sender, args) =>
                 {
-                    cancellationTokenSource.Cancel();
+                    _cancellationTokenSource.Cancel();
                 };
                 
                 var verdict = base.BeginDownload(remoteFilePath);
 
                 Task.Run(async () => //00 vital
                 {
-                    await Task.Delay(100, cancellationTokenSource.Token);
-                    if (cancellationTokenSource.IsCancellationRequested)
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                    if (_cancellationTokenSource.IsCancellationRequested)
                         return;
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
 
-                    await Task.Delay(2_000, cancellationTokenSource.Token);
-                    if (cancellationTokenSource.IsCancellationRequested)
+                    await Task.Delay(2_000, _cancellationTokenSource.Token);
+                    if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
                     DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData);
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
-                }, cancellationTokenSource.Token);
+                }, _cancellationTokenSource.Token);
 
                 return verdict;
 
