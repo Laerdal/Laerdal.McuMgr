@@ -60,44 +60,52 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
         private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
         {
+            private string _currentRemoteFilePath;
+            private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            
             public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
             }
-
+            
             public override void Cancel()
             {
                 base.Cancel();
                 
-                CancelledAdvertisement();
+                // under normal circumstances the native implementation will bubble up these events in this exact order
+                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
+                Thread.Sleep(100);
+                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
+                CancelledAdvertisement(); //                                                                                                       order
             }
-
+            
             public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                
                 (FileUploader as IFileUploaderEvents)!.Cancelled += (sender, args) =>
                 {
-                    cancellationTokenSource.Cancel();
+                    _cancellationTokenSource.Cancel();
                 };
+                
+                _currentRemoteFilePath = remoteFilePath;
+                _cancellationTokenSource = new CancellationTokenSource();
 
                 var verdict = base.BeginUpload(remoteFilePath, data);
 
                 Task.Run(async () => //00 vital
                 {
-                    await Task.Delay(100, cancellationTokenSource.Token);
-                    if (cancellationTokenSource.IsCancellationRequested)
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                    if (_cancellationTokenSource.IsCancellationRequested)
                         return;
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
-                    await Task.Delay(2_000, cancellationTokenSource.Token);
-                    if (cancellationTokenSource.IsCancellationRequested)
+                    await Task.Delay(2_000, _cancellationTokenSource.Token);
+                    if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
                     UploadCompletedAdvertisement(remoteFilePath);
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
-                }, cancellationTokenSource.Token);
+                }, _cancellationTokenSource.Token);
 
                 return verdict;
 
