@@ -1,6 +1,7 @@
 ﻿using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 
-namespace Laerdal.McuMgr.FileDownloader.Contracts
+namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
 {
     internal interface INativeFileDownloaderCallbacksProxy
     {

@@ -1,4 +1,4 @@
-﻿namespace Laerdal.McuMgr.FileUploader.Contracts
+﻿namespace Laerdal.McuMgr.FileUploader.Contracts.Enums
 {
     public enum EFileUploaderState //these must mirror the java enum values of EFileUploaderState on both android and ios
     {

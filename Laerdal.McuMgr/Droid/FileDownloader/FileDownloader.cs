@@ -9,6 +9,8 @@ using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloader.Contracts.Native;
 
 namespace Laerdal.McuMgr.FileDownloader
 {

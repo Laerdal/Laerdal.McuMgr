@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileDownloader.Contracts;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloader.Contracts.Native;
 using Xunit;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 

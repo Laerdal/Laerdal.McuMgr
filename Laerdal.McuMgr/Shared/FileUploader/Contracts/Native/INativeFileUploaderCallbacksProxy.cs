@@ -1,6 +1,7 @@
 ﻿using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
-namespace Laerdal.McuMgr.FileUploader.Contracts
+namespace Laerdal.McuMgr.FileUploader.Contracts.Native
 {
     internal interface INativeFileUploaderCallbacksProxy
     {

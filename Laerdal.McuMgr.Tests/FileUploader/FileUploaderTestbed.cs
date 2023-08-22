@@ -1,5 +1,7 @@
 ﻿using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileUploader.Contracts;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Native;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileUploader

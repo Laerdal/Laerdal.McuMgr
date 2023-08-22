@@ -1,6 +1,7 @@
 ﻿using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 
-namespace Laerdal.McuMgr.DeviceResetter.Contracts
+namespace Laerdal.McuMgr.DeviceResetter.Contracts.Native
 {
     internal interface INativeDeviceResetterCallbacksProxy
     {

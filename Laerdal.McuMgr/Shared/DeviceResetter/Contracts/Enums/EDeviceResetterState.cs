@@ -1,4 +1,4 @@
-﻿namespace Laerdal.McuMgr.DeviceResetter.Contracts
+﻿namespace Laerdal.McuMgr.DeviceResetter.Contracts.Enums
 {
     public enum EDeviceResetterState
     {

@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileUploader.Contracts;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Native;
 using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 

@@ -2,6 +2,7 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
 using System;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {

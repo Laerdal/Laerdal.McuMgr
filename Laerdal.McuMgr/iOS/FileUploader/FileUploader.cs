@@ -6,6 +6,8 @@ using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileUploader.Contracts;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Native;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FileUploader

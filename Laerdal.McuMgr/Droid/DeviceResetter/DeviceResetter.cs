@@ -9,6 +9,8 @@ using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {

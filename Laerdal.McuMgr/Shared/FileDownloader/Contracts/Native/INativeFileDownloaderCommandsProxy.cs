@@ -1,4 +1,6 @@
-﻿namespace Laerdal.McuMgr.FileDownloader.Contracts
+﻿using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+
+namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
 {
     internal interface INativeFileDownloaderCommandsProxy
     {

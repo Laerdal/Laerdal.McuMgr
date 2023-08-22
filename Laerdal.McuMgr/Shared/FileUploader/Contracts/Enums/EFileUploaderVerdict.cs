@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Laerdal.McuMgr.FileUploader.Contracts
+namespace Laerdal.McuMgr.FileUploader.Contracts.Enums
 {
     [Flags]
     public enum EFileUploaderVerdict //this must mirror the java enum values of E[Android|iOS]FileUploaderVerdict

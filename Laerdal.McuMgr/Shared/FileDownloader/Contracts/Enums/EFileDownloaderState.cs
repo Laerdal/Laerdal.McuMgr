@@ -1,4 +1,4 @@
-﻿namespace Laerdal.McuMgr.FileDownloader.Contracts
+﻿namespace Laerdal.McuMgr.FileDownloader.Contracts.Enums
 {
     public enum EFileDownloaderState //these must mirror the java enum values of EFileDownloaderState on both android and ios
     {

@@ -2,6 +2,7 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
 using System;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts.Events
 {

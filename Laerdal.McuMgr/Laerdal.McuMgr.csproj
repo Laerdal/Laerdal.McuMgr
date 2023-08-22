@@ -78,6 +78,48 @@
     <ItemGroup>
         <Compile Include="Shared\**\*.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Update="Shared\DeviceResetter\Contracts\Native\INativeDeviceResetterCallbacksProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\DeviceResetter\Contracts\Native\INativeDeviceResetterCommandsProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\DeviceResetter\Contracts\Native\INativeDeviceResetterProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\DeviceResetter\Contracts\Enums\EDeviceResetterState.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileDownloader\Contracts\Enums\EFileDownloaderState.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileDownloader\Contracts\Enums\EFileDownloaderVerdict.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileDownloader\Contracts\Native\INativeFileDownloaderCallbacksProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileDownloader\Contracts\Native\INativeFileDownloaderCommandsProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileDownloader\Contracts\Native\INativeFileDownloaderProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileUploader\Contracts\Enums\EFileUploaderState.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileUploader\Contracts\Enums\EFileUploaderVerdict.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileUploader\Contracts\Native\INativeFileUploaderCallbacksProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileUploader\Contracts\Native\INativeFileUploaderCommandsProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FileUploader\Contracts\Native\INativeFileUploaderProxy.cs">
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->

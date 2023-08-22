@@ -1,4 +1,6 @@
-﻿namespace Laerdal.McuMgr.FileUploader.Contracts
+﻿using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+
+namespace Laerdal.McuMgr.FileUploader.Contracts.Native
 {
     internal interface INativeFileUploaderCommandsProxy
     {

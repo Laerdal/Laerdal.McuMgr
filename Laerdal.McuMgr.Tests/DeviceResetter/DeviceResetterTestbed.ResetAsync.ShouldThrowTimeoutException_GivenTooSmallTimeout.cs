@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.DeviceResetter.Contracts;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
 using Xunit;
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter

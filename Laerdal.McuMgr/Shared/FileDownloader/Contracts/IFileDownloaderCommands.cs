@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts
 {
