@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/file.bin";
 
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_(), mockedFileData);
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
@@ -60,11 +60,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
         private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
         {
-            private readonly byte[] _mockedFileData;
-
-            public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, byte[] mockedFileData) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
-                _mockedFileData = mockedFileData;
             }
 
             public override void Cancel()
@@ -78,11 +75,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
                 var cancellationTokenSource = new CancellationTokenSource();
                 
-                (FileUploader as IFileUploaderEvents).Cancelled += (sender, args) =>
+                (FileUploader as IFileUploaderEvents)!.Cancelled += (sender, args) =>
                 {
                     cancellationTokenSource.Cancel();
                 };
-                
+
                 var verdict = base.BeginUpload(remoteFilePath, data);
 
                 Task.Run(async () => //00 vital

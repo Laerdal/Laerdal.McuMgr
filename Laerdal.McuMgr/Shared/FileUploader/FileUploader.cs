@@ -172,6 +172,7 @@ namespace Laerdal.McuMgr.FileUploader
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
                 {
+                    Cancelled += UploadAsyncOnCancelled;
                     StateChanged += UploadAsyncOnStateChanged;
                     FatalErrorOccurred += UploadAsyncOnFatalErrorOccurred;
 
@@ -228,8 +229,14 @@ namespace Laerdal.McuMgr.FileUploader
                 }
                 finally
                 {
+                    Cancelled -= UploadAsyncOnCancelled;
                     StateChanged -= UploadAsyncOnStateChanged;
                     FatalErrorOccurred -= UploadAsyncOnFatalErrorOccurred;
+                }
+
+                void UploadAsyncOnCancelled(object sender, CancelledEventArgs ea)
+                {
+                    taskCompletionSource.TrySetException(new UploadCancelledException());
                 }
 
                 // ReSharper disable AccessToModifiedClosure
@@ -239,10 +246,6 @@ namespace Laerdal.McuMgr.FileUploader
                     {
                         case EFileUploaderState.Complete:
                             taskCompletionSource.TrySetResult(true);
-                            return;
-
-                        case EFileUploaderState.Cancelled:
-                            taskCompletionSource.TrySetException(new UploadCancelledException());
                             return;
 
                         case EFileUploaderState.Cancelling: //20
