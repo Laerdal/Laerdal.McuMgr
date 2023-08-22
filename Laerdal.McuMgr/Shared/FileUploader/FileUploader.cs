@@ -122,7 +122,7 @@ namespace Laerdal.McuMgr.FileUploader
 
         public async Task UploadAsync(
             IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
-            int sleepTimeBetweenRetriesInMs = 1_000,
+            int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxRetriesPerUpload = 10
         )
