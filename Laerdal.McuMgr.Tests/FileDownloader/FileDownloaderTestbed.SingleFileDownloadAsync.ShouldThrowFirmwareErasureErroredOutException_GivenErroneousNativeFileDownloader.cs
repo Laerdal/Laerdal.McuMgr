@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task SingleFileDownloadAsync_ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFileDownloader()
+        public async Task SingleFileDownloadAsync_ShouldThrowDownloadErroredOutException_GivenErroneousNativeFileDownloader()
         {
             // Arrange
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_());
