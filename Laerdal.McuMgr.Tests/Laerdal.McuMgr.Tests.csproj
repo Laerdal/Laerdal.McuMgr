@@ -87,6 +87,7 @@
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowRemoteFileNotFoundException_GivenNonExistentFilepath.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowTimeoutException_GivenTooSmallTimeout.cs" />
+        <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowUploadErroredOutException_GivenRogueNativeErrorMessage.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.BeginDownload.ShouldThrowArgumentException_GivenInvalidRemoteFilePath.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.FileDownloaderConstructor.ShouldThrowArgumentNullException_GivenNullNativeFileDownloader.cs" />
