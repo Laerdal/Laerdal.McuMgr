@@ -139,7 +139,7 @@ namespace Laerdal.McuMgr.FileUploader
                     await UploadAsync(
                         localData: x.Value,
                         remoteFilePath: x.Key,
-                        maxRetriesPerUpload: maxRetriesPerUpload,
+                        maxRetriesCount: maxRetriesPerUpload,
                         timeoutForUploadInMs: timeoutPerUploadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
                     );
@@ -166,7 +166,7 @@ namespace Laerdal.McuMgr.FileUploader
             byte[] localData,
             string remoteFilePath,
             int timeoutForUploadInMs = -1,
-            int maxRetriesPerUpload = 10,
+            int maxRetriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000
         )
         {
@@ -201,8 +201,8 @@ namespace Laerdal.McuMgr.FileUploader
                 }
                 catch (UploadErroredOutException ex) //errors with codes unknown(1) and in_value(3) happen all the time in android when multiuploading files
                 {
-                    if (++retry > maxRetriesPerUpload)
-                        throw new UploadErroredOutException($"Failed to upload '{remoteFilePath}' after trying {maxRetriesPerUpload + 1} time(s)", innerException: ex);
+                    if (++retry > maxRetriesCount)
+                        throw new UploadErroredOutException($"Failed to upload '{remoteFilePath}' after trying {maxRetriesCount + 1} time(s)", innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0)
                     {
