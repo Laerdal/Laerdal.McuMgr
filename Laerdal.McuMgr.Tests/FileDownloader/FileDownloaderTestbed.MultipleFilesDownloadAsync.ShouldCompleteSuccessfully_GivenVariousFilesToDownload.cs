@@ -49,17 +49,25 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(remoteFilePathsToTest));
+            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(
+                remoteFilePaths: remoteFilePathsToTest,
+                maxRetriesPerDownload: 3
+            ));
 
             // Assert
-            var results = (await work.Should().CompleteWithinAsync(1.Seconds())).Which;
+            var results = (await work.Should().CompleteWithinAsync(5.Seconds())).Which;
 
             results.Should().BeEquivalentTo(expectedResults);
 
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileDownloader.DownloadCompleted))
                 .Should()
-                .Be(expectedResults.Count);
+                .Be(expectedResults.Count(x => x.Value != null));
+            
+            eventsMonitor.OccurredEvents
+                .Count(args => args.EventName == nameof(fileDownloader.FatalErrorOccurred))
+                .Should()
+                .Be(8);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -77,6 +85,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 _expectedResults = expectedResults;
             }
 
+            private int _retryCountForProblematicFile; 
             public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
             {
                 var verdict = base.BeginDownload(remoteFilePath);
@@ -85,12 +94,30 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    
+
                     await Task.Delay(20);
-                    _expectedResults.TryGetValue(remoteFilePath, out var expectedFileContent);
+
+                    var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
+                    if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
+                    {
+                        FatalErrorOccurredAdvertisement("foobar");
+                    }
+                    else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
+                    {
+                        FatalErrorOccurredAdvertisement("NO ENTRY (5)");
+                    }
+                    else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
+                             && _retryCountForProblematicFile++ < 3)
+                    {
+                        FatalErrorOccurredAdvertisement("ping pong");
+                    }
+                    else
+                    {
+                        _expectedResults.TryGetValue(remoteFilePath, out var expectedFileContent);
                     
-                    DownloadCompletedAdvertisement(remoteFilePath, expectedFileContent);
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
+                        DownloadCompletedAdvertisement(remoteFilePath, expectedFileContent);
+                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
+                    }
                 });
 
                 return verdict;

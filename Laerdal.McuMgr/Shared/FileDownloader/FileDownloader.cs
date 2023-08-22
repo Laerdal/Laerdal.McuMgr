@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FileDownloader.Contracts;
@@ -126,7 +127,11 @@ namespace Laerdal.McuMgr.FileDownloader
             RemoteFilePathHelpers.ValidateRemoteFilePaths(remoteFilePaths); //                                        order
             var sanitizedUniqueRemoteFilesPaths = RemoteFilePathHelpers.SanitizeRemoteFilePaths(remoteFilePaths); //  order
 
-            var results = new Dictionary<string, byte[]>(sanitizedUniqueRemoteFilesPaths.Length);
+            var results = sanitizedUniqueRemoteFilesPaths.ToDictionary(
+                keySelector: x => x,
+                elementSelector: x => (byte[])null
+            );
+
             foreach (var path in sanitizedUniqueRemoteFilesPaths) //00 impossible to parallelize
             {
                 try
@@ -140,15 +145,17 @@ namespace Laerdal.McuMgr.FileDownloader
 
                     results[path] = data;
                 }
-                catch (DownloadErroredOutRemoteFileNotFoundException)
+                catch (DownloadErroredOutException) //10
                 {
-                    continue;
                 }
             }
 
             return results;
             
-            //0 we would love to parallelize all this but the native side simply reverts to queuing the requests so its pointless
+            //00  we would love to parallelize all this but the native side simply reverts to queuing the requests so its pointless
+            //
+            //10  we dont want to throw here because we want to return the results for the files that were successfully downloaded
+            //    if a file fails to download we simply return null data for that file
         }
 
         public async Task<byte[]> DownloadAsync(
