@@ -6,8 +6,10 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 
 [assembly: InternalsVisibleTo("Laerdal.McuMgr.Tests")]
 namespace Laerdal.McuMgr.FirmwareEraser

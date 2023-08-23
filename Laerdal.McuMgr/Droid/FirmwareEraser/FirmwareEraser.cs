@@ -2,16 +2,15 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
-
 using Laerdal.Java.McuMgr.Wrapper.Android;
-
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {

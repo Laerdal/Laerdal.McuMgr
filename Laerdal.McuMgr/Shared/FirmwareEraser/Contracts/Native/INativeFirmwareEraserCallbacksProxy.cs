@@ -1,6 +1,7 @@
 ﻿using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 
-namespace Laerdal.McuMgr.FirmwareEraser.Contracts
+namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Native
 {
     internal interface INativeFirmwareEraserCallbacksProxy
     {

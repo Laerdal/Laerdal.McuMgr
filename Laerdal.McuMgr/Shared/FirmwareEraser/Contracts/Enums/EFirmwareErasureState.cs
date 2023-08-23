@@ -1,4 +1,4 @@
-﻿namespace Laerdal.McuMgr.FirmwareEraser.Contracts
+﻿namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Enums
 {
     public enum EFirmwareErasureState
     {

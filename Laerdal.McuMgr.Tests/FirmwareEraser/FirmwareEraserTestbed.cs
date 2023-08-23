@@ -1,5 +1,7 @@
 ﻿using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 using GenericNativeFirmwareEraserCallbacksProxy_ = Laerdal.McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FirmwareEraser

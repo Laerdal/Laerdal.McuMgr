@@ -3,9 +3,10 @@
 
 using System;
 using CoreBluetooth;
-
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FirmwareEraser
