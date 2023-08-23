@@ -140,10 +140,9 @@ namespace Laerdal.McuMgr.FileUploader
                     await UploadAsync(
                         localData: x.Value,
                         remoteFilePath: x.Key,
-                        maxRetriesCount: maxRetriesPerUpload,
                         timeoutForUploadInMs: timeoutPerUploadInMs,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
-                    );
+                        maxRetriesCount: maxRetriesPerUpload,
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs);
                 }
                 catch (UploadErroredOutException) //00
                 {
@@ -163,9 +162,14 @@ namespace Laerdal.McuMgr.FileUploader
             string remoteFilePath,
             int timeoutForUploadInMs = -1,
             int maxRetriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = 2_500
         )
         {
+            gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs < 0
+                ? 2_500
+                : gracefulCancellationTimeoutInMs; 
+            
             var isCancellationRequested = false;
             for (var retry = 0; !isCancellationRequested;)
             {
@@ -258,7 +262,7 @@ namespace Laerdal.McuMgr.FileUploader
                             {
                                 try
                                 {
-                                    await Task.Delay(5_000); //                                                     we first wait to allow the cancellation to occur normally
+                                    await Task.Delay(gracefulCancellationTimeoutInMs); //                           we first wait to allow the cancellation to occur normally
                                     (this as IFileUploaderEventEmitters).OnCancelled(new CancelledEventArgs()); //  but if it takes too long we give the killing blow manually
                                 }
                                 catch // (Exception ex)

@@ -17,9 +17,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFUA.STUCE.GCRM.010", true, 5)]
-        [InlineData("FUT.SFUA.STUCE.GCRM.020", false, 10)]
-        public async Task SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding, int totalTimeToWait)
+        [InlineData("FUT.SFUA.STUCE.GCRM.010", true)]
+        [InlineData("FUT.SFUA.STUCE.GCRM.020", false)]
+        public async Task SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(() => fileUploader.UploadAsync(mockedFileData, remoteFilePath));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)totalTimeToWait.Seconds().TotalMilliseconds);
+            await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeTrue();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
