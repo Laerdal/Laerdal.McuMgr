@@ -137,7 +137,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     newState: EFirmwareErasureState.Failed
                 ));
                 
-                throw new FirmwareErasureErroredOutException(ex.Message, ex);
+                throw new FirmwareErasureInternalErrorException(ex);
             }
             finally
             {

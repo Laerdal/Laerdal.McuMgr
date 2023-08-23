@@ -105,7 +105,7 @@
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowUploadTimeoutException_GivenTooSmallTimeout.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.EraseAsync.ShouldThrowTimeoutException_GivenTooSmallTimeout.cs" />
-        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.EraseAsync.ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareEraser\FirmwareEraserTestbed.EraseAsync.ShouldThrowFirmwareErasureInternalErrorException_GivenErroneousNativeFirmwareEraser.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.EraseAsync.ShouldCompleteSuccessfully_GivenGreenNativeFirmwareEraser.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.FirmwareEraserConstructor.ShouldThrowArgumentNullException_GivenNullNativeFirmwareEraser.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

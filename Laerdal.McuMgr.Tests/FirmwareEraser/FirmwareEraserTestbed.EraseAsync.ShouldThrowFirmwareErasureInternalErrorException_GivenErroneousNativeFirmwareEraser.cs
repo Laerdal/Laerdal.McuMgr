@@ -13,19 +13,19 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
     public partial class FirmwareEraserTestbed
     {
         [Fact]
-        public async Task EraseAsync_ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFirmwareEraser()
+        public async Task EraseAsync_ShouldThrowFirmwareErasureInternalErrorException_GivenErroneousNativeFirmwareEraser()
         {
             // Arrange
             var mockedNativeFirmwareEraserProxy = new MockedErroneousNativeFirmwareEraserProxySpy(new McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy());
             var firmwareEraser = new McuMgr.FirmwareEraser.FirmwareEraser(mockedNativeFirmwareEraserProxy);
-            
+
             using var eventsMonitor = firmwareEraser.Monitor();
 
             // Act
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<FirmwareErasureErroredOutException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
+            (await work.Should().ThrowExactlyAsync<FirmwareErasureInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
             
             eventsMonitor
                 .Should().Raise(nameof(firmwareEraser.StateChanged))
