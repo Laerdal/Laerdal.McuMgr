@@ -108,7 +108,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     }  
                     else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin".ToUpperInvariant()))
                     {
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah");
                     }
                     else
                     {

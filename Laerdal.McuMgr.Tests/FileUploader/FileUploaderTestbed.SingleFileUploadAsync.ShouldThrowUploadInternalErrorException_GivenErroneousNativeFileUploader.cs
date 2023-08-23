@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(() => fileUploader.UploadAsync(localData: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin"));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<UploadInternalErrorException>()).WithInnerExceptionExactly<Exception>("foobar");
+            (await work.Should().ThrowExactlyAsync<UploadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 Thread.Sleep(100);
 
-                throw new Exception("foobar");
+                throw new Exception("native symbols not loaded blah blah");
             }
         }
     }

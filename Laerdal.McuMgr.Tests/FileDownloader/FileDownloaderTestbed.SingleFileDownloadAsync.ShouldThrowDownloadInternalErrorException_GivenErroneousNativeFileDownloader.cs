@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: "/path/to/file.bin"));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<DownloadInternalErrorException>()).WithInnerExceptionExactly<Exception>("foobar");
+            (await work.Should().ThrowExactlyAsync<DownloadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                 Thread.Sleep(100);
 
-                throw new Exception("foobar");
+                throw new Exception("native symbols not loaded blah blah");
             }
         }
     }

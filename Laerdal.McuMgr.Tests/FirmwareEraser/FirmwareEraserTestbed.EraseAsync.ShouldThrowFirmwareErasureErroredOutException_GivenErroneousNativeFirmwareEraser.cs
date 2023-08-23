@@ -21,7 +21,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<FirmwareErasureErroredOutException>()).WithInnerExceptionExactly<Exception>("foobar");
+            (await work.Should().ThrowExactlyAsync<FirmwareErasureErroredOutException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeFirmwareEraserProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareEraserProxy.BeginErasureCalled.Should().BeTrue();
@@ -41,7 +41,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
 
                 Thread.Sleep(100);
 
-                throw new Exception("foobar");
+                throw new Exception("native symbols not loaded blah blah");
             }
         }
     }
