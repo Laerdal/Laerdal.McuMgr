@@ -10,16 +10,6 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
 {
     /// <summary>Upgrades the firmware on a specific Nordic-chip-based BLE device</summary>
-    /// <remarks>
-    /// For the firmware installation process to properly commence on Laerdal's AED devices the bootloader
-    /// of the device must be compatible in terms of firmware-signature verification.<br/>
-    /// <br/>
-    /// This means that if the AED bootloader detects an incompatible signature on the new firmware
-    /// you're trying to install it will simply reject it when the firmware-upload is sitting at 0%.<br/>
-    /// <br/>
-    /// In this case contact folks in the embedded hardware department of Laerdal because they are
-    /// the only ones that can resolve these kinds of issues.
-    /// </remarks>
     public interface IFirmwareInstaller
     {
         /// <summary>Holds the last error message emitted</summary>
