@@ -35,10 +35,6 @@ namespace Laerdal.McuMgr.DeviceResetter
             );
         }
 
-        public EDeviceResetterState State => AndroidNativeDeviceResetterAdapterProxy.TranslateEAndroidDeviceResetterState(
-            (EAndroidDeviceResetterState)(_nativeDeviceResetterProxy?.State ?? EAndroidDeviceResetterState.None)
-        );
-
         private sealed class AndroidNativeDeviceResetterAdapterProxy : AndroidDeviceResetter, INativeDeviceResetterProxy
         {
             private readonly INativeDeviceResetterCallbacksProxy _deviceResetterCallbacksProxy;
@@ -55,7 +51,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 }
             }
 
-            public new object State => base.State; //we convert the native state to a mere object because otherwise we would have to resort to generics 
+            public EDeviceResetterState State => TranslateEAndroidDeviceResetterState(base.State ?? EAndroidDeviceResetterState.None);
 
             // ReSharper disable once UnusedMember.Local
             private AndroidNativeDeviceResetterAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)

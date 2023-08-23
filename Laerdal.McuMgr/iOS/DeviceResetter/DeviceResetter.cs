@@ -28,10 +28,6 @@ namespace Laerdal.McuMgr.DeviceResetter
             );
         }
 
-        public EDeviceResetterState State => IOSNativeDeviceResetterProxy.TranslateEIOSDeviceResetterState(
-            (EIOSDeviceResetterState)(_nativeDeviceResetterProxy?.State ?? EIOSDeviceResetterState.None)
-        );
-
         // ReSharper disable once InconsistentNaming
         private sealed class IOSNativeDeviceResetterProxy : IOSListenerForDeviceResetter, INativeDeviceResetterProxy
         {
@@ -49,7 +45,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             #region commands
             
-            public object State => _nativeIosDeviceResetter?.State;
+            public EDeviceResetterState State => TranslateEIOSDeviceResetterState(_nativeIosDeviceResetter?.State ?? EIOSDeviceResetterState.None);
             public string LastFatalErrorMessage => _nativeIosDeviceResetter?.LastFatalErrorMessage;
 
             public void Disconnect() => _nativeIosDeviceResetter?.Disconnect();

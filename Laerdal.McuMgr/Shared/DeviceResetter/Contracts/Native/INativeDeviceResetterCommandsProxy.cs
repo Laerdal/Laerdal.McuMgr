@@ -1,8 +1,10 @@
-﻿namespace Laerdal.McuMgr.DeviceResetter.Contracts.Native
+﻿using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
+
+namespace Laerdal.McuMgr.DeviceResetter.Contracts.Native
 {
     internal interface INativeDeviceResetterCommandsProxy
     {
-        object State { get; }
+        EDeviceResetterState State { get; }
 
         string LastFatalErrorMessage { get; }
 

@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             public bool DisconnectCalled { get; private set; }
             public bool BeginResetCalled { get; private set; }
 
-            public object State { get; private set; }
+            public EDeviceResetterState State { get; private set; }
 
             public string LastFatalErrorMessage => "";
 

@@ -1,9 +1,9 @@
 // ReSharper disable UnusedType.Global
+// ReSharper disable UnusedParameter.Local
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
-using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {
@@ -14,7 +14,5 @@ namespace Laerdal.McuMgr.DeviceResetter
         {
             throw new NotImplementedException();
         }
-        
-        public EDeviceResetterState State => throw new NotImplementedException();
     }
 }

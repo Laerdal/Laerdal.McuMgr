@@ -15,6 +15,8 @@ namespace Laerdal.McuMgr.DeviceResetter
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter, IDeviceResetterEventEmitters
     {
+        
+        
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeDeviceResetterProxy
         internal class GenericNativeDeviceResetterCallbacksProxy : INativeDeviceResetterCallbacksProxy
         {
@@ -47,8 +49,9 @@ namespace Laerdal.McuMgr.DeviceResetter
             _nativeDeviceResetterProxy.DeviceResetter = this; //vital
         }
 
+        public EDeviceResetterState State => _nativeDeviceResetterProxy?.State ?? EDeviceResetterState.None;
         public string LastFatalErrorMessage => _nativeDeviceResetterProxy?.LastFatalErrorMessage;
-        
+
         public void Disconnect() => _nativeDeviceResetterProxy?.Disconnect();
         public void BeginReset() => _nativeDeviceResetterProxy?.BeginReset();
 
