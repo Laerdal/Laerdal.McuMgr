@@ -115,7 +115,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
 
-                    await Task.Delay(2_000, _cancellationTokenSource.Token);
+                    await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     

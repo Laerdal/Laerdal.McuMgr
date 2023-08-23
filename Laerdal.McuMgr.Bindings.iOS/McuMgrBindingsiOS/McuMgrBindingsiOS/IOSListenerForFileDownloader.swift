@@ -3,7 +3,7 @@ import Foundation
 @objc
 public protocol IOSListenerForFileDownloader {
     func logMessageAdvertisement(_ message: String, _ category: String, _ level: String, _ resource: String)
-    func fatalErrorOccurredAdvertisement(_ errorMessage: String)
+    func fatalErrorOccurredAdvertisement(_ resource: String, _ errorMessage: String)
 
     func cancelledAdvertisement()
     func stateChangedAdvertisement(_ resource: String, _ oldState: EIOSFileDownloaderState, _ newState: EIOSFileDownloaderState)

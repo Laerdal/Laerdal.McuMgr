@@ -86,7 +86,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                     await Task.Delay(2_000);
                     
-                    FatalErrorOccurredAdvertisement("fatal error occurred");
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred");
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
                 });

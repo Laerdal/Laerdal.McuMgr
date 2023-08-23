@@ -354,8 +354,8 @@ namespace Laerdal.McuMgr.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
                 => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
 
             public void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndThroughputDataChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(

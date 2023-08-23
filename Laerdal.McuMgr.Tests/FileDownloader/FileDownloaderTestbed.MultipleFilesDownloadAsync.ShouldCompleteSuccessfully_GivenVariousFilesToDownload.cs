@@ -101,16 +101,16 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
-                        FatalErrorOccurredAdvertisement("foobar");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar");
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
-                        FatalErrorOccurredAdvertisement("NO ENTRY (5)");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "NO ENTRY (5)");
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
-                        FatalErrorOccurredAdvertisement("ping pong");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong");
                     }
                     else
                     {

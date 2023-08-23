@@ -76,11 +76,11 @@ namespace Laerdal.McuMgr.FileDownloader
 
             #region android callbacks -> csharp event emitters
             
-            public override void FatalErrorOccurredAdvertisement(string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
             {
-                base.FatalErrorOccurredAdvertisement(errorMessage);
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage);
 
-                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)

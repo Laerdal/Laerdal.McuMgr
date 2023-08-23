@@ -98,7 +98,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(_nativeErrorMessageForFileNotFound);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound);
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
                 });

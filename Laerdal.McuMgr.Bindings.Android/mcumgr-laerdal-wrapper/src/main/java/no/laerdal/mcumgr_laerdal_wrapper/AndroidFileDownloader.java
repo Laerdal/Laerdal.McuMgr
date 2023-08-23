@@ -42,7 +42,7 @@ public class AndroidFileDownloader
 
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("Provided target-path is empty!");
+            fatalErrorOccurredAdvertisement("", "Target-file provided is dud!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -51,7 +51,7 @@ public class AndroidFileDownloader
         if (remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("Provided target-path points to a directory not a file!");
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -59,7 +59,7 @@ public class AndroidFileDownloader
         if (!remoteFilePathSanitized.startsWith("/"))
         {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("Provided target-path is not an absolute path!");
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path is not an absolute path!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -71,7 +71,7 @@ public class AndroidFileDownloader
         catch (final Exception ex)
         {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(ex.getMessage());
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -176,9 +176,10 @@ public class AndroidFileDownloader
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage)
+    public void fatalErrorOccurredAdvertisement(final String resource, final String errorMessage)
     {
-        _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
+        //this method is meant to be overridden by csharp binding libraries to intercept updates
+        _lastFatalErrorMessage = errorMessage;
     }
 
     public void busyStateChangedAdvertisement(boolean busyNotIdle)
@@ -258,7 +259,7 @@ public class AndroidFileDownloader
         {
             fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(error.getMessage());
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
         }

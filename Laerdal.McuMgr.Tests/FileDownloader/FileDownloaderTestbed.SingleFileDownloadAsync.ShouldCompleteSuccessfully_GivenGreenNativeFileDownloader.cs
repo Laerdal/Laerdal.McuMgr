@@ -103,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (_tryCount < _maxNumberOfTriesForSuccess)
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement("fatal error occurred");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred");
                         return;
                     }
                     

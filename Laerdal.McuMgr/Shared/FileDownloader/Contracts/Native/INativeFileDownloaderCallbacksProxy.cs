@@ -12,7 +12,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
         void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void DownloadCompletedAdvertisement(string resource, byte[] data);
-        void FatalErrorOccurredAdvertisement(string errorMessage);
+        void FatalErrorOccurredAdvertisement(string resource, string errorMessage);
         void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput);
     }
 }

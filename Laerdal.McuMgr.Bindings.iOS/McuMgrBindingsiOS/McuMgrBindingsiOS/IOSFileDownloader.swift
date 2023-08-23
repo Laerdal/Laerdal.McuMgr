@@ -37,21 +37,21 @@ public class IOSFileDownloader: NSObject {
 
         if remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement("Target-file provided is dud")
+            fatalErrorOccurredAdvertisement("", "Target-file provided is dud!")
 
             return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
         }
 
         if remoteFilePath.hasSuffix("/") {
             setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement("Target-file points to a directory instead of a file")
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Target-file points to a directory instead of a file")
 
             return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
         }
 
         if !remoteFilePath.hasPrefix("/") {
             setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement("Target-path is not absolute!")
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Target-path is not absolute!")
 
             return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
         }
@@ -67,7 +67,7 @@ public class IOSFileDownloader: NSObject {
         let success = _fileSystemManager.download(name: remoteFilePath, delegate: self)
         if !success {
             setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement("Failed to commence file-Downloading (check logs for details)")
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Failed to commence file-Downloading (check logs for details)")
 
             return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
         }
@@ -107,10 +107,10 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ resource: String, _ errorMessage: String) {
         _lastFatalErrorMessage = errorMessage
 
-        _listener.fatalErrorOccurredAdvertisement(errorMessage)
+        _listener.fatalErrorOccurredAdvertisement(resource, errorMessage)
     }
 
     //@objc   dont
@@ -179,7 +179,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
 
     public func downloadDidFail(with error: Error) {
         setState(EIOSFileDownloaderState.error)
-        fatalErrorOccurredAdvertisement(error.localizedDescription)
+        fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.localizedDescription)
         busyStateChangedAdvertisement(false)
     }
 
