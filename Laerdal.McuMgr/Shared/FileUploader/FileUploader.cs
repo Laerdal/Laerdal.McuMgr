@@ -201,15 +201,15 @@ namespace Laerdal.McuMgr.FileUploader
 
                     throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
                 }
-                catch (UploadErroredOutException ex) //errors with codes unknown(1) and in_value(3) happen all the time in android when multiuploading files
+                catch (UploadErroredOutException ex) //errors with code in_value(3) happen all the time in android when multiuploading files
                 {
-                    if (ex is UploadErroredOutRemoteFolderNotFoundException) //no point to retry if the remote parent folder is not there
+                    if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
 
-                    if (++retry > maxRetriesCount)
-                        throw new UploadErroredOutException($"Failed to upload '{remoteFilePath}' after trying {maxRetriesCount + 1} time(s)", innerException: ex);
+                    if (++retry > maxRetriesCount) //order
+                        throw new UploadAllAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
 
-                    if (sleepTimeBetweenRetriesInMs > 0)
+                    if (sleepTimeBetweenRetriesInMs > 0) //order
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }

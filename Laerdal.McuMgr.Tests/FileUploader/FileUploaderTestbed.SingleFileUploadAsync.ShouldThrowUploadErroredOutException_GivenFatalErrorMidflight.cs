@@ -17,9 +17,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFDA.STDEOE.GFEM.010", 0)]
-        [InlineData("FUT.SFDA.STDEOE.GFEM.020", 1)]
-        public async Task SingleFileUploadAsync_ShouldThrowUploadErroredOutException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
+        [InlineData("FUT.SFDA.STUAAFE.GFEM.010", 0)]
+        [InlineData("FUT.SFDA.STUAAFE.GFEM.020", 1)]
+        public async Task SingleFileUploadAsync_ShouldThrowUploadAllAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<UploadErroredOutException>()
+                .ThrowExactlyAsync<UploadAllAttemptsFailedException>()
                 .WithMessage("*failed to upload*")
                 .WithTimeoutInMs((int)((maxRetriesCount + 1) * 3).Seconds().TotalMilliseconds);
 

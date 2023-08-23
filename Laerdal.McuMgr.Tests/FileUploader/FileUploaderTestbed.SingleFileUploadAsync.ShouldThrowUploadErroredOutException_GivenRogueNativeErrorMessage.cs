@@ -18,9 +18,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFUA.STUEOE.GRNEM.010", "", 1)] //    we want to ensure that our error sniffing logic will 
-        [InlineData("FDT.SFUA.STUEOE.GRNEM.020", null, 1)] //  not be error out itself by rogue native error messages
-        public async Task ShouldThrowUploadErroredOutException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
+        [InlineData("FDT.SFUA.STUAAFE.GRNEM.010", "", 1)] //    we want to ensure that our error sniffing logic will 
+        [InlineData("FDT.SFUA.STUAAFE.GRNEM.020", null, 1)] //  not be error out itself by rogue native error messages
+        public async Task SingleFileUploadAsync_ShouldThrowUploadAllAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<UploadErroredOutException>()
+                .ThrowExactlyAsync<UploadAllAttemptsFailedException>()
                 .WithTimeoutInMs((int)3.Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
