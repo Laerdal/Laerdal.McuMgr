@@ -16,15 +16,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.010", new[] { "/foo/bar.bin", "" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.020", new[] { "/foo/bar.bin", null })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\f/pong.bin" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\r/pong.bin" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping\n/pong.bin" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "/ping\r\n/pong.bin" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "ping/pong.bin/" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping/pong.bin/" })]
-        [InlineData("FUS.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "  ping/pong.bin/  " })] //2nd path gets normalized to  "/ping/pong.bin/" which is invalid due to the trailing slash 
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.010", new[] { "/foo/bar.bin", "" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.020", new[] { "/foo/bar.bin", null })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\f/pong.bin" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\r/pong.bin" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping\n/pong.bin" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "/ping\r\n/pong.bin" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "ping/pong.bin/" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping/pong.bin/" })]
+        [InlineData("FUT.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "  ping/pong.bin/  " })] //2nd path gets normalized to  "/ping/pong.bin/" which is invalid due to the trailing slash 
         public async Task MultipleFilesUploadAsync_ShouldThrowArgumentException_GivenPathCollectionWithErroneousFilesToUpload(string testcaseNickname, IEnumerable<string> remoteFilePaths)
         {
             // Arrange

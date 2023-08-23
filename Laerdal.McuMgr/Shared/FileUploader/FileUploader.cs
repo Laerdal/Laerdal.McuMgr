@@ -258,8 +258,8 @@ namespace Laerdal.McuMgr.FileUploader
                             {
                                 try
                                 {
-                                    await Task.Delay(5_000); //                                               we first wait to allow the cancellation to occur normally
-                                    taskCompletionSource.TrySetException(new UploadCancelledException()); //  but if it takes too long we give the killing blow manually
+                                    await Task.Delay(5_000); //                                                     we first wait to allow the cancellation to occur normally
+                                    (this as IFileUploaderEventEmitters).OnCancelled(new CancelledEventArgs()); //  but if it takes too long we give the killing blow manually
                                 }
                                 catch // (Exception ex)
                                 {
@@ -285,7 +285,7 @@ namespace Laerdal.McuMgr.FileUploader
             }
             
             if (isCancellationRequested) //vital
-                throw new UploadCancelledException(); //10
+                throw new UploadCancelledException(); //20
 
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating

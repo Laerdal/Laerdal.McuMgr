@@ -13,10 +13,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUS.BD.STAE.GIRFP.010", "")]
-        [InlineData("FUS.BD.STAE.GIRFP.020", null)]
-        [InlineData("FUS.BD.STAE.GIRFP.030", "foo/bar/")] //  paths are not allowed
-        [InlineData("FUS.BD.STAE.GIRFP.040", "/foo/bar/")] // to end with a slash 
+        [InlineData("FUT.BD.STAE.GIRFP.010", "")]
+        [InlineData("FUT.BD.STAE.GIRFP.020", null)]
+        [InlineData("FUT.BD.STAE.GIRFP.030", "foo/bar/")] //  paths are not allowed
+        [InlineData("FUT.BD.STAE.GIRFP.040", "/foo/bar/")] // to end with a slash 
         public void BeginUpload_ShouldThrowArgumentException_GivenInvalidRemoteFilePath(string testcaseNickname, string remoteFilePath)
         {
             // Arrange
