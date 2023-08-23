@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             var work = new Func<Task>(() => deviceResetter.ResetAsync(timeoutInMs: 100));
 
             // Assert
-            await work.Should().ThrowAsync<DeviceResetTimeoutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
+            await work.Should().ThrowExactlyAsync<DeviceResetTimeoutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();

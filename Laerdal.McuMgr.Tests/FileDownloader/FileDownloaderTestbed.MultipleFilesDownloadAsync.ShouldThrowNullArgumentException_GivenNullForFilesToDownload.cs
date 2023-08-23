@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(remoteFilePaths: null));
 
             // Assert
-            await work.Should().ThrowAsync<ArgumentNullException>().WithTimeoutInMs(100);
+            await work.Should().ThrowExactlyAsync<ArgumentNullException>().WithTimeoutInMs(100);
 
             eventsMonitor.OccurredEvents.Should().HaveCount(0);
 

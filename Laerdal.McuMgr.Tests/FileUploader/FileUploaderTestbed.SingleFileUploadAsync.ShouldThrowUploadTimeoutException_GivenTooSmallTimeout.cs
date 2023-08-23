@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task SingleFileUploadAsync_ShouldThrowTimeoutException_GivenTooSmallTimeout()
+        public async Task SingleFileUploadAsync_ShouldThrowUploadTimeoutException_GivenTooSmallTimeout()
         {
             // Arrange
             const string remoteFilePath = "/path/to/file.bin";
@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             ));
 
             // Assert
-            await work.Should().ThrowAsync<UploadErroredOutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
+            await work.Should().ThrowExactlyAsync<UploadTimeoutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
