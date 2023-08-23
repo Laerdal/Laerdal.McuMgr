@@ -234,9 +234,9 @@ namespace Laerdal.McuMgr.FileDownloader
                         newState: EFileDownloaderState.Error
                     ));
 
-                    //OnFatalErrorOccurred(); //not worth it in this case  
+                    //OnFatalErrorOccurred(); //dont   not worth it in this case  
 
-                    throw new DownloadErroredOutException(ex.Message, ex);
+                    throw new DownloadInternalErrorException(ex);
                 }
                 finally
                 {

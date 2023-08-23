@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task SingleFileDownloadAsync_ShouldThrowDownloadErroredOutException_GivenErroneousNativeFileDownloader()
+        public async Task SingleFileDownloadAsync_ShouldThrowDownloadInternalErrorException_GivenErroneousNativeFileDownloader()
         {
             // Arrange
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy(new GenericNativeFileDownloaderCallbacksProxy_());
@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: "/path/to/file.bin"));
 
             // Assert
-            (await work.Should().ThrowAsync<DownloadErroredOutException>()).WithInnerExceptionExactly<Exception>("foobar");
+            (await work.Should().ThrowExactlyAsync<DownloadInternalErrorException>()).WithInnerExceptionExactly<Exception>("foobar");
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00

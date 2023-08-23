@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task SingleFileDownloadAsync_ShouldThrowTimeoutException_GivenTooSmallTimeout()
+        public async Task SingleFileDownloadAsync_ShouldThrowDownloadTimeoutException_GivenTooSmallTimeout()
         {
             // Arrange
             const string remoteFilePath = "/path/to/file.bin";
@@ -29,7 +29,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: remoteFilePath, timeoutForDownloadInMs: 100));
 
             // Assert
-            await work.Should().ThrowAsync<DownloadErroredOutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
+            await work.Should().ThrowExactlyAsync<DownloadTimeoutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
