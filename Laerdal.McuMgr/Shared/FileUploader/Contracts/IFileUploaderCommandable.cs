@@ -4,11 +4,8 @@ using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
 {
-    public interface IFileUploaderCommands
+    public interface IFileUploaderCommandable
     {
-        /// <summary>Holds the last error message emitted</summary>
-        public string LastFatalErrorMessage { get; }
-
         /// <summary>
         /// Begins the file-uploading process for multiple files.
         ///
