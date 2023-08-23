@@ -194,9 +194,9 @@ namespace Laerdal.McuMgr.FileUploader
                 catch (TimeoutException ex)
                 {
                     (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        resource: remoteFilePath,
                         oldState: EFileUploaderState.None, //better not use this.State here because the native call might fail
-                        newState: EFileUploaderState.Error,
-                        resource: remoteFilePath
+                        newState: EFileUploaderState.Error
                     ));
 
                     throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
@@ -223,14 +223,14 @@ namespace Laerdal.McuMgr.FileUploader
                 )
                 {
                     (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        resource: remoteFilePath,
                         oldState: EFileUploaderState.None,
-                        newState: EFileUploaderState.Error,
-                        resource: remoteFilePath
+                        newState: EFileUploaderState.Error
                     ));
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
                     
-                    throw new UploadErroredOutException(ex.Message, ex); //todo   better throw our own custom internal error exception here
+                    throw new UploadInternalErrorException(ex);
                 }
                 finally
                 {
