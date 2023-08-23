@@ -1,6 +1,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
-namespace Laerdal.McuMgr.FirmwareInstaller.Exceptions
+namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions
 {
     public class FirmwareInstallationErroredOutImageSwapTimeoutException : FirmwareInstallationErroredOutException, IFirmwareInstallationException
     {

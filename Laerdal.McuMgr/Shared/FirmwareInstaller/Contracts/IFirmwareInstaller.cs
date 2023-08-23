@@ -4,9 +4,9 @@
 using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FirmwareInstaller.Events;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 
-namespace Laerdal.McuMgr.FirmwareInstaller
+namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
 {
     /// <summary>Upgrades the firmware on a specific Nordic-chip-based BLE device</summary>
     /// <remarks>

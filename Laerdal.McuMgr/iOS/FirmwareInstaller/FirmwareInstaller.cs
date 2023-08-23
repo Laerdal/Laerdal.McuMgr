@@ -5,7 +5,8 @@ using System;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FirmwareInstaller.Events;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FirmwareInstaller

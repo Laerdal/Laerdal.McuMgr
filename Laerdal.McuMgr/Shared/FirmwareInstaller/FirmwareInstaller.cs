@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FirmwareInstaller.Events;
-using Laerdal.McuMgr.FirmwareInstaller.Exceptions;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FirmwareInstaller
 {

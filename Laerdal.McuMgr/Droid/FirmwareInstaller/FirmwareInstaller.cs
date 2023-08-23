@@ -9,7 +9,8 @@ using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FirmwareInstaller.Events;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller
 {

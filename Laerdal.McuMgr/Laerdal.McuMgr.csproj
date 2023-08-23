@@ -78,6 +78,9 @@
     <ItemGroup>
         <Compile Include="Shared\**\*.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Update="Shared\FirmwareInstaller\Contracts\IFirmwareInstaller.cs">
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->

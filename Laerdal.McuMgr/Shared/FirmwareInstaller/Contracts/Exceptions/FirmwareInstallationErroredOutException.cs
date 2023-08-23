@@ -1,6 +1,6 @@
 using System;
 
-namespace Laerdal.McuMgr.FirmwareInstaller.Exceptions
+namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions
 {
     public class FirmwareInstallationErroredOutException : Exception, IFirmwareInstallationException
     {

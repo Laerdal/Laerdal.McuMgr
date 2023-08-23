@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Laerdal.McuMgr.FirmwareInstaller.Events
+namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
     public sealed class FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs : EventArgs
     {
