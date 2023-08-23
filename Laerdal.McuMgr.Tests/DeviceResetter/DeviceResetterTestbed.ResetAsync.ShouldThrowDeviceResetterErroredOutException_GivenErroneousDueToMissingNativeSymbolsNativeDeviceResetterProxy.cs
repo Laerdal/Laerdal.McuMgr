@@ -25,11 +25,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             var work = new Func<Task>(() => deviceResetter.ResetAsync());
 
             // Assert
-            (
-                await work
-                    .Should().ThrowExactlyAsync<DeviceResetterErroredOutException>()
-                    .WithTimeoutInMs(100)
-            ).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
+            (await work.Should().ThrowExactlyAsync<DeviceResetterInternalErrorException>().WithTimeoutInMs(100)).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();

@@ -113,7 +113,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!
                 && !(ex is TimeoutException)
-                && !(ex is DeviceResetterErroredOutException)
+                && !(ex is IDeviceResetterException)
             )
             {
                 (this as IDeviceResetterEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
@@ -123,7 +123,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
                 //OnFatalErrorOccurred();  //better not   it would be a bit confusing to have the error reported in two different ways
                 
-                throw new DeviceResetterErroredOutException(ex.Message, innerException: ex);
+                throw new DeviceResetterInternalErrorException(ex);
             }
             finally
             {
