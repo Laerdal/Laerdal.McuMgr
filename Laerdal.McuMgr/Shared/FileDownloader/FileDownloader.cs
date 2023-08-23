@@ -140,10 +140,9 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     var data = await DownloadAsync(
                         remoteFilePath: path,
-                        maxRetriesCount: maxRetriesPerDownload,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
-                    );
+                        maxRetriesCount: maxRetriesPerDownload,
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs);
 
                     results[path] = data;
                 }
@@ -160,13 +159,19 @@ namespace Laerdal.McuMgr.FileDownloader
             //    if a file fails to download we simply return null data for that file
         }
 
+        private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task<byte[]> DownloadAsync(
             string remoteFilePath,
             int timeoutForDownloadInMs = -1,
             int maxRetriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs
         )
         {
+            gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
+                ? gracefulCancellationTimeoutInMs
+                : DefaultGracefulCancellationTimeoutInMs;
+            
             var result = (byte[])null;
             var isCancellationRequested = false;
             for (var retry = 0; !isCancellationRequested;)
@@ -257,8 +262,8 @@ namespace Laerdal.McuMgr.FileDownloader
                     {
                         try
                         {
-                            await Task.Delay(5_000); 
-                            taskCompletionSource.TrySetException(new DownloadCancelledException()); //00
+                            await Task.Delay(gracefulCancellationTimeoutInMs);
+                            (this as IFileDownloaderEventEmitters).OnCancelled(new CancelledEventArgs()); //00
                         }
                         catch // (Exception ex)
                         {

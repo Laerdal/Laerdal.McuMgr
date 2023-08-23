@@ -157,6 +157,7 @@ namespace Laerdal.McuMgr.FileUploader
             //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
         }
 
+        private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task UploadAsync(
             byte[] localData,
             string remoteFilePath,
@@ -166,9 +167,9 @@ namespace Laerdal.McuMgr.FileUploader
             int gracefulCancellationTimeoutInMs = 2_500
         )
         {
-            gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs < 0
-                ? 2_500
-                : gracefulCancellationTimeoutInMs; 
+            gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
+                ? gracefulCancellationTimeoutInMs
+                : DefaultGracefulCancellationTimeoutInMs;
             
             var isCancellationRequested = false;
             for (var retry = 0; !isCancellationRequested;)
