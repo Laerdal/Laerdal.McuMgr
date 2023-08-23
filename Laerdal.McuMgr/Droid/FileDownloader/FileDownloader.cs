@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.FileDownloader
         {
             private readonly INativeFileDownloaderCallbacksProxy _fileDownloaderCallbacksProxy;
             
-            public IFileDownloaderEventEmitters FileDownloader //keep this to conform to the interface
+            public IFileDownloaderEventEmittable FileDownloader //keep this to conform to the interface
             {
                 get => _fileDownloaderCallbacksProxy?.FileDownloader;
                 set

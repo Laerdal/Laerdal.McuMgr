@@ -51,7 +51,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             public void Disconnect() => _nativeIosDeviceResetter?.Disconnect();
             public void BeginReset() => _nativeIosDeviceResetter?.BeginReset();
 
-            public IDeviceResetterEventEmitters DeviceResetter //keep this to conform to the interface
+            public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
             {
                 get => _nativeResetterCallbacksProxy?.DeviceResetter;
                 set

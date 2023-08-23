@@ -3,7 +3,7 @@ using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts
 {
-    internal interface IDeviceResetterEventEmitters
+    internal interface IDeviceResetterEventEmittable
     {
         void OnLogEmitted(LogEmittedEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);

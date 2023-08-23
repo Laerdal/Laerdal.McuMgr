@@ -13,14 +13,14 @@ using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
 namespace Laerdal.McuMgr.DeviceResetter
 {
     /// <inheritdoc cref="IDeviceResetter"/>
-    public partial class DeviceResetter : IDeviceResetter, IDeviceResetterEventEmitters
+    public partial class DeviceResetter : IDeviceResetter, IDeviceResetterEventEmittable
     {
         
         
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeDeviceResetterProxy
         internal class GenericNativeDeviceResetterCallbacksProxy : INativeDeviceResetterCallbacksProxy
         {
-            public IDeviceResetterEventEmitters DeviceResetter { get; set; }
+            public IDeviceResetterEventEmittable DeviceResetter { get; set; }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
                 => DeviceResetter?.OnLogEmitted(new LogEmittedEventArgs(
@@ -106,7 +106,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             }
             catch (TimeoutException ex)
             {
-                (this as IDeviceResetterEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                (this as IDeviceResetterEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EDeviceResetterState.None, //better not use this.State here because the native call might fail
                     newState: EDeviceResetterState.Failed
                 ));
@@ -119,7 +119,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 && !(ex is IDeviceResetterException)
             )
             {
-                (this as IDeviceResetterEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                (this as IDeviceResetterEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EDeviceResetterState.None,
                     newState: EDeviceResetterState.Failed
                 ));
@@ -157,8 +157,8 @@ namespace Laerdal.McuMgr.DeviceResetter
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
-        void IDeviceResetterEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        void IDeviceResetterEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        void IDeviceResetterEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IDeviceResetterEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IDeviceResetterEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IDeviceResetterEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
     }
 }

@@ -5,7 +5,7 @@ namespace Laerdal.McuMgr.DeviceResetter.Contracts.Native
 {
     internal interface INativeDeviceResetterCallbacksProxy
     {
-        public IDeviceResetterEventEmitters DeviceResetter { get; set; }
+        public IDeviceResetterEventEmittable DeviceResetter { get; set; }
 
         public void LogMessageAdvertisement(string message, string category, ELogLevel level);
 

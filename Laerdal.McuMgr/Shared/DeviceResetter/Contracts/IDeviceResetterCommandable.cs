@@ -1,16 +1,9 @@
 using System.Threading.Tasks;
-using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts
 {
-    public interface IDeviceResetterCommands
+    public interface IDeviceResetterCommandable
     {
-        /// <summary>Returns the last fatal error message that was emitted by the device-resetter.</summary>
-        string LastFatalErrorMessage { get; }
-
-        /// <summary>Returns the current state of the device-resetter.</summary>
-        EDeviceResetterState State { get; }
-
         /// <summary>
         /// Starts the resetting process. Basically reboots the device - it doesn't delete any of the firmware or the configuration.
         /// </summary>

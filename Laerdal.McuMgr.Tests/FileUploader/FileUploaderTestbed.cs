@@ -18,7 +18,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             public string LastFatalErrorMessage => "";
 
-            public IFileUploaderEventEmitters FileUploader //keep this to conform to the interface
+            public IFileUploaderEventEmittable FileUploader //keep this to conform to the interface
             {
                 get => _uploaderCallbacksProxy?.FileUploader;
                 set

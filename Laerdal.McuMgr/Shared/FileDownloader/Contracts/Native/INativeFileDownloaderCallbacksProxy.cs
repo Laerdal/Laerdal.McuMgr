@@ -5,7 +5,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
 {
     internal interface INativeFileDownloaderCallbacksProxy
     {
-        public IFileDownloaderEventEmitters FileDownloader { get; set; }
+        public IFileDownloaderEventEmittable FileDownloader { get; set; }
 
         void CancelledAdvertisement();
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);

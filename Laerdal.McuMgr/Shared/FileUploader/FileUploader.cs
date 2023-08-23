@@ -15,7 +15,7 @@ using Laerdal.McuMgr.FileUploader.Contracts.Native;
 namespace Laerdal.McuMgr.FileUploader
 {
     /// <inheritdoc cref="IFileUploader"/>
-    public partial class FileUploader : IFileUploader, IFileUploaderEventEmitters
+    public partial class FileUploader : IFileUploader, IFileUploaderEventEmittable
     {
         private readonly INativeFileUploaderProxy _nativeFileUploaderProxy;
 
@@ -193,7 +193,7 @@ namespace Laerdal.McuMgr.FileUploader
                 }
                 catch (TimeoutException ex)
                 {
-                    (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    (this as IFileUploaderEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
                         resource: remoteFilePath,
                         oldState: EFileUploaderState.None, //better not use this.State here because the native call might fail
                         newState: EFileUploaderState.Error
@@ -222,7 +222,7 @@ namespace Laerdal.McuMgr.FileUploader
                     && !(ex is IUploadException) //this accounts for both cancellations and upload errors
                 )
                 {
-                    (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    (this as IFileUploaderEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
                         resource: remoteFilePath,
                         oldState: EFileUploaderState.None,
                         newState: EFileUploaderState.Error
@@ -264,7 +264,7 @@ namespace Laerdal.McuMgr.FileUploader
                                 try
                                 {
                                     await Task.Delay(gracefulCancellationTimeoutInMs); //                           we first wait to allow the cancellation to occur normally
-                                    (this as IFileUploaderEventEmitters).OnCancelled(new CancelledEventArgs()); //  but if it takes too long we give the killing blow manually
+                                    (this as IFileUploaderEventEmittable).OnCancelled(new CancelledEventArgs()); //  but if it takes too long we give the killing blow manually
                                 }
                                 catch // (Exception ex)
                                 {
@@ -305,18 +305,18 @@ namespace Laerdal.McuMgr.FileUploader
             //    the upload cannot commence to begin with
         }
 
-        void IFileUploaderEventEmitters.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        void IFileUploaderEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        void IFileUploaderEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        void IFileUploaderEventEmitters.OnUploadCompleted(UploadCompletedEventArgs ea) => _uploadCompleted?.Invoke(this, ea);
-        void IFileUploaderEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        void IFileUploaderEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        void IFileUploaderEventEmitters.OnFileUploadProgressPercentageAndThroughputDataChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnUploadCompleted(UploadCompletedEventArgs ea) => _uploadCompleted?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndThroughputDataChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
         
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileUploaderProxy
         internal class GenericNativeFileUploaderCallbacksProxy : INativeFileUploaderCallbacksProxy
         {
-            public IFileUploaderEventEmitters FileUploader { get; set; }
+            public IFileUploaderEventEmittable FileUploader { get; set; }
 
             public void CancelledAdvertisement()
                 => FileUploader?.OnCancelled(new CancelledEventArgs());

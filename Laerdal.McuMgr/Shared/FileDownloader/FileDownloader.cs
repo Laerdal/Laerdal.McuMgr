@@ -15,7 +15,7 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Native;
 namespace Laerdal.McuMgr.FileDownloader
 {
     /// <inheritdoc cref="IFileDownloader"/>
-    public partial class FileDownloader : IFileDownloader, IFileDownloaderEventEmitters
+    public partial class FileDownloader : IFileDownloader, IFileDownloaderEventEmittable
     {
         private readonly INativeFileDownloaderProxy _nativeFileDownloaderProxy;
 
@@ -199,7 +199,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     //todo   silently cancel the download here on best effort basis
                     
-                    (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    (this as IFileDownloaderEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
                         resource: remoteFilePath,
                         oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail
                         newState: EFileDownloaderState.Error
@@ -228,7 +228,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     && !(ex is IDownloadException) //this accounts for both cancellations and download exceptions!
                 )
                 {
-                    (this as IFileDownloaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    (this as IFileDownloaderEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
                         resource: remoteFilePath,
                         oldState: EFileDownloaderState.None,
                         newState: EFileDownloaderState.Error
@@ -263,7 +263,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         try
                         {
                             await Task.Delay(gracefulCancellationTimeoutInMs);
-                            (this as IFileDownloaderEventEmitters).OnCancelled(new CancelledEventArgs()); //00
+                            (this as IFileDownloaderEventEmittable).OnCancelled(new CancelledEventArgs()); //00
                         }
                         catch // (Exception ex)
                         {
@@ -316,19 +316,19 @@ namespace Laerdal.McuMgr.FileDownloader
             //    the download cannot commence to begin with
         }
 
-        void IFileDownloaderEventEmitters.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        void IFileDownloaderEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        void IFileDownloaderEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        void IFileDownloaderEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        void IFileDownloaderEventEmitters.OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
-        void IFileDownloaderEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        void IFileDownloaderEventEmitters.OnFileDownloadProgressPercentageAndThroughputDataChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndThroughputDataChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
 
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileDownloaderProxy
         internal class GenericNativeFileDownloaderCallbacksProxy : INativeFileDownloaderCallbacksProxy
         {
-            public IFileDownloaderEventEmitters FileDownloader { get; set; }
+            public IFileDownloaderEventEmittable FileDownloader { get; set; }
 
             public void CancelledAdvertisement()
                 => FileDownloader?.OnCancelled(new CancelledEventArgs());

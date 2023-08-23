@@ -18,7 +18,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             public string LastFatalErrorMessage => "";
 
-            public IFileDownloaderEventEmitters FileDownloader //keep this to conform to the interface
+            public IFileDownloaderEventEmittable FileDownloader //keep this to conform to the interface
             {
                 get => _downloaderCallbacksProxy?.FileDownloader;
                 set

@@ -3,7 +3,7 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts
 {
-    internal interface IFileDownloaderEventEmitters
+    internal interface IFileDownloaderEventEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
         void OnLogEmitted(LogEmittedEventArgs ea);

@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.DeviceResetter
         {
             private readonly INativeDeviceResetterCallbacksProxy _deviceResetterCallbacksProxy;
 
-            public IDeviceResetterEventEmitters DeviceResetter //keep this to conform to the interface
+            public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
             {
                 get => _deviceResetterCallbacksProxy?.DeviceResetter;
                 set

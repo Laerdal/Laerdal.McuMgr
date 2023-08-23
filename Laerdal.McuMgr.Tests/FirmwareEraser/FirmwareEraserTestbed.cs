@@ -17,7 +17,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
 
             public string LastFatalErrorMessage => "";
 
-            public IFirmwareEraserEventEmitters FirmwareEraser //keep this to conform to the interface
+            public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
                 get => _eraserCallbacksProxy?.FirmwareEraser;
                 set

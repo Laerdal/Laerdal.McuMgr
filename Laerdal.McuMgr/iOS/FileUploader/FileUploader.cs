@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.FileUploader
             private readonly IOSFileUploader _nativeIosFileUploader;
             private readonly INativeFileUploaderCallbacksProxy _nativeFileUploaderCallbacksProxy;
 
-            public IFileUploaderEventEmitters FileUploader { get; set; }
+            public IFileUploaderEventEmittable FileUploader { get; set; }
             
             internal IOSNativeFileUploaderProxy(CBPeripheral bluetoothDevice, INativeFileUploaderCallbacksProxy nativeFileUploaderCallbacksProxy)
             {

@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.FileDownloader
             private readonly IOSFileDownloader _nativeIosFileDownloader;
             private readonly INativeFileDownloaderCallbacksProxy _nativeFileDownloaderCallbacksProxy;
 
-            public IFileDownloaderEventEmitters FileDownloader { get; set; }
+            public IFileDownloaderEventEmittable FileDownloader { get; set; }
             
             internal IOSNativeFileDownloaderProxy(CBPeripheral bluetoothDevice, INativeFileDownloaderCallbacksProxy nativeFileDownloaderCallbacksProxy)
             {

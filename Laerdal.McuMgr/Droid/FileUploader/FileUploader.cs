@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.FileUploader
         {
             private readonly INativeFileUploaderCallbacksProxy _fileUploaderCallbacksProxy;
             
-            public IFileUploaderEventEmitters FileUploader //keep this to conform to the interface
+            public IFileUploaderEventEmittable FileUploader //keep this to conform to the interface
             {
                 get => _fileUploaderCallbacksProxy?.FileUploader;
                 set

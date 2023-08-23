@@ -19,7 +19,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 
             public string LastFatalErrorMessage => "";
 
-            public IDeviceResetterEventEmitters DeviceResetter //keep this to conform to the interface
+            public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
             {
                 get => _resetterCallbacksProxy?.DeviceResetter;
                 set

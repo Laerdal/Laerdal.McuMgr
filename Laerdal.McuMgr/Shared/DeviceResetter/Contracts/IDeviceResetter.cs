@@ -3,7 +3,7 @@
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts
 {
-    public interface IDeviceResetter : IDeviceResetterEventSubscribable, IDeviceResetterCommands
+    public interface IDeviceResetter : IDeviceResetterCommandable, IDeviceResetterQueryable, IDeviceResetterEventSubscribable
     {
     }
 }

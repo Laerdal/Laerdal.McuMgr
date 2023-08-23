@@ -5,7 +5,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
 {
     internal interface INativeFileUploaderCallbacksProxy
     {
-        public IFileUploaderEventEmitters FileUploader { get; set; }
+        public IFileUploaderEventEmittable FileUploader { get; set; }
 
         void CancelledAdvertisement();
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);

@@ -59,7 +59,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _eraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
             
-            public IFirmwareEraserEventEmitters FirmwareEraser //keep this to conform to the interface
+            public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
                 get => _eraserCallbacksProxy?.FirmwareEraser;
                 set

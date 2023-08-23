@@ -4,11 +4,8 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts
 {
-    public interface IFileDownloaderCommands
+    public interface IFileDownloaderCommandable
     {
-        /// <summary>Holds the last error message emitted</summary>
-        public string LastFatalErrorMessage { get; }
-
         /// <summary>
         /// Begins the file-downloading process on multiple files. Files that cannot be downloaded due to errors will have a null entry in the returned dictionary. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>

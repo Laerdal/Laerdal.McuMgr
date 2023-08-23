@@ -52,7 +52,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             #endregion
 
             #region INativeFirmwareEraseCallbacksProxy
-            public IFirmwareEraserEventEmitters FirmwareEraser //keep this to conform to the interface
+            public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
                 get => _nativeFirmwareEraserCallbacksProxy?.FirmwareEraser;
                 set
