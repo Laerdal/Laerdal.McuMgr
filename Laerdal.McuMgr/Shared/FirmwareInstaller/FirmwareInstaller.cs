@@ -132,6 +132,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
             )
             {
+                OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: IFirmwareInstaller.EFirmwareInstallationState.None,
+                    newState: IFirmwareInstaller.EFirmwareInstallationState.Error
+                ));
+                
                 throw new FirmwareInstallationErroredOutException(ex.Message, ex);
             }
             finally

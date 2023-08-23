@@ -70,7 +70,7 @@
         <Compile Include="DeviceResetter\DeviceResetterTestbed.cs" />
         <Compile Include="DeviceResetter\DeviceResetterTestbed.ResetAsync.ShouldThrowTimeoutException_GivenTooSmallTimeout.cs" />
         <Compile Include="DeviceResetter\DeviceResetterTestbed.ResetAsync.ShouldThrowDeviceResetterErroredOutException_GivenBluetoothErrorDuringReset.cs" />
-        <Compile Include="DeviceResetter\DeviceResetterTestbed.ResetAsync.ShouldThrowDeviceResetterErroredOutException_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy.cs" />
+        <Compile Include="DeviceResetter\DeviceResetterTestbed.ResetAsync.ShouldThrowDeviceResetterInternalErrorException_GivenErroneousDueToMissingNativeSymbolsNativeDeviceResetterProxy.cs" />
         <Compile Include="DeviceResetter\DeviceResetterTestbed.ResetAsync.ShouldCompleteSuccessfully_GivenGreenNativeDeviceResetter.cs" />
         <Compile Include="DeviceResetter\DeviceResetterTestbed.DeviceResetterConstructor.ShouldThrowArgumentNullException_GivenNullNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.cs" />
