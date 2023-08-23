@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts
 {
-    public interface IFirmwareEraserCommands
+    public interface IFirmwareEraserCommandable
     {
         /// <summary>Returns the last fatal error message emitted (if any) by the underlying native mechanism.</summary>
         string LastFatalErrorMessage { get; }
