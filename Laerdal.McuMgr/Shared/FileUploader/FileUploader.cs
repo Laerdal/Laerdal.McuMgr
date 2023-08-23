@@ -219,7 +219,7 @@ namespace Laerdal.McuMgr.FileUploader
                 catch (Exception ex) when (
                     !(ex is ArgumentException) //10 wops probably missing native lib symbols!
                     && !(ex is TimeoutException)
-                    && !(ex is IUploadRelatedException) //this accounts for both cancellations and upload errors
+                    && !(ex is IUploadException) //this accounts for both cancellations and upload errors
                 )
                 {
                     (this as IFileUploaderEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency

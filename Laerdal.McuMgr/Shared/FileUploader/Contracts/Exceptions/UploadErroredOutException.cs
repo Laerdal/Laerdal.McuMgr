@@ -2,7 +2,7 @@ using System;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
-    public class UploadErroredOutException : Exception, IUploadRelatedException
+    public class UploadErroredOutException : Exception, IUploadException
     {
         public UploadErroredOutException(string errorMessage)
             : base($"An error occurred while uploading the requested resource: '{errorMessage}'")

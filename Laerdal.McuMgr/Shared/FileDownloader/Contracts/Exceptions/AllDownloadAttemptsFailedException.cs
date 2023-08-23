@@ -2,7 +2,7 @@ using System;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Exceptions
 {
-    public class AllDownloadAttemptsFailedException : DownloadErroredOutException, IDownloadRelatedException
+    public class AllDownloadAttemptsFailedException : DownloadErroredOutException, IDownloadException
     {
         public AllDownloadAttemptsFailedException(string remoteFilePath, int maxRetriesCount, Exception innerException = null)
             : base($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount + 1} time(s)", innerException)

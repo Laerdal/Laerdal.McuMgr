@@ -129,7 +129,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!
                 && !(ex is TimeoutException)
-                && !(ex is IFirmwareInstallationRelatedException) //this accounts for both cancellations and installation errors
+                && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
             )
             {
                 throw new FirmwareInstallationErroredOutException(ex.Message, ex);

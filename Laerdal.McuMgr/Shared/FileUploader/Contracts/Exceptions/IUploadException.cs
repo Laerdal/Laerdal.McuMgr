@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
-    internal interface IUploadRelatedException //tag interface
+    internal interface IUploadException //tag interface
     {
     }
 }

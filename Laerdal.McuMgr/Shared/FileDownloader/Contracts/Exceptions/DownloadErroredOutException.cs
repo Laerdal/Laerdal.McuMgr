@@ -2,7 +2,7 @@ using System;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Exceptions
 {
-    public class DownloadErroredOutException : Exception, IDownloadRelatedException
+    public class DownloadErroredOutException : Exception, IDownloadException
     {
         public DownloadErroredOutException(string errorMessage) : base($"An error occurred while downloading the requested resource: '{errorMessage}'")
         {
