@@ -16,14 +16,16 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 {
     public partial class FileUploaderTestbed
     {
-        [Fact]
-        public async Task SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight()
+        [Theory]
+        [InlineData("FUT.SFUA.STUCE.GCRM.010", true, 5)]
+        [InlineData("FUT.SFUA.STUCE.GCRM.020", false, 10)]
+        public async Task SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding, int totalTimeToWait)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/file.bin";
 
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_());
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_(), isCancellationLeadingToSoftLanding);
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
@@ -38,7 +40,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(() => fileUploader.UploadAsync(mockedFileData, remoteFilePath));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
+            await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)totalTimeToWait.Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeTrue();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -61,10 +63,12 @@ namespace Laerdal.McuMgr.Tests.FileUploader
         private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
         {
             private string _currentRemoteFilePath;
+            private readonly bool _isCancellationLeadingToSoftLanding;
             private CancellationTokenSource _cancellationTokenSource;
             
-            public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, bool isCancellationLeadingToSoftLanding) : base(uploaderCallbacksProxy)
             {
+                _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
             
             public override void Cancel()
@@ -76,9 +80,16 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
 
                     await Task.Delay(100);
-                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                    CancelledAdvertisement(); //                                                                                                       order
+                    if (_isCancellationLeadingToSoftLanding) //00
+                    {
+                        StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
+                        CancelledAdvertisement(); //                                                                                                       order    
+                    }
                 });
+                
+                //00   if the cancellation doesnt lead to a soft landing due to for example a broken ble connection the the native implementation will not call
+                //     the cancelled event at all   in this case the csharp logic will wait for a few seconds and then throw the cancelled exception manually on
+                //     a best effort basis and this is exactly what we are testing here
             }
             
             public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
@@ -101,7 +112,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
-                    await Task.Delay(2_000, _cancellationTokenSource.Token);
+                    await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
