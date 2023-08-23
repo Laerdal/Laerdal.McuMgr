@@ -129,9 +129,14 @@ namespace Laerdal.McuMgr.FirmwareEraser
             catch (Exception ex) when (
                 !(ex is ArgumentException) //10 wops probably missing native lib symbols!
                 && !(ex is TimeoutException)
-                && !(ex is FirmwareErasureErroredOutException)
+                && !(ex is IFirmwareEraserException)
             )
             {
+                (this as IFirmwareEraserEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EFirmwareErasureState.None,
+                    newState: EFirmwareErasureState.Failed
+                ));
+                
                 throw new FirmwareErasureErroredOutException(ex.Message, ex);
             }
             finally
