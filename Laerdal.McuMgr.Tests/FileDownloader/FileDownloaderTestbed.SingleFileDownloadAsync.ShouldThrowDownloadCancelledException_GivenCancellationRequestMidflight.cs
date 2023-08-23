@@ -100,7 +100,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
                 
-                (FileDownloader as IFileDownloaderEvents)!.Cancelled += (sender, args) =>
+                (FileDownloader as IFileDownloaderEventSubscribable)!.Cancelled += (sender, args) =>
                 {
                     _cancellationTokenSource.Cancel();
                 };

@@ -3,7 +3,7 @@
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts
 {
-    public interface IFirmwareEraser : IFirmwareEraserEvents, IFirmwareEraserCommands // dont add IFirmwareEraserEventEmitters here   its supposed to be internal only
+    public interface IFirmwareEraser : IFirmwareEraserEventSubscribable, IFirmwareEraserCommands // dont add IFirmwareEraserEventEmitters here   its supposed to be internal only
     {
     }
 }

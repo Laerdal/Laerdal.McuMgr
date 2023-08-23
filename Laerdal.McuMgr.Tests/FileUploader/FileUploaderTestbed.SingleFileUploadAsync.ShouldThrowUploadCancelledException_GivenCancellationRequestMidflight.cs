@@ -94,7 +94,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             
             public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
-                (FileUploader as IFileUploaderEvents)!.Cancelled += (sender, args) =>
+                (FileUploader as IFileUploaderEventSubscribable)!.Cancelled += (sender, args) =>
                 {
                     _cancellationTokenSource.Cancel();
                 };

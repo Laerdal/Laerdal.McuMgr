@@ -4,7 +4,7 @@ using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts
 {
-    public interface IDeviceResetterEvents
+    public interface IDeviceResetterEventSubscribable
     {
         /// <summary>Event that is raised when the device-resetter emits a log-message.</summary>
         event EventHandler<LogEmittedEventArgs> LogEmitted;

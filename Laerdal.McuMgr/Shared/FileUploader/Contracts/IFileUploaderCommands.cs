@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
-using Laerdal.McuMgr.FileUploader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
 {
@@ -10,9 +8,6 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
     {
         /// <summary>Holds the last error message emitted</summary>
         public string LastFatalErrorMessage { get; }
-
-        /// <summary>Event raised when the file-uploading process progresses in terms of uploading the firmware files across</summary>
-        public event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> FileUploadProgressPercentageAndDataThroughputChanged;
 
         /// <summary>
         /// Begins the file-uploading process for multiple files.
@@ -34,7 +29,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
         /// <param name="localData">The local data to upload.</param>
-        /// <param name="remoteFilePath">The remoteFilePath to upload the data to.</param>
+        /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="timeoutForUploadInMs">The amount of time to wait for the upload to complete before bailing out.</param>
         /// <param name="maxRetriesCount">Maximum amount of retries before bailing out.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
@@ -44,7 +39,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <summary>
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
-        /// <param name="remoteFilePath">The remoteFilePath to upload the data to.</param>
+        /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="data">The file-data.</param>
         EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);
 

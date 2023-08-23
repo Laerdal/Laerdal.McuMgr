@@ -56,7 +56,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         /// <summary>Holds the last error message emitted</summary>
         public string LastFatalErrorMessage { get; }
 
-        /// <summary>Event raised when an error occurs during firmware installation</summary>
+        /// <summary>Event raised when a fatal error occurs during firmware installation</summary>
         public event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred;
 
         /// <summary>Event raised when the firmware installation gets cancelled</summary>
