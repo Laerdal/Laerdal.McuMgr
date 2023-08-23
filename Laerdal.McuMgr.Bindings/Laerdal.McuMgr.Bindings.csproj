@@ -59,10 +59,10 @@
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings</Summary>
         <Description>$(PackageDescription)</Description>
-        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
         <Copyright>$(Authors)</Copyright>
-        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
+        <RepositoryUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</RepositoryUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <RepositoryType>git</RepositoryType>
 
