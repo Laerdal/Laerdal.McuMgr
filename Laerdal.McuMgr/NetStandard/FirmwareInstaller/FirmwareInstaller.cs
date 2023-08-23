@@ -1,4 +1,5 @@
 // ReSharper disable UnusedType.Global
+// ReSharper disable UnusedParameter.Local
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
@@ -8,10 +9,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
     /// <inheritdoc cref="IFirmwareInstaller"/>
     public partial class FirmwareInstaller : IFirmwareInstaller
     {
-        public FirmwareInstaller(object bluetoothDevice)
-        {
-            throw new NotImplementedException();
-        }
+        public FirmwareInstaller(object bluetoothDevice) => throw new NotImplementedException();
 
         public string LastFatalErrorMessage => throw new NotImplementedException();
 

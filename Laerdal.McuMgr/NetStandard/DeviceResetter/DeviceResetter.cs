@@ -10,9 +10,6 @@ namespace Laerdal.McuMgr.DeviceResetter
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter
     {
-        public DeviceResetter(object _)
-        {
-            throw new NotImplementedException();
-        }
+        public DeviceResetter(object bluetoothDevice) => throw new NotImplementedException();
     }
 }

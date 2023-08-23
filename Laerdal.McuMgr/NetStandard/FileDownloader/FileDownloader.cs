@@ -1,4 +1,5 @@
 // ReSharper disable UnusedType.Global
+// ReSharper disable UnusedParameter.Local
 // ReSharper disable RedundantExtendsListEntry
 
 using System;

@@ -1,4 +1,5 @@
 // ReSharper disable UnusedType.Global
+// ReSharper disable UnusedParameter.Local
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
@@ -9,6 +10,6 @@ namespace Laerdal.McuMgr.FileUploader
     /// <inheritdoc cref="IFileUploader"/>
     public partial class FileUploader : IFileUploader
     {
-        public FileUploader(object _) => throw new NotImplementedException();
+        public FileUploader(object bluetoothDevice) => throw new NotImplementedException();
     }
 }
