@@ -83,12 +83,12 @@
         <Compile Include="FileDownloader\FileDownloaderTestbed.FileDownloaderConstructor.ShouldThrowArgumentNullException_GivenNullNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.BeginDownload.ShouldThrowArgumentException_GivenInvalidRemoteFilePath.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowDownloadCancelledException_GivenCancellationRequestMidflight.cs" />
-        <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowDownloadErroredOutException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowAllDownloadAttemptsFailedException_GivenFatalErrorMidflight.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowFirmwareErasureErroredOutException_GivenErroneousNativeFileDownloader.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowRemoteFileNotFoundException_GivenNonExistentFilepath.cs" />
         <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowTimeoutException_GivenTooSmallTimeout.cs" />
-        <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowDownloadErroredOutException_GivenRogueNativeErrorMessage.cs" />
-        <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowUploadErroredOutException_GivenRogueNativeErrorMessage.cs" />
+        <Compile Include="FileDownloader\FileDownloaderTestbed.SingleFileDownloadAsync.ShouldThrowAllDownloadAttemptsFailedException_GivenRogueNativeErrorMessage.cs" />
+        <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.BeginUpload.ShouldThrowArgumentException_GivenInvalidRemoteFilePath.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.FileUploaderConstructor.ShouldThrowArgumentNullException_GivenNullNativeFileDownloader.cs" />
@@ -99,7 +99,7 @@
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowArgumentException_GivenEmptyRemoteFilePath.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight.cs" />
-        <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowUploadErroredOutException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.SingleFileUploadAsync_ShouldThrowUploadErroredOutException_GivenErroneousNativeFileUploader.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowRemoteFolderNotFoundException_GivenNonExistentFilepath.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowTimeoutException_GivenTooSmallTimeout.cs" />

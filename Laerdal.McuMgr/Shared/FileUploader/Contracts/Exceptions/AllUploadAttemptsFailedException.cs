@@ -2,19 +2,19 @@ using System;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
-    public class UploadAllAttemptsFailedException : UploadErroredOutException, IUploadRelatedException
+    public class AllUploadAttemptsFailedException : UploadErroredOutException, IUploadRelatedException
     {
-        public UploadAllAttemptsFailedException(string remoteFilePath, int maxRetriesCount, Exception innerException = null)
+        public AllUploadAttemptsFailedException(string remoteFilePath, int maxRetriesCount, Exception innerException = null)
             : base($"Failed to upload '{remoteFilePath}' after trying {maxRetriesCount + 1} time(s)", innerException)
         {
         }
         
-        public UploadAllAttemptsFailedException(string errorMessage)
+        public AllUploadAttemptsFailedException(string errorMessage)
             : base($"An error occurred while uploading the requested resource: '{errorMessage}'")
         {
         }
         
-        public UploadAllAttemptsFailedException(string errorMessage, Exception innerException)
+        public AllUploadAttemptsFailedException(string errorMessage, Exception innerException)
             : base($"An error occurred while uploading the requested resource: '{errorMessage}'", innerException)
         {
         }

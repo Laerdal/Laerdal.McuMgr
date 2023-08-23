@@ -19,7 +19,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         [Theory]
         [InlineData("FDT.SFDA.STDEOE.GFEM.010", 0)]
         [InlineData("FDT.SFDA.STDEOE.GFEM.020", 1)]
-        public async Task SingleFileDownloadAsync_ShouldThrowDownloadErroredOutException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
+        public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -38,7 +38,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<DownloadErroredOutException>()
+                .ThrowExactlyAsync<AllDownloadAttemptsFailedException>()
                 .WithMessage("*failed to download*")
                 .WithTimeoutInMs((int)((maxRetriesCount + 1) * 3).Seconds().TotalMilliseconds);
 

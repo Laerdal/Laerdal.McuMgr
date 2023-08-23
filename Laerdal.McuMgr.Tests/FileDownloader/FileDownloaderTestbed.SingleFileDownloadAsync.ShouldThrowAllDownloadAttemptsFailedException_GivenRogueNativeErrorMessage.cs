@@ -20,7 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         [Theory]
         [InlineData("FDT.SFDA.STUEOE.GRNEM.010", "", 1)] //    we want to ensure that our error sniffing logic will 
         [InlineData("FDT.SFDA.STUEOE.GRNEM.020", null, 1)] //  not be error out itself by rogue native error messages
-        public async Task ShouldThrowUploadErroredOutException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
+        public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<DownloadErroredOutException>()
+                .ThrowExactlyAsync<AllDownloadAttemptsFailedException>()
                 .WithTimeoutInMs((int)3.Seconds().TotalMilliseconds);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();

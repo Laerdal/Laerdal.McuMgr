@@ -209,13 +209,13 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 catch (DownloadErroredOutException ex)
                 {
-                    if (ex is DownloadErroredOutRemoteFileNotFoundException) //no point to retry if the remote file is not there
+                    if (ex is DownloadErroredOutRemoteFileNotFoundException) //order   no point to retry if the remote file is not there
                         throw;
 
-                    if (++retry > maxRetriesCount)
-                        throw new DownloadErroredOutException($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount + 1} times", innerException: ex);
+                    if (++retry > maxRetriesCount) //order
+                        throw new AllDownloadAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
 
-                    if (sleepTimeBetweenRetriesInMs > 0)
+                    if (sleepTimeBetweenRetriesInMs > 0) //order
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }

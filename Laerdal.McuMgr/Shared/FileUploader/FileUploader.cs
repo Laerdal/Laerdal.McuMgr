@@ -207,7 +207,7 @@ namespace Laerdal.McuMgr.FileUploader
                         throw;
 
                     if (++retry > maxRetriesCount) //order
-                        throw new UploadAllAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
+                        throw new AllUploadAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {

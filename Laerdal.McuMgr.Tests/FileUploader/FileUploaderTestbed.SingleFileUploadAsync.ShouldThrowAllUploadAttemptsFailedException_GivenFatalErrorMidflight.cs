@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
@@ -18,18 +17,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFUA.STUAAFE.GRNEM.010", "", 1)] //    we want to ensure that our error sniffing logic will 
-        [InlineData("FDT.SFUA.STUAAFE.GRNEM.020", null, 1)] //  not be error out itself by rogue native error messages
-        public async Task SingleFileUploadAsync_ShouldThrowUploadAllAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
+        [InlineData("FUT.SFDA.STUAAFE.GFEM.010", 0)]
+        [InlineData("FUT.SFDA.STUAAFE.GFEM.020", 1)]
+        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-            const string remoteFilePath = "/path/to/non-existent/file.bin";
+            const string remoteFilePath = "/path/to/file.bin";
 
-            var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy13(
-                uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_(),
-                nativeErrorMessageForFileNotFound: nativeRogueErrorMessage
-            );
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy4(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
@@ -38,14 +34,14 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 localData: mockedFileData,
                 remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
-                sleepTimeBetweenRetriesInMs: 10
+                maxRetriesCount: maxRetriesCount
             ));
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<UploadAllAttemptsFailedException>()
-                .WithTimeoutInMs((int)3.Seconds().TotalMilliseconds);
+                .ThrowExactlyAsync<AllUploadAttemptsFailedException>()
+                .WithMessage("*failed to upload*")
+                .WithTimeoutInMs((int)((maxRetriesCount + 1) * 3).Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -54,35 +50,28 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             eventsMonitor.Should().NotRaise(nameof(fileUploader.Cancelled));
             eventsMonitor.Should().NotRaise(nameof(fileUploader.UploadCompleted));
 
-            eventsMonitor.OccurredEvents
-                .Count(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
-                .Should()
-                .Be(1 + maxRetriesCount);
-
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FatalErrorOccurred))
-                .WithSender(fileUploader);
-
+                .WithSender(fileUploader)
+                .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred");
+            
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
-
+            
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Error);
-
+            
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousNativeFileUploaderProxySpy13 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy4 : MockedNativeFileUploaderProxySpy
         {
-            private readonly string _nativeErrorMessageForFileNotFound;
-            
-            public MockedErroneousNativeFileUploaderProxySpy13(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, string nativeErrorMessageForFileNotFound) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy4(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
-                _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
             }
 
             public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
@@ -95,9 +84,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
-                    await Task.Delay(100);
+                    await Task.Delay(2_000);
                     
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred");
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                 });
