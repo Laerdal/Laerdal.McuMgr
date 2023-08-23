@@ -2,15 +2,16 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
 using System;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
     public sealed class StateChangedEventArgs : EventArgs
     {
-        public IFirmwareInstaller.EFirmwareInstallationState NewState { get; }
-        public IFirmwareInstaller.EFirmwareInstallationState OldState { get; }
+        public EFirmwareInstallationState NewState { get; }
+        public EFirmwareInstallationState OldState { get; }
 
-        public StateChangedEventArgs(IFirmwareInstaller.EFirmwareInstallationState oldState, IFirmwareInstaller.EFirmwareInstallationState newState)
+        public StateChangedEventArgs(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
         {
             NewState = newState;
             OldState = oldState;

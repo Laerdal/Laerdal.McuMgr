@@ -6,6 +6,7 @@ using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using McuMgrBindingsiOS;
 
@@ -27,9 +28,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             );
         }
 
-        public IFirmwareInstaller.EFirmwareInstallationVerdict BeginInstallation(
+        public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
-            IFirmwareInstaller.EFirmwareInstallationMode mode = IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
             int? windowCapacity = null, //not applicable in ios
@@ -60,11 +61,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         public void Cancel() => _iosFirmwareInstallerProxy.Cancel();
         public void Disconnect() => _iosFirmwareInstallerProxy.Disconnect();
 
-        static private EIOSFirmwareInstallationMode TranslateFirmwareInstallationMode(IFirmwareInstaller.EFirmwareInstallationMode mode) => mode switch
+        static private EIOSFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
         {
-            IFirmwareInstaller.EFirmwareInstallationMode.TestOnly => EIOSFirmwareInstallationMode.TestOnly, //0
-            IFirmwareInstaller.EFirmwareInstallationMode.ConfirmOnly => EIOSFirmwareInstallationMode.ConfirmOnly,
-            IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm => EIOSFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode.TestOnly => EIOSFirmwareInstallationMode.TestOnly, //0
+            EFirmwareInstallationMode.ConfirmOnly => EIOSFirmwareInstallationMode.ConfirmOnly,
+            EFirmwareInstallationMode.TestAndConfirm => EIOSFirmwareInstallationMode.TestAndConfirm,
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
 
             //0 we have to separate enums
@@ -73,13 +74,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             //  - EIOSFirmwareInstallationMode which is specific to ios and should not be used by the api surface or the end users  
         };
 
-        static private IFirmwareInstaller.EFirmwareInstallationVerdict TranslateFirmwareInstallationVerdict(EIOSFirmwareInstallationVerdict verdict) => verdict switch
+        static private EFirmwareInstallationVerdict TranslateFirmwareInstallationVerdict(EIOSFirmwareInstallationVerdict verdict) => verdict switch
         {
-            EIOSFirmwareInstallationVerdict.Success => IFirmwareInstaller.EFirmwareInstallationVerdict.Success, //0
-            EIOSFirmwareInstallationVerdict.FailedDeploymentError => IFirmwareInstaller.EFirmwareInstallationVerdict.FailedDeploymentError,
-            EIOSFirmwareInstallationVerdict.FailedInvalidSettings => IFirmwareInstaller.EFirmwareInstallationVerdict.FailedInvalidSettings,
-            EIOSFirmwareInstallationVerdict.FailedInvalidDataFile => IFirmwareInstaller.EFirmwareInstallationVerdict.FailedInvalidDataFile,
-            EIOSFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => IFirmwareInstaller.EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress,
+            EIOSFirmwareInstallationVerdict.Success => EFirmwareInstallationVerdict.Success, //0
+            EIOSFirmwareInstallationVerdict.FailedDeploymentError => EFirmwareInstallationVerdict.FailedDeploymentError,
+            EIOSFirmwareInstallationVerdict.FailedInvalidSettings => EFirmwareInstallationVerdict.FailedInvalidSettings,
+            EIOSFirmwareInstallationVerdict.FailedInvalidDataFile => EFirmwareInstallationVerdict.FailedInvalidDataFile,
+            EIOSFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress,
             _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null)
 
             //0 we have to separate enums
@@ -120,19 +121,19 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             ));
 
             // ReSharper disable once InconsistentNaming
-            static private IFirmwareInstaller.EFirmwareInstallationState TranslateEIOSFirmwareInstallationState(EIOSFirmwareInstallationState state) => state switch
+            static private EFirmwareInstallationState TranslateEIOSFirmwareInstallationState(EIOSFirmwareInstallationState state) => state switch
             {
-                EIOSFirmwareInstallationState.None => IFirmwareInstaller.EFirmwareInstallationState.None,
-                EIOSFirmwareInstallationState.Idle => IFirmwareInstaller.EFirmwareInstallationState.Idle,
-                EIOSFirmwareInstallationState.Error => IFirmwareInstaller.EFirmwareInstallationState.Error,
-                EIOSFirmwareInstallationState.Paused => IFirmwareInstaller.EFirmwareInstallationState.Paused,
-                EIOSFirmwareInstallationState.Testing => IFirmwareInstaller.EFirmwareInstallationState.Testing,
-                EIOSFirmwareInstallationState.Complete => IFirmwareInstaller.EFirmwareInstallationState.Complete,
-                EIOSFirmwareInstallationState.Uploading => IFirmwareInstaller.EFirmwareInstallationState.Uploading,
-                EIOSFirmwareInstallationState.Resetting => IFirmwareInstaller.EFirmwareInstallationState.Resetting,
-                EIOSFirmwareInstallationState.Cancelled => IFirmwareInstaller.EFirmwareInstallationState.Cancelled,
-                EIOSFirmwareInstallationState.Validating => IFirmwareInstaller.EFirmwareInstallationState.Validating,
-                EIOSFirmwareInstallationState.Confirming => IFirmwareInstaller.EFirmwareInstallationState.Confirming,
+                EIOSFirmwareInstallationState.None => EFirmwareInstallationState.None,
+                EIOSFirmwareInstallationState.Idle => EFirmwareInstallationState.Idle,
+                EIOSFirmwareInstallationState.Error => EFirmwareInstallationState.Error,
+                EIOSFirmwareInstallationState.Paused => EFirmwareInstallationState.Paused,
+                EIOSFirmwareInstallationState.Testing => EFirmwareInstallationState.Testing,
+                EIOSFirmwareInstallationState.Complete => EFirmwareInstallationState.Complete,
+                EIOSFirmwareInstallationState.Uploading => EFirmwareInstallationState.Uploading,
+                EIOSFirmwareInstallationState.Resetting => EFirmwareInstallationState.Resetting,
+                EIOSFirmwareInstallationState.Cancelled => EFirmwareInstallationState.Cancelled,
+                EIOSFirmwareInstallationState.Validating => EFirmwareInstallationState.Validating,
+                EIOSFirmwareInstallationState.Confirming => EFirmwareInstallationState.Confirming,
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
             };
         }

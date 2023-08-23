@@ -10,6 +10,7 @@ using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller
@@ -33,9 +34,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
         public string LastFatalErrorMessage => _androidFirmwareInstallerProxy?.LastFatalErrorMessage;
 
-        public IFirmwareInstaller.EFirmwareInstallationVerdict BeginInstallation(
+        public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
-            IFirmwareInstaller.EFirmwareInstallationMode mode = IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
             int? windowCapacity = null,
@@ -65,11 +66,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         public void Cancel() => _androidFirmwareInstallerProxy.Cancel();
         public void Disconnect() => _androidFirmwareInstallerProxy.Disconnect();
 
-        static private EAndroidFirmwareInstallationMode TranslateFirmwareInstallationMode(IFirmwareInstaller.EFirmwareInstallationMode mode) => mode switch
+        static private EAndroidFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
         {
-            IFirmwareInstaller.EFirmwareInstallationMode.TestOnly => EAndroidFirmwareInstallationMode.TestOnly, //0
-            IFirmwareInstaller.EFirmwareInstallationMode.ConfirmOnly => EAndroidFirmwareInstallationMode.ConfirmOnly,
-            IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm => EAndroidFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode.TestOnly => EAndroidFirmwareInstallationMode.TestOnly, //0
+            EFirmwareInstallationMode.ConfirmOnly => EAndroidFirmwareInstallationMode.ConfirmOnly,
+            EFirmwareInstallationMode.TestAndConfirm => EAndroidFirmwareInstallationMode.TestAndConfirm,
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
 
             //0 we have to separate enums
@@ -78,31 +79,31 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             //  - EAndroidFirmwareInstallationMode which is specific to android and should not be used by the api surface or the end users  
         };
 
-        static private IFirmwareInstaller.EFirmwareInstallationVerdict TranslateFirmwareInstallationVerdict(EAndroidFirmwareInstallationVerdict verdict)
+        static private EFirmwareInstallationVerdict TranslateFirmwareInstallationVerdict(EAndroidFirmwareInstallationVerdict verdict)
         {
             if (verdict == EAndroidFirmwareInstallationVerdict.Success) //0
             {
-                return IFirmwareInstaller.EFirmwareInstallationVerdict.Success;
+                return EFirmwareInstallationVerdict.Success;
             }
 
             if (verdict == EAndroidFirmwareInstallationVerdict.FailedDeploymentError)
             {
-                return IFirmwareInstaller.EFirmwareInstallationVerdict.FailedDeploymentError;
+                return EFirmwareInstallationVerdict.FailedDeploymentError;
             }
 
             if (verdict == EAndroidFirmwareInstallationVerdict.FailedInvalidSettings)
             {
-                return IFirmwareInstaller.EFirmwareInstallationVerdict.FailedInvalidSettings;
+                return EFirmwareInstallationVerdict.FailedInvalidSettings;
             }
 
             if (verdict == EAndroidFirmwareInstallationVerdict.FailedInvalidDataFile)
             {
-                return IFirmwareInstaller.EFirmwareInstallationVerdict.FailedInvalidDataFile;
+                return EFirmwareInstallationVerdict.FailedInvalidDataFile;
             }
             
             if (verdict == EAndroidFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress)
             {
-                return IFirmwareInstaller.EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress;
+                return EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress;
             }
 
             throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
@@ -182,61 +183,61 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 ));
             }
 
-            static private IFirmwareInstaller.EFirmwareInstallationState TranslateEAndroidFirmwareInstallationState(EAndroidFirmwareInstallationState state)
+            static private EFirmwareInstallationState TranslateEAndroidFirmwareInstallationState(EAndroidFirmwareInstallationState state)
             {
                 if (state == EAndroidFirmwareInstallationState.None)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.None;
+                    return EFirmwareInstallationState.None;
                 }
                 
                 if (state == EAndroidFirmwareInstallationState.Idle)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Idle;
+                    return EFirmwareInstallationState.Idle;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Validating)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Validating;
+                    return EFirmwareInstallationState.Validating;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Uploading)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Uploading;
+                    return EFirmwareInstallationState.Uploading;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Paused)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Paused;
+                    return EFirmwareInstallationState.Paused;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Testing)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Testing;
+                    return EFirmwareInstallationState.Testing;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Confirming)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Confirming;
+                    return EFirmwareInstallationState.Confirming;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Resetting)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Resetting;
+                    return EFirmwareInstallationState.Resetting;
                 }
 
                 if (state == EAndroidFirmwareInstallationState.Complete)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Complete;
+                    return EFirmwareInstallationState.Complete;
                 }
                 
                 if (state == EAndroidFirmwareInstallationState.Cancelled)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Cancelled;
+                    return EFirmwareInstallationState.Cancelled;
                 }
                 
                 if (state == EAndroidFirmwareInstallationState.Error)
                 {
-                    return IFirmwareInstaller.EFirmwareInstallationState.Error;
+                    return EFirmwareInstallationState.Error;
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);

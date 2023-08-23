@@ -81,6 +81,15 @@
         <Compile Update="Shared\FirmwareInstaller\Contracts\IFirmwareInstaller.cs">
           <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Shared\FirmwareInstaller\Contracts\Enums\EFirmwareInstallationMode.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FirmwareInstaller\Contracts\Enums\EFirmwareInstallationState.cs">
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Shared\FirmwareInstaller\Contracts\Enums\EFirmwareInstallationVerdict.cs">
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->

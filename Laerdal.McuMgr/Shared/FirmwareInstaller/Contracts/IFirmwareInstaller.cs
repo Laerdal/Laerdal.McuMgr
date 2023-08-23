@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
@@ -21,38 +22,6 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
     /// </remarks>
     public interface IFirmwareInstaller
     {
-        public enum EFirmwareInstallationState //these must mirror the java enum values of EFirmwareInstallationState
-        {
-            None = 0,
-            Idle = 1,
-            Validating = 2,
-            Uploading = 3,
-            Paused = 4,
-            Testing = 5,
-            Confirming = 6,
-            Resetting = 7,
-            Complete = 8,
-            Cancelled = 9,
-            Error = 10
-        }
-        
-        public enum EFirmwareInstallationMode //this must mirror the java enum values of E[Android|iOS]FirmwareInstallationMode 
-        {
-            TestOnly = 0,
-            ConfirmOnly = 1,
-            TestAndConfirm = 2
-        }
-
-        [Flags]
-        public enum EFirmwareInstallationVerdict //this must mirror the java enum values of E[Android|iOS]FirmwareInstallationVerdict
-        {
-            Success = 0,
-            FailedInvalidDataFile = 0b0001, // 1
-            FailedInvalidSettings = 0b0011, // 3
-            FailedDeploymentError = 0b0101, // 5
-            FailedInstallationAlreadyInProgress = 0b1001, // 9 
-        }
-
         /// <summary>Holds the last error message emitted</summary>
         public string LastFatalErrorMessage { get; }
 
@@ -99,7 +68,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// <param name="timeoutInMs">The amount of time to wait for the operation to complete before bailing out. If set to zero or negative then the operation will wait indefinitely.</param>
         Task InstallAsync(
             byte[] data,
-            EFirmwareInstallationMode mode = IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
             int? windowCapacity = null,

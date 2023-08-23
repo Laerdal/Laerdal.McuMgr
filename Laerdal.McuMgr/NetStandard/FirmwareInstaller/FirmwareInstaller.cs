@@ -4,6 +4,7 @@
 
 using System;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstaller
 {
@@ -14,9 +15,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
         public string LastFatalErrorMessage => throw new NotImplementedException();
 
-        public IFirmwareInstaller.EFirmwareInstallationVerdict BeginInstallation(
+        public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
-            IFirmwareInstaller.EFirmwareInstallationMode mode = IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
             int? windowCapacity = null,

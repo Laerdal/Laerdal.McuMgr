@@ -180,7 +180,7 @@ private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs
 {
     FirmwareInstallationStage = ea.NewState.ToString();
 
-    if (ea.NewState != IFirmwareInstaller.EFirmwareInstallationState.Complete)
+    if (ea.NewState != EFirmwareInstallationState.Complete)
         return;
 
     ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: false);

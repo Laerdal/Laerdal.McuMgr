@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 
@@ -82,7 +83,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
         public async Task InstallAsync(
             byte[] data,
-            IFirmwareInstaller.EFirmwareInstallationMode mode = IFirmwareInstaller.EFirmwareInstallationMode.TestAndConfirm,
+            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
             int? windowCapacity = null,
@@ -110,7 +111,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
-                if (verdict != IFirmwareInstaller.EFirmwareInstallationVerdict.Success)
+                if (verdict != EFirmwareInstallationVerdict.Success)
                     throw new ArgumentException(verdict.ToString());
 
                 _ = timeoutInMs <= 0
@@ -120,8 +121,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             catch (TimeoutException ex)
             {
                 OnStateChanged(new StateChangedEventArgs( //for consistency
-                    oldState: IFirmwareInstaller.EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
-                    newState: IFirmwareInstaller.EFirmwareInstallationState.Error
+                    oldState: EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
+                    newState: EFirmwareInstallationState.Error
                 ));
 
                 throw new FirmwareInstallationTimeoutException(timeoutInMs, ex);
@@ -133,8 +134,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             )
             {
                 OnStateChanged(new StateChangedEventArgs( //for consistency
-                    oldState: IFirmwareInstaller.EFirmwareInstallationState.None,
-                    newState: IFirmwareInstaller.EFirmwareInstallationState.Error
+                    oldState: EFirmwareInstallationState.None,
+                    newState: EFirmwareInstallationState.Error
                 ));
                 
                 throw new FirmwareInstallationErroredOutException(ex.Message, ex);
@@ -155,7 +156,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState != IFirmwareInstaller.EFirmwareInstallationState.Complete)
+                if (ea.NewState != EFirmwareInstallationState.Complete)
                     return;
 
                 taskCompletionSource.TrySetResult(true);
