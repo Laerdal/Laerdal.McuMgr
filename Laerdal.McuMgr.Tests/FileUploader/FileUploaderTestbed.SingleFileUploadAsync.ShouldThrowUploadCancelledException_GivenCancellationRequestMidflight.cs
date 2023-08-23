@@ -61,7 +61,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
         private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
         {
             private string _currentRemoteFilePath;
-            private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+            private CancellationTokenSource _cancellationTokenSource;
             
             public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
@@ -70,12 +70,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public override void Cancel()
             {
                 base.Cancel();
-                
-                // under normal circumstances the native implementation will bubble up these events in this exact order
-                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
-                Thread.Sleep(100);
-                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                CancelledAdvertisement(); //                                                                                                       order
+
+                Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
+                {
+                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
+
+                    await Task.Delay(100);
+                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
+                    CancelledAdvertisement(); //                                                                                                       order
+                });
             }
             
             public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)

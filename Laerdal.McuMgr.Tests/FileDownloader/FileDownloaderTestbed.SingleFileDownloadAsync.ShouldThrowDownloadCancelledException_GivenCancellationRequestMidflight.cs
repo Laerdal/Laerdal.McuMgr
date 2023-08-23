@@ -74,11 +74,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
                 base.Cancel();
                 
-                // under normal circumstances the native implementation will bubble up these events in this exact order
-                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling); //  order
-                Thread.Sleep(100);
-                StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled); //   order
-                CancelledAdvertisement(); //                                                                                                           order
+                Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
+                {
+                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling); //  order
+
+                    await Task.Delay(100);
+                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled); //   order
+                    CancelledAdvertisement(); //                                                                                                           order
+                });
             }
 
             public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
@@ -86,7 +89,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
                 
-                ((IFileDownloaderEvents) FileDownloader).Cancelled += (sender, args) =>
+                (FileDownloader as IFileDownloaderEvents)!.Cancelled += (sender, args) =>
                 {
                     _cancellationTokenSource.Cancel();
                 };
