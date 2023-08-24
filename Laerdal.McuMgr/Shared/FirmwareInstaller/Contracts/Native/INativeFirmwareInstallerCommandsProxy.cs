@@ -1,3 +1,5 @@
+// ReSharper disable UnusedParameter.Global
+
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Native

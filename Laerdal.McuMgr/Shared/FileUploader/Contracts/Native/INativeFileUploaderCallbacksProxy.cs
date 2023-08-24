@@ -13,6 +13,6 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void UploadCompletedAdvertisement(string resource);
         void FatalErrorOccurredAdvertisement(string resource, string errorMessage);
-        void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput);
+        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput);
     }
 }

@@ -121,7 +121,7 @@ public class AndroidFirmwareInstaller {
 
         try {
             setState(EAndroidFirmwareInstallationState.IDLE);
-            firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
             _manager.start(images, eraseSettings);
 
@@ -168,7 +168,7 @@ public class AndroidFirmwareInstaller {
 
         if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00
         {
-            firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -185,7 +185,8 @@ public class AndroidFirmwareInstaller {
     }
 
     public void fatalErrorOccurredAdvertisement(final String errorMessage) {
-        _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
+        //this method is meant to be overridden by csharp binding libraries to intercept updates
+        _lastFatalErrorMessage = errorMessage;
     }
 
     public void logMessageAdvertisement(final String warningMessage, final String category, final String level) {
@@ -204,7 +205,7 @@ public class AndroidFirmwareInstaller {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(final int progressPercentage, final float averageThroughput) {
+    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
@@ -247,7 +248,7 @@ public class AndroidFirmwareInstaller {
         @Override
         public void onUpgradeStarted(final FirmwareUpgradeController controller) {
             busyStateChangedAdvertisement(true);
-            firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFirmwareInstallationState.VALIDATING);
         }
 
@@ -303,7 +304,7 @@ public class AndroidFirmwareInstaller {
         public void onUpgradeCanceled(final FirmwareUpgradeManager.State state) {
             _handler.removeCallbacks(_graphUpdater);
 
-            firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFirmwareInstallationState.CANCELLED);
             cancelledAdvertisement();
             // Timber.w("Install cancelled");
@@ -320,7 +321,7 @@ public class AndroidFirmwareInstaller {
             if (_bytesSentSinceUploadStated == NOT_STARTED) { //00
                 _lastProgress = NOT_STARTED;
 
-                firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0); //10
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0); //10
 
                 _uploadStartTimestamp = uptimeMillis; //20
                 _bytesSentSinceUploadStated = bytesSent;
@@ -395,7 +396,7 @@ public class AndroidFirmwareInstaller {
                 final float timeSinceUploadStarted = timestamp - _uploadStartTimestamp;
                 final float averageThroughput = bytesSentSinceUploadStarted / timeSinceUploadStarted; //2
 
-                firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput);
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput);
             }
 
             if (_manager.getState() == FirmwareUpgradeManager.State.UPLOAD && !_manager.isPaused()) {

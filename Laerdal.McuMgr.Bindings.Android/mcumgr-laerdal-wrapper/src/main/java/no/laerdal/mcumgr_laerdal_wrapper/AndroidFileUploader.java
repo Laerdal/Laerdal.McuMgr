@@ -89,7 +89,7 @@ public class AndroidFileUploader
         _initialBytes = 0;
         setState(EAndroidFileUploaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
         _controller = new FileUploader( //00
                 _fileSystemManager,
@@ -177,7 +177,7 @@ public class AndroidFileUploader
 
         if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -215,7 +215,7 @@ public class AndroidFileUploader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -249,7 +249,7 @@ public class AndroidFileUploader
                 fileUploadProgressPercentage = (int) (bytesSent * 100.f / fileSize);
             }
 
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement( // convert to percent
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
                     fileUploadProgressPercentage,
                     transferSpeed
             );
@@ -258,7 +258,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileUploaderState.ERROR);
             fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
             setLoggingEnabled(true);
@@ -268,7 +268,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadCanceled()
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileUploaderState.CANCELLED);
             cancelledAdvertisement();
             setLoggingEnabled(true);
@@ -278,7 +278,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadCompleted()
         {
-            //fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
+            //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
             setState(EAndroidFileUploaderState.COMPLETE);
             uploadCompletedAdvertisement(_remoteFilePathSanitized);
             setLoggingEnabled(true);

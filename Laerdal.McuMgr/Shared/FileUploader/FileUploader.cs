@@ -311,7 +311,7 @@ namespace Laerdal.McuMgr.FileUploader
         void IFileUploaderEventEmittable.OnUploadCompleted(UploadCompletedEventArgs ea) => _uploadCompleted?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndThroughputDataChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileUploaderProxy
         internal class GenericNativeFileUploaderCallbacksProxy : INativeFileUploaderCallbacksProxy
@@ -345,8 +345,8 @@ namespace Laerdal.McuMgr.FileUploader
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
                 => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
 
-            public void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
-                => FileUploader?.OnFileUploadProgressPercentageAndThroughputDataChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
                 ));

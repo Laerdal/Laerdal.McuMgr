@@ -231,14 +231,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         void IFirmwareInstallerEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFirmwareInstallerEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
         void IFirmwareInstallerEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
-        void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndThroughputDataChanged(ea);
+        void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndDataThroughputChanged(ea);
         
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnFirmwareUploadProgressPercentageAndThroughputDataChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy
         internal class GenericNativeFirmwareInstallerCallbacksProxy : INativeFirmwareInstallerCallbacksProxy

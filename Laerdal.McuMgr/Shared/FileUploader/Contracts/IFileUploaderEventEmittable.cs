@@ -11,6 +11,6 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         void OnUploadCompleted(UploadCompletedEventArgs ea);
         void OnBusyStateChanged(BusyStateChangedEventArgs ea);
         void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea);
-        void OnFileUploadProgressPercentageAndThroughputDataChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea);
+        void OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea);
     }
 }

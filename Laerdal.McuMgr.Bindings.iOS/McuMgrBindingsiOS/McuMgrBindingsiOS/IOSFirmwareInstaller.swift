@@ -85,7 +85,7 @@ public class IOSFirmwareInstaller: NSObject {
 
         do {
             setState(EIOSFirmwareInstallationState.idle)
-            firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0)
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
 
             try _manager.start(data: imageData, using: firmwareUpgradeConfiguration);
 
@@ -189,11 +189,11 @@ public class IOSFirmwareInstaller: NSObject {
 
     //@objc   dont
 
-    private func firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(
+    private func firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
             _ averageThroughput: Float32
     ) {
-        _listener.firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput)
+        _listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
     }
 
     private func setState(_ newState: EIOSFirmwareInstallationState) {
@@ -209,7 +209,7 @@ public class IOSFirmwareInstaller: NSObject {
 
         if (oldState == EIOSFirmwareInstallationState.uploading && newState == EIOSFirmwareInstallationState.testing) //00
         {
-            firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -235,7 +235,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
 
     public func upgradeDidStart(controller: FirmwareUpgradeController) {
         busyStateChangedAdvertisement(true);
-        firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
         setState(EIOSFirmwareInstallationState.validating);
     }
 
@@ -272,7 +272,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     public func upgradeDidCancel(state: FirmwareUpgradeState) {
         setState(EIOSFirmwareInstallationState.cancelled)
         busyStateChangedAdvertisement(false)
-        firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
         cancelledAdvertisement()
     }
 
@@ -280,7 +280,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let uploadProgressPercentage = (bytesSent * 100) / imageSize;
 
-        firmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond);
+        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond);
     }
 
     private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {

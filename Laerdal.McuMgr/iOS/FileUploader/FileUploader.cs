@@ -109,13 +109,13 @@ namespace Laerdal.McuMgr.FileUploader
             public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
                 => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
 
-            public override void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(nint progressPercentage, float averageThroughput)
-                => FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
+                => FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: (int)progressPercentage
                 );
-            public void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput) //conformance to the interface
-                => _nativeFileUploaderCallbacksProxy?.FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput) //conformance to the interface
+                => _nativeFileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
                 );

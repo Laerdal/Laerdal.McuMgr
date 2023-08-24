@@ -322,7 +322,7 @@ namespace Laerdal.McuMgr.FileDownloader
         void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         void IFileDownloaderEventEmittable.OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
         void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndThroughputDataChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
 
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileDownloaderProxy
@@ -357,8 +357,8 @@ namespace Laerdal.McuMgr.FileDownloader
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
                 => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
 
-            public void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
-                => FileDownloader?.OnFileDownloadProgressPercentageAndThroughputDataChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
                 ));

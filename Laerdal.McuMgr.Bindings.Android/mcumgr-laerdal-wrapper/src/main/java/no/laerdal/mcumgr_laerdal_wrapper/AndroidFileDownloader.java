@@ -81,7 +81,7 @@ public class AndroidFileDownloader
 
         setState(EAndroidFileDownloaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
         _initialBytes = 0;
 
@@ -163,7 +163,7 @@ public class AndroidFileDownloader
 
         if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
@@ -203,7 +203,7 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -248,7 +248,7 @@ public class AndroidFileDownloader
                 fileDownloadProgressPercentage = (int) (bytesSent * 100.f / fileSize);
             }
 
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement( // convert to percent
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
                     fileDownloadProgressPercentage,
                     transferSpeed
             );
@@ -257,7 +257,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadFailed(@NonNull final McuMgrException error)
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.ERROR);
             fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
             setLoggingEnabled(true);
@@ -267,7 +267,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCanceled()
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
             setLoggingEnabled(true);
@@ -277,7 +277,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCompleted(byte @NotNull [] data)
         {
-            //fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
+            //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
 
             downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital

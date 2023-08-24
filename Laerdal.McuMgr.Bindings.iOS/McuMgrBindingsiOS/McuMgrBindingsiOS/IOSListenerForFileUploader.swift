@@ -9,5 +9,5 @@ public protocol IOSListenerForFileUploader {
     func stateChangedAdvertisement(_ resource: String, _ oldState: EIOSFileUploaderState, _ newState: EIOSFileUploaderState)
     func uploadCompletedAdvertisement(_ resource: String)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
-    func fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(_ progressPercentage: Int, _ averageThroughput: Float32)
+    func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_ progressPercentage: Int, _ averageThroughput: Float32)
 }

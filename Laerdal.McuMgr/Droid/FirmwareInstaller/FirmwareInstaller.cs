@@ -147,19 +147,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 _firmwareInstallerCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
 
-            //todo   rename this to FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement
-            public override void FirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
+            public override void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
             {
-                base.FirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput); //just in case
+                base.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //just in case
 
-                FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    averageThroughput: averageThroughput,
-                    progressPercentage: progressPercentage
-                );
-            }
-
-            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
-            {
                 _firmwareInstallerCallbacksProxy?.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage

@@ -121,8 +121,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     oldState: oldState
                 );
 
-            // todo rename this to FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement
-            public override void FirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(nint progressPercentage, float averageThroughput)
+            public override void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
                 => FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement((int)progressPercentage, averageThroughput);
             
             public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput) //just to conform to the interface

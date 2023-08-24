@@ -70,8 +70,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage); //raises the actual event
             
-            public void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
-                => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event
         }
     }
 }

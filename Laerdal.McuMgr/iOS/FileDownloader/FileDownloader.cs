@@ -116,13 +116,13 @@ namespace Laerdal.McuMgr.FileDownloader
             public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
                 => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
 
-            public override void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(nint progressPercentage, float averageThroughput)
-                => FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
+                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: (int)progressPercentage
                 );
-            public void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
                 );

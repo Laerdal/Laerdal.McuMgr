@@ -61,7 +61,7 @@ public class IOSFileDownloader: NSObject {
 
         setState(EIOSFileDownloaderState.idle)
         busyStateChangedAdvertisement(true)
-        fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
 
         _remoteFilePathSanitized = remoteFilePath
         let success = _fileSystemManager.download(name: remoteFilePath, delegate: self)
@@ -137,11 +137,11 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(
+    private func fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
             _ averageThroughput: Float32
     ) {
-        _listener.fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput)
+        _listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
     }
     
     //@objc   dont
@@ -162,7 +162,7 @@ public class IOSFileDownloader: NSObject {
 
         if (oldState == EIOSFileDownloaderState.downloading && newState == EIOSFileDownloaderState.complete) //00
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0)
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
 
         //00 trivial hotfix to deal with the fact that the file-download progress% doesn't fill up to 100%
@@ -174,7 +174,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
         setState(EIOSFileDownloaderState.downloading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let DownloadProgressPercentage = (bytesSent * 100) / fileSize
-        fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(DownloadProgressPercentage, throughputKilobytesPerSecond)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, throughputKilobytesPerSecond)
     }
 
     public func downloadDidFail(with error: Error) {
@@ -186,7 +186,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadDidCancel() {
         setState(EIOSFileDownloaderState.cancelled)
         busyStateChangedAdvertisement(false)
-        fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 

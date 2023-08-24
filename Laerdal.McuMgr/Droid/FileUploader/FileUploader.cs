@@ -147,11 +147,11 @@ namespace Laerdal.McuMgr.FileUploader
                 );
             }
 
-            public override void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(int progressPercentage, float averageThroughput)
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
             {
-                base.FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput); //just in case
+                base.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //just in case
 
-                _fileUploaderCallbacksProxy?.FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(
+                _fileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
                 );

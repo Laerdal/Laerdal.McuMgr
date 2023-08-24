@@ -37,10 +37,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.684.0</Version>
-        <FileVersion>1.0.684.0</FileVersion>
-        <PackageVersion>1.0.684.0</PackageVersion>
-        <AssemblyVersion>1.0.684.0</AssemblyVersion>
+        <Version>1.0.685.0</Version>
+        <FileVersion>1.0.685.0</FileVersion>
+        <PackageVersion>1.0.685.0</PackageVersion>
+        <AssemblyVersion>1.0.685.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings</Summary>
@@ -111,7 +111,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.684.0" />
+        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.685.0" />
     </ItemGroup>
 
 </Project>
