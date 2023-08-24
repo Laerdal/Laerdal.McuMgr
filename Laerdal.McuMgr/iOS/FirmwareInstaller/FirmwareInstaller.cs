@@ -115,7 +115,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 oldState: TranslateEIOSFirmwareInstallationState(oldState)
             ));
 
-            public override void FirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(nint progressPercentage, float averageThroughput) => _installer.OnFirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
+            public override void FirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(nint progressPercentage, float averageThroughput) => _installer.OnFirmwareUploadProgressPercentageAndThroughputDataChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
                 averageThroughput: averageThroughput,
                 progressPercentage: (int)progressPercentage
             ));

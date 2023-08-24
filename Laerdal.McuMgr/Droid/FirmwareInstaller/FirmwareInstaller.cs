@@ -177,7 +177,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             {
                 base.FirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(progressPercentage, averageThroughput); //just in case
 
-                _installer.OnFirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
+                _installer.OnFirmwareUploadProgressPercentageAndThroughputDataChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
                 ));

@@ -12,7 +12,7 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 namespace Laerdal.McuMgr.FirmwareInstaller
 {
     /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller
+    public partial class FirmwareInstaller : IFirmwareInstaller, IFirmwareInstallerEventEmitters
     {
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
@@ -94,7 +94,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         )
         {
             var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
- 
+
             try
             {
                 Cancelled += FirmwareInstallationAsyncOnCancelled;
@@ -120,7 +120,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             }
             catch (TimeoutException ex)
             {
-                OnStateChanged(new StateChangedEventArgs( //for consistency
+                (this as IFirmwareInstallerEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
                     newState: EFirmwareInstallationState.Error
                 ));
@@ -133,11 +133,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
             )
             {
-                OnStateChanged(new StateChangedEventArgs( //for consistency
+                (this as IFirmwareInstallerEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EFirmwareInstallationState.None,
                     newState: EFirmwareInstallationState.Error
                 ));
-                
+
                 throw new FirmwareInstallationErroredOutException(ex.Message, ex);
             }
             finally
@@ -169,10 +169,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutImageSwapTimeoutException());
                     return;
                 }
-                
+
                 taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException(ea.ErrorMessage));
             }
-            
+
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
             //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
@@ -181,11 +181,18 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
+        void IFirmwareInstallerEventEmitters.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
+        void IFirmwareInstallerEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
+        void IFirmwareInstallerEventEmitters.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
+        void IFirmwareInstallerEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
+        void IFirmwareInstallerEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFirmwareInstallerEventEmitters.OnFirmwareUploadProgressPercentageAndThroughputDataChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndThroughputDataChanged(ea);
+        
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnFirmwareUploadProgressPercentageAndThroughputDataChangedAdvertisement(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        private void OnFirmwareUploadProgressPercentageAndThroughputDataChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
     }
 }
