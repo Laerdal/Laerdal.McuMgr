@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Native
 {
-    internal interface INativeFirmwareInstallerProxy : INativeFirmwareInstallerCommandsProxy, INativeFirmwareInstallerQueryableProxy, INativeFirmwareInstallerCallbacksProxy
+    internal interface INativeFirmwareInstallerProxy : INativeFirmwareInstallerCommandableProxy, INativeFirmwareInstallerQueryableProxy, INativeFirmwareInstallerCallbacksProxy
     {
         string Nickname { get; set; }
     }

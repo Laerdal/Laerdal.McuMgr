@@ -2,10 +2,8 @@
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Native
 {
-    internal interface INativeFileUploaderCommandsProxy
+    internal interface INativeFileUploaderCommandableProxy
     {
-        string LastFatalErrorMessage { get; }
-
         void Cancel();
         void Disconnect();
         EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);

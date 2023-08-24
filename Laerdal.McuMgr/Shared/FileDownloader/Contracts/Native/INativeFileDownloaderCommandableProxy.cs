@@ -2,10 +2,8 @@
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
 {
-    internal interface INativeFileDownloaderCommandsProxy
+    internal interface INativeFileDownloaderCommandableProxy
     {
-        string LastFatalErrorMessage { get; }
-
         void Cancel();
         void Disconnect();
         EFileDownloaderVerdict BeginDownload(string remoteFilePath);

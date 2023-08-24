@@ -4,7 +4,7 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Native
 {
-    internal interface INativeFirmwareInstallerCommandsProxy
+    internal interface INativeFirmwareInstallerCommandableProxy
     {
         void Cancel();
         void Disconnect();

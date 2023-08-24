@@ -1,6 +1,6 @@
 ﻿namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Native
 {
-    internal interface INativeFirmwareEraserProxy : INativeFirmwareEraserCommandsProxy, INativeFirmwareEraserCallbacksProxy
+    internal interface INativeFirmwareEraserProxy : INativeFirmwareEraserQueryableProxy, INativeFirmwareEraserCommandableProxy, INativeFirmwareEraserCallbacksProxy
     {
     }
 }

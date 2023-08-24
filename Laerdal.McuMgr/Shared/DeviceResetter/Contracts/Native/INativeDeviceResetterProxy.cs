@@ -1,6 +1,6 @@
 ﻿namespace Laerdal.McuMgr.DeviceResetter.Contracts.Native
 {
-    internal interface INativeDeviceResetterProxy : INativeDeviceResetterCommandsProxy, INativeDeviceResetterCallbacksProxy
+    internal interface INativeDeviceResetterProxy : INativeDeviceResetterQueryableProxy, INativeDeviceResetterCommandableProxy, INativeDeviceResetterCallbacksProxy
     {
     }
 }

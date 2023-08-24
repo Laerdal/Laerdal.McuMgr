@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserCallbacksProxy)); //composition-over-inheritance
             }
 
-            #region INativeFirmwareEraserCommandsProxy
+            #region INativeFirmwareEraserCommandableProxy
             //we are simply forwarding the commands down to the native world of ios here
             public string LastFatalErrorMessage => _firmwareEraser?.LastFatalErrorMessage;
             public void Disconnect() => _firmwareEraser?.Disconnect();
