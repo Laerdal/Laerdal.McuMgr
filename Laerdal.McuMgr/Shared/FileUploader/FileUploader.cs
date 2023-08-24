@@ -312,7 +312,7 @@ namespace Laerdal.McuMgr.FileUploader
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndThroughputDataChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
-        
+
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileUploaderProxy
         internal class GenericNativeFileUploaderCallbacksProxy : INativeFileUploaderCallbacksProxy
         {

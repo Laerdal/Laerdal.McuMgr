@@ -2,18 +2,63 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
 
 namespace Laerdal.McuMgr.FirmwareInstaller
 {
     /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller, IFirmwareInstallerEventEmitters
+    public partial class FirmwareInstaller : IFirmwareInstaller, IFirmwareInstallerEventEmittable
     {
+        private readonly INativeFirmwareInstallerProxy _nativeFirmwareInstallerProxy;
+
+        public string LastFatalErrorMessage => _nativeFirmwareInstallerProxy?.LastFatalErrorMessage;
+
+        //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFirmwareInstallerProxy
+        internal FirmwareInstaller(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy)
+        {
+            _nativeFirmwareInstallerProxy = nativeFirmwareInstallerProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareInstallerProxy));
+            _nativeFirmwareInstallerProxy.FirmwareInstaller = this; //vital
+        }
+
+        public EFirmwareInstallationVerdict BeginInstallation(
+            byte[] data,
+            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
+            bool? eraseSettings = null,
+            int? estimatedSwapTimeInMilliseconds = null,
+            int? windowCapacity = null, //   android only    not applicable for ios
+            int? memoryAlignment = null, //  android only    not applicable for ios
+            int? pipelineDepth = null, //    ios only        not applicable for android
+            int? byteAlignment = null //     ios only        not applicable for android
+        )
+        {
+            if (data == null || !data.Any())
+                throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
+
+            _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
+            var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
+                data: data,
+                mode: mode,
+                eraseSettings: eraseSettings ?? false,
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                windowCapacity: windowCapacity ?? -1,
+                memoryAlignment: memoryAlignment ?? -1,
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
+            );
+
+            return verdict;
+        }
+        
+        public void Cancel() => _nativeFirmwareInstallerProxy?.Cancel();
+        public void Disconnect() => _nativeFirmwareInstallerProxy?.Disconnect();
+
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
@@ -120,7 +165,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             }
             catch (TimeoutException ex)
             {
-                (this as IFirmwareInstallerEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
                     newState: EFirmwareInstallationState.Error
                 ));
@@ -133,7 +178,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
             )
             {
-                (this as IFirmwareInstallerEventEmitters).OnStateChanged(new StateChangedEventArgs( //for consistency
+                OnStateChanged(new StateChangedEventArgs( //for consistency
                     oldState: EFirmwareInstallationState.None,
                     newState: EFirmwareInstallationState.Error
                 ));
@@ -181,12 +226,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
-        void IFirmwareInstallerEventEmitters.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
-        void IFirmwareInstallerEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
-        void IFirmwareInstallerEventEmitters.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
-        void IFirmwareInstallerEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
-        void IFirmwareInstallerEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
-        void IFirmwareInstallerEventEmitters.OnFirmwareUploadProgressPercentageAndThroughputDataChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndThroughputDataChanged(ea);
+        void IFirmwareInstallerEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
+        void IFirmwareInstallerEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
+        void IFirmwareInstallerEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
+        void IFirmwareInstallerEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
+        void IFirmwareInstallerEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndThroughputDataChanged(ea);
         
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
@@ -194,5 +239,40 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
         private void OnFirmwareUploadProgressPercentageAndThroughputDataChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+
+        //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy
+        internal class GenericNativeFirmwareInstallerCallbacksProxy : INativeFirmwareInstallerCallbacksProxy
+        {
+            public IFirmwareInstallerEventEmittable FirmwareInstaller { get; set; }
+
+            public void CancelledAdvertisement()
+                => FirmwareInstaller?.OnCancelled(new CancelledEventArgs());
+
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+                => FirmwareInstaller?.OnLogEmitted(new LogEmittedEventArgs(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: resource
+                ));
+
+            public void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
+                => FirmwareInstaller?.OnStateChanged(new StateChangedEventArgs(
+                    newState: newState,
+                    oldState: oldState
+                ));
+
+            public void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => FirmwareInstaller?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+
+            public void FatalErrorOccurredAdvertisement(string errorMessage)
+                => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            
+            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => FirmwareInstaller?.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
+                    averageThroughput: averageThroughput,
+                    progressPercentage: progressPercentage
+                ));
+        }
     }
 }

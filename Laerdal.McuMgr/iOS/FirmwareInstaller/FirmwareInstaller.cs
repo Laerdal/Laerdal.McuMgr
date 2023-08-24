@@ -28,38 +28,38 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             );
         }
 
-        public EFirmwareInstallationVerdict BeginInstallation(
-            byte[] data,
-            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
-            bool? eraseSettings = null,
-            int? estimatedSwapTimeInMilliseconds = null,
-            int? windowCapacity = null, //not applicable in ios
-            int? memoryAlignment = null, //not applicable in ios
-            int? pipelineDepth = null,
-            int? byteAlignment = null
-        )
-        {
-            //todo   nsdata should be tracked in a private variable and then cleaned up properly   currently it might get disposed ahead of time
-            var nsData = NSData.FromArray(data);
+        // public EFirmwareInstallationVerdict BeginInstallation(
+        //     byte[] data,
+        //     EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
+        //     bool? eraseSettings = null,
+        //     int? estimatedSwapTimeInMilliseconds = null,
+        //     int? windowCapacity = null, //not applicable in ios
+        //     int? memoryAlignment = null, //not applicable in ios
+        //     int? pipelineDepth = null,
+        //     int? byteAlignment = null
+        // )
+        // {
+        //     //todo   nsdata should be tracked in a private variable and then cleaned up properly   currently it might get disposed ahead of time
+        //     var nsData = NSData.FromArray(data);
+        //
+        //     var verdict = _iosFirmwareInstallerProxy.BeginInstallation(
+        //         mode: TranslateFirmwareInstallationMode(mode),
+        //         imageData: nsData,
+        //         eraseSettings: eraseSettings ?? false,
+        //         // windowCapacity: not applicable in ios,
+        //         // memoryAlignment: not applicable in ios,
+        //         pipelineDepth: pipelineDepth ?? -1,
+        //         byteAlignment: byteAlignment ?? -1,
+        //         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
+        //     );
+        //
+        //     return TranslateFirmwareInstallationVerdict(verdict);
+        // }
 
-            var verdict = _iosFirmwareInstallerProxy.BeginInstallation(
-                mode: TranslateFirmwareInstallationMode(mode),
-                imageData: nsData,
-                eraseSettings: eraseSettings ?? false,
-                // windowCapacity: not applicable in ios,
-                // memoryAlignment: not applicable in ios,
-                pipelineDepth: pipelineDepth ?? -1,
-                byteAlignment: byteAlignment ?? -1,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
-            );
-
-            return TranslateFirmwareInstallationVerdict(verdict);
-        }
-
-        public string LastFatalErrorMessage => _iosFirmwareInstallerProxy?.LastFatalErrorMessage;
-
-        public void Cancel() => _iosFirmwareInstallerProxy.Cancel();
-        public void Disconnect() => _iosFirmwareInstallerProxy.Disconnect();
+        // public string LastFatalErrorMessage => _iosFirmwareInstallerProxy?.LastFatalErrorMessage;
+        //
+        // public void Cancel() => _iosFirmwareInstallerProxy.Cancel();
+        // public void Disconnect() => _iosFirmwareInstallerProxy.Disconnect();
 
         static private EIOSFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
         {

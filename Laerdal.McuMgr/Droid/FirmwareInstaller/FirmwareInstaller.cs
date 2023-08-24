@@ -2,7 +2,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Linq;
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
@@ -32,39 +31,39 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             _androidFirmwareInstallerProxy = new AndroidFirmwareInstallerProxy(this, androidContext, bluetoothDevice);
         }
 
-        public string LastFatalErrorMessage => _androidFirmwareInstallerProxy?.LastFatalErrorMessage;
-
-        public EFirmwareInstallationVerdict BeginInstallation(
-            byte[] data,
-            EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
-            bool? eraseSettings = null,
-            int? estimatedSwapTimeInMilliseconds = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null,
-            int? pipelineDepth = null, // ios only   not applicable for android
-            int? byteAlignment = null //  ios only   not applicable for android
-        )
-        {
-            if (data == null || !data.Any())
-                throw new InvalidOperationException("The data byte-array parameter is null or empty");
-
-            _androidFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
-            var verdict = _androidFirmwareInstallerProxy.BeginInstallation(
-                data: data,
-                mode: TranslateFirmwareInstallationMode(mode),
-                eraseSettings: eraseSettings ?? false,
-                windowCapacity: windowCapacity ?? -1,
-                memoryAlignment: memoryAlignment ?? -1,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
-                // pipelineDepth: not applicable in android
-                // byteAlignment: not applicable in android
-            );
-
-            return TranslateFirmwareInstallationVerdict(verdict);
-        }
-
-        public void Cancel() => _androidFirmwareInstallerProxy.Cancel();
-        public void Disconnect() => _androidFirmwareInstallerProxy.Disconnect();
+        // public string LastFatalErrorMessage => _androidFirmwareInstallerProxy?.LastFatalErrorMessage;
+        //
+        // public EFirmwareInstallationVerdict BeginInstallation(
+        //     byte[] data,
+        //     EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
+        //     bool? eraseSettings = null,
+        //     int? estimatedSwapTimeInMilliseconds = null,
+        //     int? windowCapacity = null, //   android only    not applicable for ios
+        //     int? memoryAlignment = null, //  android only    not applicable for ios
+        //     int? pipelineDepth = null, //    ios only        not applicable for android
+        //     int? byteAlignment = null //     ios only        not applicable for android
+        // )
+        // {
+        //     if (data == null || !data.Any())
+        //         throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
+        //
+        //     _androidFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
+        //     var verdict = _androidFirmwareInstallerProxy.BeginInstallation(
+        //         data: data,
+        //         mode: TranslateFirmwareInstallationMode(mode),
+        //         eraseSettings: eraseSettings ?? false,
+        //         windowCapacity: windowCapacity ?? -1,
+        //         memoryAlignment: memoryAlignment ?? -1,
+        //         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
+        //         // pipelineDepth: not applicable in android
+        //         // byteAlignment: not applicable in android
+        //     );
+        //
+        //     return TranslateFirmwareInstallationVerdict(verdict);
+        // }
+        //
+        // public void Cancel() => _androidFirmwareInstallerProxy.Cancel();
+        // public void Disconnect() => _androidFirmwareInstallerProxy.Disconnect();
 
         static private EAndroidFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
         {
