@@ -89,11 +89,22 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 return TranslateFirmwareInstallationVerdict(nativeVerdict);
             }
 
-            public override void FatalErrorOccurredAdvertisement(string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, string errorMessage)
             {
-                base.FatalErrorOccurredAdvertisement(errorMessage);
+                base.FatalErrorOccurredAdvertisement(state, errorMessage);
 
-                _firmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+                FatalErrorOccurredAdvertisement(
+                    state: TranslateEAndroidFirmwareInstallationState(state),
+                    errorMessage: errorMessage
+                );
+            }
+
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, string errorMessage) //just to conform to the interface
+            {
+                _firmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    state: state,
+                    errorMessage: errorMessage
+                );
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level)
@@ -108,7 +119,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 );
             }
 
-            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource) //just to conform to the interface
             {
                 _firmwareInstallerCallbacksProxy?.LogMessageAdvertisement(
                     level: level,
@@ -142,7 +153,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 );
             }
 
-            public void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
+            public void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState) // just to conform to the interface
             {
                 _firmwareInstallerCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }

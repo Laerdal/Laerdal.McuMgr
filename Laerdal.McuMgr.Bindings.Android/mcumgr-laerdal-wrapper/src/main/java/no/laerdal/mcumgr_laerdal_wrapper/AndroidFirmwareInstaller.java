@@ -19,7 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class AndroidFirmwareInstaller {
+public class AndroidFirmwareInstaller
+{
     private Handler _handler;
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -43,7 +44,8 @@ public class AndroidFirmwareInstaller {
      * @param context         the android-context of the calling environment
      * @param bluetoothDevice the device to perform the firmware-install on
      */
-    public AndroidFirmwareInstaller(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
+    public AndroidFirmwareInstaller(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
+    {
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
@@ -54,7 +56,8 @@ public class AndroidFirmwareInstaller {
             final int estimatedSwapTimeInMilliseconds,
             final int windowCapacity,
             final int memoryAlignment
-    ) {
+    )
+    {
         if (_currentState != EAndroidFirmwareInstallationState.NONE //if an installation is already in progress we bail out
                 && _currentState != EAndroidFirmwareInstallationState.ERROR
                 && _currentState != EAndroidFirmwareInstallationState.COMPLETE
@@ -71,7 +74,8 @@ public class AndroidFirmwareInstaller {
 
         _handler = new Handler(_handlerThread.getLooper());
 
-        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //it is better to just warn the calling environment instead of erroring out
+        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
+        { //it is better to just warn the calling environment instead of erroring out
             logMessageAdvertisement(
                     "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
                     "FirmwareInstaller",
@@ -80,53 +84,68 @@ public class AndroidFirmwareInstaller {
         }
 
         List<Pair<Integer, byte[]>> images;
-        try {
+        try
+        {
             McuMgrImage.getHash(data); // check if the bin file is valid
             images = Collections.singletonList(new Pair<>(0, data));
 
-        } catch (final Exception ex) {
-            try {
+        }
+        catch (final Exception ex)
+        {
+            try
+            {
                 final ZipPackage zip = new ZipPackage(data);
                 images = zip.getBinaries();
 
-            } catch (final Exception ex2) {
-                fatalErrorOccurredAdvertisement(ex2.getMessage());
+            }
+            catch (final Exception ex2)
+            {
+                emitFatalError(ex2.getMessage());
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }
         }
 
-        try {
+        try
+        {
             requestHighConnectionPriority();
 
             _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
 
-            if (estimatedSwapTimeInMilliseconds >= 0) {
+            if (estimatedSwapTimeInMilliseconds >= 0)
+            {
                 _manager.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
             }
 
-            if (windowCapacity >= 0) {
+            if (windowCapacity >= 0)
+            {
                 _manager.setWindowUploadCapacity(windowCapacity); //2
             }
 
-            if (memoryAlignment >= 1) {
+            if (memoryAlignment >= 1)
+            {
                 _manager.setMemoryAlignment(memoryAlignment); //3
             }
 
-        } catch (final Exception ex) {
-            fatalErrorOccurredAdvertisement(ex.getMessage());
+        }
+        catch (final Exception ex)
+        {
+            emitFatalError(ex.getMessage());
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        try {
+        try
+        {
             setState(EAndroidFirmwareInstallationState.IDLE);
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
             _manager.start(images, eraseSettings);
 
-        } catch (final McuMgrException ex) {
-            fatalErrorOccurredAdvertisement(ex.getMessage());
+        }
+        catch (final McuMgrException ex)
+        {
+            emitFatalError(ex.getMessage());
 
             return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
         }
@@ -159,7 +178,9 @@ public class AndroidFirmwareInstaller {
     }
 
     private EAndroidFirmwareInstallationState _currentState = EAndroidFirmwareInstallationState.NONE;
-    private void setState(final EAndroidFirmwareInstallationState newState) {
+
+    private void setState(final EAndroidFirmwareInstallationState newState)
+    {
         final EAndroidFirmwareInstallationState oldState = _currentState; //order
 
         _currentState = newState; //order
@@ -174,43 +195,63 @@ public class AndroidFirmwareInstaller {
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
 
-    protected void onCleared() {
+    protected void onCleared()
+    {
         _manager.setFirmwareUpgradeCallback(null);
     }
 
     private String _lastFatalErrorMessage;
 
-    public String getLastFatalErrorMessage() {
+    public String getLastFatalErrorMessage()
+    {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage) {
+    public void emitFatalError(final String errorMessage)
+    {
+        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00
+
+        setState(EAndroidFirmwareInstallationState.ERROR); //                    order
+        fatalErrorOccurredAdvertisement(currentStateSnapshot, errorMessage); //  order
+
+        //00   we want to let the calling environment know in which exact state the fatal error happened in
+    }
+
+    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final String errorMessage)
+    {
         //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
     }
 
-    public void logMessageAdvertisement(final String warningMessage, final String category, final String level) {
+    public void logMessageAdvertisement(final String warningMessage, final String category, final String level)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void cancelledAdvertisement() {
+    public void cancelledAdvertisement()
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void busyStateChangedAdvertisement(final boolean busyNotIdle) {
+    public void busyStateChangedAdvertisement(final boolean busyNotIdle)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void stateChangedAdvertisement(final EAndroidFirmwareInstallationState oldState, final EAndroidFirmwareInstallationState currentState) {
+    public void stateChangedAdvertisement(final EAndroidFirmwareInstallationState oldState, final EAndroidFirmwareInstallationState currentState)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput) {
+    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void pause() {
-        if (!_manager.isInProgress()) {
+    public void pause()
+    {
+        if (!_manager.isInProgress())
+        {
             return;
         }
 
@@ -223,8 +264,10 @@ public class AndroidFirmwareInstaller {
         busyStateChangedAdvertisement(false);
     }
 
-    public void resume() {
-        if (!_manager.isPaused()) {
+    public void resume()
+    {
+        if (!_manager.isPaused())
+        {
             return;
         }
 
@@ -237,16 +280,19 @@ public class AndroidFirmwareInstaller {
         _manager.resume();
     }
 
-    public void cancel() {
+    public void cancel()
+    {
         _manager.cancel();
     }
 
     //to future maintainers    in the csharp bindings this generates a phony warning that does not make sense   something about the
     //to future maintainers    symbol FirmwareInstallCallback not being found   but the generated nuget works just fine   go figure
-    private final class FirmwareInstallCallbackProxy implements FirmwareUpgradeCallback {
+    private final class FirmwareInstallCallbackProxy implements FirmwareUpgradeCallback
+    {
 
         @Override
-        public void onUpgradeStarted(final FirmwareUpgradeController controller) {
+        public void onUpgradeStarted(final FirmwareUpgradeController controller)
+        {
             busyStateChangedAdvertisement(true);
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFirmwareInstallationState.VALIDATING);
@@ -256,31 +302,34 @@ public class AndroidFirmwareInstaller {
         public void onStateChanged(
                 final FirmwareUpgradeManager.State prevState,
                 final FirmwareUpgradeManager.State newState
-        ) {
-             setLoggingEnabled(newState != FirmwareUpgradeManager.State.UPLOAD);
+        )
+        {
+            setLoggingEnabled(newState != FirmwareUpgradeManager.State.UPLOAD);
 
-             switch (newState) {
-             case UPLOAD:
-                //Timber.i("Uploading firmware..."); //todo    logging
-                _bytesSentSinceUploadStated = NOT_STARTED;
-                setState(EAndroidFirmwareInstallationState.UPLOADING);
-             break;
-             case TEST:
-                _handler.removeCallbacks(_graphUpdater);
-                setState(EAndroidFirmwareInstallationState.TESTING);
-                break;
-             case CONFIRM:
-                _handler.removeCallbacks(_graphUpdater);
-                setState(EAndroidFirmwareInstallationState.CONFIRMING);
-                break;
-             case RESET:
-                setState(EAndroidFirmwareInstallationState.RESETTING);
-                break;
-             }
+            switch (newState)
+            {
+                case UPLOAD:
+                    //Timber.i("Uploading firmware..."); //todo    logging
+                    _bytesSentSinceUploadStated = NOT_STARTED;
+                    setState(EAndroidFirmwareInstallationState.UPLOADING);
+                    break;
+                case TEST:
+                    _handler.removeCallbacks(_graphUpdater);
+                    setState(EAndroidFirmwareInstallationState.TESTING);
+                    break;
+                case CONFIRM:
+                    _handler.removeCallbacks(_graphUpdater);
+                    setState(EAndroidFirmwareInstallationState.CONFIRMING);
+                    break;
+                case RESET:
+                    setState(EAndroidFirmwareInstallationState.RESETTING);
+                    break;
+            }
         }
 
         @Override
-        public void onUpgradeCompleted() {
+        public void onUpgradeCompleted()
+        {
             _handler.removeCallbacks(_graphUpdater);
 
             setState(EAndroidFirmwareInstallationState.COMPLETE);
@@ -290,18 +339,19 @@ public class AndroidFirmwareInstaller {
         }
 
         @Override
-        public void onUpgradeFailed(final FirmwareUpgradeManager.State state, final McuMgrException error) {
+        public void onUpgradeFailed(final FirmwareUpgradeManager.State state, final McuMgrException error)
+        {
             _handler.removeCallbacks(_graphUpdater);
 
-            setState(EAndroidFirmwareInstallationState.ERROR);
-            fatalErrorOccurredAdvertisement(error.getMessage());
+            emitFatalError(error.getMessage());
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
             busyStateChangedAdvertisement(false);
         }
 
         @Override
-        public void onUpgradeCanceled(final FirmwareUpgradeManager.State state) {
+        public void onUpgradeCanceled(final FirmwareUpgradeManager.State state)
+        {
             _handler.removeCallbacks(_graphUpdater);
 
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
@@ -313,12 +363,14 @@ public class AndroidFirmwareInstaller {
         }
 
         @Override
-        public void onUploadProgressChanged(final int bytesSent, final int imageSize, final long timestamp) {
+        public void onUploadProgressChanged(final int bytesSent, final int imageSize, final long timestamp)
+        {
             _imageSize = imageSize;
             _bytesSent = bytesSent;
 
             final long uptimeMillis = SystemClock.uptimeMillis();
-            if (_bytesSentSinceUploadStated == NOT_STARTED) { //00
+            if (_bytesSentSinceUploadStated == NOT_STARTED)
+            { //00
                 _lastProgress = NOT_STARTED;
 
                 firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0); //10
@@ -331,7 +383,8 @@ public class AndroidFirmwareInstaller {
             }
 
             final boolean uploadComplete = bytesSent == imageSize;
-            if (!uploadComplete) { //40
+            if (!uploadComplete)
+            { //40
                 return;
             }
 
@@ -360,9 +413,11 @@ public class AndroidFirmwareInstaller {
         }
     }
 
-    private void requestHighConnectionPriority() {
+    private void requestHighConnectionPriority()
+    {
         final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport)) {
+        if (!(transporter instanceof McuMgrBleTransport))
+        {
             return;
         }
 
@@ -370,9 +425,11 @@ public class AndroidFirmwareInstaller {
         bleTransporter.requestConnPriority(CONNECTION_PRIORITY_HIGH);
     }
 
-    private void setLoggingEnabled(final boolean enabled) {
+    private void setLoggingEnabled(final boolean enabled)
+    {
         final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport)) {
+        if (!(transporter instanceof McuMgrBleTransport))
+        {
             return;
         }
 
@@ -380,16 +437,20 @@ public class AndroidFirmwareInstaller {
         bleTransporter.setLoggingEnabled(enabled);
     }
 
-    private final Runnable _graphUpdater = new Runnable() {
+    private final Runnable _graphUpdater = new Runnable()
+    {
         @Override
-        public void run() {
-            if (_manager.getState() != FirmwareUpgradeManager.State.UPLOAD || _manager.isPaused()) {
+        public void run()
+        {
+            if (_manager.getState() != FirmwareUpgradeManager.State.UPLOAD || _manager.isPaused())
+            {
                 return;
             }
 
             final long timestamp = SystemClock.uptimeMillis();
             final int progressPercentage = (int) (_bytesSent * 100.f /* % */ / _imageSize); //0
-            if (_lastProgress != progressPercentage) {
+            if (_lastProgress != progressPercentage)
+            {
                 _lastProgress = progressPercentage;
 
                 final float bytesSentSinceUploadStarted = _bytesSent - _bytesSentSinceUploadStated; //1
@@ -399,7 +460,8 @@ public class AndroidFirmwareInstaller {
                 firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput);
             }
 
-            if (_manager.getState() == FirmwareUpgradeManager.State.UPLOAD && !_manager.isPaused()) {
+            if (_manager.getState() == FirmwareUpgradeManager.State.UPLOAD && !_manager.isPaused())
+            {
                 _handler.postAtTime(this, timestamp + REFRESH_RATE);
             }
 

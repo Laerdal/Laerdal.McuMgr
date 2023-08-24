@@ -91,7 +91,18 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             
             public override void CancelledAdvertisement() => _nativeFirmwareInstallerCallbacksProxy?.CancelledAdvertisement();
             public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareInstallerCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
-            public override void FatalErrorOccurredAdvertisement(string errorMessage) => _nativeFirmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+
+            public override void FatalErrorOccurredAdvertisement(EIOSFirmwareInstallationState state, string errorMessage)
+                => FatalErrorOccurredAdvertisement(
+                    state: TranslateEIOSFirmwareInstallationState(state),
+                    errorMessage: errorMessage
+                );
+            
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, string errorMessage) //just to conform to the interface
+                => _nativeFirmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    state: state,
+                    errorMessage: errorMessage
+                );
 
             public override void LogMessageAdvertisement(string message, string category, string level)
                 => LogMessageAdvertisement(

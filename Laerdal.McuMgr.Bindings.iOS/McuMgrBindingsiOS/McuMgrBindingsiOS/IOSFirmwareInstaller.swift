@@ -38,16 +38,16 @@ public class IOSFirmwareInstaller: NSObject {
         _lastBytesSendTimestamp = nil
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            fatalErrorOccurredAdvertisement("When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')");
+            emitFatalError("When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
 
-            return EIOSFirmwareInstallationVerdict.failedInvalidSettings;
+            return EIOSFirmwareInstallationVerdict.failedInvalidSettings
         }
 
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            fatalErrorOccurredAdvertisement("Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16");
+            emitFatalError("Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
-            return EIOSFirmwareInstallationVerdict.failedInvalidSettings;
+            return EIOSFirmwareInstallationVerdict.failedInvalidSettings
         }
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
@@ -78,7 +78,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            fatalErrorOccurredAdvertisement(ex.localizedDescription);
+            emitFatalError(ex.localizedDescription);
 
             return EIOSFirmwareInstallationVerdict.failedInvalidSettings;
         }
@@ -90,7 +90,7 @@ public class IOSFirmwareInstaller: NSObject {
             try _manager.start(data: imageData, using: firmwareUpgradeConfiguration);
 
         } catch let ex {
-            fatalErrorOccurredAdvertisement(ex.localizedDescription);
+            emitFatalError(ex.localizedDescription);
 
             return EIOSFirmwareInstallationVerdict.failedDeploymentError;
         }
@@ -152,12 +152,20 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter.close()
     }
 
+    private func emitFatalError(_ errorMessage: String) {
+        let currentStateSnapshot = _currentState //00
+
+        setState(.error) //                                                      order
+        fatalErrorOccurredAdvertisement(currentStateSnapshot, errorMessage) //   order
+
+        //00   we want to let the calling environment know in which exact state the fatal error happened in
+    }
+
     //@objc   dont
 
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ errorMessage: String) {
         _lastFatalErrorMessage = errorMessage
-
-        _listener.fatalErrorOccurredAdvertisement(errorMessage);
+        _listener.fatalErrorOccurredAdvertisement(currentState, errorMessage)
     }
 
     //@objc   dont
@@ -264,8 +272,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        setState(EIOSFirmwareInstallationState.error)
-        fatalErrorOccurredAdvertisement(error.localizedDescription)
+        emitFatalError(error.localizedDescription)
         busyStateChangedAdvertisement(false)
     }
 

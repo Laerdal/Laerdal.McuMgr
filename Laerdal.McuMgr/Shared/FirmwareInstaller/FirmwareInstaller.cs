@@ -265,8 +265,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FirmwareInstaller?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, string errorMessage)
+                => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(state, errorMessage));
             
             public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FirmwareInstaller?.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(

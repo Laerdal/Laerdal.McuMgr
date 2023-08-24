@@ -93,7 +93,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                     await Task.Delay(2_000);
                     
-                    FatalErrorOccurredAdvertisement("fatal error occurred");
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, "fatal error occurred");
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 
