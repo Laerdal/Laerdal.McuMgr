@@ -91,7 +91,7 @@
         <Compile Include="FileUploader\FileUploaderTestbed.SingleFileUploadAsync.ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.BeginUpload.ShouldThrowArgumentException_GivenInvalidRemoteFilePath.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.cs" />
-        <Compile Include="FileUploader\FileUploaderTestbed.FileUploaderConstructor.ShouldThrowArgumentNullException_GivenNullNativeFileDownloader.cs" />
+        <Compile Include="FileUploader\FileUploaderTestbed.FileUploaderConstructor.ShouldThrowArgumentNullException_GivenNullNativeFileUploader.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.MultipleFilesUploadAsync.ShouldCompleteSuccessfully_GivenNoFilesToDownload.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.MultipleFilesUploadAsync.ShouldCompleteSuccessfully_GivenVariousFilesToDownload.cs" />
         <Compile Include="FileUploader\FileUploaderTestbed.MultipleFilesUploadAsync.ShouldThrowArgumentException_GivenPathCollectionWithErroneousFilesToDownload.cs" />
@@ -108,6 +108,15 @@
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.EraseAsync.ShouldThrowFirmwareErasureInternalErrorException_GivenErroneousNativeFirmwareEraser.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.EraseAsync.ShouldCompleteSuccessfully_GivenGreenNativeFirmwareEraser.cs" />
         <Compile Include="FirmwareEraser\FirmwareEraserTestbed.FirmwareEraserConstructor.ShouldThrowArgumentNullException_GivenNullNativeFirmwareEraser.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.BeginInstallation.ShouldThrowArgumentException_GivenInvalidFirmwareDataBytes.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.FirmwareInstallerConstructor.ShouldThrowArgumentNullException_GivenNullNativeFirmwareInstaller.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldCompleteSuccessfully_GivenGreenNativeFirmwareInstaller.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowUploadInternalErrorException_GivenErroneousNativeFirmwareInstaller.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowUploadTimeoutException_GivenTooSmallTimeout.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

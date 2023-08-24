@@ -183,7 +183,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     newState: EFirmwareInstallationState.Error
                 ));
 
-                throw new FirmwareInstallationErroredOutException(ex.Message, ex);
+                throw new FirmwareInstallationInternalErrorException(ex);
             }
             finally
             {
@@ -209,7 +209,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
             {
-                if (string.IsNullOrWhiteSpace(ea.ErrorMessage)) //fw swap timeout error
+                if (string.IsNullOrWhiteSpace(ea.ErrorMessage)) //fw swap timeout error   todo  we should also take into account the state the installation is in
                 {
                     taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutImageSwapTimeoutException());
                     return;

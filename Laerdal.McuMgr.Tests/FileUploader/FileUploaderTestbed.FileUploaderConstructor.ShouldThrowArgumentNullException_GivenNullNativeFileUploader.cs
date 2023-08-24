@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Arrange
 
             // Act
-            var work = new Func<IFileUploader>(() => new McuMgr.FileUploader.FileUploader(null));
+            var work = new Func<IFileUploader>(() => new McuMgr.FileUploader.FileUploader(nativeFileUploaderProxy: null));
 
             // Assert
             work.Should().ThrowExactly<ArgumentNullException>();
