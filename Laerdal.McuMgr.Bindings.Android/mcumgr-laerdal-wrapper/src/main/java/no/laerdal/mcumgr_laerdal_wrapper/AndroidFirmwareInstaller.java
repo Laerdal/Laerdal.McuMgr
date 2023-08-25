@@ -126,7 +126,6 @@ public class AndroidFirmwareInstaller
             {
                 _manager.setMemoryAlignment(memoryAlignment); //3
             }
-
         }
         catch (final Exception ex)
         {
@@ -223,7 +222,7 @@ public class AndroidFirmwareInstaller
         _lastFatalErrorMessage = errorMessage;
     }
 
-    public void logMessageAdvertisement(final String warningMessage, final String category, final String level)
+    public void logMessageAdvertisement(final String message, final String category, final String level)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -340,11 +339,17 @@ public class AndroidFirmwareInstaller
         }
 
         @Override
-        public void onUpgradeFailed(final FirmwareUpgradeManager.State state, final McuMgrException error)
+        public void onUpgradeFailed(final FirmwareUpgradeManager.State state, final McuMgrException ex)
         {
             _handler.removeCallbacks(_graphUpdater);
 
-            emitFatalError(error.getMessage());
+            logMessageAdvertisement(
+                    "** FirmwareUpgradeManager.State=" + state.toString() + ", exception='" + ex.getMessage() + "', exception-type=" + ex.getClass(),
+                    "WARN",
+                    "debug"
+            );
+
+            emitFatalError(ex.getMessage());
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
             busyStateChangedAdvertisement(false);

@@ -106,7 +106,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 _deviceResetterCallbacksProxy?.LogMessageAdvertisement(message, category, level);
             }
 
-            static public EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
+            static private EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
             {
                 if (state == EAndroidDeviceResetterState.None)
                 {
