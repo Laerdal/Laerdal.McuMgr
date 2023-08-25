@@ -11,6 +11,7 @@ public enum EAndroidFileUploaderState
     ERROR(6),
     CANCELLING(7); //when a cancellation is requested
 
+    @SuppressWarnings("FieldCanBeLocal")
     private final int _value;
 
     EAndroidFileUploaderState(int value)

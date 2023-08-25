@@ -8,6 +8,7 @@ public enum EAndroidFirmwareInstallationVerdict
     FAILED__DEPLOYMENT_ERROR(0b0101), //  5
     FAILED__INSTALLATION_ALREADY_IN_PROGRESS(0b1001); //  9
 
+    @SuppressWarnings("FieldCanBeLocal")
     private final int _value;
 
     EAndroidFirmwareInstallationVerdict(int value) {
