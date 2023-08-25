@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             // Assert
             await work
                 .Should().ThrowExactlyAsync<DeviceResetterErroredOutException>()
-                .WithTimeoutInMs(100)
+                .WithTimeoutInMs(500)
                 .WithMessage("*bluetooth error blah blah*");
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00

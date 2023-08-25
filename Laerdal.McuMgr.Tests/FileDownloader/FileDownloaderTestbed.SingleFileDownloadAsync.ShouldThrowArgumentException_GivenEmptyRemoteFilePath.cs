@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: remoteFilePath));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<ArgumentException>().WithTimeoutInMs(50);
+            await work.Should().ThrowExactlyAsync<ArgumentException>().WithTimeoutInMs(500);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00

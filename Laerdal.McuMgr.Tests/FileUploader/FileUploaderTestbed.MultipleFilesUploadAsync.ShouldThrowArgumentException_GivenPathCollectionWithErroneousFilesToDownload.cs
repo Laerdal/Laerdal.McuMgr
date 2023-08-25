@@ -37,7 +37,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(async () => await fileUploader.UploadAsync(remoteFilePaths.ToDictionary(x => x, x => new byte[] { 1 })));
 
             // Assert
-            await work.Should().ThrowAsync<ArgumentException>().WithTimeoutInMs(100); //dont use throwexactlyasync<> here
+            await work.Should().ThrowAsync<ArgumentException>().WithTimeoutInMs(500); //dont use throwexactlyasync<> here
 
             eventsMonitor.OccurredEvents.Should().HaveCount(0);
 

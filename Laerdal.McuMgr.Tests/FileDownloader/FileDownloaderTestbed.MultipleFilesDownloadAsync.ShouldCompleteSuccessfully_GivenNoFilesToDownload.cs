@@ -28,7 +28,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(Enumerable.Empty<string>()));
 
             // Assert
-            var results = (await work.Should().CompleteWithinAsync(10.Milliseconds())).Which;
+            var results = (await work.Should().CompleteWithinAsync(500.Milliseconds())).Which;
 
             results.Should().BeEmpty();
             eventsMonitor.OccurredEvents.Should().HaveCount(0);

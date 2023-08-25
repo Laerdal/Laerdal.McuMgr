@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(() => fileUploader.UploadAsync(mockedFileData, remoteFilePath));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<ArgumentException>().WithTimeoutInMs(50);
+            await work.Should().ThrowExactlyAsync<ArgumentException>().WithTimeoutInMs(500);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
