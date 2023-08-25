@@ -12,7 +12,7 @@ namespace Laerdal.McuMgr.Common
             "A" => ELogLevel.Info, //application
             "W" => ELogLevel.Warning,
             "E" => ELogLevel.Error,
-            _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(level), level, "Unknown enum value")
         };
     }
 }

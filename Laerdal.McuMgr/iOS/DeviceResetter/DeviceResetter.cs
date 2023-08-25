@@ -108,7 +108,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 EIOSDeviceResetterState.Failed => EDeviceResetterState.Failed,
                 EIOSDeviceResetterState.Complete => EDeviceResetterState.Complete,
                 EIOSDeviceResetterState.Resetting => EDeviceResetterState.Resetting,
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
             };
         }
     }

@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                     return EDeviceResetterState.Failed;
                 }
                 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

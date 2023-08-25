@@ -144,7 +144,7 @@ namespace Laerdal.McuMgr.FileUploader
                     return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
 
                 //0 we have to separate enums
                 //
@@ -163,7 +163,7 @@ namespace Laerdal.McuMgr.FileUploader
                 EIOSFileUploaderState.Uploading => EFileUploaderState.Uploading,
                 EIOSFileUploaderState.Cancelled => EFileUploaderState.Cancelled,
                 EIOSFileUploaderState.Cancelling => EFileUploaderState.Cancelling,
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
             };
         }
     }

@@ -175,7 +175,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
 
                 //0 we have to separate enums
                 //
@@ -225,7 +225,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     return EFileDownloaderState.Cancelling;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

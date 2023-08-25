@@ -101,7 +101,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 EIOSFirmwareEraserState.Idle => EFirmwareErasureState.Idle,
                 EIOSFirmwareEraserState.Erasing => EFirmwareErasureState.Erasing,
                 EIOSFirmwareEraserState.Complete => EFirmwareErasureState.Complete,
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
             };
         }
     }

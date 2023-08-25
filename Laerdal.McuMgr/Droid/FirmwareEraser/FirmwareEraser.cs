@@ -143,7 +143,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     return EFirmwareErasureState.Failed;
                 }
                 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }
