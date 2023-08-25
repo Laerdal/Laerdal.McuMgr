@@ -8,7 +8,7 @@ public enum EAndroidFirmwareInstallerFatalErrorType //this must mirror the enum 
     DEPLOYMENT_FAILED(3),
     FIRMWARE_IMAGE_SWAP_TIMEOUT(4);
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
     EAndroidFirmwareInstallerFatalErrorType(int value)

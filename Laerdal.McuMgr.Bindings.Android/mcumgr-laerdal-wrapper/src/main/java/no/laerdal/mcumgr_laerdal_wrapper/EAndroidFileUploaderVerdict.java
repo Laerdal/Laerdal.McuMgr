@@ -7,7 +7,7 @@ public enum EAndroidFileUploaderVerdict //this must mirror the enum values of E[
     FAILED__INVALID_DATA(2),
     FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS(3);
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
     EAndroidFileUploaderVerdict(int value)

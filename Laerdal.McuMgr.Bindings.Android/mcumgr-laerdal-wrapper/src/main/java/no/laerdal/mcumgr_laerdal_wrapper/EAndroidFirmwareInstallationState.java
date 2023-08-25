@@ -15,7 +15,7 @@ public enum EAndroidFirmwareInstallationState
     CANCELLED(10),
     ERROR(11);
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
     EAndroidFirmwareInstallationState(int value)
