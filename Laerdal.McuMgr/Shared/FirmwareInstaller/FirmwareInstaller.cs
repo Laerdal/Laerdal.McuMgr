@@ -126,6 +126,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             remove => _firmwareUploadProgressPercentageAndDataThroughputChanged -= value;
         }
 
+        private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task InstallAsync(
             byte[] data,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
@@ -135,10 +136,15 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             int? memoryAlignment = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
-            int timeoutInMs = -1
+            int timeoutInMs = -1,
+            int gracefulCancellationTimeoutInMs = 2_500
         )
         {
             var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
+            var isCancellationRequested = false;
+            gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
+                ? gracefulCancellationTimeoutInMs
+                : DefaultGracefulCancellationTimeoutInMs;
 
             try
             {
@@ -201,10 +207,35 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState != EFirmwareInstallationState.Complete)
-                    return;
+                switch (ea.NewState)
+                {
+                    case EFirmwareInstallationState.Complete:
+                        taskCompletionSource.TrySetResult(true);
+                        return;
 
-                taskCompletionSource.TrySetResult(true);
+                    case EFirmwareInstallationState.Cancelling:
+                        if (isCancellationRequested)
+                            return;
+                        
+                        isCancellationRequested = true;
+
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await Task.Delay(gracefulCancellationTimeoutInMs);
+                                OnCancelled(new CancelledEventArgs()); //00
+                            }
+                            catch // (Exception ex)
+                            {
+                                // ignored
+                            }
+                        });
+                        return;
+                    
+                        //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
+                        //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
+                }
             }
 
             void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)

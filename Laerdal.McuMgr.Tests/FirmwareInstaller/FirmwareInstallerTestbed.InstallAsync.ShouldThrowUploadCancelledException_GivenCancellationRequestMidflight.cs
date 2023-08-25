@@ -16,11 +16,13 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {
     public partial class FirmwareInstallerTestbed
     {
-        [Fact]
-        public async Task InstallAsync_ShouldThrowFirmwareInstallationCancelledException_GivenCancellationRequestMidflight()
+        [Theory]
+        [InlineData("FIT.IA.STFICE.GCRM.010", true)]
+        [InlineData("FIT.IA.STFICE.GCRM.020", false)]
+        public async Task InstallAsync_ShouldThrowFirmwareInstallationCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding)
         {
             // Arrange
-            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy3(new GenericNativeFirmwareInstallerCallbacksProxy_());
+            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy3(new GenericNativeFirmwareInstallerCallbacksProxy_(), isCancellationLeadingToSoftLanding);
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
@@ -55,10 +57,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
         private class MockedGreenNativeFirmwareInstallerProxySpy3 : MockedNativeFirmwareInstallerProxySpy
         {
+            private readonly bool _isCancellationLeadingToSoftLanding;
             private CancellationTokenSource _cancellationTokenSource;
             
-            public MockedGreenNativeFirmwareInstallerProxySpy3(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
+            public MockedGreenNativeFirmwareInstallerProxySpy3(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy, bool isCancellationLeadingToSoftLanding) : base(firmwareInstallerCallbacksProxy)
             {
+                _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
             
             public override void Cancel()
@@ -68,8 +72,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
                     await Task.Delay(100);
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Cancelled); //   order
-                    CancelledAdvertisement(); //                                                                                               order
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Cancelling);
+                    
+                    await Task.Delay(100);
+                    if (_isCancellationLeadingToSoftLanding)
+                    {
+                        StateChangedAdvertisement(oldState: EFirmwareInstallationState.Cancelling, newState: EFirmwareInstallationState.Cancelled); //   order
+                        CancelledAdvertisement(); //                                                                                                     order    
+                    }
                 });
             }
             
@@ -107,8 +117,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     await Task.Delay(100, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
-
-                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Uploading);
+                    
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);
+                    
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Validating, EFirmwareInstallationState.Uploading);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)

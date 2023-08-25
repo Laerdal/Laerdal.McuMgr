@@ -272,7 +272,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     });
 
                     return;
-                    
+
                     //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
                     //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
                 }
