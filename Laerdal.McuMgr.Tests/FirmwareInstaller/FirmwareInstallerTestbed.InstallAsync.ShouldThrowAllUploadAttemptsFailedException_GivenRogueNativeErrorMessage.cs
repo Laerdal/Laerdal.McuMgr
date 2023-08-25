@@ -17,16 +17,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
     [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters")]
     public partial class FirmwareInstallerTestbed
     {
-        [Theory]
-        [InlineData("FDT.IA.STFIEOISTE.GDEM.010", "")] //    if the firmware swapping times out then we get a
-        [InlineData("FDT.IA.STFIEOISTE.GDEM.020", null)] //  dud error message from the underlying native device
-        public async Task InstallAsync_ShouldThrowFirmwareInstallationErroredOutImageSwapTimeoutException_GivenDudErrorMessage(string testcaseNickname, string nativeRogueErrorMessage)
+        [Fact]
+        public async Task InstallAsync_ShouldThrowFirmwareInstallationErroredOutImageSwapTimeoutException_GivenImageSwapTimeoutFatalErrorType()
         {
             // Arrange
-            var mockedNativeFirmwareInstallerProxy = new MockedErroneousNativeFirmwareInstallerProxySpy13(
-                nativeErrorMessage: nativeRogueErrorMessage,
-                firmwareInstallerCallbacksProxy: new GenericNativeFirmwareInstallerCallbacksProxy_()
-            );
+            var mockedNativeFirmwareInstallerProxy = new MockedErroneousNativeFirmwareInstallerProxySpy13(new GenericNativeFirmwareInstallerCallbacksProxy_());
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
@@ -68,11 +63,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
         private class MockedErroneousNativeFirmwareInstallerProxySpy13 : MockedNativeFirmwareInstallerProxySpy
         {
-            private readonly string _nativeErrorMessage;
-            
-            public MockedErroneousNativeFirmwareInstallerProxySpy13(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy, string nativeErrorMessage) : base(firmwareInstallerCallbacksProxy)
+            public MockedErroneousNativeFirmwareInstallerProxySpy13(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
             {
-                _nativeErrorMessage = nativeErrorMessage;
             }
 
             public override EFirmwareInstallationVerdict BeginInstallation(
@@ -110,7 +102,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Testing, EFirmwareInstallerFatalErrorType.Generic, _nativeErrorMessage);
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "foobar");
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 
