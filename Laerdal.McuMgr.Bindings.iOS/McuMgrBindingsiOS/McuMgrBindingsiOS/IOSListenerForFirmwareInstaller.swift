@@ -10,7 +10,7 @@ import Foundation
 public protocol IOSListenerForFirmwareInstaller {
     func cancelledAdvertisement()
     func logMessageAdvertisement(_ message: String, _ category: String, _ level: String)
-    func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ errorMessage: String)
+    func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String)
     func stateChangedAdvertisement(_ oldState: EIOSFirmwareInstallationState, _ newState: EIOSFirmwareInstallationState)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
     func firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(

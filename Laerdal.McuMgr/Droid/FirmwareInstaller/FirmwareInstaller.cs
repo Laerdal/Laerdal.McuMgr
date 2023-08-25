@@ -202,7 +202,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                 if (verdict == EAndroidFirmwareInstallationVerdict.FailedInvalidDataFile)
                 {
-                    return EFirmwareInstallationVerdict.FailedInvalidDataFile;
+                    return EFirmwareInstallationVerdict.FailedInvalidFirmware;
                 }
 
                 if (verdict == EAndroidFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress)
@@ -230,9 +230,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     return EFirmwareInstallerFatalErrorType.InvalidSettings;
                 }
                 
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidDataFile)
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidFirmware)
                 {
-                    return EFirmwareInstallerFatalErrorType.InvalidDataFile;
+                    return EFirmwareInstallerFatalErrorType.InvalidFirmware;
                 }
                 
                 if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.DeploymentFailed)

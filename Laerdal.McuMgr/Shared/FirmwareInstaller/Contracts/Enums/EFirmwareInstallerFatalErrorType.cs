@@ -4,7 +4,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums
     {
         Generic = 0,
         InvalidSettings = 1,
-        InvalidDataFile = 2,
+        InvalidFirmware = 2,
         DeploymentFailed = 3,
         FirmwareImageSwapTimeout = 4
     }

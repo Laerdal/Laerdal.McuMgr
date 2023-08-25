@@ -31,29 +31,35 @@ public class IOSFirmwareInstaller: NSObject {
             _ byteAlignment: Int
     ) -> EIOSFirmwareInstallationVerdict {
         if _currentState != .none && _currentState != .cancelled && _currentState != .complete && _currentState != .error { //if another installation is already in progress we bail out
-            return EIOSFirmwareInstallationVerdict.failedInstallationAlreadyInProgress
+            return .failedInstallationAlreadyInProgress
         }
 
         _lastBytesSend = -1
         _lastBytesSendTimestamp = nil
 
-        if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            emitFatalError("When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+        if (imageData.isEmpty) {
+            emitFatalError(.invalidFirmware, "The firmware data-bytes given are dud!")
 
-            return EIOSFirmwareInstallationVerdict.failedInvalidSettings
+            return .failedInvalidFirmware
+        }
+
+        if (pipelineDepth >= 2 && byteAlignment <= 1) {
+            emitFatalError(.invalidSettings, "When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+
+            return .failedInvalidSettings
         }
 
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            emitFatalError("Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+            emitFatalError(.invalidSettings, "Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
-            return EIOSFirmwareInstallationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
             logMessageAdvertisement(
                     "Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
-                    "firmwareinstaller",
+                    "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             );
         }
@@ -78,24 +84,24 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            emitFatalError(ex.localizedDescription);
+            emitFatalError(.invalidSettings, ex.localizedDescription);
 
-            return EIOSFirmwareInstallationVerdict.failedInvalidSettings;
+            return .failedInvalidSettings;
         }
 
         do {
-            setState(EIOSFirmwareInstallationState.idle)
+            setState(.idle)
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
 
             try _manager.start(data: imageData, using: firmwareUpgradeConfiguration);
 
         } catch let ex {
-            emitFatalError(ex.localizedDescription);
+            emitFatalError(.deploymentFailed, ex.localizedDescription);
 
-            return EIOSFirmwareInstallationVerdict.failedDeploymentError;
+            return .failedDeploymentError;
         }
 
-        return EIOSFirmwareInstallationVerdict.success;
+        return .success;
 
         //0 set the installation mode
         //
@@ -154,20 +160,20 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter.close()
     }
 
-    private func emitFatalError(_ errorMessage: String) {
+    private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {
         let currentStateSnapshot = _currentState //00
 
-        setState(.error) //                                                      order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, errorMessage) //   order
+        setState(.error) //                                                                      order
+        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage) //   order
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
     //@objc   dont
 
-    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {
         _lastFatalErrorMessage = errorMessage
-        _listener.fatalErrorOccurredAdvertisement(currentState, errorMessage)
+        _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage)
     }
 
     //@objc   dont
@@ -217,12 +223,12 @@ public class IOSFirmwareInstaller: NSObject {
 
         stateChangedAdvertisement(oldState, newState); //order
 
-        if (oldState == EIOSFirmwareInstallationState.uploading && newState == EIOSFirmwareInstallationState.testing) //00
+        if (oldState == .uploading && newState == .testing) //00
         {
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
 
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //00 trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
 
     private func translateFirmwareInstallationMode(_ mode: EIOSFirmwareInstallationMode) throws -> FirmwareUpgradeMode {
@@ -246,48 +252,59 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     public func upgradeDidStart(controller: FirmwareUpgradeController) {
         busyStateChangedAdvertisement(true);
         firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-        setState(EIOSFirmwareInstallationState.validating);
+        setState(.validating);
     }
 
     public func upgradeStateDidChange(from oldState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
         switch newState {
         case .validate:
-            setState(EIOSFirmwareInstallationState.validating);
+            setState(.validating);
         case .upload:
-            setState(EIOSFirmwareInstallationState.uploading);
+            setState(.uploading);
         case .test:
-            setState(EIOSFirmwareInstallationState.testing);
+            setState(.testing);
         case .confirm:
-            setState(EIOSFirmwareInstallationState.confirming);
+            setState(.confirming);
         case .reset:
-            setState(EIOSFirmwareInstallationState.resetting);
+            setState(.resetting);
         case .success:
-            setState(EIOSFirmwareInstallationState.complete);
+            setState(.complete);
         default:
-            setState(EIOSFirmwareInstallationState.idle);
+            setState(.idle);
         }
     }
 
     public func upgradeDidComplete() {
-        setState(EIOSFirmwareInstallationState.complete)
+        setState(.complete)
         busyStateChangedAdvertisement(false)
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        emitFatalError(error.localizedDescription)
+        logMessageAdvertisement(
+                "** upgradeDidFail: state=\(state), error-message=\(error.localizedDescription), error-type=\(type(of: error))",
+                "firmware-installer",
+                iOSMcuManagerLibrary.McuMgrLogLevel.debug.name
+        )
+
+        //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
+        let fatalErrorType = state == .confirm && error.localizedDescription.isEmpty
+                ? EIOSFirmwareInstallerFatalErrorType.firmwareImageSwapTimeout
+                : EIOSFirmwareInstallerFatalErrorType.generic
+
+        emitFatalError(fatalErrorType, error.localizedDescription)
         busyStateChangedAdvertisement(false)
     }
 
     public func upgradeDidCancel(state: FirmwareUpgradeState) {
-        setState(EIOSFirmwareInstallationState.cancelled)
+        setState(.cancelled)
         busyStateChangedAdvertisement(false)
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
-        let uploadProgressPercentage = (bytesSent * 100) / imageSize;
+        let uploadProgressPercentage = (bytesSent * 100) / imageSize
 
         firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond);
     }

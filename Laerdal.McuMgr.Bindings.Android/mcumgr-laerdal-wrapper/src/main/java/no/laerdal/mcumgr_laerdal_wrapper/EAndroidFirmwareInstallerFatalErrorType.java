@@ -4,7 +4,7 @@ public enum EAndroidFirmwareInstallerFatalErrorType //this must mirror the enum 
 {
     GENERIC(0),
     INVALID_SETTINGS(1),
-    INVALID_DATA_FILE(2),
+    INVALID_FIRMWARE(2),
     DEPLOYMENT_FAILED(3),
     FIRMWARE_IMAGE_SWAP_TIMEOUT(4);
 

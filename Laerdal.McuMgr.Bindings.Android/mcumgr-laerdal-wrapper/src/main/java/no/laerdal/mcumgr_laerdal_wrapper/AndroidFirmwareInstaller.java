@@ -102,7 +102,7 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_DATA_FILE, ex2.getMessage());
+                emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage());
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }

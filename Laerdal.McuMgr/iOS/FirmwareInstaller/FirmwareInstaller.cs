@@ -92,11 +92,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             public override void CancelledAdvertisement() => _nativeFirmwareInstallerCallbacksProxy?.CancelledAdvertisement();
             public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareInstallerCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
 
-            public override void FatalErrorOccurredAdvertisement(EIOSFirmwareInstallationState state, string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(EIOSFirmwareInstallationState state, EIOSFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
                 => FatalErrorOccurredAdvertisement(
                     state: TranslateEIOSFirmwareInstallationState(state),
                     errorMessage: errorMessage,
-                    fatalErrorType: EFirmwareInstallerFatalErrorType.Generic //todo   refactor ios to provide the actual error type
+                    fatalErrorType: TranslateEIOSFirmwareInstallerFatalErrorType(fatalErrorType)
                 );
             
             public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage) //just to conform to the interface
@@ -146,6 +146,18 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             #endregion
 
 
+            static private EFirmwareInstallerFatalErrorType TranslateEIOSFirmwareInstallerFatalErrorType(EIOSFirmwareInstallerFatalErrorType fatalErrorType)
+            {
+                return fatalErrorType switch
+                {
+                    EIOSFirmwareInstallerFatalErrorType.Generic => EFirmwareInstallerFatalErrorType.Generic,
+                    EIOSFirmwareInstallerFatalErrorType.InvalidFirmware => EFirmwareInstallerFatalErrorType.InvalidFirmware,
+                    EIOSFirmwareInstallerFatalErrorType.InvalidSettings => EFirmwareInstallerFatalErrorType.InvalidSettings,
+                    EIOSFirmwareInstallerFatalErrorType.DeploymentFailed => EFirmwareInstallerFatalErrorType.DeploymentFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout,
+                    _ => throw new ArgumentOutOfRangeException(nameof(fatalErrorType), actualValue: fatalErrorType, message: "Unknown enum value")
+                };
+            }
 
             // ReSharper disable once InconsistentNaming
             static private EFirmwareInstallationState TranslateEIOSFirmwareInstallationState(EIOSFirmwareInstallationState state) => state switch
@@ -183,7 +195,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EIOSFirmwareInstallationVerdict.Success => EFirmwareInstallationVerdict.Success, //0
                 EIOSFirmwareInstallationVerdict.FailedDeploymentError => EFirmwareInstallationVerdict.FailedDeploymentError,
                 EIOSFirmwareInstallationVerdict.FailedInvalidSettings => EFirmwareInstallationVerdict.FailedInvalidSettings,
-                EIOSFirmwareInstallationVerdict.FailedInvalidDataFile => EFirmwareInstallationVerdict.FailedInvalidDataFile,
+                EIOSFirmwareInstallationVerdict.FailedInvalidFirmware => EFirmwareInstallationVerdict.FailedInvalidFirmware,
                 EIOSFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress,
                 _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value")
 
