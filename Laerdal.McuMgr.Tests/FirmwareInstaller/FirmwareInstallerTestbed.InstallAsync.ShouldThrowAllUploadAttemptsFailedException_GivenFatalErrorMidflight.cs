@@ -29,7 +29,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationErroredOutException>() // AllInstallationAttemptsFailedException  todo
+                .ThrowExactlyAsync<FirmwareInstallationErroredOutException>() // todo  AllInstallationAttemptsFailedException
                 .WithMessage("*fatal error occurred*")
                 .WithTimeoutInMs(3_000);
 
@@ -93,7 +93,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                     await Task.Delay(2_000);
                     
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, "fatal error occurred");
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.Generic, "fatal error occurred");
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 

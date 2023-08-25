@@ -110,7 +110,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Testing, _nativeErrorMessage);
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Testing, EFirmwareInstallerFatalErrorType.Generic, _nativeErrorMessage);
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 

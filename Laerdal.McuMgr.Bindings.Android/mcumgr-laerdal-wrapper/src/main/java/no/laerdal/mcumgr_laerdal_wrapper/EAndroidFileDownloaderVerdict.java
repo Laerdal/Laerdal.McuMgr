@@ -1,6 +1,6 @@
 package no.laerdal.mcumgr_laerdal_wrapper;
 
-public enum EAndroidFileDownloaderVerdict //this must mirror the java enum values of E[Android|iOS]FileUploaderVerdict
+public enum EAndroidFileDownloaderVerdict //this must mirror the enum values of E[Android|iOS]FileUploaderVerdict
 {
     SUCCESS(0),
     FAILED__INVALID_SETTINGS(1),

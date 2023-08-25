@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums
 {
-    public enum EFirmwareInstallationState //these must mirror the java enum values of EFirmwareInstallationState
+    public enum EFirmwareInstallationState //these must mirror the enum values of E[Android|IOS]FirmwareInstallationState
     {
         None = 0,
         Idle = 1,

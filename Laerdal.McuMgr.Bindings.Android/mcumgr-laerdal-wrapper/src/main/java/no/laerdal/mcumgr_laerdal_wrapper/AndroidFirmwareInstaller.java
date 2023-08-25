@@ -12,7 +12,9 @@ import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeManager;
+import io.runtime.mcumgr.dfu.FirmwareUpgradeManager.State;
 import io.runtime.mcumgr.exception.McuMgrException;
+import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import io.runtime.mcumgr.image.McuMgrImage;
 
 import java.util.Collections;
@@ -100,7 +102,7 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                emitFatalError(ex2.getMessage());
+                emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_DATA_FILE, ex2.getMessage());
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }
@@ -129,7 +131,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            emitFatalError(ex.getMessage());
+            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage());
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -140,11 +142,10 @@ public class AndroidFirmwareInstaller
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
             _manager.start(images, eraseSettings);
-
         }
         catch (final McuMgrException ex)
         {
-            emitFatalError(ex.getMessage());
+            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage());
 
             return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
         }
@@ -206,17 +207,17 @@ public class AndroidFirmwareInstaller
         return _lastFatalErrorMessage;
     }
 
-    public void emitFatalError(final String errorMessage)
+    public void emitFatalError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
     {
         EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00
 
-        setState(EAndroidFirmwareInstallationState.ERROR); //                    order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, errorMessage); //  order
+        setState(EAndroidFirmwareInstallationState.ERROR); //                                    order
+        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage); //  order
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
-    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final String errorMessage)
+    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
     {
         //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
@@ -343,13 +344,11 @@ public class AndroidFirmwareInstaller
         {
             _handler.removeCallbacks(_graphUpdater);
 
-            logMessageAdvertisement(
-                    "** FirmwareUpgradeManager.State=" + state.toString() + ", exception='" + ex.getMessage() + "', exception-type=" + ex.getClass(),
-                    "WARN",
-                    "debug"
-            );
+            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = state == State.CONFIRM && ex instanceof McuMgrTimeoutException
+                                                                     ? EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT
+                                                                     : EAndroidFirmwareInstallerFatalErrorType.GENERIC;
 
-            emitFatalError(ex.getMessage());
+            emitFatalError(fatalErrorType, ex.getMessage());
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
             busyStateChangedAdvertisement(false);

@@ -89,21 +89,23 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 return TranslateFirmwareInstallationVerdict(nativeVerdict);
             }
 
-            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
             {
-                base.FatalErrorOccurredAdvertisement(state, errorMessage);
+                base.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage);
 
                 FatalErrorOccurredAdvertisement(
                     state: TranslateEAndroidFirmwareInstallationState(state),
-                    errorMessage: errorMessage
+                    errorMessage: errorMessage,
+                    fatalErrorType: TranslateEAndroidFirmwareInstallerFatalErrorType(fatalErrorType)
                 );
             }
 
-            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, string errorMessage) //just to conform to the interface
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage) //just to conform to the interface
             {
                 _firmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(
                     state: state,
-                    errorMessage: errorMessage
+                    errorMessage: errorMessage,
+                    fatalErrorType: fatalErrorType
                 );
             }
             
@@ -214,6 +216,36 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 //
                 //  - EFirmwareInstallationVerdict which is publicly exposed and used by both android and ios
                 //  - EAndroidFirmwareInstallationVerdict which is specific to android and should not be used by the api surface or the end users
+            }
+
+            static private EFirmwareInstallerFatalErrorType TranslateEAndroidFirmwareInstallerFatalErrorType(EAndroidFirmwareInstallerFatalErrorType fatalErrorType)
+            {
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.Generic)
+                {
+                    return EFirmwareInstallerFatalErrorType.Generic;
+                }
+                
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidSettings)
+                {
+                    return EFirmwareInstallerFatalErrorType.InvalidSettings;
+                }
+                
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidDataFile)
+                {
+                    return EFirmwareInstallerFatalErrorType.InvalidDataFile;
+                }
+                
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.DeploymentFailed)
+                {
+                    return EFirmwareInstallerFatalErrorType.DeploymentFailed;
+                }
+                
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout)
+                {
+                    return EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(fatalErrorType), fatalErrorType, "Unknown enum value");
             }
 
             static private EFirmwareInstallationState TranslateEAndroidFirmwareInstallationState(EAndroidFirmwareInstallationState state)
