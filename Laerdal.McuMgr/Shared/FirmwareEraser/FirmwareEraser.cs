@@ -4,22 +4,23 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 
 [assembly: InternalsVisibleTo("Laerdal.McuMgr.Tests")]
 namespace Laerdal.McuMgr.FirmwareEraser
 {
     /// <inheritdoc cref="IFirmwareEraser"/>
-    public partial class FirmwareEraser : IFirmwareEraser, IFirmwareEraserEventEmitters
+    public partial class FirmwareEraser : IFirmwareEraser, IFirmwareEraserEventEmittable
     {
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareEraserProxy
         internal class GenericNativeFirmwareEraserCallbacksProxy : INativeFirmwareEraserCallbacksProxy
         {
-            public IFirmwareEraserEventEmitters FirmwareEraser { get; set; }
+            public IFirmwareEraserEventEmittable FirmwareEraser { get; set; }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
                 => FirmwareEraser.OnLogEmitted(new LogEmittedEventArgs(
@@ -116,9 +117,27 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (Exception ex) when (!(ex is FirmwareErasureErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
+            catch (TimeoutException ex)
             {
-                throw new FirmwareErasureErroredOutException(ex.Message, ex);
+                (this as IFirmwareEraserEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EFirmwareErasureState.None, //better not use this.State here because the native call might fail
+                    newState: EFirmwareErasureState.Failed
+                ));
+
+                throw new FirmwareErasureTimeoutException(timeoutInMs, ex);
+            }
+            catch (Exception ex) when (
+                !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                && !(ex is TimeoutException)
+                && !(ex is IFirmwareEraserException)
+            )
+            {
+                (this as IFirmwareEraserEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EFirmwareErasureState.None,
+                    newState: EFirmwareErasureState.Failed
+                ));
+                
+                throw new FirmwareErasureInternalErrorException(ex);
             }
             finally
             {
@@ -149,9 +168,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
-        void IFirmwareEraserEventEmitters.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea); //       we made these interface implementations
-        void IFirmwareEraserEventEmitters.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea); // explicit to avoid making them public
-        void IFirmwareEraserEventEmitters.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        void IFirmwareEraserEventEmitters.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFirmwareEraserEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea); //       we made these interface implementations
+        void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea); // explicit to avoid making them public
+        void IFirmwareEraserEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFirmwareEraserEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
     }
 }

@@ -180,7 +180,7 @@ private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs
 {
     FirmwareInstallationStage = ea.NewState.ToString();
 
-    if (ea.NewState != IFirmwareInstaller.EFirmwareInstallationState.Complete)
+    if (ea.NewState != EFirmwareInstallationState.Complete)
         return;
 
     ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: false);
@@ -334,7 +334,7 @@ private void DeviceResetter_Error(object sender, DeviceResetter.Events.ErrorEven
 private void DeviceResetter_StateChanged(object sender, DeviceResetter.Events.StateChangedEventArgs ea)
 {
     DeviceResettingStage = ea.NewState.ToString();
-    if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
+    if (ea.NewState != EDeviceResetterState.Complete)
         return;
 
     ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
@@ -463,7 +463,7 @@ private void CleanupDeviceResetter()
             );
             return;
         }
-        catch (TimeoutException) //order
+        catch (UploadTimeoutException) //order
         {
             App.DisplayAlert(
                 title: "File-Upload Failed",
@@ -561,15 +561,15 @@ private void CleanupDeviceResetter()
 
         switch (ea.NewState)
         {
-            case IFileUploader.EFileUploaderState.Idle:
+            case EFileUploaderState.Idle:
                 MassUploadResetUIToDefaultValues();
                 return;
             
-            case IFileUploader.EFileUploaderState.Error:
+            case EFileUploaderState.Error:
                 MassFileUploaderNumberOfFailuresToUploadCurrentFile += 1;
                 return;
             
-            case IFileUploader.EFileUploaderState.Complete:
+            case EFileUploaderState.Complete:
                 MassFileUploaderNumberOfFilesUploadedSuccessfully += 1;
                 return;
         }

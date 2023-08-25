@@ -65,7 +65,7 @@ public class IOSFileUploader: NSObject {
 
         setState(EIOSFileUploaderState.idle)
         busyStateChangedAdvertisement(true)
-        fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
 
         let success = _fileSystemManager.upload(name: _remoteFilePathSanitized, data: data, delegate: self)
         if !success {
@@ -123,12 +123,17 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func cancelledAdvertisement() {
-        _listener.cancelledAdvertisement(_remoteFilePathSanitized)
+        _listener.cancelledAdvertisement()
+    }
+
+    //@objc   dont
+    private func uploadCompletedAdvertisement() {
+        _listener.uploadCompletedAdvertisement(_remoteFilePathSanitized)
     }
 
     //@objc   dont
     private func busyStateChangedAdvertisement(_ busyNotIdle: Bool) {
-        _listener.busyStateChangedAdvertisement(_remoteFilePathSanitized, busyNotIdle)
+        _listener.busyStateChangedAdvertisement(busyNotIdle)
     }
 
     //@objc   dont
@@ -140,12 +145,11 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(
+    private func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
             _ averageThroughput: Float32
     ) {
-        _listener.fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(
-                _remoteFilePathSanitized,
+        _listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                 progressPercentage,
                 averageThroughput
         )
@@ -164,7 +168,7 @@ public class IOSFileUploader: NSObject {
 
         if (oldState == EIOSFileUploaderState.uploading && newState == EIOSFileUploaderState.complete) //00
         {
-            fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0)
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -177,7 +181,7 @@ extension IOSFileUploader: FileUploadDelegate {
         setState(EIOSFileUploaderState.uploading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let uploadProgressPercentage = (bytesSent * 100) / fileSize
-        fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond)
     }
 
     public func uploadDidFail(with error: Error) {
@@ -189,12 +193,13 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadDidCancel() {
         setState(EIOSFileUploaderState.cancelled)
         busyStateChangedAdvertisement(false)
-        fileUploadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 
     public func uploadDidFinish() {
         setState(EIOSFileUploaderState.complete)
+        uploadCompletedAdvertisement()
         busyStateChangedAdvertisement(false)
     }
 

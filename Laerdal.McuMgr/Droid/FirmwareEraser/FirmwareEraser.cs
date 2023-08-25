@@ -2,16 +2,15 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
-
 using Laerdal.Java.McuMgr.Wrapper.Android;
-
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {
@@ -19,7 +18,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
     public partial class FirmwareEraser : IFirmwareEraser
     {
         public FirmwareEraser(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
-        { 
+        {
         }
 
         static private INativeFirmwareEraserProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
@@ -60,7 +59,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _eraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
             
-            public IFirmwareEraserEventEmitters FirmwareEraser //keep this to conform to the interface
+            public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
                 get => _eraserCallbacksProxy?.FirmwareEraser;
                 set
@@ -102,7 +101,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             public override void LogMessageAdvertisement(string message, string category, string level)
             {
                 base.LogMessageAdvertisement(message, category, level);
-
+            
                 LogMessageAdvertisement(
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
                     message: message,
@@ -139,7 +138,12 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     return EFirmwareErasureState.Complete;
                 }
                 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                if (state == EAndroidFirmwareEraserState.Failed)
+                {
+                    return EFirmwareErasureState.Failed;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

@@ -2,6 +2,7 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
 using System;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Events
 {

@@ -4,14 +4,57 @@
 using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.DeviceResetter.Events;
-using Laerdal.McuMgr.DeviceResetter.Exceptions;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {
     /// <inheritdoc cref="IDeviceResetter"/>
-    public partial class DeviceResetter : IDeviceResetter
+    public partial class DeviceResetter : IDeviceResetter, IDeviceResetterEventEmittable
     {
+        
+        
+        //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeDeviceResetterProxy
+        internal class GenericNativeDeviceResetterCallbacksProxy : INativeDeviceResetterCallbacksProxy
+        {
+            public IDeviceResetterEventEmittable DeviceResetter { get; set; }
+
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level)
+                => DeviceResetter?.OnLogEmitted(new LogEmittedEventArgs(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: "device-resetter"
+                ));
+            
+            public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
+                => DeviceResetter?.OnStateChanged(new StateChangedEventArgs(
+                    newState: newState,
+                    oldState: oldState
+                ));
+
+            public void FatalErrorOccurredAdvertisement(string errorMessage)
+                => DeviceResetter?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+        }
+
+        private readonly INativeDeviceResetterProxy _nativeDeviceResetterProxy;
+
+        //this constructor is also needed by the testsuite    tests absolutely need to control the INativeDeviceResetterProxy
+        internal DeviceResetter(INativeDeviceResetterProxy nativeDeviceResetterProxy)
+        {
+            _nativeDeviceResetterProxy = nativeDeviceResetterProxy ?? throw new ArgumentNullException(nameof(nativeDeviceResetterProxy));
+            _nativeDeviceResetterProxy.DeviceResetter = this; //vital
+        }
+
+        public EDeviceResetterState State => _nativeDeviceResetterProxy?.State ?? EDeviceResetterState.None;
+        public string LastFatalErrorMessage => _nativeDeviceResetterProxy?.LastFatalErrorMessage;
+
+        public void Disconnect() => _nativeDeviceResetterProxy?.Disconnect();
+        public void BeginReset() => _nativeDeviceResetterProxy?.BeginReset();
+
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
@@ -61,9 +104,29 @@ namespace Laerdal.McuMgr.DeviceResetter
                     ? await taskCompletionSource.Task
                     : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
             }
-            catch (Exception ex) when (!(ex is DeviceResetterErroredOutException) && !(ex is TimeoutException)) //10 wops probably missing native lib symbols!
+            catch (TimeoutException ex)
             {
-                throw new DeviceResetterErroredOutException(ex.Message, ex);
+                (this as IDeviceResetterEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EDeviceResetterState.None, //better not use this.State here because the native call might fail
+                    newState: EDeviceResetterState.Failed
+                ));
+
+                throw new DeviceResetTimeoutException(timeoutInMs, ex);
+            }
+            catch (Exception ex) when (
+                !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                && !(ex is TimeoutException)
+                && !(ex is IDeviceResetterException)
+            )
+            {
+                (this as IDeviceResetterEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
+                    oldState: EDeviceResetterState.None,
+                    newState: EDeviceResetterState.Failed
+                ));
+
+                //OnFatalErrorOccurred();  //better not   it would be a bit confusing to have the error reported in two different ways
+                
+                throw new DeviceResetterInternalErrorException(ex);
             }
             finally
             {
@@ -75,7 +138,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             void ResetAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
             {
-                if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
+                if (ea.NewState != EDeviceResetterState.Complete)
                     return;
                 
                 taskCompletionSource.TrySetResult(true);
@@ -94,9 +157,8 @@ namespace Laerdal.McuMgr.DeviceResetter
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IDeviceResetterEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IDeviceResetterEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IDeviceResetterEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
     }
 }

@@ -36,6 +36,7 @@ public enum EAndroidFirmwareInstallationMode
      */
     TEST_AND_CONFIRM(2); // FirmwareUpgradeManager.Mode.TEST_AND_CONFIRM   don't use .ordinal() here as its unreliable
 
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
     EAndroidFirmwareInstallationMode(int value) {
