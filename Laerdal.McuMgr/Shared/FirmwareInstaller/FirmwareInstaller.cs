@@ -232,7 +232,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                             }
                         });
                         return;
-                    
+
                         //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
                         //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
                 }
@@ -240,7 +240,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
             {
-                if (string.IsNullOrWhiteSpace(ea.ErrorMessage)) //fw swap timeout error   todo  we should also take into account the state the installation is in
+                if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout)
                 {
                     taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutImageSwapTimeoutException());
                     return;
