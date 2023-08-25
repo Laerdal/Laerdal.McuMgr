@@ -282,7 +282,8 @@ public class AndroidFirmwareInstaller
 
     public void cancel()
     {
-        _manager.cancel();
+        setState(EAndroidFirmwareInstallationState.CANCELLING); //   order
+        _manager.cancel(); //                                        order
     }
 
     //to future maintainers    in the csharp bindings this generates a phony warning that does not make sense   something about the

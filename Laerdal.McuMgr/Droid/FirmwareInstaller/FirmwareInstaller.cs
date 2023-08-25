@@ -173,7 +173,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EFirmwareInstallationMode.TestOnly => EAndroidFirmwareInstallationMode.TestOnly, //0
                 EFirmwareInstallationMode.ConfirmOnly => EAndroidFirmwareInstallationMode.ConfirmOnly,
                 EFirmwareInstallationMode.TestAndConfirm => EAndroidFirmwareInstallationMode.TestAndConfirm,
-                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown enum value")
 
                 //0 we have to separate enums
                 //
@@ -208,7 +208,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     return EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
 
                 //0 we have to separate enums
                 //
@@ -262,6 +262,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 {
                     return EFirmwareInstallationState.Complete;
                 }
+                
+                if (state == EAndroidFirmwareInstallationState.Cancelling)
+                {
+                    return EFirmwareInstallationState.Cancelling;
+                }
 
                 if (state == EAndroidFirmwareInstallationState.Cancelled)
                 {
@@ -273,7 +278,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     return EFirmwareInstallationState.Error;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

@@ -157,18 +157,18 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EIOSFirmwareInstallationState.Uploading => EFirmwareInstallationState.Uploading,
                 EIOSFirmwareInstallationState.Resetting => EFirmwareInstallationState.Resetting,
                 EIOSFirmwareInstallationState.Cancelled => EFirmwareInstallationState.Cancelled,
+                EIOSFirmwareInstallationState.Cancelling => EFirmwareInstallationState.Cancelling,
                 EIOSFirmwareInstallationState.Validating => EFirmwareInstallationState.Validating,
                 EIOSFirmwareInstallationState.Confirming => EFirmwareInstallationState.Confirming,
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(state), actualValue: state, message: "Unknown enum value")
             };
-            
-            
+
             static private EIOSFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
             {
                 EFirmwareInstallationMode.TestOnly => EIOSFirmwareInstallationMode.TestOnly, //0
                 EFirmwareInstallationMode.ConfirmOnly => EIOSFirmwareInstallationMode.ConfirmOnly,
                 EFirmwareInstallationMode.TestAndConfirm => EIOSFirmwareInstallationMode.TestAndConfirm,
-                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown enum value")
 
                 //0 we have to separate enums
                 //
@@ -183,7 +183,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EIOSFirmwareInstallationVerdict.FailedInvalidSettings => EFirmwareInstallationVerdict.FailedInvalidSettings,
                 EIOSFirmwareInstallationVerdict.FailedInvalidDataFile => EFirmwareInstallationVerdict.FailedInvalidDataFile,
                 EIOSFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress,
-                _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value")
 
                 //0 we have to separate enums
                 //

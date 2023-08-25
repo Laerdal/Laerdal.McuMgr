@@ -144,7 +144,9 @@ public class IOSFirmwareInstaller: NSObject {
 
     @objc
     public func cancel() {
-        _manager.cancel()
+        setState(.cancelling) //order
+
+        _manager.cancel() //order
     }
 
     @objc

@@ -11,7 +11,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums
         Confirming = 6,
         Resetting = 7,
         Complete = 8,
-        Cancelled = 9,
-        Error = 10
+        Cancelling = 9,
+        Cancelled = 10,
+        Error = 11
     }
 }
