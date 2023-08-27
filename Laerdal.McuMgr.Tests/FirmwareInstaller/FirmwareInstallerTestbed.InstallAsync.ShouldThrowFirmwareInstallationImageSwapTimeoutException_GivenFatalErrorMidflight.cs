@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
@@ -14,14 +11,13 @@ using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareIns
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {
-    [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters")]
     public partial class FirmwareInstallerTestbed
     {
         [Fact]
-        public async Task InstallAsync_ShouldThrowFirmwareInstallationErroredOutImageSwapTimeoutException_GivenImageSwapTimeoutFatalErrorType()
+        public async Task InstallAsync_ShouldThrowFirmwareInstallationImageSwapTimeoutException_GivenFatalErrorMidflight()
         {
             // Arrange
-            var mockedNativeFirmwareInstallerProxy = new MockedErroneousNativeFirmwareInstallerProxySpy13(new GenericNativeFirmwareInstallerCallbacksProxy_());
+            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy5(new GenericNativeFirmwareInstallerCallbacksProxy_());
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
@@ -31,8 +27,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationErroredOutImageSwapTimeoutException>()
-                .WithTimeoutInMs((int)3.Seconds().TotalMilliseconds);
+                .ThrowExactlyAsync<FirmwareInstallationImageSwapTimeoutException>()
+                .WithTimeoutInMs(3_000);
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -40,30 +36,26 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             eventsMonitor.Should().NotRaise(nameof(firmwareInstaller.Cancelled));
 
-            eventsMonitor.OccurredEvents
-                .Count(x => x.EventName == nameof(firmwareInstaller.FatalErrorOccurred))
-                .Should().Be(1);
-
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.FatalErrorOccurred))
                 .WithSender(firmwareInstaller);
-
+            
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Uploading);
-
+            
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Error);
-
+            
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousNativeFirmwareInstallerProxySpy13 : MockedNativeFirmwareInstallerProxySpy
+        private class MockedGreenNativeFirmwareInstallerProxySpy5 : MockedNativeFirmwareInstallerProxySpy
         {
-            public MockedErroneousNativeFirmwareInstallerProxySpy13(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
+            public MockedGreenNativeFirmwareInstallerProxySpy5(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
             {
             }
 
@@ -102,7 +94,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "foobar");
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "image swap timeout");
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 

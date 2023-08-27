@@ -112,11 +112,11 @@
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.FirmwareInstallerConstructor.ShouldThrowArgumentNullException_GivenNullNativeFirmwareInstaller.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldCompleteSuccessfully_GivenGreenNativeFirmwareInstaller.cs" />
-        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight.cs" />
-        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage.cs" />
-        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight.cs" />
-        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowUploadInternalErrorException_GivenErroneousNativeFirmwareInstaller.cs" />
-        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowUploadTimeoutException_GivenTooSmallTimeout.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllFirmwareInstallationAttemptsFailedException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationImageSwapTimeoutException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowInstallationCancelledException_GivenCancellationRequestMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationInternalErrorException_GivenErroneousNativeFirmwareInstaller.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationTimeoutException_GivenTooSmallTimeout.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

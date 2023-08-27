@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.Common;
@@ -12,11 +11,10 @@ using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareIns
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {
-    [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters")]
     public partial class FirmwareInstallerTestbed
     {
         [Fact]
-        public async Task InstallAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight()
+        public async Task InstallAsync_ShouldThrowAllFirmwareInstallationAttemptsFailedException_GivenFatalErrorMidflight()
         {
             // Arrange
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy4(new GenericNativeFirmwareInstallerCallbacksProxy_());
@@ -29,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationErroredOutException>() // todo  AllInstallationAttemptsFailedException
+                .ThrowExactlyAsync<FirmwareInstallationErroredOutException>() // todo  AllFirmwareInstallationAttemptsFailedException
                 .WithMessage("*fatal error occurred*")
                 .WithTimeoutInMs(3_000);
 
@@ -89,11 +87,16 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 {
                     await Task.Delay(100);
 
-                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Uploading);
-
-                    await Task.Delay(2_000);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);
+                    await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.Generic, "fatal error occurred");
+                    StateChangedAdvertisement(EFirmwareInstallationState.Validating, EFirmwareInstallationState.Uploading);
+                    await Task.Delay(100);
+                    
+                    StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
+                    await Task.Delay(100);
+                    
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.Generic, "fatal error occurred");
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 

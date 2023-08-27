@@ -242,7 +242,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             {
                 if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout)
                 {
-                    taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutImageSwapTimeoutException());
+                    taskCompletionSource.TrySetException(new FirmwareInstallationImageSwapTimeoutException());
                     return;
                 }
 
