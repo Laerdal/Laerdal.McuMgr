@@ -112,8 +112,9 @@
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.FirmwareInstallerConstructor.ShouldThrowArgumentNullException_GivenNullNativeFirmwareInstaller.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldCompleteSuccessfully_GivenGreenNativeFirmwareInstaller.cs" />
-        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllFirmwareInstallationAttemptsFailedException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllFirmwareInstallationAttemptsFailedException_GivenGenericFatalErrorMidflight.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationImageSwapTimeoutException_GivenFatalErrorMidflight.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowAllFirmwareInstallationAttemptsFailedException_GivenFirmwareUploadFatalErrorMidflight.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowInstallationCancelledException_GivenCancellationRequestMidflight.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationInternalErrorException_GivenErroneousNativeFirmwareInstaller.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationTimeoutException_GivenTooSmallTimeout.cs" />

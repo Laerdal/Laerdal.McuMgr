@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -14,6 +15,7 @@ using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareIns
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {
+    [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters")]
     public partial class FirmwareInstallerTestbed
     {
         [Theory]
@@ -34,7 +36,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 firmwareInstaller.Cancel();
             });
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxRetriesCount: 0));
 
             // Assert
             await work.Should()

@@ -14,10 +14,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
     public partial class FirmwareInstallerTestbed
     {
         [Fact]
-        public async Task InstallAsync_ShouldThrowFirmwareInstallationImageSwapTimeoutException_GivenFatalErrorMidflight()
+        public async Task InstallAsync_ShouldThrowAllFirmwareInstallationAttemptsFailedException_GivenGenericFatalErrorMidflight()
         {
             // Arrange
-            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy5(new GenericNativeFirmwareInstallerCallbacksProxy_());
+            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy4(new GenericNativeFirmwareInstallerCallbacksProxy_());
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
@@ -27,7 +27,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationConfirmationStageTimeoutException>()
+                .ThrowExactlyAsync<FirmwareInstallationErroredOutException>() // todo  AllFirmwareInstallationAttemptsFailedException
+                .WithMessage("*fatal error occurred*")
                 .WithTimeoutInMs(3_000);
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
@@ -38,7 +39,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.FatalErrorOccurred))
-                .WithSender(firmwareInstaller);
+                .WithSender(firmwareInstaller)
+                .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred");
             
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
@@ -53,9 +55,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFirmwareInstallerProxySpy5 : MockedNativeFirmwareInstallerProxySpy
+        private class MockedGreenNativeFirmwareInstallerProxySpy4 : MockedNativeFirmwareInstallerProxySpy
         {
-            public MockedGreenNativeFirmwareInstallerProxySpy5(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
+            public MockedGreenNativeFirmwareInstallerProxySpy4(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
             {
             }
 
@@ -94,7 +96,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "image swap timeout");
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.Generic, "fatal error occurred");
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 

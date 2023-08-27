@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts
 {
@@ -26,7 +27,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// </summary>
         /// <param name="remoteFilePath">The remote file to download.</param>
         /// <param name="timeoutForDownloadInMs">The amount of time to wait for the operation to complete before bailing out.</param>
-        /// <param name="maxRetriesCount">The maximum amount of tries before giving up.</param>
+        /// <param name="maxRetriesCount">The maximum amount of retries before bailing out with <see cref="AllDownloadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <returns>The bytes of the remote file that got fetched over.</returns>

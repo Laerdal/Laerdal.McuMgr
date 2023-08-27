@@ -137,116 +137,140 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int timeoutInMs = -1,
+            int maxRetriesCount = 10,
+            int sleepTimeBetweenRetriesInMs = 100,
             int gracefulCancellationTimeoutInMs = 2_500
         )
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
-            var isCancellationRequested = false;
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
 
-            try
+            var isCancellationRequested = false;
+            for (var retry = 0; !isCancellationRequested;)
             {
-                Cancelled += FirmwareInstallationAsyncOnCancelled;
-                StateChanged += FirmwareInstallationAsyncOnStateChanged;
-                FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
-
-                var verdict = BeginInstallation( //00 dont use task.run here for now
-                    data: data,
-                    mode: mode,
-                    pipelineDepth: pipelineDepth,
-                    byteAlignment: byteAlignment,
-                    eraseSettings: eraseSettings,
-                    windowCapacity: windowCapacity,
-                    memoryAlignment: memoryAlignment,
-                    estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
-                );
-                if (verdict != EFirmwareInstallationVerdict.Success)
-                    throw new ArgumentException(verdict.ToString());
-
-                _ = timeoutInMs <= 0
-                    ? await taskCompletionSource.Task
-                    : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
-            }
-            catch (TimeoutException ex)
-            {
-                OnStateChanged(new StateChangedEventArgs( //for consistency
-                    oldState: EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
-                    newState: EFirmwareInstallationState.Error
-                ));
-
-                throw new FirmwareInstallationTimeoutException(timeoutInMs, ex);
-            }
-            catch (Exception ex) when (
-                !(ex is ArgumentException) //10 wops probably missing native lib symbols!
-                && !(ex is TimeoutException)
-                && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
-            )
-            {
-                OnStateChanged(new StateChangedEventArgs( //for consistency
-                    oldState: EFirmwareInstallationState.None,
-                    newState: EFirmwareInstallationState.Error
-                ));
-
-                throw new FirmwareInstallationInternalErrorException(ex);
-            }
-            finally
-            {
-                Cancelled -= FirmwareInstallationAsyncOnCancelled;
-                StateChanged -= FirmwareInstallationAsyncOnStateChanged;
-                FatalErrorOccurred -= FirmwareInstallationAsyncOnFatalErrorOccurred;
-            }
-
-            return;
-
-            void FirmwareInstallationAsyncOnCancelled(object sender, CancelledEventArgs ea)
-            {
-                taskCompletionSource.TrySetException(new FirmwareInstallationCancelledException());
-            }
-
-            void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
-            {
-                switch (ea.NewState)
+                var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
+                try
                 {
-                    case EFirmwareInstallationState.Complete:
-                        taskCompletionSource.TrySetResult(true);
-                        return;
+                    Cancelled += FirmwareInstallationAsyncOnCancelled;
+                    StateChanged += FirmwareInstallationAsyncOnStateChanged;
+                    FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
 
-                    case EFirmwareInstallationState.Cancelling:
-                        if (isCancellationRequested)
+                    var verdict = BeginInstallation( //00 dont use task.run here for now
+                        data: data,
+                        mode: mode,
+                        pipelineDepth: pipelineDepth,
+                        byteAlignment: byteAlignment,
+                        eraseSettings: eraseSettings,
+                        windowCapacity: windowCapacity,
+                        memoryAlignment: memoryAlignment,
+                        estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
+                    );
+                    if (verdict != EFirmwareInstallationVerdict.Success)
+                        throw new ArgumentException(verdict.ToString());
+
+                    _ = timeoutInMs <= 0
+                        ? await taskCompletionSource.Task
+                        : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
+                }
+                catch (TimeoutException ex)
+                {
+                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
+                        newState: EFirmwareInstallationState.Error
+                    ));
+
+                    throw new FirmwareInstallationTimeoutException(timeoutInMs, ex);
+                }
+                catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
+                {
+                    if (++retry > maxRetriesCount) //order
+                        throw new AllFirmwareInstallationAttemptsFailedException(maxRetriesCount, innerException: ex);
+
+                    if (sleepTimeBetweenRetriesInMs > 0) //order
+                    {
+                        await Task.Delay(sleepTimeBetweenRetriesInMs);
+                    }
+
+                    continue;
+                }
+                catch (Exception ex) when (
+                    !(ex is ArgumentException) //10 wops probably missing native lib symbols!
+                    && !(ex is TimeoutException)
+                    && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
+                )
+                {
+                    OnStateChanged(new StateChangedEventArgs( //for consistency
+                        oldState: EFirmwareInstallationState.None,
+                        newState: EFirmwareInstallationState.Error
+                    ));
+
+                    throw new FirmwareInstallationInternalErrorException(ex);
+                }
+                finally
+                {
+                    Cancelled -= FirmwareInstallationAsyncOnCancelled;
+                    StateChanged -= FirmwareInstallationAsyncOnStateChanged;
+                    FatalErrorOccurred -= FirmwareInstallationAsyncOnFatalErrorOccurred;
+                }
+
+                return;
+
+                void FirmwareInstallationAsyncOnCancelled(object sender, CancelledEventArgs ea)
+                {
+                    taskCompletionSource.TrySetException(new FirmwareInstallationCancelledException());
+                }
+
+                void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+                {
+                    switch (ea.NewState)
+                    {
+                        case EFirmwareInstallationState.Complete:
+                            taskCompletionSource.TrySetResult(true);
                             return;
-                        
-                        isCancellationRequested = true;
 
-                        Task.Run(async () =>
-                        {
-                            try
+                        case EFirmwareInstallationState.Cancelling:
+                            if (isCancellationRequested)
+                                return;
+
+                            isCancellationRequested = true;
+
+                            Task.Run(async () =>
                             {
-                                await Task.Delay(gracefulCancellationTimeoutInMs);
-                                OnCancelled(new CancelledEventArgs()); //00
-                            }
-                            catch // (Exception ex)
-                            {
-                                // ignored
-                            }
-                        });
-                        return;
+                                try
+                                {
+                                    await Task.Delay(gracefulCancellationTimeoutInMs);
+                                    OnCancelled(new CancelledEventArgs()); //00
+                                }
+                                catch // (Exception ex)
+                                {
+                                    // ignored
+                                }
+                            });
+                            return;
 
                         //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
                         //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
+                    }
                 }
-            }
 
-            void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
-            {
-                if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout)
+                void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    taskCompletionSource.TrySetException(new FirmwareInstallationImageSwapTimeoutException());
-                    return;
-                }
+                    //todo   make the native impls set the fatal-error-type to FirmwareUploadingErroredOut
+                    if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut || ea.State == EFirmwareInstallationState.Uploading)
+                    {
+                        taskCompletionSource.TrySetException(new FirmwareInstallationUploadingStageErroredOutException());
+                        return;
+                    }
 
-                taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException(ea.ErrorMessage));
+                    if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout) //can happen during the fw-confirmation phase which is the last phase
+                    {
+                        taskCompletionSource.TrySetException(new FirmwareInstallationConfirmationStageTimeoutException());
+                        return;
+                    }
+
+                    taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException($"{ea.ErrorMessage} (state={ea.State})")); //generic errors fall through here
+                }
             }
 
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
