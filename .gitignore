@@ -361,13 +361,15 @@ Laerdal.McuMgr.Source/Android_Maven
 **/iOS/Frameworks/**
 **/iOS/ObjcBinding/**
 
-
+# Carthage
 Carthage
 
 # Cartfile
 # Cartfile.resolved
 
 Package.resolved
+
+# Misc
 
 .DS_Store
 .build
@@ -394,3 +396,8 @@ Package.resolved
 local.properties
 
 version.txt
+
+# Test results
+
+*.Tests.xml
+*.Tests.htm*
