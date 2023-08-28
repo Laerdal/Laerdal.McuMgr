@@ -287,11 +287,11 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
         )
 
         var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
-        if (state == .confirm && error.localizedDescription.isEmpty) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
-            fatalErrorType = .firmwareImageSwapTimeout
-
-        } else if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
+        if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
             fatalErrorType = .firmwareUploadingErroredOut
+
+        } else if (state == .confirm && error.localizedDescription.isEmpty) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
+            fatalErrorType = .firmwareImageSwapTimeout
         }
 
         emitFatalError(fatalErrorType, error.localizedDescription)
