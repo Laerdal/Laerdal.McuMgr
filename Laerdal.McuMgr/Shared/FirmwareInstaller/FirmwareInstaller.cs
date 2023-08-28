@@ -256,7 +256,6 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                 void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    //todo   make the native impls set the fatal-error-type to FirmwareUploadingErroredOut
                     if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut || ea.State == EFirmwareInstallationState.Uploading)
                     {
                         taskCompletionSource.TrySetException(new FirmwareInstallationUploadingStageErroredOutException());

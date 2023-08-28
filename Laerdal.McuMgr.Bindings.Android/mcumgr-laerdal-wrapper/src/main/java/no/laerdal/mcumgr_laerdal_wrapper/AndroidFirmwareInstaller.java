@@ -309,6 +309,9 @@ public class AndroidFirmwareInstaller
 
             switch (newState)
             {
+                case VALIDATE:
+                    setState(EAndroidFirmwareInstallationState.VALIDATING);
+                    break;
                 case UPLOAD:
                     //Timber.i("Uploading firmware..."); //todo    logging
                     _bytesSentSinceUploadStated = NOT_STARTED;
@@ -318,12 +321,12 @@ public class AndroidFirmwareInstaller
                     _handler.removeCallbacks(_graphUpdater);
                     setState(EAndroidFirmwareInstallationState.TESTING);
                     break;
+                case RESET:
+                    setState(EAndroidFirmwareInstallationState.RESETTING);
+                    break;
                 case CONFIRM:
                     _handler.removeCallbacks(_graphUpdater);
                     setState(EAndroidFirmwareInstallationState.CONFIRMING);
-                    break;
-                case RESET:
-                    setState(EAndroidFirmwareInstallationState.RESETTING);
                     break;
             }
         }
