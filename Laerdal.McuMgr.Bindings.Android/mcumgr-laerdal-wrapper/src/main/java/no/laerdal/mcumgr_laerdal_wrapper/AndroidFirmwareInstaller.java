@@ -348,13 +348,13 @@ public class AndroidFirmwareInstaller
             _handler.removeCallbacks(_graphUpdater);
 
             EAndroidFirmwareInstallerFatalErrorType fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.GENERIC;
-            if (state == State.CONFIRM && ex instanceof McuMgrTimeoutException)
-            {
-                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
-            }
-            else if (state == State.UPLOAD)
+            if (state == State.UPLOAD)
             {
                 fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_UPLOADING_ERRORED_OUT;
+            }
+            else if (state == State.CONFIRM && ex instanceof McuMgrTimeoutException)
+            {
+                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
             }
 
             emitFatalError(fatalErrorType, ex.getMessage());
