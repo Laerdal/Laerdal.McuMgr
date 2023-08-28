@@ -150,7 +150,7 @@
             <TestAssemblies Include="**\$(OutputPath)\*.Tests.dll" />
         </ItemGroup>
         
-        <Exec Command=" $(XunitConsole48Path) @(TestAssemblies) " />
+        <Exec Command=" $(XunitConsole48Path)   @(TestAssemblies)   -xml &quot;$(AssemblyName).xml&quot;   -html &quot;$(AssemblyName).html&quot; " />
     </Target>
 
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
