@@ -2,9 +2,9 @@
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions
 {
-    public class FirmwareInstallationErroredOutImageSwapTimeoutException : FirmwareInstallationErroredOutException, IFirmwareInstallationException
+    public class FirmwareInstallationConfirmationStageTimeoutException : FirmwareInstallationErroredOutException, IFirmwareInstallationException
     {
-        public FirmwareInstallationErroredOutImageSwapTimeoutException()
+        public FirmwareInstallationConfirmationStageTimeoutException()
             : base("Device didn't confirm the new firmware within the given timeframe")
         {
         }

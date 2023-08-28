@@ -6,4 +6,5 @@ public enum EIOSFirmwareInstallerFatalErrorType : Int //this must mirror the enu
         case invalidFirmware = 2
         case deploymentFailed = 3
         case firmwareImageSwapTimeout = 4
+        case firmwareUploadingErroredOut = 5
 }

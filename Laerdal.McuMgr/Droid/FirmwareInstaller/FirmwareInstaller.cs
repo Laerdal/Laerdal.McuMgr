@@ -245,6 +245,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     return EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout;
                 }
                 
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut)
+                {
+                    return EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut;
+                }
+                
                 throw new ArgumentOutOfRangeException(nameof(fatalErrorType), fatalErrorType, "Unknown enum value");
             }
 

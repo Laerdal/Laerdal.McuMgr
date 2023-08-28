@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
@@ -15,42 +14,48 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
     public partial class FirmwareInstallerTestbed
     {
         [Fact]
-        public async Task InstallAsync_ShouldThrowFirmwareInstallationTimeoutException_GivenTooSmallTimeout()
+        public async Task InstallAsync_ShouldThrowFirmwareInstallationImageSwapTimeoutException_GivenFatalErrorMidflight()
         {
             // Arrange
-            var mockedNativeFirmwareInstallerProxy = new MockedGreenButSlowNativeFirmwareInstallerProxySpy(new GenericNativeFirmwareInstallerCallbacksProxy_());
+            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy5(new GenericNativeFirmwareInstallerCallbacksProxy_());
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }, timeoutInMs: 100));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(data: new byte[] { 1, 2, 3 }, maxRetriesCount: 0));
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationTimeoutException>()
-                .WithTimeoutInMs((int)2.Seconds().TotalMilliseconds);
+                .ThrowExactlyAsync<FirmwareInstallationConfirmationStageTimeoutException>()
+                .WithTimeoutInMs(3_000);
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
 
+            eventsMonitor.Should().NotRaise(nameof(firmwareInstaller.Cancelled));
+
+            eventsMonitor
+                .Should().Raise(nameof(firmwareInstaller.FatalErrorOccurred))
+                .WithSender(firmwareInstaller);
+            
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Uploading);
-
+            
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Error);
-
+            
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenButSlowNativeFirmwareInstallerProxySpy : MockedNativeFirmwareInstallerProxySpy
+        private class MockedGreenNativeFirmwareInstallerProxySpy5 : MockedNativeFirmwareInstallerProxySpy
         {
-            public MockedGreenButSlowNativeFirmwareInstallerProxySpy(INativeFirmwareInstallerCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
+            public MockedGreenNativeFirmwareInstallerProxySpy5(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy) : base(firmwareInstallerCallbacksProxy)
             {
             }
 
@@ -78,16 +83,24 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(async () => //00 vital
                 {
-                    await Task.Delay(10);
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Uploading);
+                    await Task.Delay(100);
 
-                    await Task.Delay(1_000);
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Complete);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);
+                    await Task.Delay(100);
+                    
+                    StateChangedAdvertisement(EFirmwareInstallationState.Validating, EFirmwareInstallationState.Uploading);
+                    await Task.Delay(100);
+                    
+                    StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
+                    await Task.Delay(100);
+                    
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "image swap timeout");
+                    StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error);
                 });
 
                 return verdict;
 
-                //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native resetter
+                //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }
         }
     }

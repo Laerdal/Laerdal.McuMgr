@@ -263,10 +263,10 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             setState(.uploading);
         case .test:
             setState(.testing);
-        case .confirm:
-            setState(.confirming);
         case .reset:
             setState(.resetting);
+        case .confirm:
+            setState(.confirming);
         case .success:
             setState(.complete);
         default:
@@ -286,10 +286,13 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
                 iOSMcuManagerLibrary.McuMgrLogLevel.debug.name
         )
 
-        //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
-        let fatalErrorType = state == .confirm && error.localizedDescription.isEmpty
-                ? EIOSFirmwareInstallerFatalErrorType.firmwareImageSwapTimeout
-                : EIOSFirmwareInstallerFatalErrorType.generic
+        var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
+        if (state == .confirm && error.localizedDescription.isEmpty) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
+            fatalErrorType = .firmwareImageSwapTimeout
+
+        } else if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
+            fatalErrorType = .firmwareUploadingErroredOut
+        }
 
         emitFatalError(fatalErrorType, error.localizedDescription)
         busyStateChangedAdvertisement(false)

@@ -309,6 +309,9 @@ public class AndroidFirmwareInstaller
 
             switch (newState)
             {
+                case VALIDATE:
+                    setState(EAndroidFirmwareInstallationState.VALIDATING);
+                    break;
                 case UPLOAD:
                     //Timber.i("Uploading firmware..."); //todo    logging
                     _bytesSentSinceUploadStated = NOT_STARTED;
@@ -318,12 +321,12 @@ public class AndroidFirmwareInstaller
                     _handler.removeCallbacks(_graphUpdater);
                     setState(EAndroidFirmwareInstallationState.TESTING);
                     break;
+                case RESET:
+                    setState(EAndroidFirmwareInstallationState.RESETTING);
+                    break;
                 case CONFIRM:
                     _handler.removeCallbacks(_graphUpdater);
                     setState(EAndroidFirmwareInstallationState.CONFIRMING);
-                    break;
-                case RESET:
-                    setState(EAndroidFirmwareInstallationState.RESETTING);
                     break;
             }
         }
@@ -344,9 +347,15 @@ public class AndroidFirmwareInstaller
         {
             _handler.removeCallbacks(_graphUpdater);
 
-            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = state == State.CONFIRM && ex instanceof McuMgrTimeoutException
-                                                                     ? EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT
-                                                                     : EAndroidFirmwareInstallerFatalErrorType.GENERIC;
+            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.GENERIC;
+            if (state == State.CONFIRM && ex instanceof McuMgrTimeoutException)
+            {
+                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
+            }
+            else if (state == State.UPLOAD)
+            {
+                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_UPLOADING_ERRORED_OUT;
+            }
 
             emitFatalError(fatalErrorType, ex.getMessage());
             setLoggingEnabled(true);

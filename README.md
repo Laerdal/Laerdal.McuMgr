@@ -125,7 +125,7 @@ public async Task InstallFirmwareAsync()
         );
         return;
     }
-    catch (FirmwareInstallationErroredOutImageSwapTimeoutException) //order
+    catch (FirmwareInstallationConfirmationStageTimeoutException) //order
     {
         App.DisplayAlert(
             title: "Firmware-Installation Failed",

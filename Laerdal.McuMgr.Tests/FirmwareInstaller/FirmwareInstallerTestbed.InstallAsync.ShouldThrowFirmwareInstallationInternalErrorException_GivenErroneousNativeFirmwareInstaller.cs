@@ -21,7 +21,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }, maxRetriesCount: 0));
 
             // Assert
             (
