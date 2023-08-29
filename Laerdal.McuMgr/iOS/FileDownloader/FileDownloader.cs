@@ -5,6 +5,7 @@ using System;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;

@@ -1,11 +1,11 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
+using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Events
 {
-    public sealed class BusyStateChangedEventArgs : EventArgs
+    public readonly struct BusyStateChangedEventArgs : IMcuMgrEventArgs
     {
         public bool BusyNotIdle { get; }
 

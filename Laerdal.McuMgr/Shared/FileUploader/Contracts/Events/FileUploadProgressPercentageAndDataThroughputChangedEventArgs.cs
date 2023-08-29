@@ -1,11 +1,11 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
+using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public sealed class FileUploadProgressPercentageAndDataThroughputChangedEventArgs : EventArgs
+    public readonly struct FileUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs
     {
         public int ProgressPercentage { get; }
         public float AverageThroughput { get; } //kbs / sec

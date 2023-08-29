@@ -1,11 +1,11 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
+using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
-    public sealed class CancelledEventArgs : EventArgs
+    public readonly struct CancelledEventArgs : IMcuMgrEventArgs
     {
     }
 }

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
@@ -46,10 +46,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             eventsMonitor.OccurredEvents
                 .Count(
                     x => x.EventName == nameof(firmwareInstaller.StateChanged)
-                         && x.Parameters?.OfType<StateChangedEventArgs>().FirstOrDefault()?.NewState == EFirmwareInstallationState.Uploading
+                         && x.Parameters?.OfType<StateChangedEventArgs>().FirstOrDefault().NewState == EFirmwareInstallationState.Uploading
                 )
                 .Should().Be(2);
-            
+
             eventsMonitor.OccurredEvents
                 .Count(x => x.EventName == nameof(firmwareInstaller.FatalErrorOccurred))
                 .Should().Be(2);

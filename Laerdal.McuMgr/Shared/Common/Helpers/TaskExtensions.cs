@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Laerdal.McuMgr.Common
+namespace Laerdal.McuMgr.Common.Helpers
 {
     static internal class TaskExtensions
     {

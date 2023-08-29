@@ -1,5 +1,5 @@
 using System;
-using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts

@@ -1,11 +1,11 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
+using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts.Events
 {
-    public sealed class FatalErrorOccurredEventArgs : EventArgs
+    public readonly struct FatalErrorOccurredEventArgs : IMcuMgrEventArgs
     {
         public string ErrorMessage { get; }
         

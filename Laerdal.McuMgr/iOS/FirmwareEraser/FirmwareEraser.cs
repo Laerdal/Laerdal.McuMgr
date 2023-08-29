@@ -4,6 +4,7 @@
 using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;

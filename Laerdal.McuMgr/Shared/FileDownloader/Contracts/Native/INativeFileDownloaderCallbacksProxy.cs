@@ -1,4 +1,4 @@
-﻿using Laerdal.McuMgr.Common;
+﻿using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Native

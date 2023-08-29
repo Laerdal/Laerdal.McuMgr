@@ -1,4 +1,4 @@
-namespace Laerdal.McuMgr.Common
+namespace Laerdal.McuMgr.Common.Enums
 {
     public enum ELogLevel
     {

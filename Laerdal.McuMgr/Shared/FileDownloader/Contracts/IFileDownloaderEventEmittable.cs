@@ -1,4 +1,4 @@
-using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts

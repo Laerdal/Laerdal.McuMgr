@@ -3,7 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
