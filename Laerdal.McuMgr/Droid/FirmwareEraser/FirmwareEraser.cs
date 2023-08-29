@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
 
         internal sealed class AndroidNativeFirmwareEraserAdapterProxy : AndroidFirmwareEraser, INativeFirmwareEraserProxy
         {
-            private readonly INativeFirmwareEraserCallbacksProxy _eraserCallbacksProxy;
+            private readonly INativeFirmwareEraserCallbacksProxy _nativeEraserCallbacksProxy;
 
             // ReSharper disable once UnusedMember.Local
             private AndroidNativeFirmwareEraserAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -57,19 +57,13 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 if (androidContext == null)
                     throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
                 
-                _eraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
+                _nativeEraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
             
             public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
-                get => _eraserCallbacksProxy?.FirmwareEraser;
-                set
-                {
-                    if (_eraserCallbacksProxy == null)
-                        return;
-
-                    _eraserCallbacksProxy.FirmwareEraser = value;
-                }
+                get => _nativeEraserCallbacksProxy!.FirmwareEraser;
+                set => _nativeEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)
@@ -82,21 +76,21 @@ namespace Laerdal.McuMgr.FirmwareEraser
             //keep this override   its needed to conform to the interface
             public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
             {
-                _eraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState);
+                _nativeEraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
             
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
                 base.BusyStateChangedAdvertisement(busyNotIdle); //just in case
 
-                _eraserCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle);
+                _nativeEraserCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
                 
-                _eraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
+                _nativeEraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level)
@@ -113,7 +107,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             //keep this override   its needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
             {
-                _eraserCallbacksProxy.LogMessageAdvertisement(message, category, level);
+                _nativeEraserCallbacksProxy.LogMessageAdvertisement(message, category, level);
             }
 
             // ReSharper disable once MemberCanBePrivate.Global

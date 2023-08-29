@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.DeviceResetter
         // ReSharper disable once InconsistentNaming
         private sealed class IOSNativeDeviceResetterProxy : IOSListenerForDeviceResetter, INativeDeviceResetterProxy
         {
-            private readonly IOSDeviceResetter _nativeIosDeviceResetter;
+            private readonly IOSDeviceResetter _nativeDeviceResetter;
             private readonly INativeDeviceResetterCallbacksProxy _nativeResetterCallbacksProxy;
 
             internal IOSNativeDeviceResetterProxy(CBPeripheral bluetoothDevice, INativeDeviceResetterCallbacksProxy nativeResetterCallbacksProxy)
@@ -40,35 +40,29 @@ namespace Laerdal.McuMgr.DeviceResetter
                 bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
                 nativeResetterCallbacksProxy = nativeResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeResetterCallbacksProxy));
 
-                _nativeIosDeviceResetter = new IOSDeviceResetter(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeDeviceResetter = new IOSDeviceResetter(listener: this, cbPeripheral: bluetoothDevice);
                 _nativeResetterCallbacksProxy = nativeResetterCallbacksProxy; //composition-over-inheritance
             }
 
             #region commands
             
-            public EDeviceResetterState State => TranslateEIOSDeviceResetterState(_nativeIosDeviceResetter?.State ?? EIOSDeviceResetterState.None);
-            public string LastFatalErrorMessage => _nativeIosDeviceResetter?.LastFatalErrorMessage;
+            public EDeviceResetterState State => TranslateEIOSDeviceResetterState(_nativeDeviceResetter?.State ?? EIOSDeviceResetterState.None);
+            public string LastFatalErrorMessage => _nativeDeviceResetter?.LastFatalErrorMessage;
 
-            public void Disconnect() => _nativeIosDeviceResetter?.Disconnect();
-            public void BeginReset() => _nativeIosDeviceResetter?.BeginReset();
-
-            public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
-            {
-                get => _nativeResetterCallbacksProxy?.DeviceResetter;
-                set
-                {
-                    if (_nativeResetterCallbacksProxy == null)
-                        return;
-
-                    _nativeResetterCallbacksProxy.DeviceResetter = value;
-                }
-            }
+            public void Disconnect() => _nativeDeviceResetter?.Disconnect();
+            public void BeginReset() => _nativeDeviceResetter?.BeginReset();
             
             #endregion
 
 
 
             #region listener callbacks -> event emitters
+
+            public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
+            {
+                get => _nativeResetterCallbacksProxy!.DeviceResetter;
+                set => _nativeResetterCallbacksProxy!.DeviceResetter = value;
+            }
             
             public override void LogMessageAdvertisement(string message, string category, string level)
                 => LogMessageAdvertisement(
@@ -102,7 +96,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             #endregion listener events
 
             // ReSharper disable once InconsistentNaming
-            static public EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch
+            static private EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch
             {
                 EIOSDeviceResetterState.None => EDeviceResetterState.None,
                 EIOSDeviceResetterState.Idle => EDeviceResetterState.Idle,

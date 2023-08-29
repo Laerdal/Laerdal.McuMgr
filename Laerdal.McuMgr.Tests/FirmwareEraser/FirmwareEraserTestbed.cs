@@ -19,14 +19,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
 
             public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
-                get => _eraserCallbacksProxy?.FirmwareEraser;
-                set
-                {
-                    if (_eraserCallbacksProxy == null)
-                        return;
-
-                    _eraserCallbacksProxy.FirmwareEraser = value;
-                }
+                get => _eraserCallbacksProxy!.FirmwareEraser;
+                set => _eraserCallbacksProxy!.FirmwareEraser = value;
             }
 
             protected MockedNativeFirmwareEraserProxySpy(INativeFirmwareEraserCallbacksProxy eraserCallbacksProxy)

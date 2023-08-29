@@ -118,7 +118,7 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
-        _listener.logMessageAdvertisement(_remoteFilePathSanitized, message, category, level)
+        _listener.logMessageAdvertisement(message, category, level, _remoteFilePathSanitized)
     }
 
     //@objc   dont
