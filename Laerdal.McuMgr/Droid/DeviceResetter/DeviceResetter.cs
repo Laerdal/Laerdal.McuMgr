@@ -42,14 +42,8 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
             {
-                get => _deviceResetterCallbacksProxy?.DeviceResetter;
-                set
-                {
-                    if (_deviceResetterCallbacksProxy == null)
-                        return;
-
-                    _deviceResetterCallbacksProxy.DeviceResetter = value;
-                }
+                get => _deviceResetterCallbacksProxy!.DeviceResetter;
+                set => _deviceResetterCallbacksProxy!.DeviceResetter = value;
             }
 
             public EDeviceResetterState State => TranslateEAndroidDeviceResetterState(base.State ?? EAndroidDeviceResetterState.None);

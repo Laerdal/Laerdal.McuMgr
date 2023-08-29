@@ -20,14 +20,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             public IFileUploaderEventEmittable FileUploader //keep this to conform to the interface
             {
-                get => _uploaderCallbacksProxy?.FileUploader;
-                set
-                {
-                    if (_uploaderCallbacksProxy == null)
-                        return;
-
-                    _uploaderCallbacksProxy.FileUploader = value;
-                }
+                get => _uploaderCallbacksProxy!.FileUploader;
+                set => _uploaderCallbacksProxy!.FileUploader = value;
             }
 
             protected MockedNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy)

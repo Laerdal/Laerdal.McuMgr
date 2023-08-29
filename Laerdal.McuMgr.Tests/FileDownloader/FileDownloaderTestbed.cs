@@ -20,14 +20,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             public IFileDownloaderEventEmittable FileDownloader //keep this to conform to the interface
             {
-                get => _downloaderCallbacksProxy?.FileDownloader;
-                set
-                {
-                    if (_downloaderCallbacksProxy == null)
-                        return;
-
-                    _downloaderCallbacksProxy.FileDownloader = value;
-                }
+                get => _downloaderCallbacksProxy!.FileDownloader;
+                set => _downloaderCallbacksProxy!.FileDownloader = value;
             }
 
             protected MockedNativeFileDownloaderProxySpy(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy)

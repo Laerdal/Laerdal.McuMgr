@@ -43,14 +43,8 @@ namespace Laerdal.McuMgr.FileDownloader
             
             public IFileDownloaderEventEmittable FileDownloader //keep this to conform to the interface
             {
-                get => _fileDownloaderCallbacksProxy?.FileDownloader;
-                set
-                {
-                    if (_fileDownloaderCallbacksProxy == null)
-                        return;
-
-                    _fileDownloaderCallbacksProxy.FileDownloader = value;
-                }
+                get => _fileDownloaderCallbacksProxy!.FileDownloader;
+                set => _fileDownloaderCallbacksProxy!.FileDownloader = value;
             }
 
             // ReSharper disable once UnusedMember.Local

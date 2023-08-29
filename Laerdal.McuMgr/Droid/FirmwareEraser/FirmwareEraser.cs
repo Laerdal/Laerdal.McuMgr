@@ -62,14 +62,8 @@ namespace Laerdal.McuMgr.FirmwareEraser
             
             public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
-                get => _nativeEraserCallbacksProxy?.FirmwareEraser;
-                set
-                {
-                    if (_nativeEraserCallbacksProxy == null)
-                        return;
-
-                    _nativeEraserCallbacksProxy.FirmwareEraser = value;
-                }
+                get => _nativeEraserCallbacksProxy!.FirmwareEraser;
+                set => _nativeEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)

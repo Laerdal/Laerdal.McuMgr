@@ -43,14 +43,8 @@ namespace Laerdal.McuMgr.FileUploader
             
             public IFileUploaderEventEmittable FileUploader //keep this to conform to the interface
             {
-                get => _fileUploaderCallbacksProxy?.FileUploader;
-                set
-                {
-                    if (_fileUploaderCallbacksProxy == null)
-                        return;
-
-                    _fileUploaderCallbacksProxy.FileUploader = value;
-                }
+                get => _fileUploaderCallbacksProxy!.FileUploader;
+                set => _fileUploaderCallbacksProxy!.FileUploader = value;
             }
 
             // ReSharper disable once UnusedMember.Local

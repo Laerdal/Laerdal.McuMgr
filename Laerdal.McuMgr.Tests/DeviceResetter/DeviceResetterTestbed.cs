@@ -21,14 +21,8 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 
             public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
             {
-                get => _resetterCallbacksProxy?.DeviceResetter;
-                set
-                {
-                    if (_resetterCallbacksProxy == null)
-                        return;
-
-                    _resetterCallbacksProxy.DeviceResetter = value;
-                }
+                get => _resetterCallbacksProxy!.DeviceResetter;
+                set => _resetterCallbacksProxy!.DeviceResetter = value;
             }
 
             protected MockedNativeDeviceResetterProxySpy(INativeDeviceResetterCallbacksProxy resetterCallbacksProxy)

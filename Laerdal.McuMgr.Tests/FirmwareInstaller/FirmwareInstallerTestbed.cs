@@ -22,14 +22,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             public IFirmwareInstallerEventEmittable FirmwareInstaller //keep this to conform to the interface
             {
-                get => _firmwareInstallerCallbacksProxy?.FirmwareInstaller;
-                set
-                {
-                    if (_firmwareInstallerCallbacksProxy == null)
-                        return;
-
-                    _firmwareInstallerCallbacksProxy.FirmwareInstaller = value;
-                }
+                get => _firmwareInstallerCallbacksProxy!.FirmwareInstaller;
+                set => _firmwareInstallerCallbacksProxy!.FirmwareInstaller = value;
             }
 
             protected MockedNativeFirmwareInstallerProxySpy(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy)
