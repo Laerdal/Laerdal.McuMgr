@@ -62,7 +62,11 @@ namespace Laerdal.McuMgr.FileDownloader
 
             #region ios listener callbacks -> csharp event emitters
 
-            public IFileDownloaderEventEmittable FileDownloader { get; set; }
+            public IFileDownloaderEventEmittable FileDownloader
+            {
+                get => _nativeFileDownloaderCallbacksProxy!.FileDownloader;
+                set => _nativeFileDownloaderCallbacksProxy!.FileDownloader = value;
+            }
 
             public override void CancelledAdvertisement()
                 => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement();

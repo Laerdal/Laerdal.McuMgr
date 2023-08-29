@@ -67,8 +67,12 @@ namespace Laerdal.McuMgr.FileUploader
 
             
             #region ios listener callbacks -> csharp event emitters
-            
-            public IFileUploaderEventEmittable FileUploader { get; set; }
+
+            public IFileUploaderEventEmittable FileUploader
+            {
+                get => _nativeFileUploaderCallbacksProxy!.FileUploader;
+                set => _nativeFileUploaderCallbacksProxy!.FileUploader = value;
+            }
             
             public override void CancelledAdvertisement()
                 => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement();

@@ -87,7 +87,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             #region native callbacks -> csharp events
             
-            public IFirmwareInstallerEventEmittable FirmwareInstaller { get; set; } //keep this to conform to the interface
+            public IFirmwareInstallerEventEmittable FirmwareInstaller
+            {
+                get => _nativeFirmwareInstallerCallbacksProxy!.FirmwareInstaller;
+                set => _nativeFirmwareInstallerCallbacksProxy!.FirmwareInstaller = value;
+            }
             
             public override void CancelledAdvertisement() => _nativeFirmwareInstallerCallbacksProxy?.CancelledAdvertisement();
             public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareInstallerCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
