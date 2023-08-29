@@ -328,6 +328,9 @@ public class AndroidFirmwareInstaller
                     _handler.removeCallbacks(_graphUpdater);
                     setState(EAndroidFirmwareInstallationState.CONFIRMING);
                     break;
+
+                default:
+                    break; // setState(.idle);  //dont
             }
         }
 
