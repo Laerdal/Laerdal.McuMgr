@@ -33,30 +33,26 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         // ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFirmwareInstallerProxy : IOSListenerForFirmwareInstaller, INativeFirmwareInstallerProxy
         {
-            private readonly IOSFirmwareInstaller _nativeIosFirmwareInstaller;
+            private readonly IOSFirmwareInstaller _nativeFirmwareInstaller;
             private readonly INativeFirmwareInstallerCallbacksProxy _nativeFirmwareInstallerCallbacksProxy;
 
             public string Nickname { get; set; }
             
-            public IFirmwareInstallerEventEmittable FirmwareInstaller { get; set; }
-
             internal IOSNativeFirmwareInstallerProxy(CBPeripheral bluetoothDevice, INativeFirmwareInstallerCallbacksProxy nativeFirmwareInstallerCallbacksProxy)
             {
                 bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
                 nativeFirmwareInstallerCallbacksProxy = nativeFirmwareInstallerCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareInstallerCallbacksProxy));
 
-                _nativeIosFirmwareInstaller = new IOSFirmwareInstaller(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFirmwareInstaller = new IOSFirmwareInstaller(listener: this, cbPeripheral: bluetoothDevice);
                 _nativeFirmwareInstallerCallbacksProxy = nativeFirmwareInstallerCallbacksProxy; //composition-over-inheritance
             }
 
 
 
             #region commands
-
-            public string LastFatalErrorMessage => _nativeIosFirmwareInstaller?.LastFatalErrorMessage;
-
-            public void Cancel() => _nativeIosFirmwareInstaller?.Cancel();
-            public void Disconnect() => _nativeIosFirmwareInstaller?.Disconnect();
+            public void Cancel() => _nativeFirmwareInstaller?.Cancel();
+            public void Disconnect() => _nativeFirmwareInstaller?.Disconnect();
+            public string LastFatalErrorMessage => _nativeFirmwareInstaller?.LastFatalErrorMessage;
 
             public EFirmwareInstallationVerdict BeginInstallation(
                 byte[] data,
@@ -72,7 +68,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 //todo   nsdata should be tracked in a private variable and then cleaned up properly   currently it might get disposed ahead of time
                 var nsData = NSData.FromArray(data);
 
-                var verdict = _nativeIosFirmwareInstaller.BeginInstallation(
+                var verdict = _nativeFirmwareInstaller.BeginInstallation(
                     mode: TranslateFirmwareInstallationMode(mode),
                     imageData: nsData,
                     eraseSettings: eraseSettings ?? false,
@@ -88,7 +84,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
 
 
-            #region ios listener callbacks -> csharp event emitters
+            #region native callbacks -> csharp events
+            
+            public IFirmwareInstallerEventEmittable FirmwareInstaller { get; set; } //keep this to conform to the interface
             
             public override void CancelledAdvertisement() => _nativeFirmwareInstallerCallbacksProxy?.CancelledAdvertisement();
             public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareInstallerCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
