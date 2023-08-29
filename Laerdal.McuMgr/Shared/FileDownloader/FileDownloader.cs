@@ -223,8 +223,8 @@ namespace Laerdal.McuMgr.FileDownloader
                     continue;
                 }
                 catch (Exception ex) when (
-                    !(ex is ArgumentException) //10 wops probably missing native lib symbols!
-                    && !(ex is TimeoutException)
+                    ex is not ArgumentException //10 wops probably missing native lib symbols!
+                    && ex is not TimeoutException
                     && !(ex is IDownloadException) //this accounts for both cancellations and download exceptions!
                 )
                 {

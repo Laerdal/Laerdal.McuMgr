@@ -195,9 +195,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     continue;
                 }
                 catch (Exception ex) when (
-                    !(ex is ArgumentException) //10 wops probably missing native lib symbols!
-                    && !(ex is TimeoutException)
-                    && !(ex is IFirmwareInstallationException) //this accounts for both cancellations and installation errors
+                    ex is not ArgumentException //10 wops probably missing native lib symbols!
+                    && ex is not TimeoutException
+                    && ex is not IFirmwareInstallationException //this accounts for both cancellations and installation errors
                 )
                 {
                     OnStateChanged(new StateChangedEventArgs( //for consistency
