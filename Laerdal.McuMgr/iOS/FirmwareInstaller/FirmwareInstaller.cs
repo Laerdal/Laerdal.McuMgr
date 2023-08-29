@@ -50,6 +50,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
 
             #region commands
+
             public void Cancel() => _nativeFirmwareInstaller?.Cancel();
             public void Disconnect() => _nativeFirmwareInstaller?.Disconnect();
             public string LastFatalErrorMessage => _nativeFirmwareInstaller?.LastFatalErrorMessage;

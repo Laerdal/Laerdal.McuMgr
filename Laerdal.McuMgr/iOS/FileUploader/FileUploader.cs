@@ -35,8 +35,6 @@ namespace Laerdal.McuMgr.FileUploader
         {
             private readonly IOSFileUploader _nativeIosFileUploader;
             private readonly INativeFileUploaderCallbacksProxy _nativeFileUploaderCallbacksProxy;
-
-            public IFileUploaderEventEmittable FileUploader { get; set; }
             
             internal IOSNativeFileUploaderProxy(CBPeripheral bluetoothDevice, INativeFileUploaderCallbacksProxy nativeFileUploaderCallbacksProxy)
             {
@@ -69,6 +67,8 @@ namespace Laerdal.McuMgr.FileUploader
 
             
             #region ios listener callbacks -> csharp event emitters
+            
+            public IFileUploaderEventEmittable FileUploader { get; set; }
             
             public override void CancelledAdvertisement()
                 => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement();

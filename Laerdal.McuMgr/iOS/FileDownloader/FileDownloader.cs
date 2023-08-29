@@ -36,8 +36,6 @@ namespace Laerdal.McuMgr.FileDownloader
             private readonly IOSFileDownloader _nativeIosFileDownloader;
             private readonly INativeFileDownloaderCallbacksProxy _nativeFileDownloaderCallbacksProxy;
 
-            public IFileDownloaderEventEmittable FileDownloader { get; set; }
-            
             internal IOSNativeFileDownloaderProxy(CBPeripheral bluetoothDevice, INativeFileDownloaderCallbacksProxy nativeFileDownloaderCallbacksProxy)
             {
                 bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
@@ -60,12 +58,12 @@ namespace Laerdal.McuMgr.FileDownloader
                 => TranslateFileDownloaderVerdict(_nativeIosFileDownloader.BeginDownload(remoteFilePath));
 
             #endregion commands
-            
-            
-            
-            
+
+
             #region ios listener callbacks -> csharp event emitters
-            
+
+            public IFileDownloaderEventEmittable FileDownloader { get; set; }
+
             public override void CancelledAdvertisement()
                 => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement();
 

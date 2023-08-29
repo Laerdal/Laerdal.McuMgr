@@ -51,6 +51,12 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             public void Disconnect() => _nativeIosDeviceResetter?.Disconnect();
             public void BeginReset() => _nativeIosDeviceResetter?.BeginReset();
+            
+            #endregion
+
+
+
+            #region listener callbacks -> event emitters
 
             public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
             {
@@ -63,12 +69,6 @@ namespace Laerdal.McuMgr.DeviceResetter
                     _nativeResetterCallbacksProxy.DeviceResetter = value;
                 }
             }
-            
-            #endregion
-
-
-
-            #region listener callbacks -> event emitters
             
             public override void LogMessageAdvertisement(string message, string category, string level)
                 => LogMessageAdvertisement(
@@ -102,7 +102,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             #endregion listener events
 
             // ReSharper disable once InconsistentNaming
-            static public EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch
+            static private EDeviceResetterState TranslateEIOSDeviceResetterState(EIOSDeviceResetterState state) => state switch
             {
                 EIOSDeviceResetterState.None => EDeviceResetterState.None,
                 EIOSDeviceResetterState.Idle => EDeviceResetterState.Idle,
