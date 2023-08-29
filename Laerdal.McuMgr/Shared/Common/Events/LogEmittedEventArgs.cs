@@ -2,7 +2,7 @@ using Laerdal.McuMgr.Common.Enums;
 
 namespace Laerdal.McuMgr.Common.Events
 {
-    public readonly struct LogEmittedEventArgs
+    public readonly struct LogEmittedEventArgs : IMcuMgrEventArgs
     {
         public string Message { get; }
         public string Category { get; }
