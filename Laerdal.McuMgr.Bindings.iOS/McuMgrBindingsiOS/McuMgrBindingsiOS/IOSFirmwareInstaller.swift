@@ -269,8 +269,9 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             setState(.confirming);
         case .success:
             setState(.complete);
+
         default:
-            setState(.idle);
+            break // setState(.idle);  //dont
         }
     }
 
