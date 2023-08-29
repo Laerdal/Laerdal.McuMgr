@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
         // ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFirmwareEraserProxy : IOSListenerForFirmwareEraser, INativeFirmwareEraserProxy
         {
-            private readonly IOSFirmwareEraser _firmwareEraser;
+            private readonly IOSFirmwareEraser _nativeFirmwareEraser;
             private readonly INativeFirmwareEraserCallbacksProxy _nativeFirmwareEraserCallbacksProxy;
 
             internal IOSNativeFirmwareEraserProxy(CBPeripheral bluetoothDevice, INativeFirmwareEraserCallbacksProxy nativeFirmwareEraserCallbacksProxy)
@@ -41,28 +41,25 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
                 nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserCallbacksProxy));
 
-                _firmwareEraser = new IOSFirmwareEraser(listener: this, cbPeripheral: bluetoothDevice);
-                _nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserCallbacksProxy)); //composition-over-inheritance
+                _nativeFirmwareEraser = new IOSFirmwareEraser(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy; //composition-over-inheritance
             }
 
-            #region INativeFirmwareEraserCommandableProxy
-            //we are simply forwarding the commands down to the native world of ios here
-            public string LastFatalErrorMessage => _firmwareEraser?.LastFatalErrorMessage;
-            public void Disconnect() => _firmwareEraser?.Disconnect();
-            public void BeginErasure(int imageIndex) => _firmwareEraser?.BeginErasure(imageIndex);
+            #region commands
+            
+            public void Disconnect() => _nativeFirmwareEraser?.Disconnect(); //we are simply forwarding the commands down to the native world of ios here
+            public string LastFatalErrorMessage => _nativeFirmwareEraser?.LastFatalErrorMessage;
+
+            public void BeginErasure(int imageIndex) => _nativeFirmwareEraser?.BeginErasure(imageIndex);
+
             #endregion
 
-            #region INativeFirmwareEraseCallbacksProxy
+            #region native callbacks -> csharp events
+
             public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
-                get => _nativeFirmwareEraserCallbacksProxy?.FirmwareEraser;
-                set
-                {
-                    if (_nativeFirmwareEraserCallbacksProxy == null)
-                        return;
-
-                    _nativeFirmwareEraserCallbacksProxy.FirmwareEraser = value;
-                }
+                get => _nativeFirmwareEraserCallbacksProxy!.FirmwareEraser;
+                set => _nativeFirmwareEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
             //we are simply forwarding the calls up towards the surface world of csharp here
@@ -93,6 +90,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareEraserCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             public override void FatalErrorOccurredAdvertisement(string errorMessage) => _nativeFirmwareEraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+
             #endregion
 
             // ReSharper disable once InconsistentNaming
