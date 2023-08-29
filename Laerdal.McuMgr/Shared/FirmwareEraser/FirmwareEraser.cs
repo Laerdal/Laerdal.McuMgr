@@ -4,7 +4,9 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;

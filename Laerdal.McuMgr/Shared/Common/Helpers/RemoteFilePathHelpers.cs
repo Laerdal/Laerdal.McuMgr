@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Laerdal.McuMgr.Common
+namespace Laerdal.McuMgr.Common.Helpers
 {
     static internal class RemoteFilePathHelpers
     {

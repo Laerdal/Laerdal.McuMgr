@@ -1,4 +1,5 @@
 using System;
+using Laerdal.McuMgr.Common.Enums;
 
 namespace Laerdal.McuMgr.Common
 {

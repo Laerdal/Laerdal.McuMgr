@@ -1,4 +1,6 @@
-namespace Laerdal.McuMgr.Common
+using Laerdal.McuMgr.Common.Enums;
+
+namespace Laerdal.McuMgr.Common.Events
 {
     public readonly struct LogEmittedEventArgs
     {

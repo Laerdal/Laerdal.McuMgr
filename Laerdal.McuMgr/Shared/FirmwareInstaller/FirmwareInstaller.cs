@@ -4,7 +4,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;

@@ -1,4 +1,4 @@
-﻿using Laerdal.McuMgr.Common;
+﻿using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Native;

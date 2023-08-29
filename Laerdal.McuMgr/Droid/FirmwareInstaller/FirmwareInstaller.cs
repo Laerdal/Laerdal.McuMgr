@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;

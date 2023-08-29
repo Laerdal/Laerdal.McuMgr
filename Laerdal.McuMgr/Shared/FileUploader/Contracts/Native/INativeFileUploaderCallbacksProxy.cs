@@ -1,4 +1,4 @@
-﻿using Laerdal.McuMgr.Common;
+﻿using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Native
