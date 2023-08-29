@@ -2,7 +2,7 @@ import Foundation
 
 @objc
 public protocol IOSListenerForFileUploader {
-    func logMessageAdvertisement(_ resource: String, _ message: String, _ category: String, _ level: String)
+    func logMessageAdvertisement(_ message: String, _ category: String, _ level: String, _ resource: String)
     func fatalErrorOccurredAdvertisement(_ resource: String, _ errorMessage: String)
 
     func cancelledAdvertisement()

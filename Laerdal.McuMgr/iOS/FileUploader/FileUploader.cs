@@ -79,11 +79,12 @@ namespace Laerdal.McuMgr.FileUploader
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
                 => LogMessageAdvertisement(
-                    message,
-                    category,
-                    HelpersIOS.TranslateEIOSLogLevel(level),
-                    resource
+                    level: HelpersIOS.TranslateEIOSLogLevel(level),
+                    message: message,
+                    category: category,
+                    resource: resource
                 );
+
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource) //conformance to the interface
                 => _nativeFileUploaderCallbacksProxy?.LogMessageAdvertisement(
                     level: level,
