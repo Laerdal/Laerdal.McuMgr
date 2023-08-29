@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FileDownloader
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileDownloaderProxy : IOSListenerForFileDownloader, INativeFileDownloaderProxy
         {
-            private readonly IOSFileDownloader _nativeIosFileDownloader;
+            private readonly IOSFileDownloader _nativeFileDownloader;
             private readonly INativeFileDownloaderCallbacksProxy _nativeFileDownloaderCallbacksProxy;
 
             internal IOSNativeFileDownloaderProxy(CBPeripheral bluetoothDevice, INativeFileDownloaderCallbacksProxy nativeFileDownloaderCallbacksProxy)
@@ -41,21 +41,21 @@ namespace Laerdal.McuMgr.FileDownloader
                 bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
                 nativeFileDownloaderCallbacksProxy = nativeFileDownloaderCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFileDownloaderCallbacksProxy));
 
-                _nativeIosFileDownloader = new IOSFileDownloader(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFileDownloader = new IOSFileDownloader(listener: this, cbPeripheral: bluetoothDevice);
                 _nativeFileDownloaderCallbacksProxy = nativeFileDownloaderCallbacksProxy; //composition-over-inheritance
             }
             
 
             #region commands
             
-            public string LastFatalErrorMessage => _nativeIosFileDownloader?.LastFatalErrorMessage;
+            public string LastFatalErrorMessage => _nativeFileDownloader?.LastFatalErrorMessage;
             
-            public void Cancel() => _nativeIosFileDownloader?.Cancel();
+            public void Cancel() => _nativeFileDownloader?.Cancel();
             
-            public void Disconnect() => _nativeIosFileDownloader?.Disconnect();
+            public void Disconnect() => _nativeFileDownloader?.Disconnect();
             
             public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
-                => TranslateFileDownloaderVerdict(_nativeIosFileDownloader.BeginDownload(remoteFilePath));
+                => TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(remoteFilePath));
 
             #endregion commands
 

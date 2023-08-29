@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FileUploader
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileUploaderProxy : IOSListenerForFileUploader, INativeFileUploaderProxy
         {
-            private readonly IOSFileUploader _nativeIosFileUploader;
+            private readonly IOSFileUploader _nativeFileUploader;
             private readonly INativeFileUploaderCallbacksProxy _nativeFileUploaderCallbacksProxy;
             
             internal IOSNativeFileUploaderProxy(CBPeripheral bluetoothDevice, INativeFileUploaderCallbacksProxy nativeFileUploaderCallbacksProxy)
@@ -41,23 +41,23 @@ namespace Laerdal.McuMgr.FileUploader
                 bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
                 nativeFileUploaderCallbacksProxy = nativeFileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderCallbacksProxy));
 
-                _nativeIosFileUploader = new IOSFileUploader(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFileUploader = new IOSFileUploader(listener: this, cbPeripheral: bluetoothDevice);
                 _nativeFileUploaderCallbacksProxy = nativeFileUploaderCallbacksProxy; //composition-over-inheritance
             }
             
 
             #region commands
             
-            public string LastFatalErrorMessage => _nativeIosFileUploader?.LastFatalErrorMessage;
+            public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
-            public void Cancel() => _nativeIosFileUploader?.Cancel();
+            public void Cancel() => _nativeFileUploader?.Cancel();
             
-            public void Disconnect() => _nativeIosFileUploader?.Disconnect();
+            public void Disconnect() => _nativeFileUploader?.Disconnect();
             
             public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
                 var nsData = NSData.FromArray(data); //todo   should nsdata be tracked in a private variable and then cleaned up properly?
-                var verdict = TranslateFileUploaderVerdict(_nativeIosFileUploader.BeginUpload(remoteFilePath, nsData));
+                var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(remoteFilePath, nsData));
 
                 return verdict;
             }
