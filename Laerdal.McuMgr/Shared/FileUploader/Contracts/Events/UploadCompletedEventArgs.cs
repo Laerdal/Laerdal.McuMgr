@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Laerdal.McuMgr.FileUploader.Contracts.Events
+﻿namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public sealed class UploadCompletedEventArgs : EventArgs
+    public readonly struct UploadCompletedEventArgs
     {
         public string Resource { get; }
 

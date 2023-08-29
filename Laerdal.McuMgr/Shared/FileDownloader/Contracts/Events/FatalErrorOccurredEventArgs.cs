@@ -1,11 +1,9 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
-
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
-    public sealed class FatalErrorOccurredEventArgs : EventArgs
+    public readonly struct FatalErrorOccurredEventArgs
     {
         public string Resource { get; }
         public string ErrorMessage { get; }

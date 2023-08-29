@@ -1,12 +1,11 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public sealed class StateChangedEventArgs : EventArgs
+    public readonly struct StateChangedEventArgs
     {
         public string Resource { get; }
         public EFileUploaderState NewState { get; }

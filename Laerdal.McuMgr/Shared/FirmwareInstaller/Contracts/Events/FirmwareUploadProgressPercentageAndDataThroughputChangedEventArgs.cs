@@ -1,11 +1,9 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
-
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
-    public sealed class FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs : EventArgs
+    public readonly struct FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs
     {
         public int ProgressPercentage { get; }
         public float AverageThroughput { get; } //kbs / sec

@@ -1,11 +1,9 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-using System;
-
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public sealed class FatalErrorOccurredEventArgs : EventArgs
+    public readonly struct FatalErrorOccurredEventArgs
     {
         public string ErrorMessage { get; }
         public string RemoteFilePath { get; }

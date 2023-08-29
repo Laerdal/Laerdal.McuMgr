@@ -1,8 +1,6 @@
-using System;
-
 namespace Laerdal.McuMgr.Common
 {
-    public sealed class LogEmittedEventArgs : EventArgs
+    public readonly struct LogEmittedEventArgs
     {
         public string Message { get; }
         public string Category { get; }
