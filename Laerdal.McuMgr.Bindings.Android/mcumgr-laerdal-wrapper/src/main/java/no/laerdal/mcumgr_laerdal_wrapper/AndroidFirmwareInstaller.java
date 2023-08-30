@@ -185,12 +185,12 @@ public class AndroidFirmwareInstaller
 
         _currentState = newState; //order
 
-        stateChangedAdvertisement(oldState, newState); //order
-
-        if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00
+        if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00   order
         {
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
+
+        stateChangedAdvertisement(oldState, newState); //order
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }

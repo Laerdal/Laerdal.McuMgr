@@ -221,12 +221,12 @@ public class IOSFirmwareInstaller: NSObject {
 
         _currentState = newState; //order
 
-        stateChangedAdvertisement(oldState, newState); //order
-
-        if (oldState == .uploading && newState == .testing) //00
+        if (oldState == .uploading && newState == .testing) //00  order
         {
             firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
+
+        stateChangedAdvertisement(oldState, newState); //order
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
