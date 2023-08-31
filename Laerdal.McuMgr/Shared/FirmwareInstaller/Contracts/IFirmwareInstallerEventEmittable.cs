@@ -10,6 +10,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         void OnStateChanged(StateChangedEventArgs ea);
         void OnBusyStateChanged(BusyStateChangedEventArgs ea);
         void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea);
+        void OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea);
         void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea);
     }
 }

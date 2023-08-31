@@ -118,6 +118,7 @@
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowInstallationCancelledException_GivenCancellationRequestMidflight.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationInternalErrorException_GivenErroneousNativeFirmwareInstaller.cs" />
         <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldThrowFirmwareInstallationTimeoutException_GivenTooSmallTimeout.cs" />
+        <Compile Include="FirmwareInstaller\FirmwareInstallerTestbed.InstallAsync.ShouldTriggerEventIdenticalFirmwareCachedOnTargetDeviceDetected_GivenGreenNativeFileDownloaderThatSkipsIntoTesting.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

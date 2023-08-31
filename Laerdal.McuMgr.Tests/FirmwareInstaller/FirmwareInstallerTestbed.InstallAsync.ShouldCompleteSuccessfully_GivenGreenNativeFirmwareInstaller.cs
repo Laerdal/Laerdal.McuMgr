@@ -36,6 +36,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             eventsMonitor.OccurredEvents.Length.Should().Be(12);
 
             eventsMonitor
+                .Should()
+                .NotRaise(nameof(firmwareInstaller.IdenticalFirmwareCachedOnTargetDeviceDetected));
+            
+            eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Uploading);
