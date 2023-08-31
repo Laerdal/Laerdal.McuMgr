@@ -66,6 +66,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
+        private event EventHandler<IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs> _identicalFirmwareCachedOnTargetDeviceDetected;
         private event EventHandler<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> _firmwareUploadProgressPercentageAndDataThroughputChanged;
 
         public event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred
@@ -116,6 +117,16 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 _stateChanged += value;
             }
             remove => _stateChanged -= value;
+        }
+
+        public event EventHandler<IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs> IdenticalFirmwareCachedOnTargetDeviceDetected
+        {
+            add
+            {
+                _identicalFirmwareCachedOnTargetDeviceDetected -= value;
+                _identicalFirmwareCachedOnTargetDeviceDetected += value;
+            }
+            remove => _identicalFirmwareCachedOnTargetDeviceDetected -= value;
         }
 
         public event EventHandler<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> FirmwareUploadProgressPercentageAndDataThroughputChanged
@@ -287,14 +298,39 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         void IFirmwareInstallerEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFirmwareInstallerEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
         void IFirmwareInstallerEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFirmwareInstallerEventEmittable.OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => OnIdenticalFirmwareCachedOnTargetDeviceDetected(ea);
         void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndDataThroughputChanged(ea);
         
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        private void OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => _identicalFirmwareCachedOnTargetDeviceDetected?.Invoke(this, ea);
+
+        private void OnStateChanged(StateChangedEventArgs ea)
+        {
+            _stateChanged?.Invoke(this, ea);
+            
+            switch (ea)
+            {
+                case { NewState: EFirmwareInstallationState.Idle }:
+                    _fileUploadProgressEventsCount = 0; //its vital to reset the counter here to account for retries
+                    break;
+                case { NewState: EFirmwareInstallationState.Testing } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
+                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new (ECachedFirmwareType.CachedButInactive));
+                    break;
+                case { NewState: EFirmwareInstallationState.Complete } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
+                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new (ECachedFirmwareType.CachedAndActive));
+                    break;
+            }
+        }
+
+        private int _fileUploadProgressEventsCount;
+        private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
+        {
+            _fileUploadProgressEventsCount++;
+            _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        }
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy
         internal class GenericNativeFirmwareInstallerCallbacksProxy : INativeFirmwareInstallerCallbacksProxy
@@ -317,6 +353,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     newState: newState,
                     oldState: oldState
                 ));
+            
+            // public void IdenticalFirmwareCachedOnTargetDeviceDetectedAdvertisement(...) //should not be implemented natively   this event is derived from onstatechanged and is not a native event!
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FirmwareInstaller?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));

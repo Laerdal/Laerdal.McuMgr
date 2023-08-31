@@ -21,7 +21,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// <summary>Event raised when the firmware-upgrade busy-state changes which happens when data start or stop being transmitted</summary>
         event EventHandler<BusyStateChangedEventArgs> BusyStateChanged;
         
+        /// <summary>Event raised when the firmware-upgrade process detects that the firmware that is about to be uploaded is already present on the remote device.</summary>
+        event EventHandler<IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs> IdenticalFirmwareCachedOnTargetDeviceDetected;
+
         /// <summary>Event raised when the firmware-upgrade process progresses in terms of uploading the firmware files across</summary>
-        public event EventHandler<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> FirmwareUploadProgressPercentageAndDataThroughputChanged;
+        event EventHandler<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> FirmwareUploadProgressPercentageAndDataThroughputChanged;
     }
 }
