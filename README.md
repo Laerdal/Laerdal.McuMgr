@@ -176,22 +176,26 @@ private void ToggleSubscriptionsOnFirmwareInstallerEvents(bool subscribeNotUnsub
     }
 }
 
+private static void FirmwareInstaller_IdenticalFirmwareCachedOnTargetDeviceDetected(object sender, IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea)
+{
+    switch (ea)
+    {
+        case { CachedFirmwareType: ECachedFirmwareType.CachedButInactive }:
+            App.DisplayAlert(title: "Info", message: "The firmware you're trying to install appears to be cached on the device. Will use that instead of re-uploading it.");
+            break;
+
+        case { CachedFirmwareType: ECachedFirmwareType.CachedAndActive }:
+            App.DisplayAlert(title: "Info", message: "The firmware you're trying to install appears to be already active on the device. Will not re-install it.");
+            break;
+    }
+}
+
 private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs ea)
 {
     Console.Error.WriteLineAsync($"** {nameof(FirmwareInstaller_StateChanged)}: OldState='{ea.OldState}' NewState='{ea.NewState}'");
 
-    switch (ea)
-    {
-        case { NewState: EFirmwareInstallationState.Idle }: //00
-            _fileUploadProgressEvents = 0;
-            FirmwareInstallationAttemptCount += 1; //00
-            break;
-        case { NewState: EFirmwareInstallationState.Testing, OldState: EFirmwareInstallationState.Uploading } when _fileUploadProgressEvents <= 1:
-            App.DisplayAlert(title: "Info", message: "The firmware you're trying to install appears to be cached on the device. Will use that instead of re-uploading it.");
-            break;
-        case { NewState: EFirmwareInstallationState.Complete, OldState: EFirmwareInstallationState.Uploading }:
-            App.DisplayAlert(title: "Info", message: "The firmware you're trying to install appears to be already active on the device. Will not re-install it.");
-            break;
+    if (ea.NewState == EFirmwareInstallationState.Idle) {
+        FirmwareInstallationAttemptCount += 1; //00
     }
 
     FirmwareInstallationStage = ea.NewState.ToString();
@@ -201,11 +205,8 @@ private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs
     //    time we reattempt we start from scratch so the state will be reset back to being none again etc
 }
 
-private int _fileUploadProgressEvents;
 private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(EventPattern<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> eventPattern)
 {
-    _fileUploadProgressEvents += 1;
-    
     var ea = eventPattern.EventArgs;
     FirmwareUploadAverageThroughputInKilobytes = ea.AverageThroughput;
 
