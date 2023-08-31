@@ -190,7 +190,7 @@
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsLinux)'   == 'True' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsWindows)' == 'True' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
             
-            <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-debug.aar</McuMgrLaerdalWrapperAarFilePath>
+            <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-release.aar</McuMgrLaerdalWrapperAarFilePath>
 
             <LocalCopyMcuMgrLaerdalWrapperAarFilePath>$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar</LocalCopyMcuMgrLaerdalWrapperAarFilePath>
         </PropertyGroup>
