@@ -139,7 +139,6 @@ public class AndroidFirmwareInstaller
         try
         {
             setState(EAndroidFirmwareInstallationState.IDLE);
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
             _manager.start(images, eraseSettings);
         }
@@ -295,7 +294,6 @@ public class AndroidFirmwareInstaller
         public void onUpgradeStarted(final FirmwareUpgradeController controller)
         {
             busyStateChangedAdvertisement(true);
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFirmwareInstallationState.VALIDATING);
         }
 
@@ -371,7 +369,6 @@ public class AndroidFirmwareInstaller
         {
             _handler.removeCallbacks(_graphUpdater);
 
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFirmwareInstallationState.CANCELLED);
             cancelledAdvertisement();
             // Timber.w("Install cancelled");
@@ -390,13 +387,11 @@ public class AndroidFirmwareInstaller
             { //00
                 _lastProgress = NOT_STARTED;
 
-                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0); //10
-
                 _uploadStartTimestamp = uptimeMillis; //20
                 _bytesSentSinceUploadStated = bytesSent;
 
-                _handler.removeCallbacks(_graphUpdater); //30
-                _handler.postAtTime(_graphUpdater, uptimeMillis + REFRESH_RATE);
+                _handler.removeCallbacks(_graphUpdater);
+                _handler.postAtTime(_graphUpdater, uptimeMillis + REFRESH_RATE); //30
             }
 
             final boolean uploadComplete = bytesSent == imageSize;
@@ -414,8 +409,6 @@ public class AndroidFirmwareInstaller
             //
             //    - the start of an upload
             //    - after resume
-            //
-            //10 if a new image started being sending clear the progress graph
             //
             //20 To calculate the throughput it is necessary to store the initial timestamp and the number of bytes sent so far
             //   Mind, that the upload may be resumed from any point, not necessarily from the beginning
