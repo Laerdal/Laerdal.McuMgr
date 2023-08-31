@@ -91,7 +91,6 @@ public class IOSFirmwareInstaller: NSObject {
 
         do {
             setState(.idle)
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
 
             try _manager.start(data: imageData, using: firmwareUpgradeConfiguration);
 
@@ -251,7 +250,6 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
 
     public func upgradeDidStart(controller: FirmwareUpgradeController) {
         busyStateChangedAdvertisement(true);
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
         setState(.validating);
     }
 
@@ -302,7 +300,6 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     public func upgradeDidCancel(state: FirmwareUpgradeState) {
         setState(.cancelled)
         busyStateChangedAdvertisement(false)
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 
