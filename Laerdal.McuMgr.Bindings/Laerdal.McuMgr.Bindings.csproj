@@ -204,7 +204,7 @@
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   gradle     wrapper    --distribution-type=ALL  --gradle-version=7.6                    "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                 " Condition=" '$(IsUnix)' == 'True' "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper   build   --console plain   --warning-mode all    "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper   clean   assembleRelease   --console plain   --warning-mode all    "/>
 
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(LocalCopyMcuMgrLaerdalWrapperAarFilePath)"/>
     </Target>
