@@ -277,7 +277,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                     if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout) //can happen during the fw-confirmation phase which is the last phase
                     {
-                        taskCompletionSource.TrySetException(new FirmwareInstallationConfirmationStageTimeoutException());
+                        taskCompletionSource.TrySetException(new FirmwareInstallationConfirmationStageTimeoutException(estimatedSwapTimeInMilliseconds));
                         return;
                     }
 
