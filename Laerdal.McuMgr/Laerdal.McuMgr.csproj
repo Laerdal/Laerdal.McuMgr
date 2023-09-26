@@ -1,14 +1,19 @@
-<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
+﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
 
     <!-- SHARED -->
     <PropertyGroup>
+        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
+        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
+        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
+        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+
         <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
         <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
-        <TargetFrameworks Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks> 
 
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>9</LangVersion>
         <DebugSymbols>true</DebugSymbols>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     </PropertyGroup>
@@ -18,7 +23,6 @@
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
         <PackageDescription>Xamarin managed wrapper around 'Laerdal.McuMgr.Bindings' for iOS and Android.</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.365</PackageVersion>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -32,9 +36,11 @@
         <!-- sourcelink: Include PDB in the built .nupkg -->
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
-        <Version Condition=" '$(Version)' == '' ">1.0.0.0</Version>
-        <FileVersion Condition=" '$(FileVersion)' == '' ">1.0.0.0</FileVersion>
-        <AssemblyVersion Condition=" '$(AssemblyVersion)' == '' ">1.0.0.0</AssemblyVersion>
+        <!-- these versions are getting replaced by the build script in one swift pass -->
+        <Version>1.0.686.0</Version>
+        <FileVersion>1.0.686.0</FileVersion>
+        <PackageVersion>1.0.686.0</PackageVersion>
+        <AssemblyVersion>1.0.686.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings</Summary>
@@ -90,27 +96,22 @@
     </ItemGroup>
 
     <!-- NETSTANDARD -->
-    <PropertyGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
-        <AndroidLinkMode>Full</AndroidLinkMode>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
-        <AndroidLinkMode>Full</AndroidLinkMode>
-    </PropertyGroup>
-
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
         <Compile Include="NetStandard\**\*.cs" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <Laerdal_McuMgr_Bindings_Package_Version Condition=" '$(Laerdal_McuMgr_Bindings_Package_Version)' == '' ">1.0.313</Laerdal_McuMgr_Bindings_Package_Version>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
-    
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+
     <ItemGroup>
-        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="$(Laerdal_McuMgr_Bindings_Package_Version)" />
+        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.686.0" />
     </ItemGroup>
 
 </Project>

@@ -9,6 +9,7 @@ public enum EIOSFirmwareInstallationState: Int {
     case resetting = 6
     case confirming = 7
     case complete = 8
-    case cancelled = 9
-    case error = 10
+    case cancelling = 9
+    case cancelled = 10
+    case error = 11
 }

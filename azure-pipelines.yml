@@ -146,19 +146,26 @@ jobs:
         displayName: NuGet Sources Add
         inputs:
           command: custom
-          arguments:  sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts"
+          arguments: sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts"
 
       - task: MSBuild@1
         displayName: MSBuild
         inputs:
-          solution: Laerdal.McuMgr.Builder.csproj # configuration: Release
+          solution: Laerdal.McuMgr.Builder.targets
           msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/"  '
 
       - task: Bash@3
-        displayName: Print Nugets in 'Output'
+        displayName: Print Nugets in 'Artifacts/'
         inputs:
           targetType: inline
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"
+  
+      # Publish test results to Azure Pipelines
+      - task: PublishTestResults@2
+        inputs:
+          searchFolder: '$(System.DefaultWorkingDirectory)'
+          testResultsFiles: 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.xml'
+          testResultsFormat: 'XUnit'
 
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1

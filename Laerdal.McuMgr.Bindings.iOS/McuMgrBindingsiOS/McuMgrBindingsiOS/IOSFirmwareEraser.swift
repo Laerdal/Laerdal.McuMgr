@@ -30,7 +30,7 @@ public class IOSFirmwareEraser: NSObject {
             if (error != nil) {
                 self.fatalErrorOccurredAdvertisement(error?.localizedDescription ?? "An unspecified error occurred")
                 self.busyStateChangedAdvertisement(false)
-                self.setState(EIOSFirmwareEraserState.idle)
+                self.setState(EIOSFirmwareEraserState.failed)
                 return
             }
 

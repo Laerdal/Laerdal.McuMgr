@@ -1,5 +1,7 @@
 # 🏠 Laerdal.McuMgr
 
+![Platforms](https://img.shields.io/badge/platforms-Xamarin%20|%20iOS%20|%20Android-blue.svg)
+
 - Latest Nugets:
 
 
@@ -21,7 +23,9 @@
 
    [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
 
+# Forward Licensing Disclaimer
 
+Read the LICENSE file before you begin.
 
 # Summary
 
@@ -74,7 +78,7 @@ to the device.**
 
 
 
-### 🚀 Using the Nugets in your Projects
+## 🚀 Using the Nugets in your Projects
 
 Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to ALL of your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
 
@@ -85,7 +89,7 @@ Make sure to always get the latest versions of the above packages.
 
 
 
-### 🤖 Android
+## 🤖 Android
 
 - Installing a firmware:
 
@@ -121,7 +125,7 @@ public async Task InstallFirmwareAsync()
         );
         return;
     }
-    catch (FirmwareInstallationErroredOutImageSwapTimeoutException) //order
+    catch (FirmwareInstallationConfirmationStageTimeoutException) //order
     {
         App.DisplayAlert(
             title: "Firmware-Installation Failed",
@@ -172,28 +176,65 @@ private void ToggleSubscriptionsOnFirmwareInstallerEvents(bool subscribeNotUnsub
     }
 }
 
+private static void FirmwareInstaller_IdenticalFirmwareCachedOnTargetDeviceDetected(object sender, IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea)
+{
+    switch (ea)
+    {
+        case { CachedFirmwareType: ECachedFirmwareType.CachedButInactive }:
+            App.DisplayAlert(title: "Info", message: "The firmware you're trying to install appears to be cached on the device. Will use that instead of re-uploading it.");
+            break;
+
+        case { CachedFirmwareType: ECachedFirmwareType.CachedAndActive }:
+            App.DisplayAlert(title: "Info", message: "The firmware you're trying to install appears to be already active on the device. Will not re-install it.");
+            break;
+    }
+}
+
 private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs ea)
 {
+    Console.Error.WriteLineAsync($"** {nameof(FirmwareInstaller_StateChanged)}: OldState='{ea.OldState}' NewState='{ea.NewState}'");
+
+    if (ea.NewState == EFirmwareInstallationState.Idle) {
+        FirmwareInstallationAttemptCount += 1; //00
+    }
+
     FirmwareInstallationStage = ea.NewState.ToString();
-
-    if (ea.NewState != IFirmwareInstaller.EFirmwareInstallationState.Complete)
-        return;
-
-    ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: false);
-
-    App.DisplayAlert(title: "Installation Complete", message: "Firmware Installation Completed Successfully!");
-
-    CleanupFirmwareInstaller();
+    FirmwareInstallationOverallProgressPercentage = GetProgressMilestonePercentageForState(ea.NewState) ?? FirmwareInstallationOverallProgressPercentage;
+    
+    //00  if a firmware installation fails then we retry up to 10 times for a total of 11 times    each
+    //    time we reattempt we start from scratch so the state will be reset back to being none again etc
 }
 
-private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(object sender, FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
+private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(EventPattern<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> eventPattern)
 {
-    if (ea.ProgressPercentage < FirmwareUploadProgressPercentage)
-        return;
-
-    FirmwareUploadProgressPercentage = ea.ProgressPercentage;
+    var ea = eventPattern.EventArgs;
     FirmwareUploadAverageThroughputInKilobytes = ea.AverageThroughput;
+
+    if (FirmwareInstallationOverallProgressPercentage < 50) //10  hack
+    {
+        FirmwareInstallationOverallProgressPercentage = UploadingPhaseProgressMilestonePercent + (int)(ea.ProgressPercentage * 0.4f); //10% to 50%
+    }
+
+    //00  we could use a background task here per https://stackoverflow.com/a/15957165/863651 but we wouldnt notice a dramatic difference in performance
+    //10  we noticed that there is a small race condition between state changes and the progress% updates   we first get a state change to 'resetting' (70%)
+    //    and then a file-upload progress% update to 100%   we would like to fix this inside the native firmware installer library but its quite hard to do so
 }
+
+private static readonly int UploadingPhaseProgressMilestonePercent = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading)!.Value;
+private static int? GetProgressMilestonePercentageForState(EFirmwareInstallationState state) => state switch
+{
+    EFirmwareInstallationState.None => 0,
+    EFirmwareInstallationState.Idle => 1,
+    EFirmwareInstallationState.Validating => 2,
+    EFirmwareInstallationState.Uploading => 10, //00
+    EFirmwareInstallationState.Testing => 50,
+    EFirmwareInstallationState.Resetting => 70,
+    EFirmwareInstallationState.Confirming => 80,
+    EFirmwareInstallationState.Complete => 100,
+    _ => null // .error .paused .cancelled .cancelling    we shouldnt throw an exception here
+    
+    //00   note that the progress% is further updated from 10% to 50% by the upload process via the event FirmwareUploadProgressPercentageAndDataThroughputChanged
+};
 
 private void CleanupFirmwareInstaller()
 {
@@ -330,7 +371,7 @@ private void DeviceResetter_Error(object sender, DeviceResetter.Events.ErrorEven
 private void DeviceResetter_StateChanged(object sender, DeviceResetter.Events.StateChangedEventArgs ea)
 {
     DeviceResettingStage = ea.NewState.ToString();
-    if (ea.NewState != IDeviceResetter.EDeviceResetterState.Complete)
+    if (ea.NewState != EDeviceResetterState.Complete)
         return;
 
     ToggleSubscriptionsOnFirmwareUpgraderEvents(subscribeNotUnsubscribe: false);
@@ -459,7 +500,7 @@ private void CleanupDeviceResetter()
             );
             return;
         }
-        catch (TimeoutException) //order
+        catch (UploadTimeoutException) //order
         {
             App.DisplayAlert(
                 title: "File-Upload Failed",
@@ -557,15 +598,15 @@ private void CleanupDeviceResetter()
 
         switch (ea.NewState)
         {
-            case IFileUploader.EFileUploaderState.Idle:
+            case EFileUploaderState.Idle:
                 MassUploadResetUIToDefaultValues();
                 return;
             
-            case IFileUploader.EFileUploaderState.Error:
+            case EFileUploaderState.Error:
                 MassFileUploaderNumberOfFailuresToUploadCurrentFile += 1;
                 return;
             
-            case IFileUploader.EFileUploaderState.Complete:
+            case EFileUploaderState.Complete:
                 MassFileUploaderNumberOfFilesUploadedSuccessfully += 1;
                 return;
         }
@@ -581,7 +622,7 @@ private void CleanupDeviceResetter()
 
 
 
-### 📱 iOS
+## 📱 iOS
 
 Same as in Android with the only difference being that the constructors change a bit:
 
@@ -595,13 +636,13 @@ _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBlueto
 
 
 
-### 💻 Windows / UWP
+## 💻 Windows / UWP
 
 Not supported yet.
 
 
 
-### 🏗 IDE Setup / Generating Builds on Local-dev
+## 🏗 IDE Setup / Generating Builds on Local-dev
 
 
     Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
@@ -616,7 +657,7 @@ _
 
 To build the nugets from source follow these instructions:
 
-### 1) Checkout
+#### 1) Checkout
 
 ```bash
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
@@ -626,23 +667,25 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-### 2) Make sure that Java11 is installed on your machine along with Gradle and Maven.
+#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine
 
-### 3) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
+#### 3) Make sure that Java11 is installed on your machine along with Gradle and Maven.
+
+#### 4) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
-### 4) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
+#### 5) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
 
      Note: You can grab the appropriate Mono release for MacOS from https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.182.macos10.xamarin.universal.pkg
 
 If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
 
-### 5) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 6) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
-### 6) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
+#### 7) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
-### 7) Open 'Laerdal.McuMgr.sln' and build it.
+#### 8) Open 'Laerdal.McuMgr.sln' and build it.
 
 You'll find the resulting nugets in the folder `Artifacts/`.
 
@@ -667,21 +710,21 @@ You'll find the resulting nugets in the folder `Artifacts/`.
     Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
 
-### Known issues
+## Known issues
 
 - Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
 
-### Lead Maintainers
+## Lead Maintainers
 
 - [Kyriakos Sidiropoulos (@dsidirop)](https://github.com/dsidirop)
 
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
 
-### Credits
+## Credits
 
 Special thanks goes to:
 

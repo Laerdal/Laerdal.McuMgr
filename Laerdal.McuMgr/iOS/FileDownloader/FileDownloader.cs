@@ -5,7 +5,10 @@ using System;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileDownloader.Events;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FileDownloader.Contracts;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloader.Contracts.Native;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FileDownloader
@@ -13,128 +16,160 @@ namespace Laerdal.McuMgr.FileDownloader
     /// <inheritdoc cref="IFileDownloader"/>
     public partial class FileDownloader : IFileDownloader
     {
-        private readonly IOSFileDownloader _iosFileDownloaderProxy;
-
-        public FileDownloader(CBPeripheral bleDevice)
+        public FileDownloader(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+        }
+        
+        static private INativeFileDownloaderProxy ValidateArgumentsAndConstructProxy(CBPeripheral bluetoothDevice)
+        {
+            bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
 
-            _iosFileDownloaderProxy = new IOSFileDownloader(
-                listener: new IOSFileDownloaderListenerProxy(this),
-                cbPeripheral: bleDevice
+            return new IOSNativeFileDownloaderProxy(
+                bluetoothDevice: bluetoothDevice,
+                nativeFileDownloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy()
             );
         }
 
-        public string LastFatalErrorMessage => _iosFileDownloaderProxy?.LastFatalErrorMessage;
-
-        public IFileDownloader.EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+        //ReSharper disable once InconsistentNaming
+        private sealed class IOSNativeFileDownloaderProxy : IOSListenerForFileDownloader, INativeFileDownloaderProxy
         {
-            if (string.IsNullOrWhiteSpace(remoteFilePath))
-                throw new InvalidOperationException($"The {nameof(remoteFilePath)} parameter is dud!");
+            private readonly IOSFileDownloader _nativeFileDownloader;
+            private readonly INativeFileDownloaderCallbacksProxy _nativeFileDownloaderCallbacksProxy;
 
-            remoteFilePath = remoteFilePath.Trim();
-            if (remoteFilePath.EndsWith("/")) //00
-                throw new InvalidOperationException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
-
-            if (!remoteFilePath.StartsWith("/")) //10
+            internal IOSNativeFileDownloaderProxy(CBPeripheral bluetoothDevice, INativeFileDownloaderCallbacksProxy nativeFileDownloaderCallbacksProxy)
             {
-                remoteFilePath = $"/{remoteFilePath}";
-            }
+                bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+                nativeFileDownloaderCallbacksProxy = nativeFileDownloaderCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFileDownloaderCallbacksProxy));
 
-            var verdict = _iosFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath);
-
-            return TranslateFileDownloaderVerdict(verdict);
-
-            //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
-            //10  the target file path must be absolute   if its not then we make it so   relative paths cause exotic errors
-        }
-
-        public void Cancel() => _iosFileDownloaderProxy?.Cancel();
-        public void Disconnect() => _iosFileDownloaderProxy?.Disconnect();
-
-        static private IFileDownloader.EFileDownloaderVerdict TranslateFileDownloaderVerdict(EIOSFileDownloadingInitializationVerdict verdict)
-        {
-            if (verdict == EIOSFileDownloadingInitializationVerdict.Success) //0
-            {
-                return IFileDownloader.EFileDownloaderVerdict.Success;
-            }
-
-            if (verdict == EIOSFileDownloadingInitializationVerdict.FailedInvalidSettings)
-            {
-                return IFileDownloader.EFileDownloaderVerdict.FailedInvalidSettings;
+                _nativeFileDownloader = new IOSFileDownloader(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFileDownloaderCallbacksProxy = nativeFileDownloaderCallbacksProxy; //composition-over-inheritance
             }
             
-            if (verdict == EIOSFileDownloadingInitializationVerdict.FailedDownloadAlreadyInProgress)
+
+            #region commands
+            
+            public string LastFatalErrorMessage => _nativeFileDownloader?.LastFatalErrorMessage;
+            
+            public void Cancel() => _nativeFileDownloader?.Cancel();
+            
+            public void Disconnect() => _nativeFileDownloader?.Disconnect();
+            
+            public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+                => TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(remoteFilePath));
+
+            #endregion commands
+
+
+            #region ios listener callbacks -> csharp event emitters
+
+            public IFileDownloaderEventEmittable FileDownloader
             {
-                return IFileDownloader.EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
+                get => _nativeFileDownloaderCallbacksProxy!.FileDownloader;
+                set => _nativeFileDownloaderCallbacksProxy!.FileDownloader = value;
             }
 
-            throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
+            public override void CancelledAdvertisement()
+                => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement();
 
-            //0 we have to separate enums
-            //
-            //  - EFileDownloaderVerdict which is publicly exposed and used by both IOS and ios
-            //  - EIOSFileDownloaderVerdict which is specific to IOS and should not be used by the api surface or the end users
-        }
-
-        //ReSharper disable once InconsistentNaming
-        private sealed class IOSFileDownloaderListenerProxy : IOSListenerForFileDownloader
-        {
-            private readonly FileDownloader _fileDownloader;
-
-            internal IOSFileDownloaderListenerProxy(FileDownloader fileDownloader)
-            {
-                _fileDownloader = fileDownloader ?? throw new ArgumentNullException(nameof(fileDownloader));
-            }
-
-            public override void CancelledAdvertisement() => _fileDownloader?.OnCancelled(new CancelledEventArgs());
-            public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _fileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
-            public override void FatalErrorOccurredAdvertisement(string errorMessage) => _fileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
-
-            public override void LogMessageAdvertisement(string message, string category, string level)
-                => _fileDownloader?.OnLogEmitted(new LogEmittedEventArgs(
-                    level: HelpersIOS.TranslateEIOSLogLevel(level),
+            public override void LogMessageAdvertisement(string message, string category, string level, string resource)
+                => LogMessageAdvertisement(
+                    message,
+                    category,
+                    HelpersIOS.TranslateEIOSLogLevel(level),
+                    resource
+                );
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.LogMessageAdvertisement(
+                    level: level,
                     message: message,
                     category: category,
-                    resource: "file-downloader"
-                ));
+                    resource: resource
+                );
 
-            public override void StateChangedAdvertisement(EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
-                => _fileDownloader?.OnStateChanged(new StateChangedEventArgs(
+            public override void StateChangedAdvertisement(string resource, EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
+                => StateChangedAdvertisement(
+                    resource: resource, //essentially the remote filepath
                     newState: TranslateEIOSFileDownloaderState(newState),
                     oldState: TranslateEIOSFileDownloaderState(oldState)
-                ));
+                );
+            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.StateChangedAdvertisement(
+                    resource: resource, //essentially the remote filepath
+                    newState: newState,
+                    oldState: oldState
+                );
 
-            public override void DownloadCompletedAdvertisement(NSNumber[] data)
+            public override void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => _nativeFileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
+            
+            public override void DownloadCompletedAdvertisement(string resource, NSNumber[] data)
             {
                 var dataBytes = new byte[data.Length];
                 for (var i = 0; i < data.Length; i++)
                 {
                     dataBytes[i] = data[i].ByteValue;
                 }
-                
-                _fileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(dataBytes));
+
+                DownloadCompletedAdvertisement(resource, dataBytes);
             }
 
-            public override void FileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(nint progressPercentage, float averageThroughput)
-                => _fileDownloader?.OnFileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
+            public void DownloadCompletedAdvertisement(string resource, byte[] data) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resource, data);
+
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
+                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
+                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: (int)progressPercentage
-                ));
+                );
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    averageThroughput: averageThroughput,
+                    progressPercentage: progressPercentage
+                );
+            
+            #endregion
+
+                        
+            static private EFileDownloaderVerdict TranslateFileDownloaderVerdict(EIOSFileDownloadingInitializationVerdict verdict)
+            {
+                if (verdict == EIOSFileDownloadingInitializationVerdict.Success) //0
+                {
+                    return EFileDownloaderVerdict.Success;
+                }
+
+                if (verdict == EIOSFileDownloadingInitializationVerdict.FailedInvalidSettings)
+                {
+                    return EFileDownloaderVerdict.FailedInvalidSettings;
+                }
+            
+                if (verdict == EIOSFileDownloadingInitializationVerdict.FailedDownloadAlreadyInProgress)
+                {
+                    return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
+
+                //0 we have to separate enums
+                //
+                //  - EFileDownloaderVerdict which is publicly exposed and used by both IOS and ios
+                //  - EIOSFileDownloaderVerdict which is specific to IOS and should not be used by the api surface or the end users
+            }
 
             // ReSharper disable once InconsistentNaming
-            static private IFileDownloader.EFileDownloaderState TranslateEIOSFileDownloaderState(EIOSFileDownloaderState state) => state switch
+            static private EFileDownloaderState TranslateEIOSFileDownloaderState(EIOSFileDownloaderState state) => state switch
             {
-                EIOSFileDownloaderState.None => IFileDownloader.EFileDownloaderState.None,
-                EIOSFileDownloaderState.Idle => IFileDownloader.EFileDownloaderState.Idle,
-                EIOSFileDownloaderState.Error => IFileDownloader.EFileDownloaderState.Error,
-                EIOSFileDownloaderState.Paused => IFileDownloader.EFileDownloaderState.Paused,
-                EIOSFileDownloaderState.Complete => IFileDownloader.EFileDownloaderState.Complete,
-                EIOSFileDownloaderState.Cancelled => IFileDownloader.EFileDownloaderState.Cancelled,
-                EIOSFileDownloaderState.Cancelling => IFileDownloader.EFileDownloaderState.Cancelling,
-                EIOSFileDownloaderState.Downloading => IFileDownloader.EFileDownloaderState.Downloading,
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+                EIOSFileDownloaderState.None => EFileDownloaderState.None,
+                EIOSFileDownloaderState.Idle => EFileDownloaderState.Idle,
+                EIOSFileDownloaderState.Error => EFileDownloaderState.Error,
+                EIOSFileDownloaderState.Paused => EFileDownloaderState.Paused,
+                EIOSFileDownloaderState.Complete => EFileDownloaderState.Complete,
+                EIOSFileDownloaderState.Cancelled => EFileDownloaderState.Cancelled,
+                EIOSFileDownloaderState.Cancelling => EFileDownloaderState.Cancelling,
+                EIOSFileDownloaderState.Downloading => EFileDownloaderState.Downloading,
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
             };
         }
     }

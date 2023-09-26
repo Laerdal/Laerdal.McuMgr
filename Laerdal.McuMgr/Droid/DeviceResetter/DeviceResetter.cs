@@ -7,95 +7,128 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
-using Laerdal.McuMgr.DeviceResetter.Events;
+using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter
     {
-        private readonly AndroidDeviceResetter _androidDeviceResetter;
-
-        public DeviceResetter(BluetoothDevice bleDevice)
+        public DeviceResetter(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+        }
+        
+        static private INativeDeviceResetterProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        {
+            bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+            
+            androidContext ??= Application.Context;
+            //androidContext = androidContext ?? throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird"); //impossible
 
-            var androidContext = Application.Context;
-            if (androidContext == null)
-                throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
-
-            _androidDeviceResetter = new AndroidDeviceResetterProxy(this, androidContext, bleDevice);
+            return new AndroidNativeDeviceResetterAdapterProxy(
+                context: androidContext,
+                bluetoothDevice: bluetoothDevice,
+                deviceResetterCallbacksProxy: new GenericNativeDeviceResetterCallbacksProxy()
+            );
         }
 
-        public string LastFatalErrorMessage => _androidDeviceResetter?.LastFatalErrorMessage;
-
-        public IDeviceResetter.EDeviceResetterState State => AndroidDeviceResetterProxy.TranslateEAndroidDeviceResetterState(
-            _androidDeviceResetter?.State ?? EAndroidDeviceResetterState.None
-        );
-        
-        public void BeginReset() => _androidDeviceResetter.BeginReset();
-        public void Disconnect() => _androidDeviceResetter.Disconnect();
-
-        private sealed class AndroidDeviceResetterProxy : AndroidDeviceResetter
+        private sealed class AndroidNativeDeviceResetterAdapterProxy : AndroidDeviceResetter, INativeDeviceResetterProxy
         {
-            private readonly DeviceResetter _resetter;
+            private readonly INativeDeviceResetterCallbacksProxy _deviceResetterCallbacksProxy;
+
+            public IDeviceResetterEventEmittable DeviceResetter //keep this to conform to the interface
+            {
+                get => _deviceResetterCallbacksProxy!.DeviceResetter;
+                set => _deviceResetterCallbacksProxy!.DeviceResetter = value;
+            }
+
+            public EDeviceResetterState State => TranslateEAndroidDeviceResetterState(base.State ?? EAndroidDeviceResetterState.None);
 
             // ReSharper disable once UnusedMember.Local
-            private AndroidDeviceResetterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+            private AndroidNativeDeviceResetterAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             {
             }
 
-            internal AndroidDeviceResetterProxy(DeviceResetter resetter, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            internal AndroidNativeDeviceResetterAdapterProxy(INativeDeviceResetterCallbacksProxy deviceResetterCallbacksProxy, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
             {
-                _resetter = resetter ?? throw new ArgumentNullException(nameof(resetter));
+                _deviceResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy));
             }
 
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
                 
-                _resetter.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                _deviceResetterCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
             }
 
             public override void StateChangedAdvertisement(EAndroidDeviceResetterState oldState, EAndroidDeviceResetterState newState)
             {
                 base.StateChangedAdvertisement(oldState: oldState, currentState: newState);
-                
-                _resetter.OnStateChanged(new StateChangedEventArgs(
+
+                StateChangedAdvertisement(
                     newState: TranslateEAndroidDeviceResetterState(newState),
                     oldState: TranslateEAndroidDeviceResetterState(oldState)
-                ));
+                );
             }
 
-            static public IDeviceResetter.EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
+            //keep this method to adhere to the interface
+            public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
+            {
+                _deviceResetterCallbacksProxy?.StateChangedAdvertisement(
+                    oldState: oldState,
+                    newState: newState
+                );
+            }
+
+            public override void LogMessageAdvertisement(string message, string category, string level)
+            {
+                base.LogMessageAdvertisement(message, category, level);
+
+                LogMessageAdvertisement(
+                    level: HelpersAndroid.TranslateEAndroidLogLevel(level),
+                    message: message,
+                    category: category
+                );
+            }
+
+            //keep this override   its needed to conform to the interface
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level)
+            {
+                _deviceResetterCallbacksProxy?.LogMessageAdvertisement(message, category, level);
+            }
+
+            static private EDeviceResetterState TranslateEAndroidDeviceResetterState(EAndroidDeviceResetterState state)
             {
                 if (state == EAndroidDeviceResetterState.None)
                 {
-                    return IDeviceResetter.EDeviceResetterState.None;
+                    return EDeviceResetterState.None;
                 }
                 
                 if (state == EAndroidDeviceResetterState.Idle)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Idle;
+                    return EDeviceResetterState.Idle;
                 }
 
                 if (state == EAndroidDeviceResetterState.Resetting)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Resetting;
+                    return EDeviceResetterState.Resetting;
                 }
 
                 if (state == EAndroidDeviceResetterState.Complete)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Complete;
+                    return EDeviceResetterState.Complete;
                 }
                 
                 if (state == EAndroidDeviceResetterState.Failed)
                 {
-                    return IDeviceResetter.EDeviceResetterState.Failed;
+                    return EDeviceResetterState.Failed;
                 }
                 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

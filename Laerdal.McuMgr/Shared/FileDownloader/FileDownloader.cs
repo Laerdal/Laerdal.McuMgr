@@ -5,15 +5,44 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileDownloader.Events;
-using Laerdal.McuMgr.FileDownloader.Exceptions;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
+using Laerdal.McuMgr.FileDownloader.Contracts;
+using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloader.Contracts.Events;
+using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
+using Laerdal.McuMgr.FileDownloader.Contracts.Native;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
     /// <inheritdoc cref="IFileDownloader"/>
-    public partial class FileDownloader : IFileDownloader
+    public partial class FileDownloader : IFileDownloader, IFileDownloaderEventEmittable
     {
+        private readonly INativeFileDownloaderProxy _nativeFileDownloaderProxy;
+
+        //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFileDownloaderProxy
+        internal FileDownloader(INativeFileDownloaderProxy nativeFileDownloaderProxy)
+        {
+            _nativeFileDownloaderProxy = nativeFileDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFileDownloaderProxy));
+            _nativeFileDownloaderProxy.FileDownloader = this; //vital
+        }
+
+        public string LastFatalErrorMessage => _nativeFileDownloaderProxy?.LastFatalErrorMessage;
+
+        public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+        {
+            RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
+            remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
+
+            var verdict = _nativeFileDownloaderProxy.BeginDownload(remoteFilePath: remoteFilePath);
+
+            return verdict;
+        }
+
+        public void Cancel() => _nativeFileDownloaderProxy?.Cancel();
+        public void Disconnect() => _nativeFileDownloaderProxy?.Disconnect();
+
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
@@ -92,47 +121,59 @@ namespace Laerdal.McuMgr.FileDownloader
             remove => _fileDownloadProgressPercentageAndDataThroughputChanged -= value;
         }
 
-        public async Task<Dictionary<string, byte[]>> DownloadAsync(
+        public async Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
-            int sleepTimeBetweenRetriesInMs = 1_000,
             int timeoutPerDownloadInMs = -1,
-            int maxRetriesPerDownload = 10
+            int maxRetriesPerDownload = 10,
+            int sleepTimeBetweenRetriesInMs = 0
         )
         {
-            var results = remoteFilePaths.ToDictionary(
+            RemoteFilePathHelpers.ValidateRemoteFilePaths(remoteFilePaths); //                                        order
+            var sanitizedUniqueRemoteFilesPaths = RemoteFilePathHelpers.SanitizeRemoteFilePaths(remoteFilePaths); //  order
+
+            var results = sanitizedUniqueRemoteFilesPaths.ToDictionary(
                 keySelector: x => x,
-                elementSelector: x => (byte[]) null
+                elementSelector: x => (byte[])null
             );
 
-            foreach (var x in results)
+            foreach (var path in sanitizedUniqueRemoteFilesPaths) //00 impossible to parallelize
             {
                 try
                 {
                     var data = await DownloadAsync(
-                        x.Key,
-                        maxRetriesCount: maxRetriesPerDownload,
+                        remoteFilePath: path,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
-                    );
-                    
-                    results[x.Key] = data;
+                        maxRetriesCount: maxRetriesPerDownload,
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs);
+
+                    results[path] = data;
                 }
-                catch (DownloadErroredOutRemoteFileNotFoundException)
+                catch (DownloadErroredOutException) //10
                 {
-                    continue;
                 }
             }
 
             return results;
+            
+            //00  we would love to parallelize all this but the native side simply reverts to queuing the requests so its pointless
+            //
+            //10  we dont want to throw here because we want to return the results for the files that were successfully downloaded
+            //    if a file fails to download we simply return null data for that file
         }
 
+        private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task<byte[]> DownloadAsync(
             string remoteFilePath,
             int timeoutForDownloadInMs = -1,
             int maxRetriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs
         )
         {
+            gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
+                ? gracefulCancellationTimeoutInMs
+                : DefaultGracefulCancellationTimeoutInMs;
+            
             var result = (byte[])null;
             var isCancellationRequested = false;
             for (var retry = 0; !isCancellationRequested;)
@@ -146,26 +187,58 @@ namespace Laerdal.McuMgr.FileDownloader
                     DownloadCompleted += DownloadAsyncOnDownloadCompleted;
                     FatalErrorOccurred += DownloadAsyncOnFatalErrorOccurred;
 
-                    var verdict = BeginDownload(remoteFilePath);
-                    if (verdict != IFileDownloader.EFileDownloaderVerdict.Success)
+                    var verdict = BeginDownload(remoteFilePath); //00 dont use task.run here for now
+                    if (verdict != EFileDownloaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
                     result = timeoutForDownloadInMs < 0
                         ? await taskCompletionSource.Task
                         : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutForDownloadInMs);
+
+                    break;
+                }
+                catch (TimeoutException ex)
+                {
+                    //todo   silently cancel the download here on best effort basis
+                    
+                    (this as IFileDownloaderEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        resource: remoteFilePath,
+                        oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail
+                        newState: EFileDownloaderState.Error
+                    ));
+
+                    throw new DownloadTimeoutException(remoteFilePath, timeoutForDownloadInMs, ex);
                 }
                 catch (DownloadErroredOutException ex)
                 {
-                    if (ex is DownloadErroredOutRemoteFileNotFoundException) //no point to retry if the remote file is not there
+                    if (ex is DownloadErroredOutRemoteFileNotFoundException) //order   no point to retry if the remote file is not there
                         throw;
-                    
-                    if (++retry > maxRetriesCount)
-                        throw new DownloadErroredOutException($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount} times", innerException: ex);
 
-                    if (sleepTimeBetweenRetriesInMs > 0)
+                    if (++retry > maxRetriesCount) //order
+                        throw new AllDownloadAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
+
+                    if (sleepTimeBetweenRetriesInMs > 0) //order
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
                     }
+
+                    continue;
+                }
+                catch (Exception ex) when (
+                    ex is not ArgumentException //10 wops probably missing native lib symbols!
+                    && ex is not TimeoutException
+                    && !(ex is IDownloadException) //this accounts for both cancellations and download exceptions!
+                )
+                {
+                    (this as IFileDownloaderEventEmittable).OnStateChanged(new StateChangedEventArgs( //for consistency
+                        resource: remoteFilePath,
+                        oldState: EFileDownloaderState.None,
+                        newState: EFileDownloaderState.Error
+                    ));
+
+                    //OnFatalErrorOccurred(); //dont   not worth it in this case  
+
+                    throw new DownloadInternalErrorException(ex);
                 }
                 finally
                 {
@@ -182,24 +255,28 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void DownloadAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
                 {
-                    if (ea.NewState != IFileDownloader.EFileDownloaderState.Cancelling || isCancellationRequested)
+                    if (ea.NewState != EFileDownloaderState.Cancelling || isCancellationRequested)
                         return;
 
                     isCancellationRequested = true;
 
-                    _ = Task.Run(async () =>
+                    Task.Run(async () =>
                     {
                         try
                         {
-                            await Task.Delay(5_000); //                                                 we first wait to allow the cancellation to occur normally
-                            taskCompletionSource.TrySetException(new DownloadCancelledException()); //  but if it takes too long we give the killing blow manually
+                            await Task.Delay(gracefulCancellationTimeoutInMs);
+                            (this as IFileDownloaderEventEmittable).OnCancelled(new CancelledEventArgs()); //00
                         }
                         catch // (Exception ex)
                         {
                             // ignored
                         }
                     });
+
                     return;
+
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
+                    //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
                 }
 
                 void DownloadAsyncOnDownloadCompleted(object sender, DownloadCompletedEventArgs ea)
@@ -209,8 +286,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void DownloadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutRemoteFileNotFound = ea.ErrorMessage?
-                        .ToUpperInvariant()
+                    var isAboutRemoteFileNotFound = ea.ErrorMessage
+                        ?.ToUpperInvariant()
                         .Replace("NO_ENTRY (5)", "NO ENTRY (5)") //normalize the error for android so that it will be the same as in ios
                         .Contains("NO ENTRY (5)") ?? false;
                     if (isAboutRemoteFileNotFound)
@@ -222,24 +299,71 @@ namespace Laerdal.McuMgr.FileDownloader
                     taskCompletionSource.TrySetException(new DownloadErroredOutException(ea.ErrorMessage)); //generic
                 }
             }
-            
+
             if (isCancellationRequested) //vital
-                throw new DownloadCancelledException(); //00
-            
+                throw new DownloadCancelledException(); //20
+
             return result;
 
-            //00  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
+            //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
+            //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
+            //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
+            //
+            //10  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
+            //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
+            //
+            //20  its important to detect the cancellation request so as to break as early as possible    this becomes even more important
             //    in cases where the ble connection bites the dust and is unrecoverable because in that case the file downloader will just keep
             //    on trying in vain forever for like 50 retries or something and pressing the cancel button wont have any effect because
-            //    the upload cannot commence to begin with
+            //    the download cannot commence to begin with
         }
-        
-        private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        private void OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnFileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+
+        void IFileDownloaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+
+
+        //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileDownloaderProxy
+        internal class GenericNativeFileDownloaderCallbacksProxy : INativeFileDownloaderCallbacksProxy
+        {
+            public IFileDownloaderEventEmittable FileDownloader { get; set; }
+
+            public void CancelledAdvertisement()
+                => FileDownloader?.OnCancelled(new CancelledEventArgs());
+
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+                => FileDownloader?.OnLogEmitted(new LogEmittedEventArgs(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: resource
+                ));
+
+            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
+                => FileDownloader?.OnStateChanged(new StateChangedEventArgs(
+                    resource: resource,
+                    newState: newState,
+                    oldState: oldState
+                ));
+
+            public void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => FileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+
+            public void DownloadCompletedAdvertisement(string resource, byte[] data)
+                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
+
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
+
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
+                => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
+                    averageThroughput: averageThroughput,
+                    progressPercentage: progressPercentage
+                ));
+        }
     }
 }

@@ -7,95 +7,138 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
-using Laerdal.McuMgr.FirmwareEraser.Events;
+using Laerdal.McuMgr.Common;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 
 namespace Laerdal.McuMgr.FirmwareEraser
 {
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
-        private readonly AndroidFirmwareEraser _androidFirmwareEraser;
-
-        public FirmwareEraser(BluetoothDevice bleDevice)
+        public FirmwareEraser(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+        }
 
-            var androidContext = Application.Context;
+        static private INativeFirmwareEraserProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        {
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
+
+            androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidFirmwareEraser = new AndroidFirmwareEraserProxy(this, androidContext, bleDevice);
-
-            //todo   improve context  https://github.com/jamesmontemagno/MediaPlugin/blob/master/src/Media.Plugin/Android/MediaImplementation.cs#L355-L359
+            return new AndroidNativeFirmwareEraserAdapterProxy(
+                androidContext: androidContext,
+                bluetoothDevice: bluetoothDevice,
+                eraserCallbacksProxy: new GenericNativeFirmwareEraserCallbacksProxy()
+            );
         }
 
-        public string LastFatalErrorMessage => _androidFirmwareEraser?.LastFatalErrorMessage;
-
-        public void Disconnect() => _androidFirmwareEraser.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _androidFirmwareEraser.BeginErasure(imageIndex);
-
-        private sealed class AndroidFirmwareEraserProxy : AndroidFirmwareEraser
+        internal sealed class AndroidNativeFirmwareEraserAdapterProxy : AndroidFirmwareEraser, INativeFirmwareEraserProxy
         {
-            private readonly FirmwareEraser _eraser;
+            private readonly INativeFirmwareEraserCallbacksProxy _nativeEraserCallbacksProxy;
 
             // ReSharper disable once UnusedMember.Local
-            private AndroidFirmwareEraserProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+            private AndroidNativeFirmwareEraserAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             {
             }
 
-            internal AndroidFirmwareEraserProxy(FirmwareEraser eraser, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            internal AndroidNativeFirmwareEraserAdapterProxy(INativeFirmwareEraserCallbacksProxy eraserCallbacksProxy, Context androidContext, BluetoothDevice bluetoothDevice)
+                : base(androidContext, bluetoothDevice)
             {
-                _eraser = eraser ?? throw new ArgumentNullException(nameof(eraser));
+                if (bluetoothDevice == null)
+                    throw new ArgumentNullException(nameof(bluetoothDevice));
+
+                androidContext ??= Application.Context;
+                if (androidContext == null)
+                    throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
+                
+                _nativeEraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
+            }
+            
+            public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
+            {
+                get => _nativeEraserCallbacksProxy!.FirmwareEraser;
+                set => _nativeEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)
             {
                 base.StateChangedAdvertisement(oldState, newState);
                 
-                _eraser.OnStateChanged(new StateChangedEventArgs(
-                    newState: TranslateEAndroidFirmwareEraserState(newState),
-                    oldState: TranslateEAndroidFirmwareEraserState(oldState)
-                ));
+                StateChangedAdvertisement(newState: TranslateEAndroidFirmwareEraserState(newState), oldState: TranslateEAndroidFirmwareEraserState(oldState));
+            }
+            
+            //keep this override   its needed to conform to the interface
+            public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
+            {
+                _nativeEraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
             
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
                 base.BusyStateChangedAdvertisement(busyNotIdle); //just in case
 
-                _eraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
+                _nativeEraserCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
             public override void FatalErrorOccurredAdvertisement(string errorMessage)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage);
                 
-                _eraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+                _nativeEraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
+            }
+            
+            public override void LogMessageAdvertisement(string message, string category, string level)
+            {
+                base.LogMessageAdvertisement(message, category, level);
+            
+                LogMessageAdvertisement(
+                    level: HelpersAndroid.TranslateEAndroidLogLevel(level),
+                    message: message,
+                    category: category
+                );
             }
 
-            static private IFirmwareEraser.EFirmwareErasureState TranslateEAndroidFirmwareEraserState(EAndroidFirmwareEraserState state)
+            //keep this override   its needed to conform to the interface
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level)
+            {
+                _nativeEraserCallbacksProxy.LogMessageAdvertisement(message, category, level);
+            }
+
+            // ReSharper disable once MemberCanBePrivate.Global
+            static internal EFirmwareErasureState TranslateEAndroidFirmwareEraserState(EAndroidFirmwareEraserState state)
             {
                 if (state == EAndroidFirmwareEraserState.None)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.None;
+                    return EFirmwareErasureState.None;
                 }
                 
                 if (state == EAndroidFirmwareEraserState.Idle)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.Idle;
+                    return EFirmwareErasureState.Idle;
                 }
 
                 if (state == EAndroidFirmwareEraserState.Erasing)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.Erasing;
+                    return EFirmwareErasureState.Erasing;
                 }
 
                 if (state == EAndroidFirmwareEraserState.Complete)
                 {
-                    return IFirmwareEraser.EFirmwareErasureState.Complete;
+                    return EFirmwareErasureState.Complete;
                 }
                 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                if (state == EAndroidFirmwareEraserState.Failed)
+                {
+                    return EFirmwareErasureState.Failed;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

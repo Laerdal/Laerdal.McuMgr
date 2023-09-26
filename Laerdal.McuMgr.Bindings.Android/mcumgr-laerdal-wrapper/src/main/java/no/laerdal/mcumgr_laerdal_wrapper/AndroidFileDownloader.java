@@ -22,6 +22,7 @@ public class AndroidFileDownloader
 
     private int _initialBytes;
     private long _downloadStartTimestamp;
+    private String _remoteFilePathSanitized = "";
     private EAndroidFileDownloaderState _currentState = EAndroidFileDownloaderState.NONE;
 
     public AndroidFileDownloader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
@@ -41,7 +42,7 @@ public class AndroidFileDownloader
 
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("Provided target-path is empty!");
+            fatalErrorOccurredAdvertisement("", "Target-file provided is dud!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -50,7 +51,7 @@ public class AndroidFileDownloader
         if (remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("Provided target-path points to a directory not a file!");
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -58,7 +59,7 @@ public class AndroidFileDownloader
         if (!remoteFilePathSanitized.startsWith("/"))
         {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("Provided target-path is not an absolute path!");
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path is not an absolute path!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -70,7 +71,7 @@ public class AndroidFileDownloader
         catch (final Exception ex)
         {
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(ex.getMessage());
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -80,10 +81,11 @@ public class AndroidFileDownloader
 
         setState(EAndroidFileDownloaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
         _initialBytes = 0;
 
+        _remoteFilePathSanitized = remoteFilePathSanitized;
         _controller = _fileSystemManager.fileDownload(remoteFilePathSanitized, new FileDownloaderCallbackProxy());
 
         return EAndroidFileDownloaderVerdict.SUCCESS;
@@ -161,7 +163,7 @@ public class AndroidFileDownloader
 
         if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
@@ -174,9 +176,10 @@ public class AndroidFileDownloader
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage)
+    public void fatalErrorOccurredAdvertisement(final String resource, final String errorMessage)
     {
-        _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
+        //this method is meant to be overridden by csharp binding libraries to intercept updates
+        _lastFatalErrorMessage = errorMessage;
     }
 
     public void busyStateChangedAdvertisement(boolean busyNotIdle)
@@ -189,22 +192,34 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState) // (final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
+    //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
+    public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
+    {
+        stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState);
+    }
+
+    public void stateChangedAdvertisement(final String resource, final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void downloadCompletedAdvertisement(final byte[] data)
+    public void downloadCompletedAdvertisement(final String resource, final byte[] data)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void logMessageAdvertisement(final String warningMessage, final String category, final String level)
+    //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
+    private void logMessageAdvertisement(final String message, final String category, final String level)
+    {
+        logMessageAdvertisement(message, category, level, _remoteFilePathSanitized);
+    }
+
+    public void logMessageAdvertisement(final String message, final String category, final String level, final String resource) //wrapper method
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -233,7 +248,7 @@ public class AndroidFileDownloader
                 fileDownloadProgressPercentage = (int) (bytesSent * 100.f / fileSize);
             }
 
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement( // convert to percent
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
                     fileDownloadProgressPercentage,
                     transferSpeed
             );
@@ -242,9 +257,9 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadFailed(@NonNull final McuMgrException error)
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(error.getMessage());
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
         }
@@ -252,7 +267,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCanceled()
         {
-            fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
             setLoggingEnabled(true);
@@ -262,10 +277,10 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCompleted(byte @NotNull [] data)
         {
-            //fileDownloadProgressPercentageAndThroughputDataChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
+            //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
 
-            downloadCompletedAdvertisement(data); //             order  vital
-            setState(EAndroidFileDownloaderState.COMPLETE); //   order  vital
+            downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
+            setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
 
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);

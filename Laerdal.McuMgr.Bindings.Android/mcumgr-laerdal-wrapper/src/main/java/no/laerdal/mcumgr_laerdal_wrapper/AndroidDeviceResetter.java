@@ -2,17 +2,14 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-
 import androidx.annotation.NonNull;
-
-import org.jetbrains.annotations.NotNull;
-
 import io.runtime.mcumgr.McuMgrCallback;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
 import io.runtime.mcumgr.response.McuMgrResponse;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class AndroidDeviceResetter {
@@ -88,6 +85,10 @@ public class AndroidDeviceResetter {
 
     public void fatalErrorOccurredAdvertisement(String errorMessage) {
         _lastFatalErrorMessage = errorMessage; //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    public void logMessageAdvertisement(String message, String category, String level) {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     public void stateChangedAdvertisement(EAndroidDeviceResetterState oldState, EAndroidDeviceResetterState currentState) {

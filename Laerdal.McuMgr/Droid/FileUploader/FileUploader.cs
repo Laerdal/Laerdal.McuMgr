@@ -2,223 +2,232 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Linq;
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
 using Laerdal.Java.McuMgr.Wrapper.Android;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FileUploader.Events;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Native;
 
 namespace Laerdal.McuMgr.FileUploader
 {
     /// <inheritdoc cref="IFileUploader"/>
     public partial class FileUploader : IFileUploader
     {
-        private readonly AndroidFileUploader _androidFileUploaderProxy;
-
-        public FileUploader(BluetoothDevice bleDevice)
+        public FileUploader(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
+        }
 
-            var androidContext = Application.Context;
+        static private INativeFileUploaderProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        {
+            bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+
+            androidContext ??= Application.Context;
             if (androidContext == null)
                 throw new InvalidOperationException("Failed to retrieve the Android Context in which this call takes place - this is weird");
 
-            _androidFileUploaderProxy = new AndroidFileUploaderProxy(
-                uploader: this,
+            return new AndroidFileUploaderProxy(
                 context: androidContext,
-                bluetoothDevice: bleDevice
+                bluetoothDevice: bluetoothDevice,
+                fileUploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy()
             );
-
-            //todo   improve context  https://github.com/jamesmontemagno/MediaPlugin/blob/master/src/Media.Plugin/Android/MediaImplementation.cs#L355-L359
         }
 
-        public string LastFatalErrorMessage => _androidFileUploaderProxy?.LastFatalErrorMessage;
-
-        public IFileUploader.EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+        private sealed class AndroidFileUploaderProxy : AndroidFileUploader, INativeFileUploaderProxy 
         {
-            // if (data == null || !data.Any())
-            //     throw new InvalidOperationException($"The '{nameof(data)}' byte-array parameter is null or empty");
-
-            if (string.IsNullOrWhiteSpace(remoteFilePath))
-                throw new InvalidOperationException($"The {nameof(remoteFilePath)} parameter is dud!");
-
-            remoteFilePath = remoteFilePath.Trim();
-            if (remoteFilePath.EndsWith("/")) //00
-                throw new InvalidOperationException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
-
-            if (!remoteFilePath.StartsWith("/")) //10
-            {
-                remoteFilePath = $"/{remoteFilePath}";
-            }
-
-            if (data == null || !data.Any())
-                throw new InvalidOperationException("The data byte-array parameter is null or empty");
-
-            var verdict = _androidFileUploaderProxy.BeginUpload(remoteFilePath: remoteFilePath, data: data);
-
-            return TranslateFileUploaderVerdict(verdict);
-
-            //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
-            //10  the target file path must be absolute   if its not then we make it so   relative paths cause exotic errors
-        }
-
-        public void Cancel() => _androidFileUploaderProxy?.Cancel();
-        public void Disconnect() => _androidFileUploaderProxy?.Disconnect();
-
-        static private IFileUploader.EFileUploaderVerdict TranslateFileUploaderVerdict(EAndroidFileUploaderVerdict verdict)
-        {
-            if (verdict == EAndroidFileUploaderVerdict.Success) //0
-            {
-                return IFileUploader.EFileUploaderVerdict.Success;
-            }
+            private readonly INativeFileUploaderCallbacksProxy _fileUploaderCallbacksProxy;
             
-            if (verdict == EAndroidFileUploaderVerdict.FailedInvalidSettings)
+            public IFileUploaderEventEmittable FileUploader //keep this to conform to the interface
             {
-                return IFileUploader.EFileUploaderVerdict.FailedInvalidSettings;
+                get => _fileUploaderCallbacksProxy!.FileUploader;
+                set => _fileUploaderCallbacksProxy!.FileUploader = value;
             }
-
-            if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
-            {
-                return IFileUploader.EFileUploaderVerdict.FailedInvalidData;
-            }
-            
-            if (verdict == EAndroidFileUploaderVerdict.FailedOtherUploadAlreadyInProgress)
-            {
-                return IFileUploader.EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(verdict), verdict, null);
-
-            //0 we have to separate enums
-            //
-            //  - EFileUploaderVerdict which is publicly exposed and used by both android and ios
-            //  - EAndroidFileUploaderVerdict which is specific to android and should not be used by the api surface or the end users
-        }
-
-        private sealed class AndroidFileUploaderProxy : AndroidFileUploader
-        {
-            private readonly FileUploader _fileUploader;
 
             // ReSharper disable once UnusedMember.Local
             private AndroidFileUploaderProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             {
             }
-
-            internal AndroidFileUploaderProxy(FileUploader uploader, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            
+            internal AndroidFileUploaderProxy(INativeFileUploaderCallbacksProxy fileUploaderCallbacksProxy, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
             {
-                _fileUploader = uploader ?? throw new ArgumentNullException(nameof(uploader));
-            }
-
-            public override void FatalErrorOccurredAdvertisement(string remoteFilePath, string errorMessage)
-            {
-                base.FatalErrorOccurredAdvertisement(remoteFilePath: remoteFilePath, errorMessage: errorMessage);
-
-                _fileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
-                    errorMessage: errorMessage,
-                    remoteFilePath: remoteFilePath
-                ));
+                _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
             
-            public override void LogMessageAdvertisement(string remoteFilePath, string message, string category, string level)
-            {
-                base.LogMessageAdvertisement(
-                    level: level,
-                    message: message,
-                    category: category,
-                    remoteFilePath: remoteFilePath
-                );
+            
+            #region commands 
 
-                _fileUploader?.OnLogEmitted(new LogEmittedEventArgs(
+            public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            {
+                return TranslateFileUploaderVerdict(base.BeginUpload(remoteFilePath, data));
+            }
+            
+            #endregion commands
+            
+
+
+            #region android callbacks -> csharp event emitters
+            
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
+            {
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage);
+
+                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            }
+            
+            public override void LogMessageAdvertisement(string message, string category, string level, string resource)
+            {
+                base.LogMessageAdvertisement(message, category, level, resource);
+
+                LogMessageAdvertisement(
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
                     message: message,
                     category: category,
-                    resource: remoteFilePath
-                ));
+                    resource: resource //this is the remote-file-path essentially
+                );
             }
 
-            public override void CancelledAdvertisement(string remoteFilePath)
+            // keep this around to conform to the interface
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
             {
-                base.CancelledAdvertisement(remoteFilePath); //just in case
+                _fileUploaderCallbacksProxy?.LogMessageAdvertisement(
+                    level: level,
+                    message: message,
+                    category: category,
+                    resource: resource //essentially the remote filepath
+                );
+            }
+
+            public override void CancelledAdvertisement()
+            {
+                base.CancelledAdvertisement(); //just in case
                 
-                _fileUploader?.OnCancelled(new CancelledEventArgs(remoteFilePath));
+                _fileUploaderCallbacksProxy?.CancelledAdvertisement();
             }
 
-            public override void BusyStateChangedAdvertisement(string remoteFilePath, bool busyNotIdle)
+            public override void UploadCompletedAdvertisement(string resource)
             {
-                base.BusyStateChangedAdvertisement(remoteFilePath, busyNotIdle); //just in case
+                base.UploadCompletedAdvertisement(resource); //just in case
+
+                _fileUploaderCallbacksProxy?.UploadCompletedAdvertisement(resource);
+            }
+
+            public override void BusyStateChangedAdvertisement(bool busyNotIdle)
+            {
+                base.BusyStateChangedAdvertisement(busyNotIdle); //just in case
                 
-                _fileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(remoteFilePath, busyNotIdle));  
+                _fileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
+            public override void StateChangedAdvertisement(string resource, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
             {
-                base.StateChangedAdvertisement(remoteFilePath, oldState, newState); //just in case
+                base.StateChangedAdvertisement(resource, oldState, newState); //just in case
 
-                _fileUploader?.OnStateChanged(new StateChangedEventArgs(
-                    newState: TranslateEAndroidFileUploaderState(newState),
+                StateChangedAdvertisement(
+                    resource: resource, //essentially the remote filepath
                     oldState: TranslateEAndroidFileUploaderState(oldState),
-                    remoteFilePath: remoteFilePath
-                ));
+                    newState: TranslateEAndroidFileUploaderState(newState)
+                );
             }
 
-            public override void FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(string remoteFilePath, int progressPercentage, float averageThroughput)
+            public void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState)
             {
-                base.FileUploadProgressPercentageAndThroughputDataChangedAdvertisement(remoteFilePath, progressPercentage, averageThroughput); //just in case
+                _fileUploaderCallbacksProxy?.StateChangedAdvertisement(
+                    resource: resource,
+                    oldState: oldState,
+                    newState: newState
+                );
+            }
 
-                _fileUploader?.OnFileUploadProgressPercentageAndThroughputDataChangedAdvertisement(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
-                    remoteFilePath: remoteFilePath,
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
+            {
+                base.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //just in case
+
+                _fileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     averageThroughput: averageThroughput,
                     progressPercentage: progressPercentage
-                ));
+                );
+            }
+            
+            #endregion android callbacks -> csharp event emitters -> helpers
+
+            
+            static private EFileUploaderVerdict TranslateFileUploaderVerdict(EAndroidFileUploaderVerdict verdict)
+            {
+                if (verdict == EAndroidFileUploaderVerdict.Success) //0
+                {
+                    return EFileUploaderVerdict.Success;
+                }
+            
+                if (verdict == EAndroidFileUploaderVerdict.FailedInvalidSettings)
+                {
+                    return EFileUploaderVerdict.FailedInvalidSettings;
+                }
+
+                if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
+                {
+                    return EFileUploaderVerdict.FailedInvalidData;
+                }
+            
+                if (verdict == EAndroidFileUploaderVerdict.FailedOtherUploadAlreadyInProgress)
+                {
+                    return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
+
+                //0 we have to separate enums
+                //
+                //  - EFileUploaderVerdict which is publicly exposed and used by both android and ios
+                //  - EAndroidFileUploaderVerdict which is specific to android and should not be used by the api surface or the end users
             }
 
-            static private IFileUploader.EFileUploaderState TranslateEAndroidFileUploaderState(EAndroidFileUploaderState state)
+            static private EFileUploaderState TranslateEAndroidFileUploaderState(EAndroidFileUploaderState state)
             {
                 if (state == EAndroidFileUploaderState.None)
                 {
-                    return IFileUploader.EFileUploaderState.None;
+                    return EFileUploaderState.None;
                 }
                 
                 if (state == EAndroidFileUploaderState.Idle)
                 {
-                    return IFileUploader.EFileUploaderState.Idle;
+                    return EFileUploaderState.Idle;
                 }
 
                 if (state == EAndroidFileUploaderState.Uploading)
                 {
-                    return IFileUploader.EFileUploaderState.Uploading;
+                    return EFileUploaderState.Uploading;
                 }
 
                 if (state == EAndroidFileUploaderState.Paused)
                 {
-                    return IFileUploader.EFileUploaderState.Paused;
+                    return EFileUploaderState.Paused;
                 }
 
                 if (state == EAndroidFileUploaderState.Complete)
                 {
-                    return IFileUploader.EFileUploaderState.Complete;
+                    return EFileUploaderState.Complete;
                 }
                 
                 if (state == EAndroidFileUploaderState.Cancelled)
                 {
-                    return IFileUploader.EFileUploaderState.Cancelled;
-                }
-
-                if (state == EAndroidFileUploaderState.Error)
-                {
-                    return IFileUploader.EFileUploaderState.Error;
+                    return EFileUploaderState.Cancelled;
                 }
                 
-                if (state == EAndroidFileUploaderState.Cancelling)
+                if (state == EAndroidFileUploaderState.Error)
                 {
-                    return IFileUploader.EFileUploaderState.Cancelling;
+                    return EFileUploaderState.Error;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                if (state == EAndroidFileUploaderState.Cancelling)
+                {
+                    return EFileUploaderState.Cancelling;
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
             }
         }
     }

@@ -4,4 +4,5 @@ public enum EIOSFirmwareEraserState: Int {
     case idle = 1
     case erasing = 2
     case complete = 3
+    case failed = 4
 }

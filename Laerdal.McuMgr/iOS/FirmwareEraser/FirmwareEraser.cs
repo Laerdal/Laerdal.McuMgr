@@ -4,7 +4,10 @@
 using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
-using Laerdal.McuMgr.FirmwareEraser.Events;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FirmwareEraser
@@ -12,57 +15,92 @@ namespace Laerdal.McuMgr.FirmwareEraser
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
-        private readonly IOSFirmwareEraser _iosFirmwareEraser;
-
-        public FirmwareEraser(CBPeripheral bleDevice)
+        public FirmwareEraser(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
         {
-            if (bleDevice == null)
-                throw new ArgumentNullException(nameof(bleDevice));
-            
-            _iosFirmwareEraser = new IOSFirmwareEraser(
-                listener: new IOSFirmwareEraserListenerProxy(this),
-                cbPeripheral: bleDevice
+        }
+        
+        static private INativeFirmwareEraserProxy ValidateArgumentsAndConstructProxy(CBPeripheral bluetoothDevice)
+        {
+            if (bluetoothDevice == null)
+                throw new ArgumentNullException(nameof(bluetoothDevice));
+
+            return new IOSNativeFirmwareEraserProxy(
+                bluetoothDevice: bluetoothDevice,
+                nativeFirmwareEraserCallbacksProxy: new GenericNativeFirmwareEraserCallbacksProxy()
             );
         }
 
-        public string LastFatalErrorMessage => _iosFirmwareEraser?.LastFatalErrorMessage;
-
-        public void Disconnect() => _iosFirmwareEraser.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _iosFirmwareEraser.BeginErasure(imageIndex);
-
         // ReSharper disable once InconsistentNaming
-        private sealed class IOSFirmwareEraserListenerProxy : IOSListenerForFirmwareEraser
+        private sealed class IOSNativeFirmwareEraserProxy : IOSListenerForFirmwareEraser, INativeFirmwareEraserProxy
         {
-            private readonly FirmwareEraser _eraser;
+            private readonly IOSFirmwareEraser _nativeFirmwareEraser;
+            private readonly INativeFirmwareEraserCallbacksProxy _nativeFirmwareEraserCallbacksProxy;
 
-            internal IOSFirmwareEraserListenerProxy(FirmwareEraser eraser)
+            internal IOSNativeFirmwareEraserProxy(CBPeripheral bluetoothDevice, INativeFirmwareEraserCallbacksProxy nativeFirmwareEraserCallbacksProxy)
             {
-                _eraser = eraser ?? throw new ArgumentNullException(nameof(eraser));
+                bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
+                nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareEraserCallbacksProxy));
+
+                _nativeFirmwareEraser = new IOSFirmwareEraser(listener: this, cbPeripheral: bluetoothDevice);
+                _nativeFirmwareEraserCallbacksProxy = nativeFirmwareEraserCallbacksProxy; //composition-over-inheritance
             }
 
-            public override void FatalErrorOccurredAdvertisement(string errorMessage) => _eraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
-            public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _eraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
-
-            public override void LogMessageAdvertisement(string message, string category, string level) => _eraser.OnLogEmitted(new LogEmittedEventArgs(
-                level: HelpersIOS.TranslateEIOSLogLevel(level),
-                message: message,
-                category: category,
-                resource: "firmware-eraser"
-            ));
+            #region commands
             
-            public override void StateChangedAdvertisement(EIOSFirmwareEraserState oldState, EIOSFirmwareEraserState newState) => _eraser.OnStateChanged(new StateChangedEventArgs(
-                newState: TranslateEIOSFirmwareEraserState(newState),
-                oldState: TranslateEIOSFirmwareEraserState(oldState)
-            ));
+            public void Disconnect() => _nativeFirmwareEraser?.Disconnect(); //we are simply forwarding the commands down to the native world of ios here
+            public string LastFatalErrorMessage => _nativeFirmwareEraser?.LastFatalErrorMessage;
+
+            public void BeginErasure(int imageIndex) => _nativeFirmwareEraser?.BeginErasure(imageIndex);
+
+            #endregion
+
+            #region native callbacks -> csharp events
+
+            public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
+            {
+                get => _nativeFirmwareEraserCallbacksProxy!.FirmwareEraser;
+                set => _nativeFirmwareEraserCallbacksProxy!.FirmwareEraser = value;
+            }
+
+            //we are simply forwarding the calls up towards the surface world of csharp here
+            public override void LogMessageAdvertisement(string message, string category, string level)
+                => LogMessageAdvertisement(
+                    level: HelpersIOS.TranslateEIOSLogLevel(level),
+                    message: message,
+                    category: category
+                );
+            
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level) //keep this to conform to the interface
+                => _nativeFirmwareEraserCallbacksProxy?.LogMessageAdvertisement(
+                    level: level,
+                    message: message,
+                    category: category
+                );
+
+            public override void StateChangedAdvertisement(EIOSFirmwareEraserState oldState, EIOSFirmwareEraserState newState)
+                => StateChangedAdvertisement(
+                    newState: TranslateEIOSFirmwareEraserState(newState),
+                    oldState: TranslateEIOSFirmwareEraserState(oldState)
+                );
+            public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState) //keep this to conform to the interface
+                => _nativeFirmwareEraserCallbacksProxy?.StateChangedAdvertisement(
+                    newState: newState,
+                    oldState: oldState
+                );
+
+            public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareEraserCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
+            public override void FatalErrorOccurredAdvertisement(string errorMessage) => _nativeFirmwareEraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+
+            #endregion
 
             // ReSharper disable once InconsistentNaming
-            static private IFirmwareEraser.EFirmwareErasureState TranslateEIOSFirmwareEraserState(EIOSFirmwareEraserState state) => state switch
+            static private EFirmwareErasureState TranslateEIOSFirmwareEraserState(EIOSFirmwareEraserState state) => state switch
             {
-                EIOSFirmwareEraserState.None => IFirmwareEraser.EFirmwareErasureState.None,
-                EIOSFirmwareEraserState.Idle => IFirmwareEraser.EFirmwareErasureState.Idle,
-                EIOSFirmwareEraserState.Erasing => IFirmwareEraser.EFirmwareErasureState.Erasing,
-                EIOSFirmwareEraserState.Complete => IFirmwareEraser.EFirmwareErasureState.Complete,
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+                EIOSFirmwareEraserState.None => EFirmwareErasureState.None,
+                EIOSFirmwareEraserState.Idle => EFirmwareErasureState.Idle,
+                EIOSFirmwareEraserState.Erasing => EFirmwareErasureState.Erasing,
+                EIOSFirmwareEraserState.Complete => EFirmwareErasureState.Complete,
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
             };
         }
     }

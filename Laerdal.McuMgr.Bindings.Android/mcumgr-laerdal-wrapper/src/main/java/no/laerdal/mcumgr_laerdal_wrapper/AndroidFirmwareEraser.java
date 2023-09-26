@@ -2,11 +2,8 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-
 import androidx.annotation.NonNull;
-
 import io.runtime.mcumgr.McuMgrCallback;
-import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
@@ -16,7 +13,8 @@ import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 @SuppressWarnings("unused")
 public class AndroidFirmwareEraser {
 
-    private final ImageManager _imageManager;
+    private ImageManager _imageManager;
+    private final McuMgrBleTransport _transport;
 
     /**
      * Constructs a firmware installer for a specific android-context and bluetooth-device.
@@ -25,9 +23,7 @@ public class AndroidFirmwareEraser {
      * @param bluetoothDevice the device to perform the firmware-install on
      */
     public AndroidFirmwareEraser(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
-        final McuMgrTransport transport = new McuMgrBleTransport(context, bluetoothDevice);
-
-        _imageManager = new ImageManager(transport); //todo   move this into beginErasure()
+        _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
     public void beginErasure(final int imageIndex) {
@@ -35,9 +31,17 @@ public class AndroidFirmwareEraser {
 
         setState(EAndroidFirmwareEraserState.ERASING);
 
+        _imageManager = new ImageManager(_transport);
         _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrResponse>() {
             @Override
             public void onResponse(@NonNull final McuMgrResponse response) {
+                if (!response.isSuccess()) { // check for an error return code
+                    fatalErrorOccurredAdvertisement("Erasure failed (error-code '" + response.getReturnCode().toString() + "')");
+
+                    setState(EAndroidFirmwareEraserState.FAILED);
+                    return;
+                }
+
                 readImageErasure();
 
                 setState(EAndroidFirmwareEraserState.COMPLETE);
@@ -45,7 +49,7 @@ public class AndroidFirmwareEraser {
 
             @Override
             public void onError(@NonNull final McuMgrException error) {
-                fatalErrorOccurredAdvertisement(error.getMessage());
+                fatalErrorOccurredAdvertisement("Erasure failed '" + error.getMessage() + "'");
 
                 busyStateChangedAdvertisement(false);
 
@@ -80,6 +84,10 @@ public class AndroidFirmwareEraser {
 
     public void fatalErrorOccurredAdvertisement(String errorMessage) {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    public void logMessageAdvertisement(String message, String category, String level) {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     public void busyStateChangedAdvertisement(boolean busyNotIdle) {
