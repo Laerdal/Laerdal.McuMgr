@@ -348,13 +348,8 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
-Laerdal.McuMgr.Source/iOS
-Laerdal.McuMgr.Source/Android
-Laerdal.McuMgr.Source/iOS_Carthage
-Laerdal.McuMgr.Source/Android_Maven
-
-**/Laerdal.McuMgr.Bindings.iOS/Xamarin/**
-**/Laerdal.McuMgr.Bindings.iOS/VendorFrameworks/**
+**/Laerdal.McuMgr.Bindings.iOS.Native/Xamarin/**
+**/Laerdal.McuMgr.Bindings.iOS.Native/VendorFrameworks/**
 
 *.Output/**
 **/Android/Jars/**
@@ -388,7 +383,7 @@ Package.resolved
 **/build/**
 **/xcuserdata/**
 
-**/Laerdal.McuMgr.Bindings/Frameworks/**
+**/Laerdal.McuMgr.Bindings.iOS/Frameworks/**
 
 # gradle
 

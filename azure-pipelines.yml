@@ -58,13 +58,13 @@ jobs:
             brew   install   java11
             
             # this is handled by the build system
-            # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android/gradle.properties"
+            # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
             
             echo
 
             echo    "--------------------------------------------------"
 
-            cat    Laerdal.McuMgr.Bindings.Android/gradle.properties
+            cat    Laerdal.McuMgr.Bindings.Android.Native/gradle.properties
 
             echo    "--------------------------------------------------"
             
