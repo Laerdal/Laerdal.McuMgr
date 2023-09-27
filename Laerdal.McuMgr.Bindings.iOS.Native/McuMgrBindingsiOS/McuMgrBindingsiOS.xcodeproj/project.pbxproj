@@ -1,0 +1,472 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B028FB802940DF1400CB71EB /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = B028FB7F2940DF1400CB71EB /* iOSMcuManagerLibrary */; };
+		E769D0FFF3A39C575B982F6D /* InvalidFirmwareInstallationModeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */; };
+		E769D1175ADD137DCA6B0207 /* EIOSFirmwareEraserState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D3130BA737A0C282D1DD /* EIOSFirmwareEraserState.swift */; };
+		E769D15459466B0C5BA19E21 /* EIOSFirmwareInstallationVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D1DEDAD5F89C361DF28C /* EIOSFirmwareInstallationVerdict.swift */; };
+		E769D165ADFDDBED8F709DAE /* EIOSFirmwareInstallationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DC8A37490B096716C6B8 /* EIOSFirmwareInstallationMode.swift */; };
+		E769D26DF00FF487503F9A77 /* McuMgrBindingsiOS.h in Headers */ = {isa = PBXBuildFile; fileRef = E769DC768A6D6F0D1CAC3C06 /* McuMgrBindingsiOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E769D33171D78172F096C8A4 /* EIOSFileDownloaderState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D3E9D67A36F06CF0EFB4 /* EIOSFileDownloaderState.swift */; };
+		E769D339FCECEE79EEDD55C5 /* IOSListenerForFileUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D8D446B42BE572E246D4 /* IOSListenerForFileUploader.swift */; };
+		E769D36EAF2DD40E0A892DB2 /* DummyPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DC33E51C5D88437572EB /* DummyPlaceholder.swift */; };
+		E769D37F2EF53CC9C5858BED /* IOSListenerForFirmwareInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D13250C8CDA8CA70A8B7 /* IOSListenerForFirmwareInstaller.swift */; };
+		E769D3F56B12BF1FA2695F1E /* IOSListenerForFileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D19F5EC3404138BFDFF8 /* IOSListenerForFileDownloader.swift */; };
+		E769D54A54C788CCE8488B9B /* EIOSFileDownloadingInitializationVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */; };
+		E769D5AE4CFECFEA0B509626 /* EIOSFirmwareInstallationFatalError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DD92BBBF9A69EAF334F4 /* EIOSFirmwareInstallationFatalError.swift */; };
+		E769D6FCE3BCF0E44DE87684 /* IOSListenerForFirmwareEraser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DD6F60E601AFA283D34B /* IOSListenerForFirmwareEraser.swift */; };
+		E769D7F106E9BC190CDFFD19 /* IOSFileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D9B93897FF4C9ABBAF94 /* IOSFileDownloader.swift */; };
+		E769D8474941EC451199981B /* IOSListenerForDeviceResetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D93618819B3E676FE0EA /* IOSListenerForDeviceResetter.swift */; };
+		E769D89116CA28C68BE793DE /* IOSFirmwareEraser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D5CB3083656E75BFBC1A /* IOSFirmwareEraser.swift */; };
+		E769D8B0408224A463C203E9 /* IOSFirmwareInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D3E2D33EE281518619A7 /* IOSFirmwareInstaller.swift */; };
+		E769D8E49B6F52BD0065A849 /* EIOSFileUploaderState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D9D0270D6C4E5DF8E7CE /* EIOSFileUploaderState.swift */; };
+		E769D9E0958847EF54637962 /* EIOSFirmwareInstallationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DCEDC8442691AF65E8F8 /* EIOSFirmwareInstallationState.swift */; };
+		E769DA011D5897CB39E02602 /* IOSFileUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D417A16B8DCE9D59165A /* IOSFileUploader.swift */; };
+		E769DB00DD068CDC9D273333 /* package.json in Resources */ = {isa = PBXBuildFile; fileRef = E769DE03C73A46ADFF350E43 /* package.json */; };
+		E769DCC9F1B68E50C28DDDB6 /* EIOSDeviceResetterState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DD0EF706588EF75704AE /* EIOSDeviceResetterState.swift */; };
+		E769DE09776F3B7B4ADA00B5 /* IOSDeviceResetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */; };
+		E769DEB3EFF58D41D88197C4 /* EIOSFileUploadingInitializationVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B0C562262936567900B070BA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		B0C562282936568800B070BA /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/CoreBluetooth.framework; sourceTree = DEVELOPER_DIR; };
+		E769D13250C8CDA8CA70A8B7 /* IOSListenerForFirmwareInstaller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSListenerForFirmwareInstaller.swift; sourceTree = "<group>"; };
+		E769D19F5EC3404138BFDFF8 /* IOSListenerForFileDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSListenerForFileDownloader.swift; sourceTree = "<group>"; };
+		E769D1DEDAD5F89C361DF28C /* EIOSFirmwareInstallationVerdict.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareInstallationVerdict.swift; sourceTree = "<group>"; };
+		E769D3130BA737A0C282D1DD /* EIOSFirmwareEraserState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareEraserState.swift; sourceTree = "<group>"; };
+		E769D3E2D33EE281518619A7 /* IOSFirmwareInstaller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSFirmwareInstaller.swift; sourceTree = "<group>"; };
+		E769D3E9D67A36F06CF0EFB4 /* EIOSFileDownloaderState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFileDownloaderState.swift; sourceTree = "<group>"; };
+		E769D417A16B8DCE9D59165A /* IOSFileUploader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSFileUploader.swift; sourceTree = "<group>"; };
+		E769D5CB3083656E75BFBC1A /* IOSFirmwareEraser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSFirmwareEraser.swift; sourceTree = "<group>"; };
+		E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFileUploadingInitializationVerdict.swift; sourceTree = "<group>"; };
+		E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFileDownloadingInitializationVerdict.swift; sourceTree = "<group>"; };
+		E769D8D446B42BE572E246D4 /* IOSListenerForFileUploader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSListenerForFileUploader.swift; sourceTree = "<group>"; };
+		E769D93618819B3E676FE0EA /* IOSListenerForDeviceResetter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSListenerForDeviceResetter.swift; sourceTree = "<group>"; };
+		E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = McuMgrBindingsiOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E769D9B93897FF4C9ABBAF94 /* IOSFileDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSFileDownloader.swift; sourceTree = "<group>"; };
+		E769D9D0270D6C4E5DF8E7CE /* EIOSFileUploaderState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFileUploaderState.swift; sourceTree = "<group>"; };
+		E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InvalidFirmwareInstallationModeError.swift; sourceTree = "<group>"; };
+		E769DC33E51C5D88437572EB /* DummyPlaceholder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DummyPlaceholder.swift; sourceTree = "<group>"; };
+		E769DC768A6D6F0D1CAC3C06 /* McuMgrBindingsiOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = McuMgrBindingsiOS.h; sourceTree = "<group>"; };
+		E769DC8A37490B096716C6B8 /* EIOSFirmwareInstallationMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareInstallationMode.swift; sourceTree = "<group>"; };
+		E769DCEDC8442691AF65E8F8 /* EIOSFirmwareInstallationState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareInstallationState.swift; sourceTree = "<group>"; };
+		E769DD0EF706588EF75704AE /* EIOSDeviceResetterState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSDeviceResetterState.swift; sourceTree = "<group>"; };
+		E769DD6F60E601AFA283D34B /* IOSListenerForFirmwareEraser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSListenerForFirmwareEraser.swift; sourceTree = "<group>"; };
+		E769DD92BBBF9A69EAF334F4 /* EIOSFirmwareInstallationFatalError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareInstallationFatalError.swift; sourceTree = "<group>"; };
+		E769DE03C73A46ADFF350E43 /* package.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
+		E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSDeviceResetter.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E769D7B4D7C95AD57AF9269C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B028FB802940DF1400CB71EB /* iOSMcuManagerLibrary in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B0C562252936567900B070BA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0C562282936568800B070BA /* CoreBluetooth.framework */,
+				B0C562262936567900B070BA /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B0E96E9329282641003563D8 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		E769D2E559617D1B1220043E /* McuMgrBindingsiOS */ = {
+			isa = PBXGroup;
+			children = (
+				E769DC768A6D6F0D1CAC3C06 /* McuMgrBindingsiOS.h */,
+				E769D3E2D33EE281518619A7 /* IOSFirmwareInstaller.swift */,
+				E769D1DEDAD5F89C361DF28C /* EIOSFirmwareInstallationVerdict.swift */,
+				E769DC8A37490B096716C6B8 /* EIOSFirmwareInstallationMode.swift */,
+				E769DCEDC8442691AF65E8F8 /* EIOSFirmwareInstallationState.swift */,
+				E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */,
+				E769D5CB3083656E75BFBC1A /* IOSFirmwareEraser.swift */,
+				E769D3130BA737A0C282D1DD /* EIOSFirmwareEraserState.swift */,
+				E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */,
+				E769DD0EF706588EF75704AE /* EIOSDeviceResetterState.swift */,
+				E769D93618819B3E676FE0EA /* IOSListenerForDeviceResetter.swift */,
+				E769DD6F60E601AFA283D34B /* IOSListenerForFirmwareEraser.swift */,
+				E769D13250C8CDA8CA70A8B7 /* IOSListenerForFirmwareInstaller.swift */,
+				E769DE03C73A46ADFF350E43 /* package.json */,
+				E769DC33E51C5D88437572EB /* DummyPlaceholder.swift */,
+				E769D9D0270D6C4E5DF8E7CE /* EIOSFileUploaderState.swift */,
+				E769D417A16B8DCE9D59165A /* IOSFileUploader.swift */,
+				E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */,
+				E769D8D446B42BE572E246D4 /* IOSListenerForFileUploader.swift */,
+				E769D9B93897FF4C9ABBAF94 /* IOSFileDownloader.swift */,
+				E769D3E9D67A36F06CF0EFB4 /* EIOSFileDownloaderState.swift */,
+				E769D19F5EC3404138BFDFF8 /* IOSListenerForFileDownloader.swift */,
+				E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */,
+				E769DD92BBBF9A69EAF334F4 /* EIOSFirmwareInstallationFatalError.swift */,
+			);
+			path = McuMgrBindingsiOS;
+			sourceTree = "<group>";
+		};
+		E769D5C169A2617737447E64 = {
+			isa = PBXGroup;
+			children = (
+				B0E96E9329282641003563D8 /* Packages */,
+				E769D749382EC6E62A93A5D0 /* Products */,
+				E769D2E559617D1B1220043E /* McuMgrBindingsiOS */,
+				B0C562252936567900B070BA /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		E769D749382EC6E62A93A5D0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		E769DC49808E666DDF5F4653 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E769D26DF00FF487503F9A77 /* McuMgrBindingsiOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		E769DF457B4C6D1BF21B955F /* McuMgrBindingsiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E769D1B85089AC865A02B0FA /* Build configuration list for PBXNativeTarget "McuMgrBindingsiOS" */;
+			buildPhases = (
+				E769DC49808E666DDF5F4653 /* Headers */,
+				E769DA01841B83326C0A9B44 /* Sources */,
+				E769D7B4D7C95AD57AF9269C /* Frameworks */,
+				E769D9A5479AB2B14EB86A3B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = McuMgrBindingsiOS;
+			packageProductDependencies = (
+				B028FB7F2940DF1400CB71EB /* iOSMcuManagerLibrary */,
+			);
+			productName = McuMgrBindingsiOS;
+			productReference = E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E769DAAA6D19797FC31D57D1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+			};
+			buildConfigurationList = E769D4DE04FEC8EDF4BFF2BF /* Build configuration list for PBXProject "McuMgrBindingsiOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				English,
+				en,
+			);
+			mainGroup = E769D5C169A2617737447E64;
+			packageReferences = (
+				B028FB7E2940DF1400CB71EB /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
+			);
+			productRefGroup = E769D749382EC6E62A93A5D0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E769DF457B4C6D1BF21B955F /* McuMgrBindingsiOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E769D9A5479AB2B14EB86A3B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E769DB00DD068CDC9D273333 /* package.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E769DA01841B83326C0A9B44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E769D8B0408224A463C203E9 /* IOSFirmwareInstaller.swift in Sources */,
+				E769D15459466B0C5BA19E21 /* EIOSFirmwareInstallationVerdict.swift in Sources */,
+				E769D165ADFDDBED8F709DAE /* EIOSFirmwareInstallationMode.swift in Sources */,
+				E769D9E0958847EF54637962 /* EIOSFirmwareInstallationState.swift in Sources */,
+				E769D0FFF3A39C575B982F6D /* InvalidFirmwareInstallationModeError.swift in Sources */,
+				E769D89116CA28C68BE793DE /* IOSFirmwareEraser.swift in Sources */,
+				E769D1175ADD137DCA6B0207 /* EIOSFirmwareEraserState.swift in Sources */,
+				E769DE09776F3B7B4ADA00B5 /* IOSDeviceResetter.swift in Sources */,
+				E769DCC9F1B68E50C28DDDB6 /* EIOSDeviceResetterState.swift in Sources */,
+				E769D8474941EC451199981B /* IOSListenerForDeviceResetter.swift in Sources */,
+				E769D6FCE3BCF0E44DE87684 /* IOSListenerForFirmwareEraser.swift in Sources */,
+				E769D37F2EF53CC9C5858BED /* IOSListenerForFirmwareInstaller.swift in Sources */,
+				E769D36EAF2DD40E0A892DB2 /* DummyPlaceholder.swift in Sources */,
+				E769D8E49B6F52BD0065A849 /* EIOSFileUploaderState.swift in Sources */,
+				E769DA011D5897CB39E02602 /* IOSFileUploader.swift in Sources */,
+				E769DEB3EFF58D41D88197C4 /* EIOSFileUploadingInitializationVerdict.swift in Sources */,
+				E769D339FCECEE79EEDD55C5 /* IOSListenerForFileUploader.swift in Sources */,
+				E769D7F106E9BC190CDFFD19 /* IOSFileDownloader.swift in Sources */,
+				E769D33171D78172F096C8A4 /* EIOSFileDownloaderState.swift in Sources */,
+				E769D3F56B12BF1FA2695F1E /* IOSListenerForFileDownloader.swift in Sources */,
+				E769D54A54C788CCE8488B9B /* EIOSFileDownloadingInitializationVerdict.swift in Sources */,
+				E769D5AE4CFECFEA0B509626 /* EIOSFirmwareInstallationFatalError.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E769D0C1932B96597229667A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 6B4XDDTX8B;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Laerdal.McuMgrBindingsiOS;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E769D26B02886D7CA811A3D5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		E769D5598ED1CA9D814B4558 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 6B4XDDTX8B;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Laerdal.McuMgrBindingsiOS;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E769D9251AE1B7F7702B04BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E769D1B85089AC865A02B0FA /* Build configuration list for PBXNativeTarget "McuMgrBindingsiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E769D0C1932B96597229667A /* Debug */,
+				E769D5598ED1CA9D814B4558 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E769D4DE04FEC8EDF4BFF2BF /* Build configuration list for PBXProject "McuMgrBindingsiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E769D26B02886D7CA811A3D5 /* Debug */,
+				E769D9251AE1B7F7702B04BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B028FB7E2940DF1400CB71EB /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.3.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B028FB7F2940DF1400CB71EB /* iOSMcuManagerLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B028FB7E2940DF1400CB71EB /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSMcuManagerLibrary;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E769DAAA6D19797FC31D57D1 /* Project object */;
+}

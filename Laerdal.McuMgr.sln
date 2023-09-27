@@ -1,8 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F-B6EC-4C2C-BEA0-8534D539E124}"
 	ProjectSection(SolutionItems) = preProject
-		Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.Droid.targets = Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.Droid.targets
-		Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.iOS.targets = Laerdal.McuMgr.Bindings.Targets\Laerdal.McuMgr.Bindings.iOS.targets
 		README.md = README.md
 		LICENSE = LICENSE
 		.gitignore = .gitignore
@@ -10,7 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.CreateNewReleaseInGithub.sh
 		Laerdal.McuMgr.Builder.targets = Laerdal.McuMgr.Builder.targets
 		Laerdal.Version.sh = Laerdal.Version.sh
-		Laerdal.McuMgr.Bindings.iOS\Laerdal.IOS.CompileAndGenerateFatLibs.sh = Laerdal.McuMgr.Bindings.iOS\Laerdal.IOS.CompileAndGenerateFatLibs.sh
 		global.json = global.json
 	EndProjectSection
 EndProject
@@ -21,6 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Tests", "_Tests", "{0D581C9E-E80B-4663-86A0-672A5B9843A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.Android", "Laerdal.McuMgr.Bindings.Android\Laerdal.McuMgr.Bindings.Android.csproj", "{1C7F1174-29EA-4735-A8A4-FCE463E2D06F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS", "Laerdal.McuMgr.Bindings.iOS\Laerdal.McuMgr.Bindings.iOS.csproj", "{273ABA30-AB8D-46A3-B788-4DA7063F597C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +43,10 @@ Global
 		{1C7F1174-29EA-4735-A8A4-FCE463E2D06F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C7F1174-29EA-4735-A8A4-FCE463E2D06F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C7F1174-29EA-4735-A8A4-FCE463E2D06F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2112FF63-2823-428B-80EE-0ECEE476BA46} = {0D581C9E-E80B-4663-86A0-672A5B9843A8}

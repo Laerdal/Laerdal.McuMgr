@@ -29,10 +29,10 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
-        <PackageTags>Xamarin;Nordic;McuMgr;Android;Bindings;</PackageTags>
+        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageDescription>Xamarin wrapper around Nordic's McuMgr-related .aars for Android.</PackageDescription>
+        <PackageDescription>Xamarin wrapper around Nordic's McuMgr-related native libs for Android.</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
@@ -51,7 +51,7 @@
         <AssemblyVersion>1.0.686.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>Xamarin McuMgr Android Bindings</Summary>
+        <Summary>Xamarin McuMgr Bindings for Android</Summary>
         <Description>$(PackageDescription)</Description>
         <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
