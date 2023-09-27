@@ -9,7 +9,7 @@
 
         <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
         <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks> 
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
 
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -21,8 +21,9 @@
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
-        <PackageDescription>Xamarin managed wrapper around 'Laerdal.McuMgr.Bindings' for iOS and Android.</PackageDescription>
-        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
+        <PackageDescription>Xamarin managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard.</PackageDescription>
+        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
+
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -43,12 +44,12 @@
         <AssemblyVersion>1.0.686.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>Xamarin McuMgr Bindings</Summary>
+        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
         <Description>$(PackageDescription)</Description>
         <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
         <Copyright>$(Authors)</Copyright>
-        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</PackageProjectUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <RepositoryType>git</RepositoryType>
 
@@ -69,35 +70,35 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')" />
-        <None Include="../LICENSE" Pack="true" PackagePath="\" />
-        <None Remove="Laerdal.McuMgr.csproj.DotSettings" />
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
+        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Remove="Laerdal.McuMgr.csproj.DotSettings"/>
     </ItemGroup>
 
     <!-- SHARED -->
     <ItemGroup>
-        <Compile Include="Shared\**\*.cs" />
-        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Shared\**\*.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
 
     <!-- ANDROID -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
-        <Compile Include="Droid\*.cs" />
-        <Compile Include="Droid\**\*.cs" />
+        <Compile Include="Droid\*.cs"/>
+        <Compile Include="Droid\**\*.cs"/>
 
-        <Reference Include="Mono.Android" />
+        <Reference Include="Mono.Android"/>
 
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
     </ItemGroup>
 
     <!-- iOS -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-        <Compile Include="iOS\**\*.cs" />
+        <Compile Include="iOS\**\*.cs"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-        <Compile Include="NetStandard\**\*.cs" />
+        <Compile Include="NetStandard\**\*.cs"/>
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -110,8 +111,14 @@
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Laerdal.McuMgr.Bindings" Version="1.0.686.0" />
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.686"/>
+    </ItemGroup>
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.686"/>
+    </ItemGroup>
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.686"/>
     </ItemGroup>
 
 </Project>
