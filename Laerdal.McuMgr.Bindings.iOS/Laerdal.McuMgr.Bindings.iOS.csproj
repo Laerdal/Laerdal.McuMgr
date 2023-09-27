@@ -68,6 +68,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
         <None Include="../LICENSE" Pack="true" PackagePath="\"/>
         <None Remove="Laerdal.McuMgr.Bindings.iOS.csproj.DotSettings"/>

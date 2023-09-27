@@ -115,6 +115,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <Folder Include="Droid\Jars"/>
     </ItemGroup>
 

@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.And
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS", "Laerdal.McuMgr.Bindings.iOS\Laerdal.McuMgr.Bindings.iOS.csproj", "{273ABA30-AB8D-46A3-B788-4DA7063F597C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.NetStandard", "Laerdal.McuMgr.Bindings.NetStandard\Laerdal.McuMgr.Bindings.NetStandard.csproj", "{84EEAAFB-5ED5-4697-9757-622FF332F44D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{273ABA30-AB8D-46A3-B788-4DA7063F597C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84EEAAFB-5ED5-4697-9757-622FF332F44D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84EEAAFB-5ED5-4697-9757-622FF332F44D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84EEAAFB-5ED5-4697-9757-622FF332F44D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84EEAAFB-5ED5-4697-9757-622FF332F44D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2112FF63-2823-428B-80EE-0ECEE476BA46} = {0D581C9E-E80B-4663-86A0-672A5B9843A8}
