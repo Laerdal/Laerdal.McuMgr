@@ -7,8 +7,10 @@
         <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
-        <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <!-- if we are building under osx then we issue a proper build -->
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">xamarin.ios10;</TargetFrameworks>
+        <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'False' ">netstandard2.0;</TargetFrameworks>
 
         <DebugType>full</DebugType>
         <Optimized>false</Optimized>
@@ -90,7 +92,7 @@
         <NoWarn>CS0114;</NoWarn>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
         <!-- nothing to compile for the time being -->
         <!-- <Compile Include="iOS\*.cs"/> -->
         <!-- <Compile Include="iOS\Specific\*.cs"/> -->
@@ -115,7 +117,7 @@
         <Message Importance="High" Text="DefineConstants:  $(DefineConstants) "/>
     </Target>
 
-    <Target Name="CompileProxyProjectAndGenerateFatLibs" BeforeTargets="BeforeBuild">
+    <Target Name="CompileProxyProjectAndGenerateFatLibs" BeforeTargets="BeforeBuild" Condition=" '$(IsOSX)' == 'True' ">
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS.Native" Command=" chmod +x ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS.Native" Command=" ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
@@ -166,7 +168,7 @@
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
-    <ItemGroup>
+    <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
 
         <!-- McuMgrBindingsiOS.framework -->
         <NativeReference Include="Frameworks/McuMgrBindingsiOS.framework">
