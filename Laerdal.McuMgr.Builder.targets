@@ -62,7 +62,9 @@
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
             <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
-            <Laerdal_McuMgrBindings_ProjectFile>Laerdal.McuMgr.Bindings/Laerdal.McuMgr.Bindings.csproj</Laerdal_McuMgrBindings_ProjectFile>
+            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
+            <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
+            <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
@@ -105,7 +107,9 @@
     <Target Name="WriteUpdatedPackageVersionsInCsprojFiles" DependsOnTargets="DeduceVersion">
         <ItemGroup>
             <ProjectFiles Include="$(Laerdal_McuMgr_ProjectFile)"/>
-            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile)"/>
+            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"/>
+            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_Android)"/>
+            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)"/>
         </ItemGroup>
 
         <!-- https://stackoverflow.com/a/1294679/863651 -->
@@ -114,7 +118,13 @@
                  Properties="ProjectFile=$(Laerdal_McuMgr_ProjectFile);Version=$(Laerdal_Version_Assembly);"/>
         <MsBuild Projects="$(MSBuildProjectFullPath)"
                  Targets="_updatePackageVersionsInCsprojFile"
-                 Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile);Version=$(Laerdal_Version_Assembly);"/>
+                 Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile_iOS);Version=$(Laerdal_Version_Assembly);"/>
+        <MsBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="_updatePackageVersionsInCsprojFile"
+                 Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile_Android);Version=$(Laerdal_Version_Assembly);"/>
+        <MsBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="_updatePackageVersionsInCsprojFile"
+                 Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile_NetStandard);Version=$(Laerdal_Version_Assembly);"/>
     </Target>
 
     <Target Name="_updatePackageVersionsInCsprojFile">
@@ -125,8 +135,14 @@
 
         <!-- this affects only laerdal.mcumgr.csproj -->
         <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings&quot; Version=&quot;$(Version)&quot;" />
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
+        <_replaceRegexInFile InputFile="$(ProjectFile)"
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
+        <_replaceRegexInFile InputFile="$(ProjectFile)"
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;$(Version)&quot;" />
     </Target>
 
     <UsingTask
@@ -166,7 +182,9 @@
         </PropertyGroup>
 
         <!-- notice that we are actually rebuilding bindings   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/</_Laerdal_Build_Parameters>

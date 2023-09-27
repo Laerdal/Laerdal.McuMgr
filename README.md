@@ -5,14 +5,21 @@
 - Latest Nugets:
 
 
-      Laerdal.McuMgr
+      Laerdal.McuMgr:
   
   [![Laerdal.McuMgr package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/b382f36b-e768-40a9-8bb9-e905b85ff610/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr?preferRelease=true)
 
-      Laerdal.McuMgr.Bindings
+      Laerdal.McuMgr.Bindings.iOS:
 
-  [![Laerdal.McuMgr.Bindings package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.iOS package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.iOS?preferRelease=true)
 
+      Laerdal.McuMgr.Bindings.Android:
+
+  [![Laerdal.McuMgr.Bindings.Android package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.Android?preferRelease=true)
+
+      Laerdal.McuMgr.Bindings.NetStandard (WIP!):
+
+  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.NetStandard?preferRelease=true)
 
 - Release Build Status:
 
@@ -29,9 +36,9 @@ Read the LICENSE file before you begin.
 
 # Summary
 
-The project generates two Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings' respectively. The goal is to have 'Laerdal.McuMgr'
-provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for iOS and Android respectively
-to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/):
+The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|Android|NetStandard' (note: NetStandard is still WIP).
+The goal is to have 'Laerdal.McuMgr' provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for
+iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/):
 
 - [IOS-nRF-Connect-Device-Manager](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)
 
@@ -60,7 +67,7 @@ The following types of operations are supported on devices running on Nordic's n
 - Downloading one or more files from the device
 - Uploading one or more files over to the device
 
-      Note: The library doesn't support Windows/UWP yet.
+      Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
 
 
@@ -80,10 +87,12 @@ to the device.**
 
 ## 🚀 Using the Nugets in your Projects
 
-Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to ALL of your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
+Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
 
        Laerdal.McuMgr
-       Laerdal.McuMgr.Bindings
+       Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
+       Laerdal.McuMgr.Bindings.Android             (only add this to those projects of yours that target Android)
+       Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
 
@@ -689,22 +698,22 @@ If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (
 
 You'll find the resulting nugets in the folder `Artifacts/`.
 
-    Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings first and building just that project
-    and then bumping the package version of Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building Laerdal.McuMgr.csproj.
+    Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings.* first and building just that project
+    and then bumping the package version of the package reference towards Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building said project.
 
-    If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings won't be picked up by Laerdal.McuMgr because it will still
-    use the cached nuget package of Laerdal.McuMgr.Bindings.
+    If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings.* won't be picked up by Laerdal.McuMgr because it will still
+    use the cached nuget package of Laerdal.McuMgr.Bindings based on its current version.
 
     To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
 
     # on macos
     msbuild                                                           \
-         Laerdal.McuMgr.Builder.csproj                                \
+         Laerdal.McuMgr.Builder.targets                               \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
     # on windows powershell
     & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"       ^
-            Laerdal.McuMgr.Builder.csproj    ^
+            Laerdal.McuMgr.Builder.targets                                                                  ^
             /p:Laerdal_Version_Full=1.0.x.0
 
     Make sure to +1 the 'x' number each time in the scriptlet above before running it.
