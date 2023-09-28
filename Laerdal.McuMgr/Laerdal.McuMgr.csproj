@@ -8,8 +8,11 @@
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
         <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
-        <TargetFrameworks>$(TargetFrameworks)net6.0-android31;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>        
         <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+
+        <TargetFrameworks>$(TargetFrameworks)net6.0-android31;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios10.0;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
 
