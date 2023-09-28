@@ -117,14 +117,14 @@
         <PackageReference Include="Microsoft.NET.Runtime.MonoTargets.Sdk" Version="7.0.11" />
     </ItemGroup>
 
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.686"/>
+    <ItemGroup Condition=" $(TargetFramework.ToLower().Contains('android')) ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.686" />
     </ItemGroup>
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.686"/>
+    <ItemGroup Condition=" $(TargetFramework.ToLower().Contains('ios')) ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.686" />
     </ItemGroup>
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.686"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.686" />
     </ItemGroup>
 
 </Project>
