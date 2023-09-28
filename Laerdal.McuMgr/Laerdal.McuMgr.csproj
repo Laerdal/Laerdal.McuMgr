@@ -14,8 +14,7 @@
 
         <TargetFrameworks>$(TargetFrameworks)net6.0-android31;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios10.0;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-
+        
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
         <LangVersion>9</LangVersion>
@@ -75,35 +74,35 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Remove="Laerdal.McuMgr.csproj.DotSettings"/>
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')" />
+        <None Include="../LICENSE" Pack="true" PackagePath="\" />
+        <None Remove="Laerdal.McuMgr.csproj.DotSettings" />
     </ItemGroup>
 
     <!-- SHARED -->
     <ItemGroup>
-        <Compile Include="Shared\**\*.cs"/>
-        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Shared\**\*.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
 
     <!-- ANDROID -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
-        <Compile Include="Droid\*.cs"/>
-        <Compile Include="Droid\**\*.cs"/>
+        <Compile Include="Droid\*.cs" />
+        <Compile Include="Droid\**\*.cs" />
 
-        <Reference Include="Mono.Android"/>
+        <Reference Include="Mono.Android" />
 
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
     </ItemGroup>
 
     <!-- iOS -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-        <Compile Include="iOS\**\*.cs"/>
+        <Compile Include="iOS\**\*.cs" />
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-        <Compile Include="NetStandard\**\*.cs"/>
+        <Compile Include="NetStandard\**\*.cs" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
