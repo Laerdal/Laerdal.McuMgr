@@ -48,13 +48,19 @@ jobs:
           arguments: sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts"
 
       - task: MSBuild@1
-        displayName: MSBuild
+        displayName: 'Build Xamarin Bindings'
         inputs:
-          solution: Laerdal.McuMgr.Builder.targets
-          msbuildArguments: '-p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/"  '
+          solution: 'Laerdal.McuMgr.Builder.Xamarin.targets'
+          msbuildArguments: ' -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build .Net6+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
+        inputs:
+          command: 'msbuild'
+          arguments: ' -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: Bash@3
-        displayName: Print Nugets in 'Artifacts/'
+        displayName: 'Print Nugets under Artifacts'
         inputs:
           targetType: inline
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"
