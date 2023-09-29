@@ -42,10 +42,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.686.0</Version>
-        <FileVersion>1.0.686.0</FileVersion>
-        <PackageVersion>1.0.686.0</PackageVersion>
-        <AssemblyVersion>1.0.686.0</AssemblyVersion>
+        <Version>1.0.732.0</Version>
+        <FileVersion>1.0.732.0</FileVersion>
+        <PackageVersion>1.0.732.0</PackageVersion>
+        <AssemblyVersion>1.0.732.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
@@ -85,7 +85,7 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
 
-    <!-- ANDROID -->
+    <!-- ANDROID   todo  make things work for net6.0-android* too -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
         <Compile Include="Droid\*.cs" />
         <Compile Include="Droid\**\*.cs" />
@@ -95,7 +95,7 @@
         <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
     </ItemGroup>
 
-    <!-- iOS -->
+    <!-- iOS   todo  make things work for net6.0-ios* too   -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
         <Compile Include="iOS\**\*.cs" />
     </ItemGroup>
