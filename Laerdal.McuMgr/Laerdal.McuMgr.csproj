@@ -7,6 +7,16 @@
         <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
+        <IsCompilingForNet6                  Condition=" $(TargetFramework.ToLower().StartsWith('net6.'))          ">true</IsCompilingForNet6>
+        <IsCompilingForNet6IOS               Condition=" $(TargetFramework.ToLower().StartsWith('net6.0-ios'))     ">true</IsCompilingForNet6IOS>
+        <IsCompilingForNet6Android           Condition=" $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">true</IsCompilingForNet6Android>
+        <IsCompilingForClassicXamarinIOS     Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios'))    ">true</IsCompilingForClassicXamarinIOS>
+        <IsCompilingForClassicXamarinAndroid Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid'))    ">true</IsCompilingForClassicXamarinAndroid>
+        <IsCompilingForNetStandard           Condition=" $(TargetFramework.ToLower().StartsWith('netstandard'))    ">true</IsCompilingForNetStandard>
+
+        <IsCompilingForIOS                   Condition=" '$(IsCompilingForClassicXamarinIOS)'     == 'true' OR '$(IsCompilingForNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
+        <IsCompilingForAndroid               Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' OR '$(IsCompilingForNet6Android)' == 'true' ">true</IsCompilingForAndroid>
+
         <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>        
         <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
@@ -88,22 +98,20 @@
     </ItemGroup>
 
     <!-- ANDROID -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) OR $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">
+    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
         <Compile Include="Droid\*.cs" />
         <Compile Include="Droid\**\*.cs" />
 
-        <Reference Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) " Include="Mono.Android" />
-
-        <PackageReference Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) " Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
+        <Reference Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' " Include="Mono.Android" />
     </ItemGroup>
 
-    <!-- iOS   todo  make things work for net6.0-ios* too   -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+    <!-- iOS -->
+    <ItemGroup Condition=" '$(IsCompilingForClassicXamarinIOS)' == 'true' ">
         <Compile Include="iOS\**\*.cs" />
     </ItemGroup>
 
     <!-- NETSTANDARD -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+    <ItemGroup Condition=" '$(IsCompilingForNetStandard)' == 'true' ">
         <Compile Include="NetStandard\**\*.cs" />
     </ItemGroup>
 
@@ -117,25 +125,26 @@
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
 
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net6.')) ">
+    <ItemGroup Condition=" '$(IsCompilingForNet6)' == 'true' ">
         <PackageReference Include="Microsoft.NET.Runtime.MonoTargets.Sdk" Version="7.0.11" />
     </ItemGroup>
 
     <!-- ANDROID -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+    <ItemGroup Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' ">
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.732.0" />
     </ItemGroup>
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">
+    <ItemGroup Condition=" '$(IsCompilingForNet6Android)' == 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetSix" Version="1.0.732.0" />
     </ItemGroup>
 
     <!-- IOS -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+    <ItemGroup Condition=" '$(IsCompilingForClassicXamarinIOS)' == 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.732.0" />
     </ItemGroup>
     
     <!-- NETSTANDARD -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+    <ItemGroup Condition=" '$(IsCompilingForNetStandard)' == 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.732.0" />
     </ItemGroup>
 
