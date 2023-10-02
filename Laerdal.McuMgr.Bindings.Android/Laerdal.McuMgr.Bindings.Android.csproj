@@ -31,7 +31,7 @@
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
         <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageDescription>Xamarin wrapper around Nordic's McuMgr-related native libs for Android.</PackageDescription>
 
@@ -46,10 +46,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass --> 
-        <Version>1.0.732.0</Version>
-        <FileVersion>1.0.732.0</FileVersion>
-        <PackageVersion>1.0.732.0</PackageVersion>
-        <AssemblyVersion>1.0.732.0</AssemblyVersion>
+        <Version>1.0.736.0</Version>
+        <FileVersion>1.0.736.0</FileVersion>
+        <PackageVersion>1.0.736.0</PackageVersion>
+        <AssemblyVersion>1.0.736.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings for Android</Summary>
