@@ -384,6 +384,7 @@ Package.resolved
 **/xcuserdata/**
 
 **/Laerdal.McuMgr.Bindings.iOS/Frameworks/**
+**/Laerdal.McuMgr.Bindings.iOS.NetSix/Frameworks/**
 
 # gradle
 
