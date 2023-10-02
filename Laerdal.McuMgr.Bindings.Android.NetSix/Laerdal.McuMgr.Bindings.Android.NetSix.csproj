@@ -11,4 +11,19 @@
         <!-- todo   figure out what's the best lang version for this project -->
         <!-- <LangVersion>10.0</LangVersion> -->
     </PropertyGroup>
+    
+    <PropertyGroup>        
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
+
+        <!-- these versions are getting replaced by the build script in one swift pass -->
+        <Version>1.0.732.0</Version>
+        <FileVersion>1.0.732.0</FileVersion>
+        <PackageVersion>1.0.732.0</PackageVersion>
+        <AssemblyVersion>1.0.732.0</AssemblyVersion> 
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Jars\"/>
+        <Folder Include="Transforms\"/>
+    </ItemGroup>
 </Project>
