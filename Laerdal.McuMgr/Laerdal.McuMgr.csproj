@@ -62,15 +62,17 @@
 
         <!-- see : https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        
         <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        
         <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
         <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
-        <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member 
-        'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. 
-        Otherwise add the new keyword.
-        Can be ignored. -->
-        <NoWarn>CS0114;CS0618;CS0108;</NoWarn>
+        
+        <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
+        <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->
+        <!-- Otherwise add the new keyword. Can be ignored.                                                                                                  -->
+        <NoWarn>CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>        
     </PropertyGroup>
 
     <ItemGroup>
@@ -121,6 +123,9 @@
 
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.732.0" />
+    </ItemGroup>
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetSix" Version="1.0.732.0" />
     </ItemGroup>
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.732.0" />
