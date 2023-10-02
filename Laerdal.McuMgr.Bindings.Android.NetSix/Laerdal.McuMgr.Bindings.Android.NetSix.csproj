@@ -1,11 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>10.0</LangVersion>
+        <!-- todo   figure out whether we also need to include net7.0-android -->
+        <TargetFramework>net6.0-android</TargetFramework>
+        <IsBindingProject>true</IsBindingProject>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
 
+        <!-- Hide some warnings -->
+        <NoWarn>CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
+
+        <!-- todo   figure out what's the best lang version for this project -->
+        <!-- <LangVersion>10.0</LangVersion> -->
+    </PropertyGroup>
 </Project>
