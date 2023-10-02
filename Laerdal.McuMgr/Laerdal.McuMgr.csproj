@@ -87,14 +87,14 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
 
-    <!-- ANDROID   todo  make things work for net6.0-android* too -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+    <!-- ANDROID -->
+    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) OR $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">
         <Compile Include="Droid\*.cs" />
         <Compile Include="Droid\**\*.cs" />
 
-        <Reference Include="Mono.Android" />
+        <Reference Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) " Include="Mono.Android" />
 
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
+        <PackageReference Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) " Include="Xamarin.AndroidX.Annotation" Version="1.4.0" />
     </ItemGroup>
 
     <!-- iOS   todo  make things work for net6.0-ios* too   -->
@@ -121,15 +121,20 @@
         <PackageReference Include="Microsoft.NET.Runtime.MonoTargets.Sdk" Version="7.0.11" />
     </ItemGroup>
 
+    <!-- ANDROID -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.732.0" />
     </ItemGroup>
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetSix" Version="1.0.732.0" />
     </ItemGroup>
+
+    <!-- IOS -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.732.0" />
     </ItemGroup>
+    
+    <!-- NETSTANDARD -->
     <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.732.0" />
     </ItemGroup>
