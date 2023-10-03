@@ -61,8 +61,8 @@
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
 
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- sourcelink: Include PDB in the built .nupkg -->
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -75,11 +75,11 @@
         <AssemblyVersion>1.0.737.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>Xamarin McuMgr Bindings for Android</Summary>
-        <Description>$(PackageDescription)</Description>
-        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
+        <Summary>Xamarin McuMgr Bindings for Android</Summary>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Copyright>$(Authors)</Copyright>
+        <Description>$(PackageDescription)</Description>
 
         <RepositoryUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>

@@ -4,7 +4,6 @@
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
         <LangVersion>10.0</LangVersion>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- hide some warnings -->
         <NoWarn>CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
@@ -38,13 +37,42 @@
     </ItemGroup>
     
     <PropertyGroup>
+        <PackageId>Laerdal.McuMgr.Bindings.Android.NetX</PackageId>
+        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;Net6;Net7;</PackageTags>
+        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
+        <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageDescription>.NetX wrapper around Nordic's McuMgr-related native libs for Android.</PackageDescription>
+
+        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
+
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <!-- sourcelink: Include PDB in the built .nupkg -->
+        <!--        <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>-->
+        <!--        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>-->
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
         <Version>1.0.737.0</Version>
         <FileVersion>1.0.737.0</FileVersion>
         <PackageVersion>1.0.737.0</PackageVersion>
-        <AssemblyVersion>1.0.737.0</AssemblyVersion> 
+        <AssemblyVersion>1.0.737.0</AssemblyVersion>
+
+        <Title>$(PackageId)</Title>
+        <Owners>$(Authors)</Owners>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
+        <Summary>.NetX McuMgr Bindings for Android</Summary>
+        <Copyright>$(Authors)</Copyright>
+        <Description>$(PackageDescription)</Description>
+
+        <RepositoryUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>true</IncludeSymbols>
     </PropertyGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
