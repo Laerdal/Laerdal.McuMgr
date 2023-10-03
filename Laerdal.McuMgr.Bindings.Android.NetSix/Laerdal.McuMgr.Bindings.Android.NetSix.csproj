@@ -12,6 +12,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <DebugType>pdbonly</DebugType>
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
         <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
     </PropertyGroup>
