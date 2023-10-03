@@ -7,12 +7,17 @@
         <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
-        <!-- if we are building under osx then we issue a proper build    xamarin.ios10  -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">net6.0-ios10.0;</TargetFrameworks>
+        <!-- this is the minimum supported ios version we aim for -->
+        <TargetPlatformVersion>10</TargetPlatformVersion>
+        
+        <!-- if we are building under osx then we issue a proper full blown build -->
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
         <TargetFrameworks Condition=" '$(IsOSX)' == 'False' ">netstandard2.0;</TargetFrameworks>
-
+        
         <DebugType>full</DebugType>
         <Optimized>false</Optimized>
         <OutputPath>bin\</OutputPath>
@@ -103,9 +108,11 @@
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
         <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
 
+        <!-- todo   evaluate whether we still need these references -->
         <!-- <Reference Include="Xamarin.iOS"/>-->
         <!-- <Reference Include="netstandard"/>-->
 
+        <!-- todo  upgrade these packages and see if they still work -->
         <PackageReference Include="Xamarin.Swift" Version="1.0.11"/>
         <PackageReference Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
     </ItemGroup>
@@ -120,7 +127,10 @@
         <Message Importance="High" Text="DefineConstants:  $(DefineConstants) "/>
     </Target>
 
-    <Target Name="CompileProxyProjectAndGenerateFatLibs" BeforeTargets="BeforeBuild" Condition=" '$(IsOSX)' == 'True' ">
+    <!-- its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel -->
+    <Target Name="CompileProxyProjectAndGenerateFatLibs"
+            BeforeTargets="BeforeBuild"
+            Condition=" '$(IsOSX)' == 'True' AND '$(TargetFramework.StartsWith(net6.0-ios))' == 'true' ">
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS.Native" Command=" chmod +x ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS.Native" Command=" ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
