@@ -12,19 +12,22 @@
         <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
 
-        <TargetFrameworks>$(TargetFrameworks)net6.0-android31;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios10.0;</TargetFrameworks>
 
         <IsCompilingForNet6 Condition="                  $(TargetFramework.ToLower().StartsWith('net6.'))          ">true</IsCompilingForNet6>
         <IsCompilingForNet6IOS Condition="               $(TargetFramework.ToLower().StartsWith('net6.0-ios'))     ">true</IsCompilingForNet6IOS>
         <IsCompilingForNet6Android Condition="           $(TargetFramework.ToLower().StartsWith('net6.0-android')) ">true</IsCompilingForNet6Android>
+        <IsCompilingForNet7Android Condition="           $(TargetFramework.ToLower().StartsWith('net7.0-android')) ">true</IsCompilingForNet7Android>
+        <IsCompilingForNetXAndroid Condition="           '$(IsCompilingForNet6Android)' == 'true' OR '$(IsCompilingForNet7Android)' == 'true' ">true</IsCompilingForNetXAndroid>
         <IsCompilingForNetStandard Condition="           $(TargetFramework.ToLower().StartsWith('netstandard'))    ">true</IsCompilingForNetStandard>
         <IsCompilingForClassicXamarinIOS Condition="     $(TargetFramework.ToLower().StartsWith('xamarin.ios'))    ">true</IsCompilingForClassicXamarinIOS>
         <IsCompilingForClassicXamarinAndroid Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid'))    ">true</IsCompilingForClassicXamarinAndroid>
 
-        <IsCompilingForIOS Condition=" '$(IsCompilingForClassicXamarinIOS)'     == 'true' OR '$(IsCompilingForNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
-        <IsCompilingForAndroid Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' OR '$(IsCompilingForNet6Android)' == 'true' ">true</IsCompilingForAndroid>
-
+        <IsCompilingForIOS Condition="     '$(IsCompilingForClassicXamarinIOS)'     == 'true' OR '$(IsCompilingForNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
+        <IsCompilingForAndroid Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' OR '$(IsCompilingForNetXAndroid)' == 'true' ">true</IsCompilingForAndroid>
+        
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
         <LangVersion>9</LangVersion>
@@ -134,7 +137,7 @@
         <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.736.0"/>
     </ItemGroup>
-    <ItemGroup Condition=" '$(IsCompilingForNet6Android)' == 'true' ">
+    <ItemGroup Condition=" '$(IsCompilingForNetXAndroid)' == 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetSix" Version="1.0.736.0"/>
     </ItemGroup>
 
