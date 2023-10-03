@@ -7,7 +7,9 @@
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
         <TargetFramework>monoandroid12.0</TargetFramework>
+    </PropertyGroup>
 
+    <PropertyGroup>
         <DebugType>full</DebugType>
         <Optimized>false</Optimized>
         <OutputPath>bin\</OutputPath>
@@ -17,14 +19,35 @@
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PropertyGroup>
         <AndroidLinkMode>Full</AndroidLinkMode>
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <AndroidLinkMode>Full</AndroidLinkMode>
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
+        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Laerdal.McuMgr.Bindings.Android.csproj.DotSettings"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Droid\Jars"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <AndroidJarsFolder>Droid/Jars</AndroidJarsFolder>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -45,11 +68,11 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
-        <!-- these versions are getting replaced by the build script in one swift pass --> 
-        <Version>1.0.736.0</Version>
-        <FileVersion>1.0.736.0</FileVersion>
-        <PackageVersion>1.0.736.0</PackageVersion>
-        <AssemblyVersion>1.0.736.0</AssemblyVersion>
+        <!-- these versions are getting replaced by the build script in one swift pass -->
+        <Version>1.0.737.0</Version>
+        <FileVersion>1.0.737.0</FileVersion>
+        <PackageVersion>1.0.737.0</PackageVersion>
+        <AssemblyVersion>1.0.737.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Bindings for Android</Summary>
@@ -73,7 +96,7 @@
         <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
 
         <!-- Laerdal.McuMgr.Droid.targets -->
-        <SourceAar>Droid\Jars\mcumgr-laerdal-wrapper.aar</SourceAar>
+        <SourceAar>$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar</SourceAar>
 
         <!-- <ReferenceJarFiles>...</ReferenceJarFiles> -->
 
@@ -109,32 +132,6 @@
         <EmbeddedReferenceJarFiles>$(EmbeddedReferenceJarFiles)Droid\Jars\kotlinx-coroutines-play-services.jar;</EmbeddedReferenceJarFiles>
     </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Include="../README.md" Pack="true" PackagePath="\"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="Laerdal.McuMgr.Bindings.Android.csproj.DotSettings"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Include="Properties\AssemblyInfo.cs"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Droid\Jars"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
-    </ItemGroup>
-
-    <PropertyGroup>
-        <AndroidJarsFolder>Droid/Jars</AndroidJarsFolder>
-    </PropertyGroup>
-
     <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin         -->
     <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended -->
     <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="_CreateBindingResourceArchive">
@@ -161,11 +158,11 @@
 
         <!-- Read all lines from the input file -->
         <ReadLinesFromFile File="$(GradlePropertiesFilePath)">
-            <Output TaskParameter="Lines" ItemName="FileLines" />
+            <Output TaskParameter="Lines" ItemName="FileLines"/>
         </ReadLinesFromFile>
 
         <ItemGroup>
-            <FilteredLines Include="@(FileLines)" Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '^org\.gradle\.java\.home='))" />
+            <FilteredLines Include="@(FileLines)" Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '^org\.gradle\.java\.home='))"/>
         </ItemGroup>
 
         <Exec Command="   chmod   +w   &quot;$(GradlePropertiesFilePath)&quot;   " Condition=" '$(IsUnix)' == 'True' "/>
@@ -181,7 +178,7 @@
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsOSX)'     == 'True' ">/Users/$(USERNAME)/Library/Android/sdk</AndroidSdkPath>
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsLinux)'   == 'True' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsWindows)' == 'True' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
-            
+
             <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-release.aar</McuMgrLaerdalWrapperAarFilePath>
 
             <LocalCopyMcuMgrLaerdalWrapperAarFilePath>$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar</LocalCopyMcuMgrLaerdalWrapperAarFilePath>
@@ -192,7 +189,7 @@
         <WriteLinesToFile File="$(McuMgrLaerdalWrapperLibSourceDirectory)/local.properties" Lines="sdk.dir=$(AndroidSdkPath)" Overwrite="true"/>
 
         <Delete Files="$(LocalCopyMcuMgrLaerdalWrapperAarFilePath)"/>
-        
+
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   gradle     wrapper    --distribution-type=ALL  --gradle-version=7.6                    "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                 " Condition=" '$(IsUnix)' == 'True' "/>
@@ -265,25 +262,22 @@
         <IsBindingProject>true</IsBindingProject>
         <AndroidClassParser>class-parse</AndroidClassParser>
         <AndroidCodegenTarget>XAJavaInterop1</AndroidCodegenTarget>
-        
-        <!-- in this particular kind of project $TargetFrameworkVersion refers to the android version   not the dotnet framework version --> 
+
+        <!-- in this particular kind of project $TargetFrameworkVersion refers to the android version   not the dotnet framework version -->
         <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
     </PropertyGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               $(OS)" />
-        <Message Importance="High" Text="Platform:         $(Platform)" />
-        <Message Importance="High" Text="PackageId:        $(PackageId)" />
-        <Message Importance="High" Text="Configuration:    $(Configuration)" />
-        <Message Importance="High" Text="PackageVersion:   $(PackageVersion)" />
-        <Message Importance="High" Text="TargetFramework:  $(TargetFramework)" />
-        <Message Importance="High" Text="DefineConstants:  $(DefineConstants)" />
+        <Message Importance="High" Text="OS:               $(OS)"/>
+        <Message Importance="High" Text="Platform:         $(Platform)"/>
+        <Message Importance="High" Text="PackageId:        $(PackageId)"/>
+        <Message Importance="High" Text="Configuration:    $(Configuration)"/>
+        <Message Importance="High" Text="PackageVersion:   $(PackageVersion)"/>
+        <Message Importance="High" Text="TargetFramework:  $(TargetFramework)"/>
+        <Message Importance="High" Text="DefineConstants:  $(DefineConstants)"/>
     </Target>
 
     <ItemGroup>
-        <Compile Include="Droid\*.cs"/>
-        <Compile Include="Droid\**\*.cs"/>
-
         <!--                                                                                                       -->
         <!-- https://johnthiriet.com/xamarin-android-binding-library-writing/                                      -->
         <!-- https://docs.microsoft.com/en-us/xamarin/android/platform/binding-java-library/#build-actions         -->
