@@ -94,6 +94,7 @@
     <ItemGroup>
         <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
         <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
         <None Remove="Laerdal.McuMgr.csproj.DotSettings"/>
     </ItemGroup>
 
