@@ -2,7 +2,6 @@
     <PropertyGroup>
         <!-- todo   figure out whether we also need to include net7.0-android -->
         <TargetFramework>net6.0-android</TargetFramework>
-        <IsBindingProject>true</IsBindingProject>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- Hide some warnings -->
@@ -11,8 +10,13 @@
         <!-- todo   figure out what's the best lang version for this project -->
         <!-- <LangVersion>10.0</LangVersion> -->
     </PropertyGroup>
-    
-    <PropertyGroup>        
+
+    <PropertyGroup>
+        <IsBindingProject>true</IsBindingProject>
+        <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
