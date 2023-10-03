@@ -62,8 +62,8 @@
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
             <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
-            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS.NetSix/Laerdal.McuMgr.Bindings.iOS.NetSix.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
-            <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android.NetSix/Laerdal.McuMgr.Bindings.Android.NetSix.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
+            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS.NetX/Laerdal.McuMgr.Bindings.iOS.NetX.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
+            <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android.NetX/Laerdal.McuMgr.Bindings.Android.NetX.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
             <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
@@ -138,15 +138,15 @@
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
         <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS.NetSix&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS.NetSix&quot; Version=&quot;$(Version)&quot;" />
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS.NetX&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS.NetX&quot; Version=&quot;$(Version)&quot;" />
         
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
         <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android.NetSix&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android.NetSix&quot; Version=&quot;$(Version)&quot;" />
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android.NetX&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android.NetX&quot; Version=&quot;$(Version)&quot;" />
         
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;.*?&quot;"

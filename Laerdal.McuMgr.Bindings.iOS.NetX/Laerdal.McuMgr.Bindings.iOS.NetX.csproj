@@ -34,7 +34,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Laerdal.McuMgr.Bindings.iOS.NetSix</PackageId>
+        <PackageId>Laerdal.McuMgr.Bindings.iOS.NetX</PackageId>
         <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -88,7 +88,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Laerdal.McuMgr.Bindings.iOS.NetSix.csproj.DotSettings"/>
+        <None Remove="Laerdal.McuMgr.Bindings.iOS.NetX.csproj.DotSettings"/>
         <None Include="../Laerdal.McuMgr.Bindings.iOS.Native/Laerdal.IOS.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
 

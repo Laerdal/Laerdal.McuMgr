@@ -2,21 +2,13 @@
     <PropertyGroup>
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
-        
+
+        <LangVersion>10.0</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-        <!-- Hide some warnings -->
+        <!-- hide some warnings -->
         <NoWarn>CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
-
-        <!-- todo   figure out what's the best lang version for this project -->
-        <!-- <LangVersion>10.0</LangVersion> -->
     </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Include="../README.md" Pack="true" PackagePath="\"/>
-    </ItemGroup>
 
     <PropertyGroup>
         <DebugType>pdbonly</DebugType>
@@ -31,13 +23,28 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
+        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Laerdal.McuMgr.Bindings.Android.NetX.csproj.DotSettings"/>
+    </ItemGroup>
+    
+    <PropertyGroup>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.736.0</Version>
-        <FileVersion>1.0.736.0</FileVersion>
-        <PackageVersion>1.0.736.0</PackageVersion>
-        <AssemblyVersion>1.0.736.0</AssemblyVersion> 
+        <Version>1.0.737.0</Version>
+        <FileVersion>1.0.737.0</FileVersion>
+        <PackageVersion>1.0.737.0</PackageVersion>
+        <AssemblyVersion>1.0.737.0</AssemblyVersion> 
     </PropertyGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">

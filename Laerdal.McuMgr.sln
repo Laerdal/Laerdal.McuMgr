@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		.gitignore = .gitignore
 		azure-pipelines.yml = azure-pipelines.yml
 		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.CreateNewReleaseInGithub.sh
-		Laerdal.McuMgr.Builder.NetSix.targets = Laerdal.McuMgr.Builder.NetSix.targets
+		Laerdal.McuMgr.Builder.NetX.targets = Laerdal.McuMgr.Builder.NetX.targets
 		Laerdal.Version.sh = Laerdal.Version.sh
 		global.json = global.json
 		Laerdal.SetupBuildEnvironment.sh = Laerdal.SetupBuildEnvironment.sh
@@ -25,9 +25,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.NetStandard", "Laerdal.McuMgr.Bindings.NetStandard\Laerdal.McuMgr.Bindings.NetStandard.csproj", "{84EEAAFB-5ED5-4697-9757-622FF332F44D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.Android.NetSix", "Laerdal.McuMgr.Bindings.Android.NetSix\Laerdal.McuMgr.Bindings.Android.NetSix.csproj", "{C6A768F6-E649-4621-A9A8-099A7887BBBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.Android.NetX", "Laerdal.McuMgr.Bindings.Android.NetX\Laerdal.McuMgr.Bindings.Android.NetX.csproj", "{C6A768F6-E649-4621-A9A8-099A7887BBBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS.NetSix", "Laerdal.McuMgr.Bindings.iOS.NetSix\Laerdal.McuMgr.Bindings.iOS.NetSix.csproj", "{84273F19-16F7-4956-A4F6-74DF3F044F45}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS.NetX", "Laerdal.McuMgr.Bindings.iOS.NetX\Laerdal.McuMgr.Bindings.iOS.NetX.csproj", "{84273F19-16F7-4956-A4F6-74DF3F044F45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
