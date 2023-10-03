@@ -121,12 +121,7 @@
         <Compile Include="NetStandard\**\*.cs"/>
     </ItemGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <AndroidLinkMode>Full</AndroidLinkMode>
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PropertyGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
         <AndroidLinkMode>Full</AndroidLinkMode>
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
