@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
     <PropertyGroup>
-        <TargetFrameworks>net6.0-android;net7.0-android</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
+        
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- Hide some warnings -->
@@ -14,7 +16,12 @@
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
-        <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
+
+        <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
+        <TargetPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31.0</TargetPlatformVersion>
+
+        <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
+        <TargetPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
     </PropertyGroup>
 
     <PropertyGroup>
