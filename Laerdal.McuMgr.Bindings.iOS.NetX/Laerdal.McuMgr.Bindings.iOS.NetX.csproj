@@ -115,13 +115,14 @@
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               $(OS)              "/>
-        <Message Importance="High" Text="Platform:         $(Platform)        "/>
-        <Message Importance="High" Text="PackageId:        $(PackageId)       "/>
-        <Message Importance="High" Text="Configuration:    $(Configuration)   "/>
-        <Message Importance="High" Text="PackageVersion:   $(PackageVersion)  "/>
-        <Message Importance="High" Text="TargetFramework:  $(TargetFramework) "/>
-        <Message Importance="High" Text="DefineConstants:  $(DefineConstants) "/>
+        <Message Importance="High" Text="OS:               '$(OS)'               "/>
+        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
+        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
+        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
+        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
+        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
+        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
     </Target>
 
     <!-- its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel -->
