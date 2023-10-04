@@ -138,7 +138,7 @@
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.737.0"/>
     </ItemGroup>
     <ItemGroup Condition=" '$(IsCompilingForNetXAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetSix" Version="1.0.737.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetX" Version="1.0.737.0"/>
     </ItemGroup>
 
     <!-- IOS -->
@@ -146,7 +146,7 @@
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.737.0"/>
     </ItemGroup>
     <ItemGroup Condition=" '$(IsCompilingForNetXIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS.NetSix" Version="1.0.737.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS.NetX" Version="1.0.737.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
