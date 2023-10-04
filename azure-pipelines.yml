@@ -56,9 +56,9 @@ jobs:
       - task: DotNetCoreCLI@2
         displayName: 'Build .Net6+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         inputs:
-          command: 'msbuild'
-          projects: 'Laerdal.McuMgr.Builder.NetX.targets'
-          arguments: ' -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          command: 'custom'
+          custom: 'msbuild'
+          arguments: 'Laerdal.McuMgr.Builder.NetX.targets -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: Bash@3
         displayName: 'Print Nugets under Artifacts'
