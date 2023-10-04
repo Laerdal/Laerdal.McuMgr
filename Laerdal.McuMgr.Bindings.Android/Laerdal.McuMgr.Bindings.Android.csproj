@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <AndroidJarsFolder>Droid/Jars</AndroidJarsFolder>
+        <AndroidLibsFolder>Droid/Jars</AndroidLibsFolder>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -96,7 +96,7 @@
         <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
 
         <!-- Laerdal.McuMgr.Droid.targets -->
-        <SourceAar>$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar</SourceAar>
+        <CoreAarLibrary>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</CoreAarLibrary>
 
         <!-- <ReferenceJarFiles>...</ReferenceJarFiles> -->
 
@@ -181,7 +181,7 @@
 
             <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-release.aar</McuMgrLaerdalWrapperAarFilePath>
 
-            <LocalCopyMcuMgrLaerdalWrapperAarFilePath>$(AndroidJarsFolder)/mcumgr-laerdal-wrapper.aar</LocalCopyMcuMgrLaerdalWrapperAarFilePath>
+            <LocalCopyMcuMgrLaerdalWrapperAarFilePath>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</LocalCopyMcuMgrLaerdalWrapperAarFilePath>
         </PropertyGroup>
 
         <Error Condition=" '$(AndroidSdkPath)' == ''  " Text="** [ERROR] Failed to deduce the AndroidSdkPath for this platform!"/>
@@ -202,57 +202,57 @@
     <Target Name="TackleJarDependencies" BeforeTargets="_CreateBindingResourceArchive">
 
         <!-- 1. jars go here - notice the :jar postfix -->
-        <!-- <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/collection.jar')                  " DestinationFileName="collection.jar                       " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://maven.google.com/androidx/collection/collection/1.1.0/collection-1.1.0.jar"/> -->
-        <!-- <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/annotations.jar')                 " DestinationFileName="annotations.jar                      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.jar"/> -->
+        <!-- <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/collection.jar')                  " DestinationFileName="collection.jar                       " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://maven.google.com/androidx/collection/collection/1.1.0/collection-1.1.0.jar"/> -->
+        <!-- <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/annotations.jar')                 " DestinationFileName="annotations.jar                      " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.jar"/> -->
 
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/slf4j-api.jar')                        " DestinationFileName="slf4j-api.jar                        " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.35/slf4j-api-1.7.35.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlin-stdlib.jar')                    " DestinationFileName="kotlin-stdlib.jar                    " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/resourceinspection-annotation.jar')    " DestinationFileName="resourceinspection-annotation.jar    " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://maven.google.com/androidx/resourceinspection/resourceinspection-annotation/1.0.1/resourceinspection-annotation-1.0.1.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/slf4j-api.jar')                        " DestinationFileName="slf4j-api.jar                        " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.35/slf4j-api-1.7.35.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlin-stdlib.jar')                    " DestinationFileName="kotlin-stdlib.jar                    " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/resourceinspection-annotation.jar')    " DestinationFileName="resourceinspection-annotation.jar    " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://maven.google.com/androidx/resourceinspection/resourceinspection-annotation/1.0.1/resourceinspection-annotation-1.0.1.jar"/>
 
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-core.jar')                     " DestinationFileName="jackson-core.jar                     " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.13.3/jackson-core-2.13.3.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-databind.jar')                 " DestinationFileName="jackson-databind.jar                 " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.13.3/jackson-databind-2.13.3.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-annotations.jar')              " DestinationFileName="jackson-annotations.jar              " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.13.3/jackson-annotations-2.13.3.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/jackson-dataformat-cbor.jar')          " DestinationFileName="jackson-dataformat-cbor.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.13.3/jackson-dataformat-cbor-2.13.3.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/jackson-core.jar')                     " DestinationFileName="jackson-core.jar                     " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.13.3/jackson-core-2.13.3.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/jackson-databind.jar')                 " DestinationFileName="jackson-databind.jar                 " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.13.3/jackson-databind-2.13.3.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/jackson-annotations.jar')              " DestinationFileName="jackson-annotations.jar              " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.13.3/jackson-annotations-2.13.3.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/jackson-dataformat-cbor.jar')          " DestinationFileName="jackson-dataformat-cbor.jar          " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.13.3/jackson-dataformat-cbor-2.13.3.jar"/>
 
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-rx2.jar')           " DestinationFileName="kotlinx-coroutines-rx2.jar           " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx2/1.6.2/kotlinx-coroutines-rx2-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-rx3.jar')           " DestinationFileName="kotlinx-coroutines-rx3.jar           " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx3/1.6.2/kotlinx-coroutines-rx3-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-jdk8.jar')          " DestinationFileName="kotlinx-coroutines-jdk8.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.6.2/kotlinx-coroutines-jdk8-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-jdk9.jar')          " DestinationFileName="kotlinx-coroutines-jdk9.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk9/1.6.2/kotlinx-coroutines-jdk9-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-core.jar')          " DestinationFileName="kotlinx-coroutines-core.jar          " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.6.2/kotlinx-coroutines-core-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-swing.jar')         " DestinationFileName="kotlinx-coroutines-swing.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-swing/1.6.2/kotlinx-coroutines-swing-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-slf4j.jar')         " DestinationFileName="kotlinx-coroutines-slf4j.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-slf4j/1.6.2/kotlinx-coroutines-slf4j-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-guava.jar')         " DestinationFileName="kotlinx-coroutines-guava.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-guava/1.6.2/kotlinx-coroutines-guava-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-debug.jar')         " DestinationFileName="kotlinx-coroutines-debug.jar         " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-debug/1.6.2/kotlinx-coroutines-debug-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-javafx.jar')        " DestinationFileName="kotlinx-coroutines-javafx.jar        " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-javafx/1.6.2/kotlinx-coroutines-javafx-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-reactor.jar')       " DestinationFileName="kotlinx-coroutines-reactor.jar       " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-reactor/1.6.2/kotlinx-coroutines-reactor-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-android.jar')       " DestinationFileName="kotlinx-coroutines-android.jar       " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.6.2/kotlinx-coroutines-android-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-core-jvm.jar')      " DestinationFileName="kotlinx-coroutines-core-jvm.jar      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.2/kotlinx-coroutines-core-jvm-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-reactive.jar')      " DestinationFileName="kotlinx-coroutines-reactive.jar      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-reactive/1.6.2/kotlinx-coroutines-reactive-1.6.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/kotlinx-coroutines-play-services.jar') " DestinationFileName="kotlinx-coroutines-play-services.jar " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-play-services/1.6.2/kotlinx-coroutines-play-services-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-rx2.jar')           " DestinationFileName="kotlinx-coroutines-rx2.jar           " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx2/1.6.2/kotlinx-coroutines-rx2-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-rx3.jar')           " DestinationFileName="kotlinx-coroutines-rx3.jar           " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx3/1.6.2/kotlinx-coroutines-rx3-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-jdk8.jar')          " DestinationFileName="kotlinx-coroutines-jdk8.jar          " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk8/1.6.2/kotlinx-coroutines-jdk8-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-jdk9.jar')          " DestinationFileName="kotlinx-coroutines-jdk9.jar          " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-jdk9/1.6.2/kotlinx-coroutines-jdk9-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-core.jar')          " DestinationFileName="kotlinx-coroutines-core.jar          " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.6.2/kotlinx-coroutines-core-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-swing.jar')         " DestinationFileName="kotlinx-coroutines-swing.jar         " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-swing/1.6.2/kotlinx-coroutines-swing-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-slf4j.jar')         " DestinationFileName="kotlinx-coroutines-slf4j.jar         " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-slf4j/1.6.2/kotlinx-coroutines-slf4j-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-guava.jar')         " DestinationFileName="kotlinx-coroutines-guava.jar         " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-guava/1.6.2/kotlinx-coroutines-guava-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-debug.jar')         " DestinationFileName="kotlinx-coroutines-debug.jar         " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-debug/1.6.2/kotlinx-coroutines-debug-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-javafx.jar')        " DestinationFileName="kotlinx-coroutines-javafx.jar        " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-javafx/1.6.2/kotlinx-coroutines-javafx-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-reactor.jar')       " DestinationFileName="kotlinx-coroutines-reactor.jar       " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-reactor/1.6.2/kotlinx-coroutines-reactor-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-android.jar')       " DestinationFileName="kotlinx-coroutines-android.jar       " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.6.2/kotlinx-coroutines-android-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-core-jvm.jar')      " DestinationFileName="kotlinx-coroutines-core-jvm.jar      " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.2/kotlinx-coroutines-core-jvm-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-reactive.jar')      " DestinationFileName="kotlinx-coroutines-reactive.jar      " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-reactive/1.6.2/kotlinx-coroutines-reactive-1.6.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/kotlinx-coroutines-play-services.jar') " DestinationFileName="kotlinx-coroutines-play-services.jar " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-play-services/1.6.2/kotlinx-coroutines-play-services-1.6.2.jar"/>
 
 
         <!-- 2. aars go here - notice the .aar postfix  -->
 
         <!-- download -->
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.aar')   " DestinationFileName="nordicsemi-android-ble-2.6.0-alpha04.aar                     " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.6.0-alpha04/ble-2.6.0-alpha04.aar      "/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-1.5.1.aar                      " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/1.5.1/mcumgr-ble-1.5.1.aar        "/>
-        <DownloadFile Condition=" !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-1.5.1.aar                     " DestinationFolder="$(AndroidJarsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/1.5.1/mcumgr-core-1.5.1.aar      "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/nordicsemi-android-ble-2.6.0-alpha04.aar')   " DestinationFileName="nordicsemi-android-ble-2.6.0-alpha04.aar                     " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.6.0-alpha04/ble-2.6.0-alpha04.aar      "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-1.5.1.aar                      " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/1.5.1/mcumgr-ble-1.5.1.aar        "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core-1.5.1.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-1.5.1.aar                     " DestinationFolder="$(AndroidLibsFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/1.5.1/mcumgr-core-1.5.1.aar      "/>
 
         <!-- unzip -->
-        <Unzip Condition="        !Exists('$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar')   " DestinationFolder="$(AndroidJarsFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.aar                            "/>
-        <Unzip Condition="        !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar')    " DestinationFolder="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.aar                             "/>
-        <Unzip Condition="        !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar')   " DestinationFolder="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.aar                            "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar')   " DestinationFolder="$(AndroidLibsFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidLibsFolder)/nordicsemi-android-ble-2.6.0-alpha04.aar                            "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar')    " DestinationFolder="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.aar                             "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar')   " DestinationFolder="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core-1.5.1.aar                            "/>
 
         <!-- copy -->
-        <Copy Condition="         !Exists('$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar')   " DestinationFiles="$(AndroidJarsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar   " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-ble/classes.jar                                  "/>
-        <Copy Condition="         !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar')    " DestinationFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar    " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           "/>
-        <Copy Condition="         !Exists('$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar')   " DestinationFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar   " SourceFiles="$(AndroidJarsFolder)/nordicsemi-android-mcumgr-core/classes.jar                          "/>
+        <Copy Condition="         !Exists('$(AndroidLibsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar')   " DestinationFiles="$(AndroidLibsFolder)/nordicsemi-android-ble-2.6.0-alpha04.jar   " SourceFiles="$(AndroidLibsFolder)/nordicsemi-android-ble/classes.jar                                  "/>
+        <Copy Condition="         !Exists('$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar')    " DestinationFiles="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble-1.5.1.jar    " SourceFiles="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           "/>
+        <Copy Condition="         !Exists('$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar')   " DestinationFiles="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core-1.5.1.jar   " SourceFiles="$(AndroidLibsFolder)/nordicsemi-android-mcumgr-core/classes.jar                          "/>
     </Target>
 
     <Target Name="CheckAndroidLibraryFilesExist"
             BeforeTargets="CoreCompile"
             DependsOnTargets="PrepareForBuild">
-        <Error Condition="!Exists('$(SourceAar)')" Text="'$(SourceAar)' does not exist"/>
+        <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
     <PropertyGroup>
@@ -295,7 +295,7 @@
         <ReferenceJar Include="$(ReferenceJarFiles)"/>
         <EmbeddedReferenceJar Include="$(EmbeddedReferenceJarFiles)"/>
 
-        <LibraryProjectZip Include="$(SourceAar)"/>
+        <LibraryProjectZip Include="$(CoreAarLibrary)"/>
 
         <Reference Include="Mono.Android"/>
         <Reference Include="Java.Interop"/>
