@@ -47,18 +47,22 @@ jobs:
           command: custom
           arguments: sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts"
 
+      # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is
+      # enabled the ios and android builds might fail with cryptic errors if multiple target-frameworks get involved
       - task: MSBuild@1
         displayName: 'Build Xamarin Bindings'
         inputs:
           solution: 'Laerdal.McuMgr.Builder.Xamarin.targets'
-          msbuildArguments: ' -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          msbuildArguments: ' -m:1   -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
+      # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
+      # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       - task: DotNetCoreCLI@2
         displayName: 'Build .Net6+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         inputs:
           command: 'custom'
           custom: 'msbuild'
-          arguments: 'Laerdal.McuMgr.Builder.NetX.targets -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          arguments: 'Laerdal.McuMgr.Builder.NetX.targets    -m:1   -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: Bash@3
         displayName: 'Print Nugets under Artifacts'
