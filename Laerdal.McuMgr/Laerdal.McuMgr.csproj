@@ -9,11 +9,12 @@
 
         <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
+        
         <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
+
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
 
