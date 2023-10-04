@@ -76,6 +76,17 @@
         <IncludeSource>true</IncludeSource>
         <IncludeSymbols>true</IncludeSymbols>
     </PropertyGroup>
+    
+    <PropertyGroup>
+        <AndroidLibsFolder>Libraries</AndroidLibsFolder>
+        <CoreAarLibrary>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</CoreAarLibrary>
+    </PropertyGroup>
+
+    <Target Name="CheckAndroidLibraryFilesExist"
+            BeforeTargets="CoreCompile"
+            DependsOnTargets="PrepareForBuild">
+        <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
+    </Target>
 
     <ItemGroup>
         <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
@@ -87,18 +98,19 @@
         
         <!-- and now we set everything properly ourselves ala net6+   notice that we dont use AndroidAarLibrary at all because it turned out not to be irrelevant -->
         <TransformFile Include="Transforms/*.xml"/>
-        <AndroidLibrary Include="Libraries/mcumgr-laerdal-wrapper.aar" Bind="true" />
-        <EmbeddedReferenceJar Include="Libraries/Dependencies/**"/>
+        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
+        <EmbeddedReferenceJar Include="$(AndroidLibsFolder)/Dependencies/**"/>
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               '$(OS)'"/>
-        <Message Importance="High" Text="Platform:         '$(Platform)'"/>
-        <Message Importance="High" Text="PackageId:        '$(PackageId)'"/>
-        <Message Importance="High" Text="Configuration:    '$(Configuration)'"/>
-        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'"/>
-        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'"/>
-        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'"/>
+        <Message Importance="High" Text="OS:               '$(OS)'               "/>
+        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
+        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
+        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
+        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
+        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
+        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
     </Target>
 
     <ItemGroup>
