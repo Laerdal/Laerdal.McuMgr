@@ -55,6 +55,22 @@ jobs:
           solution: 'Laerdal.McuMgr.Builder.Xamarin.targets'
           msbuildArguments: ' -m:1   -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
+      # TEMP HACK - REMOVE THIS LATER ON!
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: 'Laerdal.McuMgr.Bindings.Android/Droid/Jars/'
+          Contents: '*.aar'
+          TargetFolder: 'Laerdal.McuMgr.Bindings.Android.NetX/Libraries/'
+          CleanTargetFolder: true
+
+      # TEMP HACK - REMOVE THIS LATER ON!
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: 'Laerdal.McuMgr.Bindings.Android/Droid/Jars/'
+          Contents: '*.jar'
+          TargetFolder: 'Laerdal.McuMgr.Bindings.Android.NetX/Libraries/Dependencies'
+          CleanTargetFolder: true
+
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       - task: DotNetCoreCLI@2
