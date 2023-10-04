@@ -26,6 +26,8 @@ brew   install   --cask   objectivesharpie
 brew   install   gradle
 brew   install   java11
 
+dotnet   workload   install    maui   ios    android
+
 # this is handled by the build system
 # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
 
