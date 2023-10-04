@@ -16,12 +16,11 @@
 
         <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
         <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31</SupportedOSPlatformVersion>
+        <!-- <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31</SupportedOSPlatformVersion> -->
 
         <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
         <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion>
-
+        <!-- <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion> -->
     </PropertyGroup>
 
     <PropertyGroup>
@@ -58,10 +57,10 @@
         <!--        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>-->
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.737.0</Version>
-        <FileVersion>1.0.737.0</FileVersion>
-        <PackageVersion>1.0.737.0</PackageVersion>
-        <AssemblyVersion>1.0.737.0</AssemblyVersion>
+        <Version>1.0.754.0</Version>
+        <FileVersion>1.0.754.0</FileVersion>
+        <PackageVersion>1.0.754.0</PackageVersion>
+        <AssemblyVersion>1.0.754.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -78,111 +77,32 @@
         <IncludeSymbols>true</IncludeSymbols>
     </PropertyGroup>
 
-    <!-- old way of binding aar/jar files -->
-    <!-- <ItemGroup>
-            <LibraryProjectZip Include="Jars\dfu.aar" />
-            <ReferenceJar Include="Jars\gson.jar" />
-         </ItemGroup> -->
-
     <ItemGroup>
-        <!-- core aar   this is a workaround for a very nasty b.ug that plagues the default inclusion logic of the sdk -->
-        <AndroidLibrary Remove="Jars/mcumgr-laerdal-wrapper.aar"/>
-        <AndroidLibrary Update="Jars/mcumgr-laerdal-wrapper.aar" Bind="true"/>
-
-        <!-- to make the workaround work we have to explicitly remove the jars from androidlibrary property first ... -->
-        <AndroidLibrary Remove="DependenciesJars/jackson-annotations.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/jackson-core.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/jackson-databind.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/jackson-dataformat-cbor.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlin-stdlib.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-android.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-core-jvm.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-core.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-debug.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-guava.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-javafx.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-jdk8.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-jdk9.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-play-services.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-reactive.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-reactor.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-rx2.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-rx3.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-slf4j.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/kotlinx-coroutines-swing.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/nordicsemi-android-ble-2.6.0-alpha04.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/nordicsemi-android-mcumgr-ble-1.5.1.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/nordicsemi-android-mcumgr-core-1.5.1.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/resourceinspection-annotation.jar"/>
-        <AndroidLibrary Remove="DependenciesJars/slf4j-api.jar"/>
-
-        <ReferenceJars Remove="DependenciesJars/jackson-annotations.jar"/>
-        <ReferenceJars Remove="DependenciesJars/jackson-core.jar"/>
-        <ReferenceJars Remove="DependenciesJars/jackson-databind.jar"/>
-        <ReferenceJars Remove="DependenciesJars/jackson-dataformat-cbor.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlin-stdlib.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-android.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-core-jvm.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-core.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-debug.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-guava.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-javafx.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-jdk8.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-jdk9.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-play-services.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-reactive.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-reactor.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-rx2.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-rx3.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-slf4j.jar"/>
-        <ReferenceJars Remove="DependenciesJars/kotlinx-coroutines-swing.jar"/>
-        <ReferenceJars Remove="DependenciesJars/nordicsemi-android-ble-2.6.0-alpha04.jar"/>
-        <ReferenceJars Remove="DependenciesJars/nordicsemi-android-mcumgr-ble-1.5.1.jar"/>
-        <ReferenceJars Remove="DependenciesJars/nordicsemi-android-mcumgr-core-1.5.1.jar"/>
-        <ReferenceJars Remove="DependenciesJars/resourceinspection-annotation.jar"/>
-        <ReferenceJars Remove="DependenciesJars/slf4j-api.jar"/>
-
-        <!-- ... and then reinclude the same jars explicitly as dependencies in the EmbeddedReferenceJar property -->
-        <EmbeddedReferenceJar Include="DependenciesJars/jackson-annotations.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/jackson-core.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/jackson-databind.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/jackson-dataformat-cbor.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlin-stdlib.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-android.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-core-jvm.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-core.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-debug.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-guava.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-javafx.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-jdk8.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-jdk9.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-play-services.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-reactive.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-reactor.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-rx2.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-rx3.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-slf4j.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/kotlinx-coroutines-swing.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/nordicsemi-android-ble-2.6.0-alpha04.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/nordicsemi-android-mcumgr-ble-1.5.1.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/nordicsemi-android-mcumgr-core-1.5.1.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/resourceinspection-annotation.jar"/>
-        <EmbeddedReferenceJar Include="DependenciesJars/slf4j-api.jar"/>
-
+        <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
+        <!-- during the build process   so we reset everything back to a blank slate and then proceed to manually set up everything from scratch like we always do  -->
+        <TransformFile Remove="**"/>
+        <ReferenceJars Remove="**"/>
+        <AndroidLibrary Remove="**"/>
+        <AndroidAarLibrary Remove="**"/>
+        
+        <!-- and now we set everything properly ourselves ala net6+   notice that we dont use AndroidAarLibrary at all because it turned out not to be irrelevant -->
+        <TransformFile Include="Transforms/*.xml"/>
+        <AndroidLibrary Include="Libraries/mcumgr-laerdal-wrapper.aar" Bind="true" />
+        <EmbeddedReferenceJar Include="Libraries/Dependencies/**"/>
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               $(OS)"/>
-        <Message Importance="High" Text="Platform:         $(Platform)"/>
-        <Message Importance="High" Text="PackageId:        $(PackageId)"/>
-        <Message Importance="High" Text="Configuration:    $(Configuration)"/>
-        <Message Importance="High" Text="PackageVersion:   $(PackageVersion)"/>
-        <Message Importance="High" Text="TargetFramework:  $(TargetFramework)"/>
-        <Message Importance="High" Text="DefineConstants:  $(DefineConstants)"/>
+        <Message Importance="High" Text="OS:               '$(OS)'"/>
+        <Message Importance="High" Text="Platform:         '$(Platform)'"/>
+        <Message Importance="High" Text="PackageId:        '$(PackageId)'"/>
+        <Message Importance="High" Text="Configuration:    '$(Configuration)'"/>
+        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'"/>
+        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'"/>
+        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'"/>
     </Target>
 
     <ItemGroup>
-        <Folder Include="Jars\"/>
+        <Folder Include="Libraries\" />
         <Folder Include="Transforms\"/>
     </ItemGroup>
 
