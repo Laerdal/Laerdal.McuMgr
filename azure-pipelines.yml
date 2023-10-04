@@ -67,11 +67,11 @@ jobs:
           script: ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"
   
       # Publish test results to Azure Pipelines
-      - task: PublishTestResults@2
-        inputs:
-          searchFolder: '$(System.DefaultWorkingDirectory)'
-          testResultsFiles: 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.xml'
-          testResultsFormat: 'XUnit'
+      #      - task: PublishTestResults@2
+      #        inputs:
+      #          searchFolder: '$(System.DefaultWorkingDirectory)'
+      #          testResultsFiles: 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.xml'
+      #          testResultsFormat: 'XUnit'
 
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
