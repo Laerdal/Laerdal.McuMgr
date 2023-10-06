@@ -128,10 +128,6 @@
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
 
-    <!--    <ItemGroup Condition=" '$(IsCompilingForNetX)' == 'true' "> -->
-    <!--        <PackageReference Include="Microsoft.NET.Runtime.MonoTargets.Sdk" Version="7.0.11"/> -->
-    <!--    </ItemGroup> -->
-
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' ">
         <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
