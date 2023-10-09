@@ -26,7 +26,20 @@ brew   install   --cask   objectivesharpie
 brew   install   gradle
 brew   install   java11
 
-dotnet   workload   install    maui   ios    android
+# we do our best to explicitly version-pin our workloads so as to preemptively avoid problems that
+# would be bound to crop up sooner or later by blindly autoupgrading to bleeding-edge workloads   
+sudo    dotnet                                           \
+        workload                                         \
+        install                                          \
+                  ios                                    \
+                  maui                                   \
+                  android                                \
+                  maui-ios                               \
+                  maui-windows                           \
+                  maui-android                           \
+                  maui-maccatalyst                       \
+                  --sdk-version=7.0.401                  \
+                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.92.json
 
 # this is handled by the build system
 # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
