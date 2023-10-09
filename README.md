@@ -745,7 +745,7 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 
     dotnet                                                            \
          msbuild                                                      \
-         Laerdal.McuMgr.Builder.Net6.targets                          \
+         Laerdal.McuMgr.Builder.NetX.targets                          \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
 
@@ -756,7 +756,7 @@ You'll find the resulting nugets in the folder `Artifacts/`.
          /p:Laerdal_Version_Full=1.0.x.0
 
     & dotnet  msbuild                              ^
-         Laerdal.McuMgr.Builder.Net6.targets       ^
+         Laerdal.McuMgr.Builder.NetX.targets       ^
          '"/p:Laerdal_Version_Full=1.0.732.0"'
 
 
