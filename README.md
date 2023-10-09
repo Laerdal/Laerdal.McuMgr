@@ -741,11 +741,13 @@ You'll find the resulting nugets in the folder `Artifacts/`.
     # on macos
     msbuild                                                           \
          Laerdal.McuMgr.Builder.Xamarin.targets                       \
+         '"/m:1"'                                                     \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
     dotnet                                                            \
          msbuild                                                      \
          Laerdal.McuMgr.Builder.NetX.targets                          \
+         '"/m:1"'                                                     \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
 
@@ -753,10 +755,12 @@ You'll find the resulting nugets in the folder `Artifacts/`.
     # on windows powershell
     & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"       ^
          Laerdal.McuMgr.Builder.Xamarin.targets                                                             ^
+         /m:1                                                                                               ^
          /p:Laerdal_Version_Full=1.0.x.0
 
     & dotnet  msbuild                              ^
          Laerdal.McuMgr.Builder.NetX.targets       ^
+         '"/m:1"'                                  ^
          '"/p:Laerdal_Version_Full=1.0.732.0"'
 
 
