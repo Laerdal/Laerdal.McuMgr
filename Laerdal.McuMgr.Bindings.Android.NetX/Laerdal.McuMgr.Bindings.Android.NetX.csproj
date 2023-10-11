@@ -57,10 +57,10 @@
         <!--        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>-->
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.754.0</Version>
-        <FileVersion>1.0.754.0</FileVersion>
-        <PackageVersion>1.0.754.0</PackageVersion>
-        <AssemblyVersion>1.0.754.0</AssemblyVersion>
+        <Version>1.0.771.0</Version>
+        <FileVersion>1.0.771.0</FileVersion>
+        <PackageVersion>1.0.771.0</PackageVersion>
+        <AssemblyVersion>1.0.771.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -106,12 +106,24 @@
         <AndroidLibrary Remove="**"/>
         <AndroidAarLibrary Remove="**"/>
         
-        <!-- and now we set everything properly ourselves ala net6+   notice that we dont use AndroidAarLibrary at all because it turned out not to be irrelevant -->
+        <!-- and now we set everything properly ourselves ala net6+   salient points:                                  -->
+        <!--                                                                                                           -->
+        <!-- 1  we dont use AndroidAarLibrary at all because it turned out not to be irrelevant                        -->
+        <!--                                                                                                           -->
+        <!-- 2  also notice that we have intentionally omitted any and all kotlin libraries as these java-libs are     -->
+        <!--    automatically included via implicitly referenced nugets (xamarin.kotlinx.*) brought in by the net6+    -->
+        <!--    build system itself                                                                                    -->
+        <!--                                                                                                           -->
         <TransformFile Include="Transforms/*.xml"/>
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-
-        <ReferenceJar Include="$(AndroidLibsFolder)/Dependencies/*.jar"/>
-        <EmbeddedReferenceJar Include="$(AndroidLibsFolder)/Dependencies/*.jar"/>
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.6.0-alpha04.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.5.1.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.5.1.jar" Bind="false" />
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
