@@ -114,16 +114,18 @@
         <!--    automatically included via implicitly referenced nugets (xamarin.kotlinx.*) brought in by the net6+    -->
         <!--    build system itself                                                                                    -->
         <!--                                                                                                           -->
+        <!-- https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/OneDotNetEmbeddedResources.md   -->
+        <!--                                                                                                           -->
         <TransformFile Include="Transforms/*.xml"/>
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.6.0-alpha04.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.5.1.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.5.1.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core*.jar" Bind="false" />
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
