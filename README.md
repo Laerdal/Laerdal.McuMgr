@@ -680,7 +680,7 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop 
 
 ```bash
 # cd into the root folder of this repository and run the following with admin privileges
-sudo   dotnet   workload   install   maui  ios  android  maui-ios  maui-windows  maui-android  maui-maccatalyst   --sdk-version=7.0.401   --from-rollback-file https://maui.blob.core.windows.net/metadata/rollbacks/7.0.92.json
+sudo   dotnet   workload   install   maui  ios  android  maui-ios  maui-windows  maui-android  maui-maccatalyst   --sdk-version=7.0.401   --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.92.json
 
 # note#1   theoretically 'dotnet workload restore' should also do the trick but it runs into problems in practice
 #
