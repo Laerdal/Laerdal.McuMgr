@@ -109,7 +109,9 @@
         <!-- and now we set everything properly ourselves ala net6+   notice that we dont use AndroidAarLibrary at all because it turned out not to be irrelevant -->
         <TransformFile Include="Transforms/*.xml"/>
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-        <EmbeddedReferenceJar Include="$(AndroidLibsFolder)/Dependencies/**"/>
+
+        <ReferenceJar Include="$(AndroidLibsFolder)/Dependencies/*.jar"/>
+        <EmbeddedReferenceJar Include="$(AndroidLibsFolder)/Dependencies/*.jar"/>
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
