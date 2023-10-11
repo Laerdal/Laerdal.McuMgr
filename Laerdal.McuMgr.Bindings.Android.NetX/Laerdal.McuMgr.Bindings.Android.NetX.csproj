@@ -3,24 +3,12 @@
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
-        <LangVersion>10.0</LangVersion>
-
-        <!-- hide some warnings -->
-        <NoWarn>CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
 
-        <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31</SupportedOSPlatformVersion>
-
-        <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion>
+        <!-- hide some warnings -->
+        <NoWarn>CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -35,16 +23,17 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Remove="Laerdal.McuMgr.Bindings.Android.csproj.DotSettings"/>
         <None Remove="Laerdal.McuMgr.Bindings.Android.NetX.csproj.DotSettings"/>
     </ItemGroup>
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android.NetX</PackageId>
         <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;Net6;Net7;</PackageTags>
-        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageDescription>.NetX wrapper around Nordic's McuMgr-related native libs for Android.</PackageDescription>
+        <PackageDescription>.Net6+ wrapper around Nordic's McuMgr-related native libs for Android.</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
@@ -52,35 +41,47 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-        <!-- sourcelink: Include PDB in the built .nupkg -->
-        <!--        <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>-->
-        <!--        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>-->
-
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.771.0</Version>
-        <FileVersion>1.0.771.0</FileVersion>
-        <PackageVersion>1.0.771.0</PackageVersion>
-        <AssemblyVersion>1.0.771.0</AssemblyVersion>
+        <Version>1.0.773.0</Version>
+        <FileVersion>1.0.773.0</FileVersion>
+        <PackageVersion>1.0.773.0</PackageVersion>
+        <AssemblyVersion>1.0.773.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
         <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
-        <Summary>.NetX McuMgr Bindings for Android</Summary>
+        <Summary>.Net6+ McuMgr Bindings for Android</Summary>
         <Copyright>$(Authors)</Copyright>
         <Description>$(PackageDescription)</Description>
 
-        <RepositoryUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</RepositoryUrl>
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
         <IncludeSource>true</IncludeSource>
         <IncludeSymbols>true</IncludeSymbols>
     </PropertyGroup>
-    
+
     <PropertyGroup>
         <AndroidLibsFolder>Libraries</AndroidLibsFolder>
         <CoreAarLibrary>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</CoreAarLibrary>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Libraries\" />
+        <Folder Include="Transforms\"/>
+    </ItemGroup>
+
+    <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
+        <Message Importance="High" Text="OS:               '$(OS)'               "/>
+        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
+        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
+        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
+        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
+        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
+        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+    </Target>
 
     <Target Name="CheckAndroidLibraryFilesExist"
             BeforeTargets="CoreCompile"
@@ -97,6 +98,20 @@
         <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
                Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
+
+    <!-- ____________________________________________________________________________________________________________ -->
+
+    <PropertyGroup>
+        <LangVersion>10.0</LangVersion>
+        
+        <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
+        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31</SupportedOSPlatformVersion>
+
+        <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
+        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion>
+    </PropertyGroup>
 
     <ItemGroup>
         <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
@@ -126,22 +141,6 @@
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble*.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble*.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core*.jar" Bind="false" />
-    </ItemGroup>
-
-    <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               '$(OS)'               "/>
-        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
-        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
-        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
-        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
-        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
-        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
-    </Target>
-
-    <ItemGroup>
-        <Folder Include="Libraries\" />
-        <Folder Include="Transforms\"/>
     </ItemGroup>
 
     <ItemGroup>
