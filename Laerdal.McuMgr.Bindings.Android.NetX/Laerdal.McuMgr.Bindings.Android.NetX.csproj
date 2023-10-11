@@ -101,8 +101,8 @@
     <ItemGroup>
         <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
         <!-- during the build process   so we reset everything back to a blank slate and then proceed to manually set up everything from scratch like we always do  -->
+        <ReferenceJar Remove="**"/>
         <TransformFile Remove="**"/>
-        <ReferenceJars Remove="**"/>
         <AndroidLibrary Remove="**"/>
         <AndroidAarLibrary Remove="**"/>
         
