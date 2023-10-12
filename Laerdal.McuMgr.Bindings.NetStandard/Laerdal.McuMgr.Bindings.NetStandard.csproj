@@ -49,7 +49,7 @@
         <Owners>$(Authors)</Owners>
         <Copyright>$(Authors)</Copyright>
         
-        <RepositoryUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</RepositoryUrl>
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
 

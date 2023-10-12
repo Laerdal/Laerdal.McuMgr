@@ -14,23 +14,37 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--                                                                                                       -->
-        <!-- https://johnthiriet.com/xamarin-android-binding-library-writing/                                      -->
-        <!-- https://docs.microsoft.com/en-us/xamarin/android/platform/binding-java-library/#build-actions         -->
-        <!-- https://developer.xamarin.com/guides/android/advanced_topics/binding-a-java-library/binding-an-aar/   -->
-        <!--                                                                                                       -->
-        <!-- a binding project can only include one aar file   if the aar dependencies on other aar then those     -->
-        <!-- dependencies should be contained in their own binding project and then referenced   see b.ug 44573    -->
-        <!--                                                                                                       -->
-        <!--     https://docs.microsoft.com/en-us/xamarin/android/platform/binding-java-library/binding-an-aar     -->
-        <!--                                                                                                       -->
-        <!-- this is why we don't include mcumgr-core.aar and ble.aar in the <referencejar>  it would be pointless -->
-        <!--                                                                                                       -->
-        <TransformFile Include="Transforms\*.xml"/>
-        <LibraryProjectZip Include="$(CoreAarLibrary)"/>
-        <EmbeddedReferenceJar Include="$(AndroidLibsFolder)/Dependencies/*.jar"/>
-        <!-- <ReferenceJar Include="..."/> no need -->
+        <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
+        <!-- during the build process   so we reset everything back to a blank slate and then proceed to manually set up everything from scratch like we always do  -->
+        <ReferenceJar Remove="**"/>
+        <TransformFile Remove="**"/>
+        <AndroidLibrary Remove="**"/>
+        <AndroidAarLibrary Remove="**"/>
 
+        <!-- and now we set everything properly ourselves ala net6+   salient points:                                  -->
+        <!--                                                                                                           -->
+        <!-- 1  we dont use AndroidAarLibrary at all because it turned out not to be irrelevant                        -->
+        <!--                                                                                                           -->
+        <!-- 2  also notice that we have intentionally omitted any and all kotlin libraries as these java-libs are     -->
+        <!--    automatically included via implicitly referenced nugets (xamarin.kotlin.*) brought in by the net6+     -->
+        <!--    build system itself    we do however include kotlinx-coroutines*.jar because those are not brought in  -->
+        <!--    automatically                                                                                          -->
+        <!--                                                                                                           -->
+        <!-- https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/OneDotNetEmbeddedResources.md   -->
+        <!--                                                                                                           -->
+        <TransformFile Include="Transforms/*.xml"/>
+        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble*.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core*.jar" Bind="false" />
+
+        <!-- todo  reexamine whether we really need these -->
         <Reference Include="Mono.Android"/>
         <Reference Include="Java.Interop"/>
     </ItemGroup>
