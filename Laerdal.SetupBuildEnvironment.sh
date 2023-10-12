@@ -40,7 +40,7 @@ dotnet   --version
 #
 # todo   once we migrate every csproj to netX we can simply issue 'workload restore' on the root folder
 # 
-( cd "Laerdal.McuMgr.Bindings.Android.NetX"              \
+( cd "Laerdal.McuMgr.Bindings.Android"              \
   && sudo    dotnet                                      \
              workload                                    \
              restore                                     \
