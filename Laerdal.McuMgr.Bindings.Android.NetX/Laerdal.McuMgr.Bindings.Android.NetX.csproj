@@ -3,6 +3,10 @@
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
+        <IsNet6 Condition=" '$(TargetFramework.ToLower().StartsWith(net6))' == 'true' ">true</IsNet6>
+        <IsNet7 Condition=" '$(TargetFramework.ToLower().StartsWith(net7))' == 'true' ">true</IsNet7>
+        <IsNetX Condition=" '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'          ">true</IsNetX>
+
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
@@ -98,52 +102,7 @@
         <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
                Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
-
-    <!-- ____________________________________________________________________________________________________________ -->
-
-    <PropertyGroup>
-        <LangVersion>10.0</LangVersion>
-        
-        <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31</SupportedOSPlatformVersion>
-
-        <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
-        <!-- during the build process   so we reset everything back to a blank slate and then proceed to manually set up everything from scratch like we always do  -->
-        <ReferenceJar Remove="**"/>
-        <TransformFile Remove="**"/>
-        <AndroidLibrary Remove="**"/>
-        <AndroidAarLibrary Remove="**"/>
-        
-        <!-- and now we set everything properly ourselves ala net6+   salient points:                                  -->
-        <!--                                                                                                           -->
-        <!-- 1  we dont use AndroidAarLibrary at all because it turned out not to be irrelevant                        -->
-        <!--                                                                                                           -->
-        <!-- 2  also notice that we have intentionally omitted any and all kotlin libraries as these java-libs are     -->
-        <!--    automatically included via implicitly referenced nugets (xamarin.kotlinx.*) brought in by the net6+    -->
-        <!--    build system itself                                                                                    -->
-        <!--                                                                                                           -->
-        <!-- https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/OneDotNetEmbeddedResources.md   -->
-        <!--                                                                                                           -->
-        <TransformFile Include="Transforms/*.xml"/>
-        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core*.jar" Bind="false" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.12.0.1" PrivateAssets="All" />
-    </ItemGroup>
+   
+    <Import Condition=" '$(IsNetX)' == 'true' "
+            Project="Laerdal.McuMgr.Bindings.Android.NetX.targets" />    
 </Project>
