@@ -59,10 +59,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.737.0</Version>
-        <FileVersion>1.0.737.0</FileVersion>
-        <PackageVersion>1.0.737.0</PackageVersion>
-        <AssemblyVersion>1.0.737.0</AssemblyVersion>
+        <Version>1.0.786.0</Version>
+        <FileVersion>1.0.786.0</FileVersion>
+        <PackageVersion>1.0.786.0</PackageVersion>
+        <AssemblyVersion>1.0.786.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
@@ -133,24 +133,21 @@
     <!--    </ItemGroup> -->
 
     <!-- ANDROID -->
-    <!--    <ItemGroup Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' ">-->
-    <!--        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.782.0"/>-->
-    <!--    </ItemGroup>-->
     <ItemGroup Condition=" '$(IsCompilingForClassicXamarinAndroid)' == 'true' OR '$(IsCompilingForNetXAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android.NetX" Version="1.0.782.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.786.0"/>
     </ItemGroup>
 
     <!-- IOS -->
     <ItemGroup Condition=" '$(IsCompilingForClassicXamarinIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.782.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.786.0"/>
     </ItemGroup>
     <ItemGroup Condition=" '$(IsCompilingForNetXIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS.NetX" Version="1.0.782.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS.NetX" Version="1.0.786.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsCompilingForNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.782.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.786.0"/>
     </ItemGroup>
 
 </Project>
