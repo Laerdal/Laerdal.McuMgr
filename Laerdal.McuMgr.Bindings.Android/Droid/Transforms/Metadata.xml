@@ -1,6 +1,0 @@
-﻿<metadata>
-    <!-- <remove-node path="/api/package[@name='no.laerdal.mcumgr_laerdal_wrapper']/class[@name='FirmwareUpgradeCallbackProxy']"/> -->
-    <!-- <remove-node path="/api/package[@name='no.laerdal.mcumgr_laerdal_wrapper']/class[substring(@name, string-length(@name) - string-length('.FirmwareUpgradeCallbackProxy') + 1) = '.FirmwareUpgradeCallbackProxy']"/> -->
-
-    <attr path="/api/package[@name='no.laerdal.mcumgr_laerdal_wrapper']" name="managedName">Laerdal.Java.McuMgr.Wrapper.Android</attr>
-</metadata>
