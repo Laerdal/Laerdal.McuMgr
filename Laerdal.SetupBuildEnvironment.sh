@@ -40,11 +40,24 @@ dotnet   --version
 #
 # todo   once we migrate every csproj to netX we can simply issue 'workload restore' on the root folder
 # 
-( cd "Laerdal.McuMgr.Bindings.Android"              \
+( cd "Laerdal.McuMgr"                                    \
   && sudo    dotnet                                      \
              workload                                    \
              restore                                     \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
+
+( cd "Laerdal.McuMgr.Bindings.iOS.NetX"                  \
+  && sudo    dotnet                                      \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
+
+( cd "Laerdal.McuMgr.Bindings.Android"                   \
+  && sudo    dotnet                                      \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
+
 
 # this is handled by the build system
 # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
