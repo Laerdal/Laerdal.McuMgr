@@ -1,3 +1,3 @@
 <metadata>
-    <attr path="/api/package[@name='no.laerdal.mcumgr_laerdal_wrapper']" name="managedName">Laerdal.Java.McuMgr.Wrapper.Android</attr>
+    <attr path="/api/package[@name='no.laerdal.mcumgr_laerdal_wrapper']" name="managedName">Laerdal.McuMgr.Bindings.Android</attr>
 </metadata>

@@ -6,7 +6,7 @@ using Android.App;
 using Android.Bluetooth;
 using Android.Content;
 using Android.Runtime;
-using Laerdal.Java.McuMgr.Wrapper.Android;
+using Laerdal.McuMgr.Bindings.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
