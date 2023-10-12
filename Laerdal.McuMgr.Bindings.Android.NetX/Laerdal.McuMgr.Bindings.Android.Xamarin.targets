@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Project>
+
+    <PropertyGroup>
+        <LangVersion>8.0</LangVersion>
+        
+        <!-- we set the class parser and codegen manually to modernize the default build toolchain of classic xamarin which has reached eol -->
+        <AndroidClassParser>class-parse</AndroidClassParser>
+        <AndroidCodegenTarget>XAJavaInterop1</AndroidCodegenTarget>
+
+        <!-- in this particular kind of project $TargetFrameworkVersion refers to the android version   not the dotnet framework version -->
+        <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--                                                                                                       -->
+        <!-- https://johnthiriet.com/xamarin-android-binding-library-writing/                                      -->
+        <!-- https://docs.microsoft.com/en-us/xamarin/android/platform/binding-java-library/#build-actions         -->
+        <!-- https://developer.xamarin.com/guides/android/advanced_topics/binding-a-java-library/binding-an-aar/   -->
+        <!--                                                                                                       -->
+        <!-- a binding project can only include one aar file   if the aar dependencies on other aar then those     -->
+        <!-- dependencies should be contained in their own binding project and then referenced   see b.ug 44573    -->
+        <!--                                                                                                       -->
+        <!--     https://docs.microsoft.com/en-us/xamarin/android/platform/binding-java-library/binding-an-aar     -->
+        <!--                                                                                                       -->
+        <!-- this is why we don't include mcumgr-core.aar and ble.aar in the <referencejar>  it would be pointless -->
+        <!--                                                                                                       -->
+        <TransformFile Include="Transforms\*.xml"/>
+        <LibraryProjectZip Include="$(CoreAarLibrary)"/>
+        <EmbeddedReferenceJar Include="$(AndroidLibsFolder)/Dependencies/*.jar"/>
+        <!-- <ReferenceJar Include="..."/> no need -->
+
+        <Reference Include="Mono.Android"/>
+        <Reference Include="Java.Interop"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
+    </ItemGroup>
+
+</Project>
