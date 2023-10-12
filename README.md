@@ -676,13 +676,13 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 (we target version 7.0.401 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
+#### 2) Make sure you have .Net7 (we target version 7.0.402 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
 ```bash
-# cd into the root folder of this repository and run the following with admin privileges
-sudo   dotnet   workload   install   maui  ios  android  maui-ios  maui-windows  maui-android  maui-maccatalyst   --sdk-version=7.0.401   --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.92.json
+# cd into each one of the folders Laerdal.McuMgr, Laerdal.McuMgr.Bindings.Android and Laerdal.McuMgr.Bindings.iOS of this repository and run the following with admin privileges
+sudo   dotnet   workload   restore  --sdk-version=7.0.402  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
 
-# note#1   theoretically 'dotnet workload restore' should also do the trick but it runs into problems in practice
+# note#1   theoretically 'dotnet workload restore' on the root level should also do the trick but in practice it sometimes runs into problems
 #
 # note#2   microsoft encourages us to always update to and use the latest workloads   in practice devs have complained that they've
 #          run into headaches with this approach and would rather pin versions explicitly as shown above   chances are you will have
@@ -697,16 +697,17 @@ After running the above command running 'dotnet workload list' should print out 
 ```bash
 > dotnet workload list
 
-Installed Workload Id      Manifest Version       Installation Source           
+Installed Workload Id      Manifest Version       Installation Source
 --------------------------------------------------------------------------------
-android                    33.0.68/7.0.100        SDK 7.0.400, VS 17.7.34031.279
-ios                        16.4.7099/7.0.100      SDK 7.0.400, VS 17.7.34031.279
-maui                       7.0.92/7.0.100         SDK 7.0.400                   
-maui-ios                   7.0.92/7.0.100         SDK 7.0.400, VS 17.7.34031.279
-maui-windows               7.0.92/7.0.100         VS 17.7.34031.279             
-maui-maccatalyst           7.0.92/7.0.100         VS 17.7.34031.279             
-maccatalyst                16.4.7099/7.0.100      VS 17.7.34031.279             
-maui-android               7.0.92/7.0.100         VS 17.7.34031.279             
+android                    33.0.95/7.0.100        SDK 7.0.400, VS 17.7.34202.233
+ios                        16.4.7107/7.0.100      SDK 7.0.400, VS 17.7.34202.233
+maui                       7.0.96/7.0.100         SDK 7.0.400
+maui-android               7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-ios                   7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-maccatalyst           7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-windows               7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+wasm-tools-net6            7.0.11/7.0.100         SDK 7.0.400
+maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 ```
 
 #### 3) Make sure that Java11 is installed on your machine along with Gradle and Maven.
