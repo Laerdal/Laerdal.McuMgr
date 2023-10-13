@@ -149,7 +149,9 @@
                Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
 
-    <!-- its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel -->
+    <!-- 1  its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel       -->
+    <!-- 2  also note that we hook onto the PrepareForBuild task    if we target the task CoreCompile then this task will be invoked on localdev   -->
+    <!--    but on in the azure pipelines for some weird reason                                                                                    -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
             Condition=" '$(IsOSX)' == 'True' AND '$(IsXamarinAndroid)' == 'true' ">

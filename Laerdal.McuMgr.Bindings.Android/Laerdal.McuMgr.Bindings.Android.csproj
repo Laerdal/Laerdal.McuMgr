@@ -103,8 +103,7 @@
     </Target>
 
     <Target Name="CheckAndroidLibraryFilesExist"
-            BeforeTargets="CoreCompile"
-            DependsOnTargets="PrepareForBuild">
+            AfterTargets="CompileMcuMgrLaerdalWrapper">
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
@@ -113,7 +112,7 @@
     <!-- intended way of building stuff is to let net6.0-android build the android libs and once that is done then and only then proceed to net7.0-android -->
     <!-- which will find the .aar and .jars already in place                                                                                               -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
-            BeforeTargets="CoreCompile">
+            BeforeTargets="PrepareForBuild">
         <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
                Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
