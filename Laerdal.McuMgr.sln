@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.Net
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.Android", "Laerdal.McuMgr.Bindings.Android\Laerdal.McuMgr.Bindings.Android.csproj", "{C6A768F6-E649-4621-A9A8-099A7887BBBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS.NetX", "Laerdal.McuMgr.Bindings.iOS.NetX\Laerdal.McuMgr.Bindings.iOS.NetX.csproj", "{84273F19-16F7-4956-A4F6-74DF3F044F45}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS", "Laerdal.McuMgr.Bindings.iOS\Laerdal.McuMgr.Bindings.iOS.csproj", "{84273F19-16F7-4956-A4F6-74DF3F044F45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

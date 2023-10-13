@@ -42,7 +42,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Laerdal.McuMgr.Bindings.iOS.NetX</PackageId>
+        <PackageId>Laerdal.McuMgr.Bindings.iOS</PackageId>
         <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -60,13 +60,13 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.790.0</Version>
-        <FileVersion>1.0.790.0</FileVersion>
-        <PackageVersion>1.0.790.0</PackageVersion>
-        <AssemblyVersion>1.0.790.0</AssemblyVersion>
+        <Version>1.0.782.0</Version>
+        <FileVersion>1.0.782.0</FileVersion>
+        <PackageVersion>1.0.782.0</PackageVersion>
+        <AssemblyVersion>1.0.782.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>.Net6+ McuMgr Bindings for iOS - MAUI ready</Summary>
+        <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
         <Description>$(PackageDescription)</Description>
         <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
@@ -96,7 +96,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Laerdal.McuMgr.Bindings.iOS.NetX.csproj.DotSettings"/>
+        <None Remove="Laerdal.McuMgr.Bindings.iOS.csproj.DotSettings"/>
         <None Include="../Laerdal.McuMgr.Bindings.iOS.Native/Laerdal.IOS.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
 

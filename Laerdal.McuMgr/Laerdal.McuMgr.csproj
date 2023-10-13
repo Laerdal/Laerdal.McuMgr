@@ -152,7 +152,7 @@
 
     <!-- IOS -->
     <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS.NetX" Version="1.0.790.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.782.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->

@@ -383,11 +383,8 @@ Package.resolved
 **/build/**
 **/xcuserdata/**
 
-**/Laerdal.McuMgr.Bindings.Android/Libraries/**
-**/Laerdal.McuMgr.Bindings.Android.NetX/Libraries/**
-
 **/Laerdal.McuMgr.Bindings.iOS/Frameworks/**
-**/Laerdal.McuMgr.Bindings.iOS.NetX/Frameworks/**
+**/Laerdal.McuMgr.Bindings.Android/Libraries/**
 
 # gradle
 

@@ -62,7 +62,7 @@
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
             <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
-            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS.NetX/Laerdal.McuMgr.Bindings.iOS.NetX.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
+            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
             <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
             <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
@@ -145,8 +145,8 @@
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
         <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS.NetX&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS.NetX&quot; Version=&quot;$(Version)&quot;" />
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;.*?&quot;"
