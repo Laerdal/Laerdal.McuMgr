@@ -151,7 +151,7 @@
 
     <!-- its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
-            BeforeTargets="CoreCompile"
+            BeforeTargets="PrepareForBuild"
             Condition=" '$(IsOSX)' == 'True' AND '$(IsXamarinAndroid)' == 'true' ">
         
         <!-- 1. build and generate the fat libs from the proxy swift project -->
