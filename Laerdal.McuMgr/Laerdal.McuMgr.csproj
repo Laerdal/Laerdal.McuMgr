@@ -28,9 +28,9 @@
         <IsXamarinIOS Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin.ios))'    == 'true' ">true</IsXamarinIOS>
         <IsXamarinAndroid Condition="  '$(TargetFramework.ToLower().StartsWith(monoandroid))'    == 'true' ">true</IsXamarinAndroid>
 
-        <IsNetX Condition="                  '$(IsNet6)'        == 'true' OR '$(IsNet7)'        == 'true' ">true</IsNetX>
-        <IsNetXIOS Condition="               '$(IsNet6IOS)'     == 'true' OR '$(IsNet7IOS)'     == 'true' ">true</IsNetXIOS>
-        <IsNetXAndroid Condition="           '$(IsNet6Android)' == 'true' OR '$(IsNet7Android)' == 'true' ">true</IsNetXAndroid>
+        <IsNetX Condition="                '$(IsNet6)'           == 'true' OR '$(IsNet7)'        == 'true' ">true</IsNetX>
+        <IsNetXIOS Condition="             '$(IsNet6IOS)'        == 'true' OR '$(IsNet7IOS)'     == 'true' ">true</IsNetXIOS>
+        <IsNetXAndroid Condition="         '$(IsNet6Android)'    == 'true' OR '$(IsNet7Android)' == 'true' ">true</IsNetXAndroid>
 
         <IsCompilingForIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
         <IsCompilingForAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsCompilingForAndroid>
@@ -45,8 +45,8 @@
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
-        <PackageDescription>Xamarin managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard.</PackageDescription>
-        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
+        <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard.</PackageDescription>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
@@ -65,14 +65,15 @@
         <AssemblyVersion>1.0.790.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
-        <Description>$(PackageDescription)</Description>
-        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
+        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
+        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Copyright>$(Authors)</Copyright>
+        <Description>$(PackageDescription)</Description>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</PackageProjectUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <RepositoryType>git</RepositoryType>
 
         <IncludeSource>True</IncludeSource>
         <IncludeSymbols>True</IncludeSymbols>

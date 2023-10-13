@@ -20,7 +20,7 @@
 <!--                msbuild                                                      \                                                                                          -->
 <!--                Laerdal.McuMgr.Builder.targets                               \                                                                                          -->
 <!--                '"/p:TF_BUILD=1"'                                            \                                                                                          -->
-<!--                '"/p:Laerdal_Repository=Laerdal/xamarin-nordic-mcumgr"'      \                                                                                          -->
+<!--                '"/p:Laerdal_Repository=Laerdal/Laerdal.McuMgr"'             \                                                                                          -->
 <!--                '"/p:Laerdal_Source_Branch=<main / develop / ...>"'          \                                                                                          -->
 <!--                '"/p:Laerdal_Github_Username=laerdal-components-team"'       \                                                                                          -->
 <!--                '"/p:Laerdal_Github_Access_Token=XYZ"'                       \                                                                                          -->

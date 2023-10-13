@@ -44,7 +44,7 @@
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.iOS.NetX</PackageId>
         <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;</PackageTags>
-        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageDescription>C# wrapper around Nordic's McuMgr-related native libs for iOS.</PackageDescription>
