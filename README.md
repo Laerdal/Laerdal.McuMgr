@@ -676,7 +676,39 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine
+#### 2) Make sure you have .Net7 (we target version 7.0.402 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
+
+```bash
+# cd into each one of the folders Laerdal.McuMgr, Laerdal.McuMgr.Bindings.Android and Laerdal.McuMgr.Bindings.iOS of this repository and run the following with admin privileges
+sudo   dotnet   workload   restore  --sdk-version=7.0.402  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+
+# note#1   theoretically 'dotnet workload restore' on the root level should also do the trick but in practice it sometimes runs into problems
+#
+# note#2   microsoft encourages us to always update to and use the latest workloads   in practice devs have complained that they've
+#          run into headaches with this approach and would rather pin versions explicitly as shown above   chances are you will have
+#          one or more workloads forcibly updated to greater versions and if that's indeed the case then it's nearly impossible for
+#          you to roll the workload versions back to the ones shown here   most probably your build system will still work and you won't
+#          run into trouble   if you do you will either have to (a) reinstall .net7 from scratch or (b) use docker as your build system
+#          to enforce strict workload-versioning on builds     
+```
+
+After running the above command running 'dotnet workload list' should print out something like this on Windows:
+
+```bash
+> dotnet workload list
+
+Installed Workload Id      Manifest Version       Installation Source
+--------------------------------------------------------------------------------
+android                    33.0.95/7.0.100        SDK 7.0.400, VS 17.7.34202.233
+ios                        16.4.7107/7.0.100      SDK 7.0.400, VS 17.7.34202.233
+maui                       7.0.96/7.0.100         SDK 7.0.400
+maui-android               7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-ios                   7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-maccatalyst           7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-windows               7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+wasm-tools-net6            7.0.11/7.0.100         SDK 7.0.400
+maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
+```
 
 #### 3) Make sure that Java11 is installed on your machine along with Gradle and Maven.
 
@@ -706,17 +738,21 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 
     To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
 
-    # on macos
-    msbuild                                                           \
+
+    # on macos *sh
+    dotnet                                                            \
+         msbuild                                                      \
          Laerdal.McuMgr.Builder.targets                               \
+         '"/m:1"'                                                     \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
     # on windows powershell
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"       ^
-            Laerdal.McuMgr.Builder.targets                                                                  ^
-            /p:Laerdal_Version_Full=1.0.x.0
+    & dotnet  msbuild                              ^
+         Laerdal.McuMgr.Builder.targets            ^
+         '"/m:1"'                                  ^
+         '"/p:Laerdal_Version_Full=1.0.x.0"'
 
-    Make sure to +1 the 'x' number each time in the scriptlet above before running it.
+    Note: Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
 
 ## Known issues

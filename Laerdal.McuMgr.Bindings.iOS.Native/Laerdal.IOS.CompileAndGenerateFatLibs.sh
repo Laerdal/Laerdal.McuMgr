@@ -17,6 +17,8 @@ declare SWIFT_BUILD_CONFIGURATION="Release"
 declare XAMARIN_BINDING_PATH="Xamarin/SwiftFrameworkProxy.Binding"
 
 function print_macos_sdks() {
+  xcode-select -p
+  xcodebuild -version
   xcodebuild -showsdks
 }
 

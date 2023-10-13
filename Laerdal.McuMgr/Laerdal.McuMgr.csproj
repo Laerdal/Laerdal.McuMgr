@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
+﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
 
     <!-- SHARED -->
     <PropertyGroup>
@@ -7,10 +7,34 @@
         <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
-        <!-- it only makes sense to build xamarin.ios under osx because xcodebuild is only available there -->
-        <TargetFrameworks>monoandroid12.0;netstandard2.0;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
+        <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
+        
+        <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios11;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios11;</TargetFrameworks>
+
+        <IsNet6 Condition="            '$(TargetFramework.ToLower().StartsWith(net6))'           == 'true' ">true</IsNet6>
+        <IsNet7 Condition="            '$(TargetFramework.ToLower().StartsWith(net7))'           == 'true' ">true</IsNet7>
+        <IsNet6IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net6.0-ios))'     == 'true' ">true</IsNet6IOS>
+        <IsNet7IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net7.0-ios))'     == 'true' ">true</IsNet7IOS>
+        <IsNet6Android Condition="     '$(TargetFramework.ToLower().StartsWith(net6.0-android))' == 'true' ">true</IsNet6Android>
+        <IsNet7Android Condition="     '$(TargetFramework.ToLower().StartsWith(net7.0-android))' == 'true' ">true</IsNet7Android>
+        <IsNetStandard Condition="     '$(TargetFramework.ToLower().StartsWith(netstandard))'    == 'true' ">true</IsNetStandard>
+        <IsXamarinIOS Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin.ios))'    == 'true' ">true</IsXamarinIOS>
+        <IsXamarinAndroid Condition="  '$(TargetFramework.ToLower().StartsWith(monoandroid))'    == 'true' ">true</IsXamarinAndroid>
+
+        <IsNetX Condition="                '$(IsNet6)'           == 'true' OR '$(IsNet7)'        == 'true' ">true</IsNetX>
+        <IsNetXIOS Condition="             '$(IsNet6IOS)'        == 'true' OR '$(IsNet7IOS)'     == 'true' ">true</IsNetXIOS>
+        <IsNetXAndroid Condition="         '$(IsNet6Android)'    == 'true' OR '$(IsNet7Android)' == 'true' ">true</IsNetXAndroid>
+
+        <IsCompilingForIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
+        <IsCompilingForAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsCompilingForAndroid>
+        
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
         <LangVersion>9</LangVersion>
@@ -21,15 +45,12 @@
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
-        <PackageDescription>Xamarin managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard.</PackageDescription>
-        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr</PackageProjectUrl>
+        <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard - MAUI ready</PackageDescription>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-
-        <!-- package dependencies are being intelligently added automatically to the nuspec so no need to be explicit about it here -->
-        <!-- <PackageReference Include="Laerdal.McuMgr.Core" Version="1.1.0" /> -->
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -38,42 +59,62 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.686.0</Version>
-        <FileVersion>1.0.686.0</FileVersion>
-        <PackageVersion>1.0.686.0</PackageVersion>
-        <AssemblyVersion>1.0.686.0</AssemblyVersion>
+        <Version>1.0.782.0</Version>
+        <FileVersion>1.0.782.0</FileVersion>
+        <PackageVersion>1.0.782.0</PackageVersion>
+        <AssemblyVersion>1.0.782.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
-        <Description>$(PackageDescription)</Description>
-        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
+        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
+        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Copyright>$(Authors)</Copyright>
-        <PackageProjectUrl>https://github.com/Laerdal/xamarin-nordic-mcumgr.git</PackageProjectUrl>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <Description>$(PackageDescription)</Description>
         <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</PackageProjectUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
         <IncludeSource>True</IncludeSource>
         <IncludeSymbols>True</IncludeSymbols>
 
         <!-- see : https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
         <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
         <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
         <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
-        <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member 
-        'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. 
-        Otherwise add the new keyword.
-        Can be ignored. -->
-        <NoWarn>CS0114;CS0618;CS0108;</NoWarn>
+
+        <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
+        <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->
+        <!-- Otherwise add the new keyword. Can be ignored.                                                                                                  -->
+        <NoWarn>CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
         <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
         <None Remove="Laerdal.McuMgr.csproj.DotSettings"/>
     </ItemGroup>
+
+    <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
+        <Message Importance="High" Text="OS:               '$(OS)'               "/>
+        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
+        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
+        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
+        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
+        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
+        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+
+        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
+        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
+        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
+        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
+    </Target>
 
     <!-- SHARED -->
     <ItemGroup>
@@ -82,43 +123,39 @@
     </ItemGroup>
 
     <!-- ANDROID -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
         <Compile Include="Droid\*.cs"/>
         <Compile Include="Droid\**\*.cs"/>
-
-        <Reference Include="Mono.Android"/>
-
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
     </ItemGroup>
 
     <!-- iOS -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+    <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
         <Compile Include="iOS\**\*.cs"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+    <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
         <Compile Include="NetStandard\**\*.cs"/>
     </ItemGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PropertyGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
         <AndroidLinkMode>Full</AndroidLinkMode>
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <AndroidLinkMode>Full</AndroidLinkMode>
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
-    </PropertyGroup>
+    <!-- ANDROID -->
+    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.782.0"/>
+    </ItemGroup>
 
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.686"/>
+    <!-- IOS -->
+    <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.782.0"/>
     </ItemGroup>
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.686"/>
-    </ItemGroup>
-    <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.686"/>
+
+    <!-- NETSTANDARD -->
+    <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.782.0"/>
     </ItemGroup>
 
 </Project>
