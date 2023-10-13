@@ -95,6 +95,11 @@
         <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+
+        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
+        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
+        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
+        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
     </Target>
 
     <Target Name="CheckAndroidLibraryFilesExist"
