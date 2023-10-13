@@ -48,7 +48,7 @@ jobs:
           arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
 
       - task: DotNetCoreCLI@2
-        displayName: 'NuGet Sources Add (for .NetX)'
+        displayName: 'NuGet Sources Add (for .Net6+)'
         inputs:
           command: 'custom'
           custom: 'nuget'
@@ -61,7 +61,7 @@ jobs:
         inputs:
           command: 'custom'
           custom: 'msbuild'
-          arguments: 'Laerdal.McuMgr.Builder.NetX.targets    -m:1   -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: Bash@3
         displayName: 'Print Nugets under Artifacts'
