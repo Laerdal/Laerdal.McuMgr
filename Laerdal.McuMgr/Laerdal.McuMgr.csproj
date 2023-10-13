@@ -126,8 +126,6 @@
     <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
         <Compile Include="Droid\*.cs"/>
         <Compile Include="Droid\**\*.cs"/>
-
-        <Reference Condition=" '$(IsXamarinAndroid)' == 'true' " Include="Mono.Android"/>
     </ItemGroup>
 
     <!-- iOS -->
