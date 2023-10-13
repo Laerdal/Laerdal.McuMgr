@@ -45,7 +45,7 @@
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' " >README.md</PackageReadmeFile> 
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageDescription>Mono/Xamarin/.Net6+ wrapper (MAUI ready) around Nordic's McuMgr-related native libs for Android.</PackageDescription>
+        <PackageDescription>Wrapper around Nordic's McuMgr-related native libs for Android - MAUI ready</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
@@ -54,10 +54,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.790.0</Version>
-        <FileVersion>1.0.790.0</FileVersion>
-        <PackageVersion>1.0.790.0</PackageVersion>
-        <AssemblyVersion>1.0.790.0</AssemblyVersion>
+        <Version>1.0.782.0</Version>
+        <FileVersion>1.0.782.0</FileVersion>
+        <PackageVersion>1.0.782.0</PackageVersion>
+        <AssemblyVersion>1.0.782.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>

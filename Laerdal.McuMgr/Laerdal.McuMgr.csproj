@@ -45,7 +45,7 @@
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
         <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
-        <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard.</PackageDescription>
+        <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard - MAUI ready</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
@@ -59,10 +59,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.790.0</Version>
-        <FileVersion>1.0.790.0</FileVersion>
-        <PackageVersion>1.0.790.0</PackageVersion>
-        <AssemblyVersion>1.0.790.0</AssemblyVersion>
+        <Version>1.0.782.0</Version>
+        <FileVersion>1.0.782.0</FileVersion>
+        <PackageVersion>1.0.782.0</PackageVersion>
+        <AssemblyVersion>1.0.782.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -145,7 +145,7 @@
 
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.790.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.782.0"/>
     </ItemGroup>
 
     <!-- IOS -->
@@ -155,7 +155,7 @@
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.790.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.782.0"/>
     </ItemGroup>
 
 </Project>
