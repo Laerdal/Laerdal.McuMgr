@@ -4,7 +4,7 @@ trigger:
       - '*'
 
 pool:
-  name: Azure Pipelines
+  name: 'Azure Pipelines'
   vmImage: 'macOS-12'
 
 variables:
@@ -18,7 +18,7 @@ resources:
 
 jobs:
   - job: Build
-    displayName: Build Agent
+    displayName: 'Build Agent'
 
     steps:
       - checkout: self
@@ -28,18 +28,18 @@ jobs:
         persistCredentials: True
 
       - task: Bash@3
-        displayName: Install Build Tools for 'Laerdal.McuMgr.Bindings'
+        displayName: 'Install Build Tools for "Laerdal.McuMgr.Bindings"'
         inputs:
           targetType: filePath
           filePath: 'Laerdal.SetupBuildEnvironment.sh'
 
       - task: NuGetToolInstaller@1
-        displayName: 'Use NuGet '
+        displayName: 'Install Nuget'
         inputs:
           checkLatest: true
 
-      - script: mkdir '$(Build.ArtifactStagingDirectory)/Artifacts'
-        displayName: 'Create Directory $(Build.ArtifactStagingDirectory)/Artifacts'
+      - displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
+        script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
 
       - task: NuGetCommand@2
         displayName: 'NuGet Sources Add (for Classic Xamarin)'
@@ -67,7 +67,7 @@ jobs:
         displayName: 'Print Nugets under Artifacts'
         inputs:
           targetType: inline
-          script: ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"
+          script: 'ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"'
 
       - task: DotNetCoreCLI@2
         displayName: 'Run the McuMgr Test Suite and Publish Test Results'
@@ -80,6 +80,5 @@ jobs:
       - task: PublishBuildArtifacts@1
         inputs:
           ArtifactName: 'drop'
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/Artifacts/
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/Artifacts/'
           publishLocation: 'Container'
-...
