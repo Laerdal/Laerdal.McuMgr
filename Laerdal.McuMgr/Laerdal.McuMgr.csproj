@@ -32,7 +32,7 @@
         <IsNetXIOS Condition="             '$(IsNet6IOS)'        == 'true' OR '$(IsNet7IOS)'     == 'true' ">true</IsNetXIOS>
         <IsNetXAndroid Condition="         '$(IsNet6Android)'    == 'true' OR '$(IsNet7Android)' == 'true' ">true</IsNetXAndroid>
 
-        <IsCompilingForIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
+        <IsCompilingForIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNetXIOS)'     == 'true' ">true</IsCompilingForIOS>
         <IsCompilingForAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsCompilingForAndroid>
         
         <OutputType>Library</OutputType>
