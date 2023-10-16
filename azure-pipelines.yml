@@ -38,8 +38,8 @@ jobs:
         inputs:
           checkLatest: true
 
-      - displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
-        script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
+      - script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
+        displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
 
       - task: NuGetCommand@2
         displayName: 'NuGet Sources Add (for Classic Xamarin)'
