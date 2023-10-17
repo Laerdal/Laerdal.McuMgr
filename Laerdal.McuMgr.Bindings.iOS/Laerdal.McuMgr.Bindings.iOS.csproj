@@ -26,9 +26,9 @@
         <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))'        == 'true'   ">true</IsNet7>
         <IsXamarin Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin))'     == 'true'   ">true</IsXamarin>
         
-        <IsNetX Condition="         '$(IsNet6)'    == 'true' or '$(IsNet7)' == 'true' ">true</IsNetX>
-        <IsNetXIos    Condition="   '$(IsNetX)'    == 'true' or '$(IsIOS)'  == 'true' ">true</IsNetXIos>
-        <IsXamarinIos Condition="   '$(IsXamarin)' == 'true' or '$(IsIOS)'  == 'true' ">true</IsXamarinIos>
+        <IsNetX Condition="         '$(IsNet6)'    == 'true' or  '$(IsNet7)' == 'true' ">true</IsNetX>
+        <IsNetXIos    Condition="   '$(IsNetX)'    == 'true' and '$(IsIOS)'  == 'true' ">true</IsNetXIos>
+        <IsXamarinIos Condition="   '$(IsXamarin)' == 'true' and '$(IsIOS)'  == 'true' ">true</IsXamarinIos>
 
         <TargetPlatformVersion Condition=" '$(IsNetXIos)'     == 'true' ">11.0</TargetPlatformVersion>
         <TargetPlatformVersion Condition=" '$(IsXamarinIos)'  == 'true' ">10.0</TargetPlatformVersion>
@@ -145,6 +145,8 @@
         <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
         <Message Importance="high" Text="IsXamarin:              '$(IsXamarin)'                "/>
+        <Message Importance="high" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
+        <Message Importance="high" Text="IsXamarinIos:           '$(IsXamarinIos)'             "/>
         <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
     </Target>
