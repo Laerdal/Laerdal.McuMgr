@@ -2,30 +2,37 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
-        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
-        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
+        <IsOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsOSX>
+        <IsLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsLinux>
+        <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
-
-        <!-- this is the minimum supported ios version we aim for   we set the minimum ios version to 11.0 because the default maui       -->
-        <!-- template project by default supports ios 11.0 as a minimum and this is very telling of microsoft's intentions for the future -->
-        <TargetPlatformVersion>11.0</TargetPlatformVersion>
 
         <!-- if we are building under osx then we issue a proper full blown build    notice that xamarin.ios10 must always be first for the        -->
         <!-- native swift-libs to be build properly so that they will be readymade when the net6 and net7 builds kick in right after xamarin.ios10 -->
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
         <TargetFrameworks Condition=" '$(IsOSX)' == 'False' ">netstandard2.0;</TargetFrameworks>
 
-        <IsNet6 Condition="               '$(TargetFramework.ToLower().StartsWith(net6))' == 'true'          ">true</IsNet6>
-        <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
+        <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or '$(TargetFramework.ToLower().StartsWith(xamarin.ios))' == 'true' ">true</IsIOS>
+        <IsMacCatalyst Condition="  $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">true</IsMacCatalyst>
 
-        <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
-        <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(xamarin.ios))' == 'true'   ">true</IsXamarinAndroid>
+        <IsNet6 Condition="         '$(TargetFramework.ToLower().StartsWith(net6))'        == 'true'   ">true</IsNet6>
+        <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))'        == 'true'   ">true</IsNet7>
+        <IsXamarin Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin))'     == 'true'   ">true</IsXamarin>
+        
+        <IsNetX Condition="         '$(IsNet6)'    == 'true' or '$(IsNet7)' == 'true' ">true</IsNetX>
+        <IsNetXIos    Condition="   '$(IsNetX)'    == 'true' or '$(IsIOS)'  == 'true' ">true</IsNetXIos>
+        <IsXamarinIos Condition="   '$(IsXamarin)' == 'true' or '$(IsIOS)'  == 'true' ">true</IsXamarinIos>
+
+        <TargetPlatformVersion Condition=" '$(IsNetXIos)'     == 'true' ">11.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsXamarinIos)'  == 'true' ">10.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)' == 'true' ">13.1</TargetPlatformVersion>
 
         <DebugType>full</DebugType>
         <Optimized>false</Optimized>
@@ -43,11 +50,11 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.iOS</PackageId>
-        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;</PackageTags>
+        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;Mac;MacCatalyst;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageDescription>C# wrapper around Nordic's McuMgr-related native libs for iOS.</PackageDescription>
+        <PackageDescription>C# bindings around Nordic's McuMgr-related native libs for iOS and MacCatalyst.</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
@@ -119,24 +126,27 @@
 
         <!-- we had to remove the reference to Xamarin.Swift due to a b.ug in xamarin.legacy.sdk -->
         <!-- https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/45#issuecomment-1355886218     -->
-        <!-- <PackageReference Condition=" '$(IsXamarinAndroid)' == 'true' " Include="Xamarin.Swift" Version="1.0.11"/> -->
-        <PackageReference Condition=" '$(IsXamarinAndroid)' == 'true' " Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
+        <!-- <PackageReference Condition=" '$(IsXamarinIos)' == 'true' " Include="Xamarin.Swift" Version="1.0.11"/> -->
+        <PackageReference Condition=" '$(IsXamarinIos)' == 'true' " Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               '$(OS)'               "/>
-        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
-        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
-        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
-        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
-        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
-        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
-
-        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
-        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
-        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
-        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
+        <Message Importance="High" Text="OS:                     '$(OS)'               "/>
+        <Message Importance="High" Text="Platform:               '$(Platform)'         "/>
+        <Message Importance="High" Text="PackageId:              '$(PackageId)'        "/>
+        <Message Importance="High" Text="Configuration:          '$(Configuration)'    "/>
+        <Message Importance="High" Text="PackageVersion:         '$(PackageVersion)'   "/>
+        <Message Importance="High" Text="TargetFramework:        '$(TargetFramework)'  "/>
+        <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
+        
+        <Message Importance="high" Text="IsIOS:                  '$(IsIOS)'                    "/>
+        <Message Importance="high" Text="IsNet6:                 '$(IsNet6)'                   "/>
+        <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
+        <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
+        <Message Importance="high" Text="IsXamarin:              '$(IsXamarin)'                "/>
+        <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
+        <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
@@ -145,7 +155,7 @@
     <!-- which will find the compiled framework-libs already in place                                                                                      -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="CompileProxyProjectAndGenerateFatLibs">
-        <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
+        <Error Condition=" '$(MSBuildNodeCount)' != '' and $(MSBuildNodeCount) &gt; 1 "
                Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
 
@@ -154,8 +164,8 @@
     <!--    but on in the azure pipelines for some weird reason                                                                                    -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
-            Condition=" '$(IsOSX)' == 'True' AND '$(IsXamarinAndroid)' == 'true' ">
-        
+            Condition=" '$(IsXamarinIos)' == 'true' ">
+
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS.Native" Command=" chmod +x ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.iOS.Native" Command=" ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>

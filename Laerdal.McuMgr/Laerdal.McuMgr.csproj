@@ -32,8 +32,8 @@
         <IsNetXIOS Condition="             '$(IsNet6IOS)'        == 'true' OR '$(IsNet7IOS)'     == 'true' ">true</IsNetXIOS>
         <IsNetXAndroid Condition="         '$(IsNet6Android)'    == 'true' OR '$(IsNet7Android)' == 'true' ">true</IsNetXAndroid>
 
-        <IsCompilingForIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNetXIOS)'     == 'true' ">true</IsCompilingForIOS>
-        <IsCompilingForAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsCompilingForAndroid>
+        <IsIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNetXIOS)'     == 'true' ">true</IsIOS>
+        <IsAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsAndroid>
         
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -123,13 +123,17 @@
     </ItemGroup>
 
     <!-- ANDROID -->
-    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
+    <PropertyGroup Condition=" '$(IsAndroid)' == 'true' ">
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
         <Compile Include="Droid\*.cs"/>
         <Compile Include="Droid\**\*.cs"/>
     </ItemGroup>
 
     <!-- iOS -->
-    <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
+    <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
         <Compile Include="iOS\**\*.cs"/>
     </ItemGroup>
 
@@ -137,19 +141,16 @@
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
         <Compile Include="NetStandard\**\*.cs"/>
     </ItemGroup>
-
-    <PropertyGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
-        <AndroidLinkMode>Full</AndroidLinkMode>
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
-    </PropertyGroup>
-
+    
+    <!-- NUGETS -->
+    
     <!-- ANDROID -->
-    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
+    <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.796.0"/>
     </ItemGroup>
 
     <!-- IOS -->
-    <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
+    <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.796.0"/>
     </ItemGroup>
 
