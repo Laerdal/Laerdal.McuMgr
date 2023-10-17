@@ -67,10 +67,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.796.0</Version>
-        <FileVersion>1.0.796.0</FileVersion>
-        <PackageVersion>1.0.796.0</PackageVersion>
-        <AssemblyVersion>1.0.796.0</AssemblyVersion>
+        <Version>1.0.801.0</Version>
+        <FileVersion>1.0.801.0</FileVersion>
+        <PackageVersion>1.0.801.0</PackageVersion>
+        <AssemblyVersion>1.0.801.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
@@ -130,7 +130,7 @@
         <PackageReference Condition=" '$(IsXamarinIos)' == 'true' " Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
     </ItemGroup>
 
-    <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
+    <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
         <Message Importance="High" Text="OS:                     '$(OS)'               "/>
         <Message Importance="High" Text="Platform:               '$(Platform)'         "/>
         <Message Importance="High" Text="PackageId:              '$(PackageId)'        "/>
