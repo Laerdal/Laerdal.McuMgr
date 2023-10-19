@@ -679,7 +679,7 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop 
 #### 2) Make sure you have .Net7 (we target version 7.0.402 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
 ```bash
-# cd into each one of the folders Laerdal.McuMgr, Laerdal.McuMgr.Bindings.Android and Laerdal.McuMgr.Bindings.iOS of this repository and run the following with admin privileges
+# cd into the root folder of the repo
 sudo   dotnet   workload   restore  --sdk-version=7.0.402  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
 
 # note#1   theoretically 'dotnet workload restore' on the root level should also do the trick but in practice it sometimes runs into problems

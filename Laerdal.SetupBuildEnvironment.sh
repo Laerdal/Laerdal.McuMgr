@@ -36,22 +36,12 @@ dotnet   --version
 
 #
 # we do our best to explicitly version-pin our workloads so as to preemptively avoid problems that
-# would be bound to crop up sooner or later by blindly autoupgrading to bleeding-edge workloads
-#
-# todo   once we migrate every csproj to netX we can simply issue 'workload restore' on the root folder
+# would be bound to crop up sooner or later by blindly auto-upgrading to bleeding-edge workloads
 # 
-( cd "Laerdal.McuMgr.Bindings.Android"                   \
-  && sudo    dotnet                                      \
+sudo    dotnet                                           \
              workload                                    \
              restore                                     \
-                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
-
-sudo    dotnet                                      \
-             workload                               \
-             install                                \
-                ios                                 \
-                maui-ios                            \
-                --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json 
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
 
 # this is handled by the build system
 # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
