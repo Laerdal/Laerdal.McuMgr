@@ -46,11 +46,19 @@ dotnet   --version
 # todo   was not found. Confirm that the expression in the Import declaration ";../16.0.1478/targets/Xamarin.Shared.Sdk.MultiTarget.targets"
 # todo   is correct, and that the file exists on disk.
 #
+sudo    dotnet                                           \
+             workload                                    \
+             install                                     \
+                 ios                                     \
+                 android                                 \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+
 ( cd "Laerdal.McuMgr.Bindings.iOS"                       \
   && sudo    dotnet                                      \
              workload                                    \
              restore                                     \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
+
 ( cd "Laerdal.McuMgr.Bindings.Android"                   \
   && sudo    dotnet                                      \
              workload                                    \
