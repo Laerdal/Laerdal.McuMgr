@@ -16,6 +16,8 @@
         <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
         <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(monoandroid))' == 'true'   ">true</IsXamarinAndroid>
         
+        <ShouldBuildNativeLibraries Condition=" '$(IsXamarinAndroid)' == 'true' ">true</ShouldBuildNativeLibraries>
+        
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
@@ -120,7 +122,7 @@
 
     <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin         -->
     <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended -->
-    <Target Condition=" '$(IsXamarinAndroid)' == 'true' "
+    <Target Condition=" '$(ShouldBuildNativeLibraries)' == 'true' "
             Name="CompileMcuMgrLaerdalWrapper"
             BeforeTargets="_CreateBindingResourceArchive">
 
@@ -185,7 +187,7 @@
     </Target>
 
     <!-- android    download the jar and aar dependencies from maven -->
-    <Target Condition=" '$(IsXamarinAndroid)' == 'true' "
+    <Target Condition=" '$(ShouldBuildNativeLibraries)' == 'true' "
             Name="TackleJarDependencies"
             BeforeTargets="_CreateBindingResourceArchive">
 
