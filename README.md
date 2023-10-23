@@ -662,7 +662,8 @@ _
 
 _
 
-    Note#3 If you build on Windows the build system will work but the generated nugets *will only work on Android* but they will error out on iOS considering that the 'iOS part' of the build gets skipped in Windows.
+    Note#3 If you build on Windows the build system will work but the generated nugets *will only work on Android with MAUI apps* but they will error out on iOS considering that the 'iOS part'
+           of the build gets skipped in Windows.
 
 To build the nugets from source follow these instructions:
 

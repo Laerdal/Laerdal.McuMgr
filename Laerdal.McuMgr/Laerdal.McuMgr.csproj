@@ -9,8 +9,10 @@
 
         <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
-        
-        <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
+
+        <!-- notice that on windows the monoandroid build is disabled because the android bindings fail to be generated -->
+        <!-- due to a b.ug in Xamarin.Legacy.Sdk https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                -->
+        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 

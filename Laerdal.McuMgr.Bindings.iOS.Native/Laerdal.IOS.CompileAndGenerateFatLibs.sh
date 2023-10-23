@@ -4,7 +4,7 @@
 #
 # Derived from https://github.com/xamcat/xamarin-binding-swift-framework/blob/master/Swift/Scripts/build.fat.sh#L3-L14
 
-declare IOS_SDK_VERSION="${IOS_SDK_VERSION:-16.2}" # xcodebuild -showsdks
+declare IOS_SDK_VERSION="${IOS_SDK_VERSION:-16.4}" # xcodebuild -showsdks
 
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
