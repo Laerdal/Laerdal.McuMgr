@@ -5,8 +5,10 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <!-- we need to always keep the monoandroid first in the list of frameworks   otherwise the build will fail! -->
-        <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
+        <!-- we need to always keep the monoandroid first in the list of frameworks except for windows   otherwise the build will fail!        -->
+        <!-- the reason we exclude windows is because there is a long-standing b.ug affecting xamarin.legacy.sdk which causes the monoandroid  -->
+        <!-- target to error out https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                                                       -->
+        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
@@ -16,7 +18,8 @@
         <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
         <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(monoandroid))' == 'true'   ">true</IsXamarinAndroid>
         
-        <ShouldBuildNativeLibraries Condition=" '$(IsXamarinAndroid)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <!-- notice that on windows the monoandroid build is disabled because it doesnt work -->
+        <ShouldBuildNativeLibraries Condition=" ('$(IsUnix)' == 'true' and '$(IsXamarinAndroid)' == 'true') or ('$(IsWindows)' == 'true' and '$(IsNet6)' == 'true') ">true</ShouldBuildNativeLibraries>
         
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
