@@ -24,7 +24,7 @@
 
 brew   install   --cask   objectivesharpie
 brew   install   gradle
-brew   install   java11
+brew   install   java17
 
 # install a specific version of dotnet7 to ensure consistent results
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin -Channel 7.0 -Version 7.0.402
@@ -66,7 +66,7 @@ sudo    dotnet                                           \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
 
 # this is handled by the build system
-# echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
+# echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@17/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
 
 echo
 echo    "--------------------------------------------------"
