@@ -7,7 +7,7 @@ import io.runtime.mcumgr.McuMgrCallback;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
-import io.runtime.mcumgr.response.McuMgrResponse;
+import io.runtime.mcumgr.response.img.McuMgrImageResponse;
 import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 
 @SuppressWarnings("unused")
@@ -32,9 +32,9 @@ public class AndroidFirmwareEraser {
         setState(EAndroidFirmwareEraserState.ERASING);
 
         _imageManager = new ImageManager(_transport);
-        _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrResponse>() {
+        _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>() {
             @Override
-            public void onResponse(@NonNull final McuMgrResponse response) {
+            public void onResponse(@NonNull final McuMgrImageResponse response) {
                 if (!response.isSuccess()) { // check for an error return code
                     fatalErrorOccurredAdvertisement("Erasure failed (error-code '" + response.getReturnCode().toString() + "')");
 
