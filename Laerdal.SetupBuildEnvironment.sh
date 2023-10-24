@@ -36,22 +36,34 @@ dotnet   --version
 
 #
 # we do our best to explicitly version-pin our workloads so as to preemptively avoid problems that
-# would be bound to crop up sooner or later by blindly autoupgrading to bleeding-edge workloads
-#
-# todo   once we migrate every csproj to netX we can simply issue 'workload restore' on the root folder
+# would be bound to crop up sooner or later by blindly auto-upgrading to bleeding-edge workloads
 # 
-( cd "Laerdal.McuMgr.Bindings.Android"                   \
+# todo   unfortunately issuing a 'dotnet workload restore' on the root folder doesnt work as intended
+# todo   on the azure pipelines and we need to figure out why
+# todo
+# todo   Users/runner/.dotnet/sdk/7.0.402/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.targets(1240,3): error MSB4019:
+# todo   The imported project "/Users/runner/.dotnet/sdk/7.0.402/Sdks/Microsoft.NET.Sdk/16.0.1478/targets/Xamarin.Shared.Sdk.MultiTarget.targets"
+# todo   was not found. Confirm that the expression in the Import declaration ";../16.0.1478/targets/Xamarin.Shared.Sdk.MultiTarget.targets"
+# todo   is correct, and that the file exists on disk.
+#
+sudo    dotnet                                           \
+             workload                                    \
+             install                                     \
+                 ios                                     \
+                 android                                 \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+
+( cd "Laerdal.McuMgr.Bindings.iOS"                       \
   && sudo    dotnet                                      \
              workload                                    \
              restore                                     \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
 
-sudo    dotnet                                      \
-             workload                               \
-             install                                \
-                ios                                 \
-                maui-ios                            \
-                --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json 
+( cd "Laerdal.McuMgr.Bindings.Android"                   \
+  && sudo    dotnet                                      \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json )
 
 # this is handled by the build system
 # echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@11/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"

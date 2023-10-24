@@ -9,8 +9,10 @@
 
         <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
-        
-        <TargetFrameworks>$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
+
+        <!-- notice that on windows the monoandroid build is disabled because the android bindings fail to be generated -->
+        <!-- due to a b.ug in Xamarin.Legacy.Sdk https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                -->
+        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
@@ -32,8 +34,8 @@
         <IsNetXIOS Condition="             '$(IsNet6IOS)'        == 'true' OR '$(IsNet7IOS)'     == 'true' ">true</IsNetXIOS>
         <IsNetXAndroid Condition="         '$(IsNet6Android)'    == 'true' OR '$(IsNet7Android)' == 'true' ">true</IsNetXAndroid>
 
-        <IsCompilingForIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNet6IOS)'     == 'true' ">true</IsCompilingForIOS>
-        <IsCompilingForAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsCompilingForAndroid>
+        <IsIOS Condition="     '$(IsXamarinIOS)'     == 'true' OR '$(IsNetXIOS)'     == 'true' ">true</IsIOS>
+        <IsAndroid Condition=" '$(IsXamarinAndroid)' == 'true' OR '$(IsNetXAndroid)' == 'true' ">true</IsAndroid>
         
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -59,10 +61,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.796.0</Version>
-        <FileVersion>1.0.796.0</FileVersion>
-        <PackageVersion>1.0.796.0</PackageVersion>
-        <AssemblyVersion>1.0.796.0</AssemblyVersion>
+        <Version>1.0.801.0</Version>
+        <FileVersion>1.0.801.0</FileVersion>
+        <PackageVersion>1.0.801.0</PackageVersion>
+        <AssemblyVersion>1.0.801.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -123,13 +125,17 @@
     </ItemGroup>
 
     <!-- ANDROID -->
-    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
+    <PropertyGroup Condition=" '$(IsAndroid)' == 'true' ">
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
         <Compile Include="Droid\*.cs"/>
         <Compile Include="Droid\**\*.cs"/>
     </ItemGroup>
 
     <!-- iOS -->
-    <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
+    <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
         <Compile Include="iOS\**\*.cs"/>
     </ItemGroup>
 
@@ -137,25 +143,22 @@
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
         <Compile Include="NetStandard\**\*.cs"/>
     </ItemGroup>
-
-    <PropertyGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
-        <AndroidLinkMode>Full</AndroidLinkMode>
-        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
-    </PropertyGroup>
-
+    
+    <!-- NUGETS -->
+    
     <!-- ANDROID -->
-    <ItemGroup Condition=" '$(IsCompilingForAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.796.0"/>
+    <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.801.0"/>
     </ItemGroup>
 
     <!-- IOS -->
-    <ItemGroup Condition=" '$(IsCompilingForIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.796.0"/>
+    <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.801.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.796.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.801.0"/>
     </ItemGroup>
 
 </Project>
