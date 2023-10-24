@@ -657,7 +657,7 @@ Not supported yet.
     Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
 _
 
-    Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK11 installed - have a look at the .yml file to see how you
+    Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK17 installed - have a look at the .yml file to see how you
     can install java easily using 'brew'.
 
 _
@@ -711,7 +711,7 @@ wasm-tools-net6            7.0.11/7.0.100         SDK 7.0.400
 maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 ```
 
-#### 3) Make sure that Java11 is installed on your machine along with Gradle and Maven.
+#### 3) Make sure that Java17 is installed on your machine along with Gradle and Maven.
 
 #### 4) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 

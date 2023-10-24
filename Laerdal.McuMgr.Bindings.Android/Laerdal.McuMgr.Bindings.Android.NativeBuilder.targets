@@ -12,14 +12,13 @@
     <Target Name="CompileMcuMgrLaerdalWrapper"
             BeforeTargets="_CreateBindingResourceArchive">
 
-        <!-- on windows we need to make sure that the org.gradle.java.home property is set properly otherwise the build will fail -->
+        <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
-            <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@11 or /opt/homebrew/opt/openjdk@11 by default -->
-            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@11')    ">/usr/local/opt/openjdk@11</JavaHome>
-            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@11') ">/opt/homebrew/opt/openjdk@11</JavaHome>
+            <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default -->
+            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
+            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
 
             <!-- Windows -->
-            <JavaHome Condition=" '$(IsWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-11.0.15.10-hotspot') ">C:\\Program Files\\Microsoft\\jdk-11.0.15.10-hotspot</JavaHome>
             <JavaHome Condition=" '$(IsWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2')               ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
 
@@ -30,7 +29,7 @@
         </PropertyGroup>
 
         <Error Condition=" '$(JavaHome)' == ''  " Text="** [ERROR] Failed to deduce the JavaHome for this platform!"/>
-        <Error Condition=" !Exists($(JavaHome)) " Text="** [ERROR] Java11 not found in '$(JavaHome)' - make sure you have Java11 installed!"/>
+        <Error Condition=" !Exists($(JavaHome)) " Text="** [ERROR] Java17 not found in '$(JavaHome)' - make sure you have Java17 installed!"/>
 
         <!-- Read all lines from the input file -->
         <ReadLinesFromFile File="$(GradlePropertiesFilePath)">
