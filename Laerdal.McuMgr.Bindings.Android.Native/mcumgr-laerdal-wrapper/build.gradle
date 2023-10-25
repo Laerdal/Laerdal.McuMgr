@@ -41,8 +41,8 @@ dependencies {
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.1'
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'no.nordicsemi.android:mcumgr-ble:1.5.2'
-    implementation 'no.nordicsemi.android:mcumgr-core:1.5.2'
+    implementation 'no.nordicsemi.android:mcumgr-ble:1.8.0'
+    implementation 'no.nordicsemi.android:mcumgr-core:1.8.0'
     implementation 'com.google.android.material:material:1.8.0'
 
     testImplementation 'junit:junit:4.13.2'

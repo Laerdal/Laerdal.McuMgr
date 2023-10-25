@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
-import android.util.Pair;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
@@ -13,12 +12,11 @@ import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeManager;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeManager.State;
+import io.runtime.mcumgr.dfu.model.McuMgrImageSet;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import io.runtime.mcumgr.image.McuMgrImage;
-
-import java.util.Collections;
-import java.util.List;
+import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
@@ -38,7 +36,6 @@ public class AndroidFirmwareInstaller
 
     private static final int NOT_STARTED = -1; // a value indicating that the upload has not been started before
     private static final long REFRESH_RATE = 100L; // ms how often the throughput data should be sent to the graph
-    private static final int CONNECTION_PRIORITY_HIGH = 1;
 
     /**
      * Constructs a firmware installer for a specific android-context and bluetooth-device.
@@ -85,20 +82,17 @@ public class AndroidFirmwareInstaller
             );
         }
 
-        List<Pair<Integer, byte[]>> images;
+        McuMgrImageSet images = new McuMgrImageSet();
         try
         {
             McuMgrImage.getHash(data); // check if the bin file is valid
-            images = Collections.singletonList(new Pair<>(0, data));
-
+            images.add(data);
         }
         catch (final Exception ex)
         {
             try
             {
-                final ZipPackage zip = new ZipPackage(data);
-                images = zip.getBinaries();
-
+                images.add(new ZipPackage(data).getBinaries());
             }
             catch (final Exception ex2)
             {
@@ -432,7 +426,7 @@ public class AndroidFirmwareInstaller
         }
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
-        bleTransporter.requestConnPriority(CONNECTION_PRIORITY_HIGH);
+        bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
     private void setLoggingEnabled(final boolean enabled)

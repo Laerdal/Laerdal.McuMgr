@@ -8,7 +8,7 @@ import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
-import io.runtime.mcumgr.response.McuMgrResponse;
+import io.runtime.mcumgr.response.dflt.McuMgrOsResponse;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
@@ -31,10 +31,10 @@ public class AndroidDeviceResetter {
     public void beginReset() {
         setState(EAndroidDeviceResetterState.RESETTING);
 
-        _manager.reset(new McuMgrCallback<McuMgrResponse>() {
+        _manager.reset(new McuMgrCallback<McuMgrOsResponse>() {
 
             @Override
-            public void onResponse(@NotNull final McuMgrResponse response) {
+            public void onResponse(@NotNull final McuMgrOsResponse response) {
                 if (!response.isSuccess()) { // check for an error return code
                     fatalErrorOccurredAdvertisement("Reset failed (error-code '" + response.getReturnCode().toString() + "')");
 
