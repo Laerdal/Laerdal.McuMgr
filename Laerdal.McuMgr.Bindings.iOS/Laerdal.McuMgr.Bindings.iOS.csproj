@@ -12,6 +12,8 @@
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+        
+        <!-- todo   this doesnt work and will be refactored away soon into a separate project -->
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
 
