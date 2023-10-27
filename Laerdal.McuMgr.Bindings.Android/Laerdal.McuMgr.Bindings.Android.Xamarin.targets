@@ -49,6 +49,10 @@
         <Reference Include="Java.Interop"/>
     </ItemGroup>
 
+    <Target Name="PrintAndroidLibraries" AfterTargets="CoreCompile">
+        <Message Importance="High" Text="**** Included Android Libraries for Xamarin: '@(AndroidLibrary)' "/>
+    </Target>
+
     <ItemGroup>
         <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
     </ItemGroup>
