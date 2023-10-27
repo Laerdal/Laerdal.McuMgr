@@ -24,7 +24,7 @@
 
 brew   install   --cask   objectivesharpie
 brew   install   gradle
-brew   install   java17
+brew   install   openjdk@17
 
 # install a specific version of dotnet7 to ensure consistent results
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin -Channel 7.0 -Version 7.0.402
