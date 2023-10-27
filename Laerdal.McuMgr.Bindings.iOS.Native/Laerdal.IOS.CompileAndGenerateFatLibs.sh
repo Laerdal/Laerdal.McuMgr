@@ -34,13 +34,13 @@ function build() {
   echo "**** (Build 2/5) Restore packages for 'iphoneos$IOS_SDK_VERSION'"
 
   xcodebuild \
-    -sdk "iphoneos$IOS_SDK_VERSION" \
-    -arch arm64 \
-    -scheme "$SWIFT_BUILD_SCHEME" \
-    -project "$SWIFT_PROJECT_PATH" \
-    -configuration "$SWIFT_BUILD_CONFIGURATION" \
-    -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
-    -resolvePackageDependencies
+    --sdk="iphoneos$IOS_SDK_VERSION" \
+    --arch="arm64" \
+    --scheme="$SWIFT_BUILD_SCHEME" \
+    --project="$SWIFT_PROJECT_PATH" \
+    --configuration="$SWIFT_BUILD_CONFIGURATION" \
+    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
+    --resolvePackageDependencies
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -52,13 +52,13 @@ function build() {
 
   # https://stackoverflow.com/a/74478244/863651
   xcodebuild \
-    -sdk "iphoneos$IOS_SDK_VERSION" \
-    -arch arm64 \
-    -scheme "$SWIFT_BUILD_SCHEME" \
-    -project "$SWIFT_PROJECT_PATH" \
-    -configuration "$SWIFT_BUILD_CONFIGURATION" \
-    -derivedDataPath "$SWIFT_BUILD_PATH" \
-    -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
+    --sdk="iphoneos$IOS_SDK_VERSION" \
+    --arch="arm64" \
+    --scheme="$SWIFT_BUILD_SCHEME" \
+    --project="$SWIFT_PROJECT_PATH" \
+    --configuration="$SWIFT_BUILD_CONFIGURATION" \
+    --derivedDataPath="$SWIFT_BUILD_PATH" \
+    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
@@ -72,12 +72,12 @@ function build() {
   echo "**** (Build 4/5) Restore packages for 'iphonesimulator$IOS_SDK_VERSION'"
 
   xcodebuild \
-    -sdk "iphonesimulator$IOS_SDK_VERSION" \
-    -scheme "$SWIFT_BUILD_SCHEME" \
-    -project "$SWIFT_PROJECT_PATH" \
-    -configuration "$SWIFT_BUILD_CONFIGURATION" \
-    -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
-    -resolvePackageDependencies
+    --sdk="iphonesimulator$IOS_SDK_VERSION" \
+    --scheme="$SWIFT_BUILD_SCHEME" \
+    --project="$SWIFT_PROJECT_PATH" \
+    --configuration="$SWIFT_BUILD_CONFIGURATION" \
+    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
+    --resolvePackageDependencies
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -90,12 +90,12 @@ function build() {
   # https://stackoverflow.com/a/74478244/863651
   # https://stackoverflow.com/a/64026089/863651
   xcodebuild \
-    -sdk "iphonesimulator$IOS_SDK_VERSION" \
-    -scheme "$SWIFT_BUILD_SCHEME" \
-    -project "$SWIFT_PROJECT_PATH" \
-    -configuration "$SWIFT_BUILD_CONFIGURATION" \
-    -derivedDataPath "$SWIFT_BUILD_PATH" \
-    -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
+    --sdk="iphonesimulator$IOS_SDK_VERSION" \
+    --scheme="$SWIFT_BUILD_SCHEME" \
+    --project="$SWIFT_PROJECT_PATH" \
+    --configuration="$SWIFT_BUILD_CONFIGURATION" \
+    --derivedDataPath="$SWIFT_BUILD_PATH" \
+    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
     EXCLUDED_ARCHS="arm64" \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_ALLOWED=NO \
