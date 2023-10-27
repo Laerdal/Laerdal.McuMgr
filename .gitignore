@@ -370,26 +370,23 @@ Package.resolved
 .build
 .swiftpm
 
+# Android, gradle and native libs
 **/.idea/**
 **/*.aar
 **/*.jar
-
 **/Jars/**
+**/.gradle/**
+local.properties
 
+# iOS native libs
 *.webp
-
 **/app/build/**
 **/iOS_Carthage/**
 **/build/**
 **/xcuserdata/**
-
 **/Laerdal.McuMgr.Bindings.iOS/Frameworks/**
 **/Laerdal.McuMgr.Bindings.Android/Libraries/**
-
-# gradle
-
-**/.gradle/**
-local.properties
+**/Laerdal.McuMgr.Bindings.MacCatalyst/Frameworks/**
 
 version.txt
 
