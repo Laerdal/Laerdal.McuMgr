@@ -63,10 +63,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.827.0</Version>
-        <FileVersion>1.0.827.0</FileVersion>
-        <PackageVersion>1.0.827.0</PackageVersion>
-        <AssemblyVersion>1.0.827.0</AssemblyVersion>
+        <Version>1.0.828.0</Version>
+        <FileVersion>1.0.828.0</FileVersion>
+        <PackageVersion>1.0.828.0</PackageVersion>
+        <AssemblyVersion>1.0.828.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
@@ -165,7 +165,7 @@
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" XCODEBUILD_TARGET_SDK=iphoneos ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
 
         <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
         <PropertyGroup>
