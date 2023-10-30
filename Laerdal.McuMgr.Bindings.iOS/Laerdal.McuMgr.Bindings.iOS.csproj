@@ -63,10 +63,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.801.0</Version>
-        <FileVersion>1.0.801.0</FileVersion>
-        <PackageVersion>1.0.801.0</PackageVersion>
-        <AssemblyVersion>1.0.801.0</AssemblyVersion>
+        <Version>1.0.827.0</Version>
+        <FileVersion>1.0.827.0</FileVersion>
+        <PackageVersion>1.0.827.0</PackageVersion>
+        <AssemblyVersion>1.0.827.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
@@ -180,7 +180,7 @@
 
         <!-- 3. copy the sharpie-generated files over to the local project structure -->
         <ItemGroup>
-            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.iOS.Native/Xamarin/SwiftFrameworkProxy.Binding/**"/>
+            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.iOS.Native/SharpieOutput/SwiftFrameworkProxy.Binding/**"/>
         </ItemGroup>
 
         <Copy

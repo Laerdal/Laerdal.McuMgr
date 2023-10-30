@@ -348,7 +348,7 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
-**/Laerdal.McuMgr.Bindings.iOS.Native/Xamarin/**
+**/Laerdal.McuMgr.Bindings.iOS.Native/SharpieOutput/**
 **/Laerdal.McuMgr.Bindings.iOS.Native/VendorFrameworks/**
 
 *.Output/**

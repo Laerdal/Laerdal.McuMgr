@@ -164,7 +164,7 @@
 
         <!-- 3. copy the sharpie-generated files over to the local project structure -->
         <ItemGroup>
-            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.iOS.Native/Xamarin/SwiftFrameworkProxy.Binding/**"/>
+            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.iOS.Native/SharpieOutput/SwiftFrameworkProxy.Binding/**"/>
         </ItemGroup>
 
         <Copy

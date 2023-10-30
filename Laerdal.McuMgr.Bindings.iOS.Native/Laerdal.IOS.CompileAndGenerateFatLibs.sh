@@ -8,8 +8,11 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
-declare IOS_SDK_VERSION="${IOS_SDK_VERSION:-17.0}" # xcodebuild -showsdks
-declare XCODEBUILD_TARGET_MAIN_SDK="${XCODEBUILD_TARGET_MAIN_SDK:-iphoneos${IOS_SDK_VERSION}}"
+declare SDK_VERSION="${SDK_VERSION:-17.0}" # xcodebuild -showsdks
+declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
+declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
+
+declare XCODEBUILD_TARGET_SDK_WITH_VERSION="$XCODEBUILD_TARGET_SDK$SDK_VERSION"
 
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
@@ -17,10 +20,9 @@ declare SWIFT_OUTPUT_PATH="./VendorFrameworks/swift-framework-proxy"
 declare SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
 declare SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
-declare SWIFT_BUILD_CONFIGURATION="Release"
 
-declare OUTPUT_FOLDER_NAME="$XCODEBUILD_TARGET_MAIN_SDK-$SWIFT_BUILD_CONFIGURATION" 
-declare XAMARIN_BINDING_PATH="Xamarin/SwiftFrameworkProxy.Binding"
+declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$XCODEBUILD_TARGET_SDK" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version from the folder name 
+declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
 function print_macos_sdks() {
   echo "** xcode path    : '$( "xcode-select" -p       )'"
@@ -37,9 +39,11 @@ function print_macos_sdks() {
   echo "** SWIFT_PACKAGES_PATH         : '$SWIFT_PACKAGES_PATH'         "
   echo "** SWIFT_BUILD_CONFIGURATION   : '$SWIFT_BUILD_CONFIGURATION'   "
   echo
-  echo "** OUTPUT_FOLDER_NAME          : '$OUTPUT_FOLDER_NAME'          "
-  echo "** XAMARIN_BINDING_PATH        : '$XAMARIN_BINDING_PATH'        "
-  echo "** XCODEBUILD_TARGET_MAIN_SDK  : '$XCODEBUILD_TARGET_MAIN_SDK'  "
+  echo "** OUTPUT_FOLDER_NAME                : '$OUTPUT_FOLDER_NAME'                "
+  echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '$OUTPUT_SHARPIE_HEADER_FILES_PATH'  "
+  echo
+  echo "** XCODEBUILD_TARGET_SDK               : '$XCODEBUILD_TARGET_SDK'               "
+  echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION'  "
   echo
 }
 
@@ -50,12 +54,12 @@ function build() {
 
   rm -Rf "$SWIFT_BUILD_PATH"
   rm -Rf "$SWIFT_PACKAGES_PATH"
-  rm -Rf "$XAMARIN_BINDING_PATH"
+  rm -Rf "$OUTPUT_SHARPIE_HEADER_FILES_PATH"
 
-  echo "**** (Build 2/3) Restore packages for '$XCODEBUILD_TARGET_MAIN_SDK'"
+  echo "**** (Build 2/3) Restore packages for '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
 
   xcodebuild \
-    -sdk "$XCODEBUILD_TARGET_MAIN_SDK" \
+    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION" \
     -arch "arm64" \
     -scheme "$SWIFT_BUILD_SCHEME" \
     -project "$SWIFT_PROJECT_PATH" \
@@ -65,15 +69,15 @@ function build() {
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to download dependencies for '$XCODEBUILD_TARGET_MAIN_SDK'"
+    echo "** [FAILED] Failed to download dependencies for '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
     exit 1
   fi
 
-  echo "**** (Build 3/3) Build for '$XCODEBUILD_TARGET_MAIN_SDK'"
+  echo "**** (Build 3/3) Build for '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
 
   # https://stackoverflow.com/a/74478244/863651
   xcodebuild \
-    -sdk "$XCODEBUILD_TARGET_MAIN_SDK" \
+    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION" \
     -arch "arm64" \
     -scheme "$SWIFT_BUILD_SCHEME" \
     -project "$SWIFT_PROJECT_PATH" \
@@ -86,19 +90,19 @@ function build() {
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to build '$XCODEBUILD_TARGET_MAIN_SDK'"
+    echo "** [FAILED] Failed to build '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
     exit 1
   fi
 }
 
 function create_fat_binaries() {
-  echo "** Create fat binaries for '$XCODEBUILD_TARGET_MAIN_SDK-$SWIFT_BUILD_CONFIGURATION'"
+  echo "** Create fat binaries for '$XCODEBUILD_TARGET_SDK_WITH_VERSION-$SWIFT_BUILD_CONFIGURATION'"
 
-  echo "**** (FatBinaries 1/9) Copy '$XCODEBUILD_TARGET_MAIN_SDK' build as a fat framework"
+  echo "**** (FatBinaries 1/9) Copy '$XCODEBUILD_TARGET_SDK_WITH_VERSION' build as a fat framework"
   cp \
     -R \
     "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME" \
-    "$SWIFT_BUILD_PATH/Release-fat"
+    "$SWIFT_BUILD_PATH/fat"
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -115,7 +119,7 @@ function create_fat_binaries() {
   echo "**** (FatBinaries 2/9) Turn artifacts in '$OUTPUT_FOLDER_NAME' into fat libraries"
   lipo \
     -create \
-    -output "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
+    -output "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
     "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
   local exitCode=$?
 
@@ -125,12 +129,12 @@ function create_fat_binaries() {
   fi
 
   echo "**** LISTING LIPO OUTPUT FILES"
-  ls -lR "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
+  ls -lR "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
   echo "**** (FatBinaries 3/9) Verify results"
   lipo \
     -info \
-    "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
+    "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -142,7 +146,7 @@ function create_fat_binaries() {
   rm -Rf "$SWIFT_OUTPUT_PATH" &&
     mkdir -p "$SWIFT_OUTPUT_PATH" &&
     cp -Rf \
-      "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework" \
+      "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework" \
       "$SWIFT_OUTPUT_PATH"
   local exitCode=$?
 
@@ -154,9 +158,9 @@ function create_fat_binaries() {
   echo "**** (FatBinaries 5/9) Generating binding api definition and structs"
   sharpie \
     bind \
-    -sdk "$XCODEBUILD_TARGET_MAIN_SDK" \
+    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION" \
     -scope "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
-    -output "$SWIFT_OUTPUT_PATH/XamarinApiDef" \
+    -output "$SWIFT_OUTPUT_PATH/ApiDef" \
     -namespace "$SWIFT_PROJECT_NAME" \
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h"
   local exitCode=$?
@@ -167,11 +171,11 @@ function create_fat_binaries() {
   fi
 
   echo "**** (FatBinaries 6/9) Replace existing metadata with the updated ones"
-  mkdir -p "$XAMARIN_BINDING_PATH/" &&
+  mkdir -p "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" &&
     cp \
       -Rf \
-      "$SWIFT_OUTPUT_PATH/XamarinApiDef/." \
-      "$XAMARIN_BINDING_PATH/"
+      "$SWIFT_OUTPUT_PATH/ApiDef/." \
+      "$OUTPUT_SHARPIE_HEADER_FILES_PATH/"
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -182,50 +186,50 @@ function create_fat_binaries() {
   echo "**** (FatBinaries 7/9) Print metadata files in their original form"
 
   echo
-  echo "$XAMARIN_BINDING_PATH/ApiDefinitions.cs (original):"
+  echo "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs (original):"
   echo "==================================================="
-  cat "$XAMARIN_BINDING_PATH/ApiDefinitions.cs"
+  cat "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs"
   echo
   echo "===================================================="
   echo
 
   echo
-  echo "$XAMARIN_BINDING_PATH/StructsAndEnums.cs (original):"
+  echo "$OUTPUT_SHARPIE_HEADER_FILES_PATH/StructsAndEnums.cs (original):"
   echo "===================================================="
-  cat "$XAMARIN_BINDING_PATH/StructsAndEnums.cs"
+  cat "$OUTPUT_SHARPIE_HEADER_FILES_PATH/StructsAndEnums.cs"
   echo
   echo "===================================================="
   echo
 
   echo "**** (FatBinaries 8/9) Replace NativeHandle -> IntPtr in the generated c# files"
 
-  rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
+  rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak "s/NativeHandle[ ]/IntPtr /gi" {} \;
 
-  rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
+  rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   # also need to get rid of stupid autogenerated [verify(...)] attributes which are intentionally placed there
   # by sharpie to force manual verification of the .cs files that have been autogenerated
   #
   # https://learn.microsoft.com/en-us/xamarin/cross-platform/macios/binding/objective-sharpie/platform/verify
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/\[Verify\s*\(.*\)\]//gi' {} \;
 
-  rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
+  rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   # [BaseType (typeof(NSObject), Name = "...")]  ->  [BaseType (typeof(NSObject))]
   #  find \
-  #        "$XAMARIN_BINDING_PATH/" \
+  #        "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
   #        -type f \
   #        -exec sed -i.bak 's/\[BaseType\s*\(.*_TtC17McuMgrBindingsiOS17IOSDeviceResetter.*\)\]/[BaseType (typeof(NSObject), Name = "IOSDeviceResetter")]/gi' {} \;
   #
-  #  rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
+  #  rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   # https://learn.microsoft.com/en-us/xamarin/ios/internals/registrar?force_isolation=true#new-registrar-required-changes-to-bindings
   #
@@ -234,66 +238,66 @@ function create_fat_binaries() {
   # so I'm not 100% sure why the [Protocol] attribute does away with the observed error but it does the trick of solving the problem somehow
 
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSFileUploader/[Protocol] interface IOSFileUploader/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSFileDownloader/[Protocol] interface IOSFileDownloader/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSDeviceResetter/[Protocol] interface IOSDeviceResetter/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSFirmwareEraser/[Protocol] interface IOSFirmwareEraser/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSFirmwareInstaller/[Protocol] interface IOSFirmwareInstaller/gi' {} \;
 
-  rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
+  rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   # https://stackoverflow.com/a/49477937/863651   its vital to add [BaseType] to the interface otherwise compilation will fail
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForFileUploader/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFileUploader/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForFileDownloader/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFileDownloader/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForDeviceResetter/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForDeviceResetter/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForFirmwareEraser/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFirmwareEraser/gi' {} \;
   find \
-    "$XAMARIN_BINDING_PATH/" \
+    "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForFirmwareInstaller/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFirmwareInstaller/gi' {} \;
 
-  rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
+  rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   echo "**** (FatBinaries 9/9) Print metadata files in their eventual form"
 
   echo
-  echo "$XAMARIN_BINDING_PATH/ApiDefinitions.cs (eventual):"
+  echo "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs (eventual):"
   echo "==================================================="
-  cat "$XAMARIN_BINDING_PATH/ApiDefinitions.cs"
+  cat "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs"
   echo
   echo "===================================================="
   echo
 
   echo
-  echo "$XAMARIN_BINDING_PATH/StructsAndEnums.cs (eventual):"
+  echo "$OUTPUT_SHARPIE_HEADER_FILES_PATH/StructsAndEnums.cs (eventual):"
   echo "===================================================="
-  cat "$XAMARIN_BINDING_PATH/StructsAndEnums.cs"
+  cat "$OUTPUT_SHARPIE_HEADER_FILES_PATH/StructsAndEnums.cs"
   echo
   echo "===================================================="
   echo
