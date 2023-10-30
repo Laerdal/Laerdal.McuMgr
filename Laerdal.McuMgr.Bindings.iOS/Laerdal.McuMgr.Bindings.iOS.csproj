@@ -100,7 +100,7 @@
 
     <ItemGroup>
         <None Remove="Laerdal.McuMgr.Bindings.iOS.csproj.DotSettings"/>
-        <None Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/Laerdal.IOS.CompileAndGenerateFatLibs.sh"/>
+        <None Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/Laerdal.Mac.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
 
     <PropertyGroup>
@@ -164,8 +164,8 @@
             Condition=" '$(IsXamarinIos)' == 'true' ">
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" ./Laerdal.IOS.CompileAndGenerateFatLibs.sh "/>
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
 
         <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
         <PropertyGroup>
