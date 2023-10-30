@@ -22,6 +22,8 @@
         <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))'        == 'true'   ">true</IsNet7>
         <IsNetX Condition="         '$(IsNet6)'    == 'true' or  '$(IsNet7)' == 'true'                 ">true</IsNetX>
 
+        <ShouldBuildNativeLibraries Condition=" '$(IsNet6)' == 'true' ">true</ShouldBuildNativeLibraries>
+
         <TargetPlatformVersion>13.1</TargetPlatformVersion>
 
         <DebugType>full</DebugType>
@@ -145,7 +147,7 @@
     <!--    but on in the azure pipelines for some weird reason                                                                                    -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
-            Condition=" '$(IsXamarinIos)' == 'true' ">
+            Condition=" '$(ShouldBuildNativeLibraries)' == 'true' ">
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
@@ -164,7 +166,7 @@
 
         <!-- 3. copy the sharpie-generated files over to the local project structure -->
         <ItemGroup>
-            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.iOS.Native/SharpieOutput/SwiftFrameworkProxy.Binding/**"/>
+            <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/SharpieOutput/SwiftFrameworkProxy.Binding/**"/>
         </ItemGroup>
 
         <Copy
@@ -175,7 +177,7 @@
         <!-- 4. copy .framework directories over to the proper local directory -->
         <ItemGroup>
             <FrameworkFilesToClean Include="Frameworks/McuMgrBindingsiOS.framework/**/*"/>
-            <McuMgrBindingsiOSFrameworkFiles Include="../Laerdal.McuMgr.Bindings.iOS.Native/VendorFrameworks/swift-framework-proxy/McuMgrBindingsiOS.framework/**/*.*"/>
+            <McuMgrBindingsiOSFrameworkFiles Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/VendorFrameworks/swift-framework-proxy/McuMgrBindingsiOS.framework/**/*.*"/>
         </ItemGroup>
 
         <Delete
