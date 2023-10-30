@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
+set -x # echo on for debugging 
+
 # Builds a fat library for a given xcode project (framework)
 #
 # Derived from https://github.com/xamcat/xamarin-binding-swift-framework/blob/master/Swift/Scripts/build.fat.sh#L3-L14
 
 declare IOS_SDK_VERSION="${IOS_SDK_VERSION:-17.0}" # xcodebuild -showsdks
+declare XCODEBUILD_TARGET_MAIN_SDK="${XCODEBUILD_TARGET_MAIN_SDK:-iphoneos${IOS_SDK_VERSION}}"
 
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
@@ -14,120 +17,86 @@ declare SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
 declare SWIFT_BUILD_CONFIGURATION="Release"
 
+declare OUTPUT_FOLDER_NAME="$XCODEBUILD_TARGET_MAIN_SDK-$SWIFT_BUILD_CONFIGURATION" 
 declare XAMARIN_BINDING_PATH="Xamarin/SwiftFrameworkProxy.Binding"
 
 function print_macos_sdks() {
-  xcode-select -p
-  xcodebuild -version
+  echo "** xcode path    : '$( "xcode-select" -p       )'"
+  echo "** xcode version : '$( "xcodebuild"   -version )'"
+  echo "** xcode sdks    :" 
   xcodebuild -showsdks
+
+  echo
+  echo "** SWIFT_BUILD_PATH            : '$SWIFT_BUILD_PATH'            "
+  echo "** SWIFT_OUTPUT_PATH           : '$SWIFT_OUTPUT_PATH'           "
+  echo "** SWIFT_BUILD_SCHEME          : '$SWIFT_BUILD_SCHEME'          "
+  echo "** SWIFT_PROJECT_NAME          : '$SWIFT_PROJECT_NAME'          "
+  echo "** SWIFT_PROJECT_PATH          : '$SWIFT_PROJECT_PATH'          "
+  echo "** SWIFT_PACKAGES_PATH         : '$SWIFT_PACKAGES_PATH'         "
+  echo "** SWIFT_BUILD_CONFIGURATION   : '$SWIFT_BUILD_CONFIGURATION'   "
+  echo
+  echo "** OUTPUT_FOLDER_NAME          : '$OUTPUT_FOLDER_NAME'          "
+  echo "** XAMARIN_BINDING_PATH        : '$XAMARIN_BINDING_PATH'        "
+  echo "** XCODEBUILD_TARGET_MAIN_SDK  : '$XCODEBUILD_TARGET_MAIN_SDK'  "
+  echo
 }
 
 function build() {
-  echo "** Build iOS framework for simulator and device"
+  echo "** Build iOS framework for device"
 
-  echo "**** (Build 1/5) Cleanup any possible traces of previous builds"
+  echo "**** (Build 1/3) Cleanup any possible traces of previous builds"
 
   rm -Rf "$SWIFT_BUILD_PATH"
   rm -Rf "$SWIFT_PACKAGES_PATH"
   rm -Rf "$XAMARIN_BINDING_PATH"
 
-  echo "**** (Build 2/5) Restore packages for 'iphoneos$IOS_SDK_VERSION'"
+  echo "**** (Build 2/3) Restore packages for '$XCODEBUILD_TARGET_MAIN_SDK'"
 
   xcodebuild \
-    --sdk="iphoneos$IOS_SDK_VERSION" \
-    --arch="arm64" \
-    --scheme="$SWIFT_BUILD_SCHEME" \
-    --project="$SWIFT_PROJECT_PATH" \
-    --configuration="$SWIFT_BUILD_CONFIGURATION" \
-    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
-    --resolvePackageDependencies
+    -sdk="$XCODEBUILD_TARGET_MAIN_SDK" \
+    -arch="arm64" \
+    -scheme="$SWIFT_BUILD_SCHEME" \
+    -project="$SWIFT_PROJECT_PATH" \
+    -configuration="$SWIFT_BUILD_CONFIGURATION" \
+    -clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
+    -resolvePackageDependencies
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to download dependencies for 'iphoneos$IOS_SDK_VERSION'"
+    echo "** [FAILED] Failed to download dependencies for '$XCODEBUILD_TARGET_MAIN_SDK'"
     exit 1
   fi
 
-  echo "**** (Build 3/5) Build for 'iphoneos$IOS_SDK_VERSION'"
+  echo "**** (Build 3/3) Build for '$XCODEBUILD_TARGET_MAIN_SDK'"
 
   # https://stackoverflow.com/a/74478244/863651
   xcodebuild \
-    --sdk="iphoneos$IOS_SDK_VERSION" \
-    --arch="arm64" \
-    --scheme="$SWIFT_BUILD_SCHEME" \
-    --project="$SWIFT_PROJECT_PATH" \
-    --configuration="$SWIFT_BUILD_CONFIGURATION" \
-    --derivedDataPath="$SWIFT_BUILD_PATH" \
-    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
+    -sdk="$XCODEBUILD_TARGET_MAIN_SDK" \
+    -arch="arm64" \
+    -scheme="$SWIFT_BUILD_SCHEME" \
+    -project="$SWIFT_PROJECT_PATH" \
+    -configuration="$SWIFT_BUILD_CONFIGURATION" \
+    -derivedDataPath="$SWIFT_BUILD_PATH" \
+    -clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to build 'iphoneos$IOS_SDK_VERSION'"
-    exit 1
-  fi
-
-  echo "**** (Build 4/5) Restore packages for 'iphonesimulator$IOS_SDK_VERSION'"
-
-  xcodebuild \
-    --sdk="iphonesimulator$IOS_SDK_VERSION" \
-    --scheme="$SWIFT_BUILD_SCHEME" \
-    --project="$SWIFT_PROJECT_PATH" \
-    --configuration="$SWIFT_BUILD_CONFIGURATION" \
-    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
-    --resolvePackageDependencies
-  local exitCode=$?
-
-  if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to download dependencies for 'iphonesimulator$IOS_SDK_VERSION'"
-    exit 1
-  fi
-
-  echo "**** (Build 5/5) Build for 'iphonesimulator$IOS_SDK_VERSION'"
-
-  # https://stackoverflow.com/a/74478244/863651
-  # https://stackoverflow.com/a/64026089/863651
-  xcodebuild \
-    --sdk="iphonesimulator$IOS_SDK_VERSION" \
-    --scheme="$SWIFT_BUILD_SCHEME" \
-    --project="$SWIFT_PROJECT_PATH" \
-    --configuration="$SWIFT_BUILD_CONFIGURATION" \
-    --derivedDataPath="$SWIFT_BUILD_PATH" \
-    --clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
-    EXCLUDED_ARCHS="arm64" \
-    CODE_SIGN_IDENTITY="" \
-    CODE_SIGNING_ALLOWED=NO \
-    CODE_SIGNING_REQUIRED=NO
-  local exitCode=$?
-
-  if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to build 'iphonesimulator$IOS_SDK_VERSION'"
+    echo "** [FAILED] Failed to build '$XCODEBUILD_TARGET_MAIN_SDK'"
     exit 1
   fi
 }
 
 function create_fat_binaries() {
-  echo "** Create fat binaries for Release-iphoneos and Release-iphonesimulator configuration"
+  echo "** Create fat binaries for '$XCODEBUILD_TARGET_MAIN_SDK-$SWIFT_BUILD_CONFIGURATION'"
 
-  echo "**** (FatBinaries 1/10) Copy 'iphoneos' build as a fat framework"
+  echo "**** (FatBinaries 1/8) Copy '$XCODEBUILD_TARGET_MAIN_SDK' build as a fat framework"
   cp \
     -R \
-    "$SWIFT_BUILD_PATH/Build/Products/Release-iphoneos" \
+    "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME" \
     "$SWIFT_BUILD_PATH/Release-fat"
-  local exitCode=$?
-
-  if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to copy"
-    exit 1
-  fi
-
-  echo "**** (FatBinaries 2/10) Combine modules from another build with the fat framework modules"
-  cp \
-    -R \
-    "$SWIFT_BUILD_PATH/Build/Products/Release-iphonesimulator/$SWIFT_PROJECT_NAME.framework/Modules/$SWIFT_PROJECT_NAME.swiftmodule/" \
-    "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/Modules/$SWIFT_PROJECT_NAME.swiftmodule/"
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -139,15 +108,13 @@ function create_fat_binaries() {
   ls -lR "$SWIFT_BUILD_PATH/Build/Products/"
 
   echo "**** LISTING LIPO INPUT FILES"
-  ls -lR "$SWIFT_BUILD_PATH/Build/Products/Release-iphoneos/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
-  ls -lR "$SWIFT_BUILD_PATH/Build/Products/Release-iphonesimulator/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
+  ls -lR "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
-  echo "**** (FatBinaries 3/10) Combine iphoneos + iphonesimulator configuration as fat libraries"
+  echo "**** (FatBinaries 2/8) Turn artifacts in '$OUTPUT_FOLDER_NAME' into fat libraries"
   lipo \
     -create \
     -output "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
-    "$SWIFT_BUILD_PATH/Build/Products/Release-iphoneos/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
-    "$SWIFT_BUILD_PATH/Build/Products/Release-iphonesimulator/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
+    "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
@@ -158,7 +125,7 @@ function create_fat_binaries() {
   echo "**** LISTING LIPO OUTPUT FILES"
   ls -lR "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
-  echo "**** (FatBinaries 4/10) Verify results"
+  echo "**** (FatBinaries 3/8) Verify results"
   lipo \
     -info \
     "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
@@ -169,7 +136,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 5/10) Copy fat frameworks to the output folder"
+  echo "**** (FatBinaries 4/8) Copy fat frameworks to the output folder"
   rm -Rf "$SWIFT_OUTPUT_PATH" &&
     mkdir -p "$SWIFT_OUTPUT_PATH" &&
     cp -Rf \
@@ -182,13 +149,13 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 6/10) Generating binding api definition and structs"
+  echo "**** (FatBinaries 5/8) Generating binding api definition and structs"
   sharpie \
     bind \
-    --sdk="iphoneos$IOS_SDK_VERSION" \
-    --scope="$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
-    --output="$SWIFT_OUTPUT_PATH/XamarinApiDef" \
-    --namespace="$SWIFT_PROJECT_NAME" \
+    -sdk="$XCODEBUILD_TARGET_MAIN_SDK" \
+    -scope="$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
+    -output="$SWIFT_OUTPUT_PATH/XamarinApiDef" \
+    -namespace="$SWIFT_PROJECT_NAME" \
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h"
   local exitCode=$?
 
@@ -197,7 +164,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 7/10) Replace existing metadata with the updated ones"
+  echo "**** (FatBinaries 6/8) Replace existing metadata with the updated ones"
   mkdir -p "$XAMARIN_BINDING_PATH/" &&
     cp \
       -Rf \
@@ -210,7 +177,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 8/10) Print metadata files in their original form"
+  echo "**** (FatBinaries 7/8) Print metadata files in their original form"
 
   echo
   echo "$XAMARIN_BINDING_PATH/ApiDefinitions.cs (original):"
@@ -228,7 +195,7 @@ function create_fat_binaries() {
   echo "===================================================="
   echo
 
-  echo "**** (FatBinaries 9/10) Replace NativeHandle -> IntPtr in the generated c# files"
+  echo "**** (FatBinaries 8/8) Replace NativeHandle -> IntPtr in the generated c# files"
 
   rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
 
