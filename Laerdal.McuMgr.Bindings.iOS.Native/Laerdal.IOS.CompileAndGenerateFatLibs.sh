@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-set -x # echo on for debugging 
+# set -x # echo on for debugging 
 
 # Builds a fat library for a given xcode project (framework)
 #
 # Derived from https://github.com/xamcat/xamarin-binding-swift-framework/blob/master/Swift/Scripts/build.fat.sh#L3-L14
+#
+# Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
 declare IOS_SDK_VERSION="${IOS_SDK_VERSION:-17.0}" # xcodebuild -showsdks
 declare XCODEBUILD_TARGET_MAIN_SDK="${XCODEBUILD_TARGET_MAIN_SDK:-iphoneos${IOS_SDK_VERSION}}"
@@ -42,7 +44,7 @@ function print_macos_sdks() {
 }
 
 function build() {
-  echo "** Build iOS framework for device"
+  echo "** Build $OUTPUT_FOLDER_NAME framework for device"
 
   echo "**** (Build 1/3) Cleanup any possible traces of previous builds"
 
@@ -53,12 +55,12 @@ function build() {
   echo "**** (Build 2/3) Restore packages for '$XCODEBUILD_TARGET_MAIN_SDK'"
 
   xcodebuild \
-    -sdk="$XCODEBUILD_TARGET_MAIN_SDK" \
-    -arch="arm64" \
-    -scheme="$SWIFT_BUILD_SCHEME" \
-    -project="$SWIFT_PROJECT_PATH" \
-    -configuration="$SWIFT_BUILD_CONFIGURATION" \
-    -clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
+    -sdk "$XCODEBUILD_TARGET_MAIN_SDK" \
+    -arch "arm64" \
+    -scheme "$SWIFT_BUILD_SCHEME" \
+    -project "$SWIFT_PROJECT_PATH" \
+    -configuration "$SWIFT_BUILD_CONFIGURATION" \
+    -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
     -resolvePackageDependencies
   local exitCode=$?
 
@@ -71,13 +73,13 @@ function build() {
 
   # https://stackoverflow.com/a/74478244/863651
   xcodebuild \
-    -sdk="$XCODEBUILD_TARGET_MAIN_SDK" \
-    -arch="arm64" \
-    -scheme="$SWIFT_BUILD_SCHEME" \
-    -project="$SWIFT_PROJECT_PATH" \
-    -configuration="$SWIFT_BUILD_CONFIGURATION" \
-    -derivedDataPath="$SWIFT_BUILD_PATH" \
-    -clonedSourcePackagesDirPath="$SWIFT_PACKAGES_PATH" \
+    -sdk "$XCODEBUILD_TARGET_MAIN_SDK" \
+    -arch "arm64" \
+    -scheme "$SWIFT_BUILD_SCHEME" \
+    -project "$SWIFT_PROJECT_PATH" \
+    -configuration "$SWIFT_BUILD_CONFIGURATION" \
+    -derivedDataPath "$SWIFT_BUILD_PATH" \
+    -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
@@ -92,7 +94,7 @@ function build() {
 function create_fat_binaries() {
   echo "** Create fat binaries for '$XCODEBUILD_TARGET_MAIN_SDK-$SWIFT_BUILD_CONFIGURATION'"
 
-  echo "**** (FatBinaries 1/8) Copy '$XCODEBUILD_TARGET_MAIN_SDK' build as a fat framework"
+  echo "**** (FatBinaries 1/9) Copy '$XCODEBUILD_TARGET_MAIN_SDK' build as a fat framework"
   cp \
     -R \
     "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME" \
@@ -110,7 +112,7 @@ function create_fat_binaries() {
   echo "**** LISTING LIPO INPUT FILES"
   ls -lR "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
-  echo "**** (FatBinaries 2/8) Turn artifacts in '$OUTPUT_FOLDER_NAME' into fat libraries"
+  echo "**** (FatBinaries 2/9) Turn artifacts in '$OUTPUT_FOLDER_NAME' into fat libraries"
   lipo \
     -create \
     -output "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
@@ -125,7 +127,7 @@ function create_fat_binaries() {
   echo "**** LISTING LIPO OUTPUT FILES"
   ls -lR "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
-  echo "**** (FatBinaries 3/8) Verify results"
+  echo "**** (FatBinaries 3/9) Verify results"
   lipo \
     -info \
     "$SWIFT_BUILD_PATH/Release-fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
@@ -136,7 +138,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 4/8) Copy fat frameworks to the output folder"
+  echo "**** (FatBinaries 4/9) Copy fat frameworks to the output folder"
   rm -Rf "$SWIFT_OUTPUT_PATH" &&
     mkdir -p "$SWIFT_OUTPUT_PATH" &&
     cp -Rf \
@@ -149,13 +151,13 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 5/8) Generating binding api definition and structs"
+  echo "**** (FatBinaries 5/9) Generating binding api definition and structs"
   sharpie \
     bind \
-    -sdk="$XCODEBUILD_TARGET_MAIN_SDK" \
-    -scope="$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
-    -output="$SWIFT_OUTPUT_PATH/XamarinApiDef" \
-    -namespace="$SWIFT_PROJECT_NAME" \
+    -sdk "$XCODEBUILD_TARGET_MAIN_SDK" \
+    -scope "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
+    -output "$SWIFT_OUTPUT_PATH/XamarinApiDef" \
+    -namespace "$SWIFT_PROJECT_NAME" \
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h"
   local exitCode=$?
 
@@ -164,7 +166,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 6/8) Replace existing metadata with the updated ones"
+  echo "**** (FatBinaries 6/9) Replace existing metadata with the updated ones"
   mkdir -p "$XAMARIN_BINDING_PATH/" &&
     cp \
       -Rf \
@@ -177,7 +179,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 7/8) Print metadata files in their original form"
+  echo "**** (FatBinaries 7/9) Print metadata files in their original form"
 
   echo
   echo "$XAMARIN_BINDING_PATH/ApiDefinitions.cs (original):"
@@ -195,7 +197,7 @@ function create_fat_binaries() {
   echo "===================================================="
   echo
 
-  echo "**** (FatBinaries 8/8) Replace NativeHandle -> IntPtr in the generated c# files"
+  echo "**** (FatBinaries 8/9) Replace NativeHandle -> IntPtr in the generated c# files"
 
   rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
 
@@ -278,7 +280,7 @@ function create_fat_binaries() {
 
   rm -f "$XAMARIN_BINDING_PATH"/*.bak || :
 
-  echo "**** (FatBinaries 10/10) Print metadata files in their eventual form"
+  echo "**** (FatBinaries 9/9) Print metadata files in their eventual form"
 
   echo
   echo "$XAMARIN_BINDING_PATH/ApiDefinitions.cs (eventual):"
