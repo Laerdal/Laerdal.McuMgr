@@ -8,11 +8,11 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
-declare SDK_VERSION="${SDK_VERSION:-17.0}" # xcodebuild -showsdks
+declare SDK_VERSION="" # xcodebuild -showsdks
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
-declare XCODEBUILD_TARGET_SDK_WITH_VERSION="$XCODEBUILD_TARGET_SDK$SDK_VERSION"
+declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
 
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
@@ -42,8 +42,9 @@ function print_macos_sdks() {
   echo "** OUTPUT_FOLDER_NAME                : '$OUTPUT_FOLDER_NAME'                "
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '$OUTPUT_SHARPIE_HEADER_FILES_PATH'  "
   echo
-  echo "** XCODEBUILD_TARGET_SDK               : '$XCODEBUILD_TARGET_SDK'               "
-  echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION'  "
+  echo "** SDK_VERSION                                : '${SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
+  echo "** XCODEBUILD_TARGET_SDK                      : '$XCODEBUILD_TARGET_SDK'                      "
+  echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'  "
   echo
 }
 
@@ -56,10 +57,10 @@ function build() {
   rm -Rf "$SWIFT_PACKAGES_PATH"
   rm -Rf "$OUTPUT_SHARPIE_HEADER_FILES_PATH"
 
-  echo "**** (Build 2/3) Restore packages for '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
+  echo "**** (Build 2/3) Restore packages for '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'"
 
   xcodebuild \
-    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION" \
+    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY" \
     -arch "arm64" \
     -scheme "$SWIFT_BUILD_SCHEME" \
     -project "$SWIFT_PROJECT_PATH" \
@@ -69,15 +70,15 @@ function build() {
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to download dependencies for '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
+    echo "** [FAILED] Failed to download dependencies for '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'"
     exit 1
   fi
 
-  echo "**** (Build 3/3) Build for '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
+  echo "**** (Build 3/3) Build for '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'"
 
   # https://stackoverflow.com/a/74478244/863651
   xcodebuild \
-    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION" \
+    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY" \
     -arch "arm64" \
     -scheme "$SWIFT_BUILD_SCHEME" \
     -project "$SWIFT_PROJECT_PATH" \
@@ -90,15 +91,15 @@ function build() {
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to build '$XCODEBUILD_TARGET_SDK_WITH_VERSION'"
+    echo "** [FAILED] Failed to build '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'"
     exit 1
   fi
 }
 
 function create_fat_binaries() {
-  echo "** Create fat binaries for '$XCODEBUILD_TARGET_SDK_WITH_VERSION-$SWIFT_BUILD_CONFIGURATION'"
+  echo "** Create fat binaries for '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY-$SWIFT_BUILD_CONFIGURATION'"
 
-  echo "**** (FatBinaries 1/9) Copy '$XCODEBUILD_TARGET_SDK_WITH_VERSION' build as a fat framework"
+  echo "**** (FatBinaries 1/9) Copy '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY' build as a fat framework"
   cp \
     -R \
     "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME" \
@@ -158,7 +159,7 @@ function create_fat_binaries() {
   echo "**** (FatBinaries 5/9) Generating binding api definition and structs"
   sharpie \
     bind \
-    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION" \
+    -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY" \
     -scope "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
     -output "$SWIFT_OUTPUT_PATH/ApiDef" \
     -namespace "$SWIFT_PROJECT_NAME" \
