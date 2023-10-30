@@ -12,6 +12,7 @@ declare SDK_VERSION="" # xcodebuild -showsdks
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
+declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
 declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
 
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
@@ -21,7 +22,14 @@ declare SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
 declare SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
 
-declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$XCODEBUILD_TARGET_SDK" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version from the folder name 
+declare OUTPUT_FOLDER_POSTFIX=""
+if [ "$XCODEBUILD_TARGET_SDK" == "macosx" ]; then
+  OUTPUT_FOLDER_POSTFIX="maccatalyst" # special case for mac catalyst
+else
+  OUTPUT_FOLDER_POSTFIX="$XCODEBUILD_TARGET_SDK"
+fi
+
+declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$OUTPUT_FOLDER_POSTFIX" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version from the folder name 
 declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
 function print_macos_sdks() {
@@ -43,6 +51,7 @@ function print_macos_sdks() {
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '$OUTPUT_SHARPIE_HEADER_FILES_PATH'  "
   echo
   echo "** SDK_VERSION                                : '${SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
+  echo "** SUPPORTS_MACCATALYST                       : '$SUPPORTS_MACCATALYST'                       "
   echo "** XCODEBUILD_TARGET_SDK                      : '$XCODEBUILD_TARGET_SDK'                      "
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'  "
   echo
@@ -86,8 +95,9 @@ function build() {
     -derivedDataPath "$SWIFT_BUILD_PATH" \
     -clonedSourcePackagesDirPath "$SWIFT_PACKAGES_PATH" \
     CODE_SIGN_IDENTITY="" \
-    CODE_SIGNING_ALLOWED=NO \
-    CODE_SIGNING_REQUIRED=NO
+    CODE_SIGNING_ALLOWED="NO" \
+    SUPPORTS_MACCATALYST="$SUPPORTS_MACCATALYST" \
+    CODE_SIGNING_REQUIRED="NO"
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
