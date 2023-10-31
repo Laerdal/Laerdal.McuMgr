@@ -28,7 +28,7 @@ jobs:
         persistCredentials: True
 
       - task: Bash@3
-        displayName: 'Install Build Tools for "Laerdal.McuMgr.Bindings"'
+        displayName: 'Setup Build Environment for "Laerdal.McuMgr.Bindings"'
         inputs:
           targetType: filePath
           filePath: 'Laerdal.SetupBuildEnvironment.sh'
