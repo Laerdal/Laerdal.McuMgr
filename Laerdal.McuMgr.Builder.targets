@@ -64,6 +64,7 @@
             <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
             <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
             <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
+            <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.MacCatalyst.csproj</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
             <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
@@ -109,6 +110,7 @@
             <ProjectFiles Include="$(Laerdal_McuMgr_ProjectFile)"/>
             <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"/>
             <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_Android)"/>
+            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"/>            
             <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)"/>
         </ItemGroup>
 
@@ -122,6 +124,9 @@
         <MsBuild Projects="$(MSBuildProjectFullPath)"
                  Targets="_updatePackageVersionsInCsprojFile"
                  Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile_Android);Version=$(Laerdal_Version_Assembly);"/>
+        <MsBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="_updatePackageVersionsInCsprojFile"
+                 Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst);Version=$(Laerdal_Version_Assembly);"/>
         <MsBuild Projects="$(MSBuildProjectFullPath)"
                  Targets="_updatePackageVersionsInCsprojFile"
                  Properties="ProjectFile=$(Laerdal_McuMgrBindings_ProjectFile_NetStandard);Version=$(Laerdal_Version_Assembly);"/>
@@ -195,6 +200,7 @@
         <!--    BuildInParalle=false doesnt work for dotnet   we have to use the /m:1 flag on the command line         -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>

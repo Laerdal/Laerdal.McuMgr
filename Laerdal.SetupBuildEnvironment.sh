@@ -72,6 +72,7 @@ sudo    dotnet                                           \
              install                                     \
                  ios                                     \
                  android                                 \
+                 maccatalyst                             \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
 
 ( cd "Laerdal.McuMgr.Bindings.iOS"                       \
