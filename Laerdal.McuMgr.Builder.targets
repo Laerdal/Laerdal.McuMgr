@@ -67,9 +67,9 @@
             <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>Laerdal.McuMgr.Bindings.MacCatalyst/Laerdal.McuMgr.Bindings.MacCatalyst.csproj</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
             <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --master-branch '$(Laerdal_Master_Branch_Name)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o               '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major          '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --master-branch  '$(Laerdal_Master_Branch_Name)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --develop-branch '$(Laerdal_Develop_Branch_Name)'</_Laerdal_Version_Script_Parameters>
         </PropertyGroup>
 
@@ -244,10 +244,10 @@
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
 
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --user '$(Laerdal_Github_Username)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository '$(Laerdal_Repository)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --user         '$(Laerdal_Github_Username)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository   '$(Laerdal_Repository)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch   '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version  '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
             <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token '$(Laerdal_Github_Access_Token)'</_Laerdal_Create_Github_Release_Script_Parameters>
         </PropertyGroup>
 
