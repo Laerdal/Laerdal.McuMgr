@@ -174,7 +174,7 @@ fi
 
 echo
 echo "** Mono:"
-which  mono  && mono  --version
+which  mono  &&  mono  --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'mono'."
@@ -183,7 +183,7 @@ fi
 
 echo
 echo "** MSBuild:"
-which   msbuild  && msbuild   --version
+which   msbuild  &&  msbuild   --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'msbuild'."
@@ -192,7 +192,7 @@ fi
 
 echo
 echo "** Nuget:"
-which  nuget  && nuget  --version
+which  nuget  &&  nuget  help
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'nuget'."
