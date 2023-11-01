@@ -26,21 +26,21 @@ brew   install   --cask   objectivesharpie
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'objectivesharpie'."
-  exit 1
+  exit 10
 fi
 
 brew   install   gradle
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'gradle'."
-  exit 1
+  exit 20
 fi
 
 brew   install   openjdk@17
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'openjdk@17'."
-  exit 1
+  exit 30
 fi
 
 # install a specific version of dotnet7 to ensure consistent results
@@ -48,7 +48,7 @@ curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 7.0 
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'dotnet7'."
-  exit 1
+  exit 40
 fi
 
 echo
@@ -57,7 +57,7 @@ which    dotnet   &&   dotnet   --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Something's wrong with 'dotnet' cli."
-  exit 1
+  exit 50
 fi
 
 #
@@ -82,10 +82,10 @@ sudo    dotnet                                           \
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 1
+  exit 60
 fi
 
-cd "Laerdal.McuMgr.Bindings.iOS" || echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS" && exit 1
+cd "Laerdal.McuMgr.Bindings.iOS" || (echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS" && exit 65)
 sudo         dotnet                                      \
              workload                                    \
              restore                                     \
@@ -93,11 +93,11 @@ sudo         dotnet                                      \
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 1
+  exit 70
 fi
-cd - || exit 1
+cd - || exit 71
 
-cd "Laerdal.McuMgr.Bindings.Android" || echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.Android" && exit 1              
+cd "Laerdal.McuMgr.Bindings.Android" || (echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.Android" && exit 75)
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
@@ -105,29 +105,26 @@ sudo    dotnet                                           \
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 1
+  exit 80
 fi
-cd - || exit 1
-
-# this is handled by the build system
-# echo  -e   '\norg.gradle.java.home=/usr/local/opt/openjdk@17/'   >>   "Laerdal.McuMgr.Bindings.Android.Native/gradle.properties"
+cd - || exit 85
 
 echo
 echo    "--------------------------------------------------"
 cat    Laerdal.McuMgr.Bindings.Android.Native/gradle.properties
 echo    "--------------------------------------------------"
 
-# this is vital in order to select the ios 16.1+
+# this is vital in order to select ios 16.1+
 
 echo "** XCode Installations:"
 
-ls  -ld  /Applications/Xcode*
+ls  -ld  /Applications/Xcode* || exit 90
 
 sudo   xcode-select   -s  /Applications/Xcode_14.2.app/Contents/Developer
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
-  exit 1
+  exit 95
 fi
 echo
 
@@ -136,7 +133,7 @@ java               -version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'java'."
-  exit 1
+  exit 100
 fi
 
 echo
@@ -145,7 +142,7 @@ javac             -version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'javac'."
-  exit 1
+  exit 110
 fi
 
 echo
@@ -154,7 +151,7 @@ gradle           --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'gradle'."
-  exit 1
+  exit 120
 fi
 
 echo
@@ -163,7 +160,7 @@ sharpie         --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'sharpie'."
-  exit 1
+  exit 130
 fi
 
 echo
@@ -172,7 +169,7 @@ xcodebuild   -version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'xcodebuild'."
-  exit 1
+  exit 140
 fi
 
 echo
@@ -181,7 +178,7 @@ which  mono  && mono  --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'mono'."
-  exit 1
+  exit 150
 fi
 
 echo
@@ -190,7 +187,7 @@ which   msbuild  && msbuild   --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'msbuild'."
-  exit 1
+  exit 160
 fi
 
 echo
@@ -199,7 +196,7 @@ which  nuget  && nuget  --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'nuget'."
-  exit 1
+  exit 170
 fi
 
 echo
@@ -208,5 +205,5 @@ echo "** mtouch:"
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
-  exit 1
+  exit 180
 fi
