@@ -20,14 +20,8 @@ variables:
   - name: 'Laerdal_Test_Results_Folderpath'
     value: '$(Build.Repository.LocalPath)/TestResults'
 
-  - name: '_is_pr'
+  - name: 'is_pr'
     ${{ if eq(variables.Build.Reason, 'PullRequest') }}:
-      value: true
-  - name: '_is_coming_from_us'
-    ${{ if eq(variables.System.PullRequest.IsFork, 'False') }}:
-      value: true
-  - name: 'is_our_own_pr' # its absolutely vital to only allow automatic builds only when they are coming from within while PREVENTING any automatic builds from fork-PRs in github
-    ${{if and(  eq(variables._is_pr, 'true'),   eq(variables._is_coming_from_us, 'true')  )}}:
       value: true
   - name: 'is_manual_build'
     ${{ if eq(variables.Build.Reason, 'Manual') }}:
@@ -47,9 +41,12 @@ variables:
   - name: 'contains_build_keyword_in_commit_message'
     ${{ if contains(variables.Build.SourceVersionMessage, '[build]') }}:
       value: true
+  - name: 'is_from_fork'
+    ${{ if eq(variables.System.PullRequest.IsFork, 'True') }}:
+      value: true
 
   - name: 'should_build'
-    ${{     if    eq(variables.is_our_own_pr, true)                              }}:
+    ${{     if    eq(variables.is_pr, true)                                      }}:
       value: 'Yes'
     ${{ elseif    eq(variables.is_manual_build, true)                            }}:
       value: 'Yes'
@@ -64,6 +61,12 @@ variables:
     ${{ elseif    eq(variables.contains_build_keyword_in_commit_message, true)   }}:
       value: 'Yes'
     ${{ else }}:
+      value: 'No'
+  
+  # to future maintainers   keep this dead last and separate   this is a special case because we want to
+  # to future maintainers   explicitly disable any and all activity related to 3rd party forks in github
+  - name: 'should_build'
+    ${{     if    eq(variables.is_from_fork, true)                               }}: 
       value: 'No'
 
 resources:
