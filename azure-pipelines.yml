@@ -21,6 +21,14 @@ resources:
 jobs:
   - job: Build
     displayName: 'Build Agent'
+    condition: |
+      or(
+          eq(       variables['Build.Reason'],               'PullRequest'  ),
+          ends(     variables['Build.SourceBranch'],         '/main'        ),
+          ends(     variables['Build.SourceBranch'],         '/master'      ),
+          ends(     variables['Build.SourceBranch'],         '/develop'     ),
+          contains( variables['Build.SourceVersionMessage'], '[build]'      )
+      )
 
     steps:
       - checkout: self
