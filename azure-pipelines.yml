@@ -1,8 +1,15 @@
+# to future maintainers   considering that this is an open-source project please be mindful of the fact that this file is PUBLIC
+# to future maintainers   so any sensitive pieces of info (tokens, passwords, etc) should be stored in ENCRYPTED Azure DevOps pipeline variables
+# to future maintainers
+# to future maintainers   in the same vein of thought its important to always keep an eye on the pipelines trigger-settings for PR validation
+# to future maintainers   to ensure that PR builds coming from people outside Laerdal fire if and only if a Laerdal dev has explicitly comments
+# to future maintainers   on the PR with the following string [build]    if this string is not present the PR build should NOT fire
+
 trigger:
   branches:
     include:
       - '*'
-
+ 
 pool:
   name: 'Azure Pipelines'
   vmImage: 'macOS-12'
@@ -11,6 +18,51 @@ variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
   - name: 'Laerdal_Test_Results_Folderpath'
     value: '$(Build.Repository.LocalPath)/TestResults'
+  - name: '_is_pr'
+    ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      value: true
+  - name: '_is_coming_from_us'
+    ${{ if eq(variables['System.PullRequest.IsFork'], 'False') }}:
+      value: true
+  - name: 'is_our_own_pr' # its absolutely vital to only allow automatic builds only when they are coming from within while PREVENTING any automatic builds from fork-PRs in github
+    ${{if and(  eq(variables['_is_pr'], 'true'),   eq(variables['_is_coming_from_us'], 'true')  )}}:
+      value: true
+  - name: 'is_manual_build'
+    ${{ if eq(variables['Build.Reason'], 'Manual') }}:
+      value: true
+  - name: 'is_scheduled_build'
+    ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
+      value: true
+  - name: 'is_triggered_from_another_build'
+    ${{ if eq(variables['Build.Reason'], 'BuildCompletion') }}:
+      value: true
+  - name: 'is_triggered_from_resource_trigger'
+    ${{ if eq(variables['Build.Reason'], 'ResourceTrigger') }}:
+      value: true
+  - name: 'is_triggered_from_central_branches'
+    ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/develop') }}:
+      value: true
+  - name: 'contains_build_keyword_in_commit_message'
+    ${{ if contains(variables['Build.SourceVersionMessage'], '[build]') }}:
+      value: true
+
+  - name: 'should_build'
+    ${{     if    eq(variables['is_our_own_pr'], true)                              }}:
+      value: 'Yes'
+    ${{ elseif    eq(variables['is_manual_build'], true)                            }}:
+      value: 'Yes'
+    ${{ elseif    eq(variables['is_scheduled_build'], true)                         }}:
+      value: 'Yes'
+    ${{ elseif    eq(variables['is_triggered_from_another_build'], true)            }}:
+      value: 'Yes'
+    ${{ elseif    eq(variables['is_triggered_from_resource_trigger'], true)         }}:
+      value: 'Yes'
+    ${{ elseif    eq(variables['is_triggered_from_central_branches'], true)         }}:
+      value: 'Yes'
+    ${{ elseif    eq(variables['contains_build_keyword_in_commit_message'], true)   }}:
+      value: 'Yes'
+    ${{ else }}:
+      value: 'No'
 
 resources:
   repositories:
@@ -18,52 +70,58 @@ resources:
       type: git
       ref: refs/heads/develop
 
+# to future maintainers    its vital to STOP the build from firing on PRs coming from forks because stuff like github usernames and access tokens can be easily
+# to future maintainers    leaked by malevolent forkers (who can use a trivial .sh script to upload our secrets somewhere) and that would be a security issue
 jobs:
-  - job: Build
-    displayName: 'Build Agent'
-    condition: |
-      or(
-          eq(       variables['Build.Reason'],               'PullRequest'  ),
-          ends(     variables['Build.SourceBranch'],         '/main'        ),
-          ends(     variables['Build.SourceBranch'],         '/master'      ),
-          ends(     variables['Build.SourceBranch'],         '/develop'     ),
-          contains( variables['Build.SourceVersionMessage'], '[build]'      )
-      )
 
+  - job: 'Skip_Build'
+    condition: eq(variables['should_build'], 'No')
+    displayName: "Should we auto-build? ..."
+    steps:
+      - checkout: none # keep this
+        displayName: '(Skipping checkout completely ...)'
+      - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
+        condition: eq(variables['should_build'], 'No')
+        displayName: '(Set Warning-Icon ...)'
+
+  - job: 'Build'
+    condition: eq(variables['should_build'], 'Yes')
+    displayName: 'Build Agent'
     steps:
       - checkout: self
+        displayName: 'Checkout'
         clean: true
         fetchTags: false
         fetchDepth: 0
         persistCredentials: True
-
+    
       - task: Bash@3
         displayName: 'Setup Build Environment for "Laerdal.McuMgr.Bindings"'
         inputs:
           targetType: filePath
           filePath: 'Laerdal.SetupBuildEnvironment.sh'
-
+    
       - task: NuGetToolInstaller@1
         displayName: 'Install Nuget'
         inputs:
           checkLatest: true
-
+    
       - script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
         displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
-
+    
       - task: NuGetCommand@2
         displayName: 'NuGet Sources Add (for Classic Xamarin)'
         inputs:
           command: 'custom'
           arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
-
+    
       - task: DotNetCoreCLI@2
         displayName: 'NuGet Sources Add (for .Net6+)'
         inputs:
           command: 'custom'
           custom: 'nuget'
           arguments: ' add source "$(Build.ArtifactStagingDirectory)/Artifacts" '
-
+    
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       - task: DotNetCoreCLI@2
@@ -72,17 +130,20 @@ jobs:
           command: 'custom'
           custom: 'msbuild'
           arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"   -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
-
+    
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
           testRunTitle: 'McuMgr Test Suite (Platform-Agnostic)'
           mergeTestResults: true
-          testResultsFiles: '$(Laerdal_Test_Results_Folderpath)/**/*.trx'
+          testResultsFiles: |
+            $(Laerdal_Test_Results_Folderpath)/**/TEST-*.xml
+            $(Laerdal_Test_Results_Folderpath)/**/TEST-*.trx
           testResultsFormat: 'XUnit'
+          publishRunAttachments: true
           failTaskOnFailedTests: true
           failTaskOnMissingResultsFile: true
-
+    
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
         inputs:
