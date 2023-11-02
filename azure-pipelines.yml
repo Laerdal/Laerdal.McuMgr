@@ -16,8 +16,10 @@ pool:
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
+
   - name: 'Laerdal_Test_Results_Folderpath'
     value: '$(Build.Repository.LocalPath)/TestResults'
+
   - name: '_is_pr'
     ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
       value: true
@@ -81,7 +83,6 @@ jobs:
       - checkout: none # keep this
         displayName: '(Skipping checkout completely ...)'
       - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
-        condition: eq(variables['should_build'], 'No')
         displayName: '(Set Warning-Icon ...)'
 
   - job: 'Build'
