@@ -1,0 +1,124 @@
+﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+    <PropertyGroup>
+        <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
+        <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
+        <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
+        <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
+
+        <!-- we need to always keep the monoandroid first in the list of frameworks except for windows   otherwise the build will fail!        -->
+        <!-- the reason we exclude windows is because there is a long-standing b.ug affecting xamarin.legacy.sdk which causes the monoandroid  -->
+        <!-- target to error out https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                                                       -->
+        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
+
+        <IsNet6 Condition="               '$(TargetFramework.ToLower().StartsWith(net6))' == 'true'          ">true</IsNet6>
+        <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
+
+        <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
+        <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(monoandroid))' == 'true'   ">true</IsXamarinAndroid>
+        
+        <!-- notice that on windows the monoandroid build is disabled because it doesnt work   we make sure to only  -->
+        <!-- build once on the very first framework so as to avoid rebuilding the same native codebase over and over -->
+        <ShouldBuildNativeLibraries Condition=" ('$(IsUnix)' == 'true' and '$(IsXamarinAndroid)' == 'true') or ('$(IsWindows)' == 'true' and '$(IsNet6)' == 'true') ">true</ShouldBuildNativeLibraries>
+        
+        <DebugType>pdbonly</DebugType>
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+        <IsBindingProject>true</IsBindingProject>
+
+        <!-- hide some warnings -->
+        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AndroidLinkMode>Full</AndroidLinkMode>
+        <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
+        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Laerdal.McuMgr.Bindings.Android.csproj.DotSettings"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
+        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;Net6;Net7;Mono;</PackageTags>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
+        <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' " >README.md</PackageReadmeFile> 
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageDescription>Wrapper around Nordic's McuMgr-related native libs for Android - MAUI ready</PackageDescription>
+
+        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
+
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <!-- these versions are getting replaced by the build script in one swift pass -->
+        <Version>1.0.826.0</Version>
+        <FileVersion>1.0.826.0</FileVersion>
+        <PackageVersion>1.0.826.0</PackageVersion>
+        <AssemblyVersion>1.0.826.0</AssemblyVersion>
+
+        <Title>$(PackageId)</Title>
+        <Owners>$(Authors)</Owners>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
+        <Summary>.Net6+ McuMgr Bindings for Android</Summary>
+        <Copyright>$(Authors)</Copyright>
+        <Description>$(PackageDescription)</Description>
+
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>true</IncludeSymbols>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AndroidLibsFolder>Libraries</AndroidLibsFolder>
+        <AndroidLibsDependenciesFolder>$(AndroidLibsFolder)/Dependencies</AndroidLibsDependenciesFolder>
+        
+        <CoreAarLibrary>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</CoreAarLibrary>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Folder Include="Libraries\" />
+        <Folder Include="Transforms\"/>
+    </ItemGroup>
+
+    <Target Name="PrintBuildInfo" BeforeTargets="_CreateBindingResourceArchive">
+        <Message Importance="High" Text="OS:               '$(OS)'               "/>
+        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
+        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
+        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
+        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
+        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
+        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+
+        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
+        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
+        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
+        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
+    </Target>
+
+    <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
+    <!-- cryptic errors in azure due to target-frameworks trying to build themselves in parallel thus stepping onto eachothers toes    thats because the   -->
+    <!-- intended way of building stuff is to let net6.0-android build the android libs and once that is done then and only then proceed to net7.0-android -->
+    <!-- which will find the .aar and .jars already in place                                                                                               -->
+    <Target Name="EnsureThatParallelizedBuildingIsDisabled"
+            BeforeTargets="PrepareForBuild">
+        <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
+               Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
+    </Target>
+
+    <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets" />    
+    <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets" />
+    <Import Condition=" '$(IsXamarinAndroid)'           == 'true' " Project="Laerdal.McuMgr.Bindings.Android.Xamarin.targets" />
+</Project>

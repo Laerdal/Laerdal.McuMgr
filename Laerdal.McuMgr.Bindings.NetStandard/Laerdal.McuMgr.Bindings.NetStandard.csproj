@@ -1,0 +1,81 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
+
+    <!-- SHARED -->
+    <PropertyGroup>
+        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
+        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
+        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
+        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+
+        <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+
+        <Optimized>false</Optimized>
+        <DebugType>full</DebugType>
+        <OutputPath>bin\</OutputPath>
+        <OutputType>Library</OutputType>
+        <LangVersion>8.0</LangVersion>
+        <DebugSymbols>true</DebugSymbols>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Laerdal.McuMgr.Bindings.NetStandard</PackageId>
+        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;NetStandard;</PackageTags>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageDescription>Native C# Implementation for Nordic's McuMgr-related BLE Chipsets (WIP).</PackageDescription>
+
+        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- sourcelink: Include PDB in the built .nupkg -->
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+        <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
+
+        <!-- these versions are getting replaced by the build script in one swift pass --> 
+        <Version>1.0.801.0</Version>
+        <FileVersion>1.0.801.0</FileVersion>
+        <PackageVersion>1.0.801.0</PackageVersion>
+        <AssemblyVersion>1.0.801.0</AssemblyVersion>
+
+        <Title>$(PackageId)</Title>
+        <Summary>McuMgr C# Implementation (WIP)</Summary>
+        <Description>$(PackageDescription)</Description>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
+        <Owners>$(Authors)</Owners>
+        <Copyright>$(Authors)</Copyright>
+        
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>true</IncludeSymbols>
+
+        <!-- see : https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
+        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')"/>
+        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Remove="Laerdal.McuMgr.Bindings.NetStandard.csproj.DotSettings" />
+    </ItemGroup>
+
+</Project>

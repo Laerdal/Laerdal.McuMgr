@@ -5,14 +5,21 @@
 - Latest Nugets:
 
 
-      Laerdal.McuMgr
+      Laerdal.McuMgr:
   
   [![Laerdal.McuMgr package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/b382f36b-e768-40a9-8bb9-e905b85ff610/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr?preferRelease=true)
 
-      Laerdal.McuMgr.Bindings
+      Laerdal.McuMgr.Bindings.iOS:
 
-  [![Laerdal.McuMgr.Bindings package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.iOS package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.iOS?preferRelease=true)
 
+      Laerdal.McuMgr.Bindings.Android:
+
+  [![Laerdal.McuMgr.Bindings.Android package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.Android?preferRelease=true)
+
+      Laerdal.McuMgr.Bindings.NetStandard (WIP!):
+
+  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.NetStandard?preferRelease=true)
 
 - Release Build Status:
 
@@ -29,9 +36,9 @@ Read the LICENSE file before you begin.
 
 # Summary
 
-The project generates two Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings' respectively. The goal is to have 'Laerdal.McuMgr'
-provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for iOS and Android respectively
-to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/):
+The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|Android|NetStandard' (note: NetStandard is still WIP).
+The goal is to have 'Laerdal.McuMgr' provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for
+iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/):
 
 - [IOS-nRF-Connect-Device-Manager](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)
 
@@ -60,7 +67,7 @@ The following types of operations are supported on devices running on Nordic's n
 - Downloading one or more files from the device
 - Uploading one or more files over to the device
 
-      Note: The library doesn't support Windows/UWP yet.
+      Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
 
 
@@ -80,10 +87,12 @@ to the device.**
 
 ## 🚀 Using the Nugets in your Projects
 
-Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to ALL of your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
+Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
 
        Laerdal.McuMgr
-       Laerdal.McuMgr.Bindings
+       Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
+       Laerdal.McuMgr.Bindings.Android             (only add this to those projects of yours that target Android)
+       Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
 
@@ -648,12 +657,13 @@ Not supported yet.
     Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
 _
 
-    Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK11 installed - have a look at the .yml file to see how you
+    Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK17 installed - have a look at the .yml file to see how you
     can install java easily using 'brew'.
 
 _
 
-    Note#3 If you build on Windows the build system will work but the generated nugets *will only work on Android* but they will error out on iOS considering that the 'iOS part' of the build gets skipped in Windows.
+    Note#3 If you build on Windows the build system will work but the generated nugets *will only work on Android with MAUI apps* but they will error out on iOS considering that the 'iOS part'
+           of the build gets skipped in Windows.
 
 To build the nugets from source follow these instructions:
 
@@ -667,9 +677,41 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine
+#### 2) Make sure you have .Net7 (we target version 7.0.402 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
-#### 3) Make sure that Java11 is installed on your machine along with Gradle and Maven.
+```bash
+# cd into the root folder of the repo
+sudo   dotnet   workload   restore  --sdk-version=7.0.402  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+
+# note#1   theoretically 'dotnet workload restore' on the root level should also do the trick but in practice it sometimes runs into problems
+#
+# note#2   microsoft encourages us to always update to and use the latest workloads   in practice devs have complained that they've
+#          run into headaches with this approach and would rather pin versions explicitly as shown above   chances are you will have
+#          one or more workloads forcibly updated to greater versions and if that's indeed the case then it's nearly impossible for
+#          you to roll the workload versions back to the ones shown here   most probably your build system will still work and you won't
+#          run into trouble   if you do you will either have to (a) reinstall .net7 from scratch or (b) use docker as your build system
+#          to enforce strict workload-versioning on builds     
+```
+
+After running the above command running 'dotnet workload list' should print out something like this on Windows:
+
+```bash
+> dotnet workload list
+
+Installed Workload Id      Manifest Version       Installation Source
+--------------------------------------------------------------------------------
+android                    33.0.95/7.0.100        SDK 7.0.400, VS 17.7.34202.233
+ios                        16.4.7107/7.0.100      SDK 7.0.400, VS 17.7.34202.233
+maui                       7.0.96/7.0.100         SDK 7.0.400
+maui-android               7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-ios                   7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-maccatalyst           7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+maui-windows               7.0.96/7.0.100         SDK 7.0.400, VS 17.7.34202.233
+wasm-tools-net6            7.0.11/7.0.100         SDK 7.0.400
+maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
+```
+
+#### 3) Make sure that Java17 is installed on your machine along with Gradle and Maven.
 
 #### 4) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
@@ -689,25 +731,29 @@ If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (
 
 You'll find the resulting nugets in the folder `Artifacts/`.
 
-    Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings first and building just that project
-    and then bumping the package version of Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building Laerdal.McuMgr.csproj.
+    Note: For software development you might want to consider bumping the version of Laerdal.McuMgr.Bindings.* first and building just that project
+    and then bumping the package version of the package reference towards Laerdal.McuMgr.Bindings inside Laerdal.McuMgr.csproj and then building said project.
 
-    If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings won't be picked up by Laerdal.McuMgr because it will still
-    use the cached nuget package of Laerdal.McuMgr.Bindings.
+    If you don't follow these steps then any changes you make in Laerdal.McuMgr.Bindings.* won't be picked up by Laerdal.McuMgr because it will still
+    use the cached nuget package of Laerdal.McuMgr.Bindings based on its current version.
 
     To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
 
-    # on macos
-    msbuild                                                           \
-         Laerdal.McuMgr.Builder.csproj                                \
+
+    # on macos *sh
+    dotnet                                                            \
+         msbuild                                                      \
+         Laerdal.McuMgr.Builder.targets                               \
+         '"/m:1"'                                                     \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
     # on windows powershell
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"       ^
-            Laerdal.McuMgr.Builder.csproj    ^
-            /p:Laerdal_Version_Full=1.0.x.0
+    & dotnet  msbuild                              ^
+         Laerdal.McuMgr.Builder.targets            ^
+         '"/m:1"'                                  ^
+         '"/p:Laerdal_Version_Full=1.0.x.0"'
 
-    Make sure to +1 the 'x' number each time in the scriptlet above before running it.
+    Note: Make sure to +1 the 'x' number each time in the scriptlet above before running it.
 
 
 ## Known issues
