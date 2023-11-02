@@ -1,3 +1,10 @@
+# to future maintainers   considering that this is an open-source project please be mindful of the fact that this file is PUBLIC
+# to future maintainers   so any sensitive pieces of info (tokens, passwords, etc) should be stored in ENCRYPTED Azure DevOps pipeline variables
+# to future maintainers
+# to future maintainers   in the same vein of thought its important to always keep an eye on the pipelines trigger-settings for PR validation
+# to future maintainers   to ensure that PR builds coming from people outside Laerdal fire if and only if a Laerdal dev has explicitly comments
+# to future maintainers   on the PR with the following string [build]    if this string is not present the PR build should NOT fire
+
 trigger:
   branches:
     include:
@@ -9,8 +16,33 @@ pool:
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
-  - name: 'Laerdal_Test_Results_Folderpath'
+
+  - name: Laerdal_Test_Results_Folderpath
     value: '$(Build.Repository.LocalPath)/TestResults'
+
+  - name: is_from_fork # its vital to use the notation variables['x'] for the environment variables below    if we use variables.x the value will be evaluated as empty!
+    value: ${{ eq(variables['System.PullRequest.IsFork'], 'True') }}
+
+  - name: has_green_build_reason
+    value: ${{ in(variables['Build.Reason'], 'PullRequest', 'Manual', 'Schedule', 'BuildCompletion', 'ResourceTrigger') }}
+
+  - name: is_triggered_from_central_branches
+    value: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/develop') }}
+
+  - name: contains_build_keyword_in_commit_message
+    value: ${{ contains(variables['Build.SourceVersionMessage'], '[build]') }}
+
+  - name: should_build
+    ${{ if          eq(variables.is_from_fork, True)                              }}: # order   must be checked first
+      value: 'No' # we want to explicitly disable any and all activity related to 3rd party forks in github
+    ${{ elseif      eq(variables.has_green_build_reason, True)                    }}:
+      value: 'Yes'
+    ${{ elseif      eq(variables.is_triggered_from_central_branches, True)        }}:
+      value: 'Yes'
+    ${{ elseif      eq(variables.contains_build_keyword_in_commit_message, True)  }}:
+      value: 'Yes'
+    ${{ else }}:
+      value: 'No'
 
 resources:
   repositories:
@@ -19,11 +51,22 @@ resources:
       ref: refs/heads/develop
 
 jobs:
-  - job: Build
-    displayName: 'Build Agent'
 
+  - job: 'Skip_Build'
+    condition: ${{ eq(variables.should_build, 'No') }}
+    displayName: "Should we auto-build? ... ${{ variables.should_build }} (is_from_fork=__${{ variables.is_from_fork }}__ ** has_green_build_reason=__${{ variables.has_green_build_reason }}__ ** is_triggered_from_central_branches=__${{ variables.is_triggered_from_central_branches }}__ ** contains_build_keyword_in_commit_message=__${{ variables.contains_build_keyword_in_commit_message }}__ ** IsFork=__${{ variables['System.PullRequest.IsFork'] }}__ ** Build.Reason=__${{ variables['Build.Reason'] }}__ ** SourceBranch=__${{ variables['Build.SourceBranch'] }}__ ** SourceVersionMessage=__${{ variables['Build.SourceVersionMessage'] }}__)"
+    steps:
+      - checkout: none # keep this 
+        displayName: "(Skipping checkout completely ...)"
+      - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
+        displayName: '(Set Warning-Icon ... )'
+
+  - job: 'Build'
+    condition: ${{ eq(variables.should_build, 'Yes') }}
+    displayName: 'Build Agent'
     steps:
       - checkout: self
+        displayName: 'Checkout'
         clean: true
         fetchTags: false
         fetchDepth: 0
@@ -55,7 +98,7 @@ jobs:
           command: 'custom'
           custom: 'nuget'
           arguments: ' add source "$(Build.ArtifactStagingDirectory)/Artifacts" '
-
+      
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       - task: DotNetCoreCLI@2
@@ -70,11 +113,14 @@ jobs:
         inputs:
           testRunTitle: 'McuMgr Test Suite (Platform-Agnostic)'
           mergeTestResults: true
-          testResultsFiles: '$(Laerdal_Test_Results_Folderpath)/**/*.trx'
+          testResultsFiles: |
+            $(Laerdal_Test_Results_Folderpath)/**/TEST-*.xml
+            $(Laerdal_Test_Results_Folderpath)/**/TEST-*.trx
           testResultsFormat: 'XUnit'
+          publishRunAttachments: true
           failTaskOnFailedTests: true
           failTaskOnMissingResultsFile: true
-
+      
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
         inputs:
