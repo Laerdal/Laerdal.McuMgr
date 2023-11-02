@@ -9,6 +9,8 @@ pool:
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
+  - name: 'Laerdal_Test_Results_Folderpath'
+    value: '$(Build.Repository.LocalPath)/TestResults'
 
 resources:
   repositories:
@@ -61,20 +63,17 @@ jobs:
         inputs:
           command: 'custom'
           custom: 'msbuild'
-          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"   -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
-      - task: Bash@3
-        displayName: 'Print Nugets under Artifacts'
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
         inputs:
-          targetType: inline
-          script: 'ls    -l   "$(Build.ArtifactStagingDirectory)/Artifacts/"'
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Run the McuMgr Test Suite and Publish Test Results'
-        inputs:
-          command: 'test'
-          projects: 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'
-          testRunTitle: 'McuMgr Test Suite'
+          testRunTitle: 'McuMgr Test Suite (Platform-Agnostic)'
+          mergeTestResults: true
+          testResultsFiles: '$(Laerdal_Test_Results_Folderpath)/**/*.trx'
+          testResultsFormat: 'XUnit'
+          failTaskOnFailedTests: true
+          failTaskOnMissingResultsFile: true
 
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1

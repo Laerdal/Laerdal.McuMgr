@@ -30,13 +30,17 @@
 <Project DefaultTargets="BuildProjects">
 
     <PropertyGroup>
-        <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+        <Newline>%0A</Newline>
+        <Configuration Condition="      '$(Configuration)'      == '' ">Release</Configuration>
+        <ShouldRunTestSuite Condition=" '$(ShouldRunTestSuite)' == '' " >true</ShouldRunTestSuite>
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Artifacts/`))</PackageOutputPath>
 
-        <Laerdal_Source_Branch Condition="  '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
-
+        <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">TestResults</Laerdal_Test_Results_Folderpath>
+        <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(Laerdal_Test_Results_Folderpath)))</Laerdal_Test_Results_Folderpath>
+        
+        <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
     </PropertyGroup>
 
@@ -213,28 +217,33 @@
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" />
     </Target>
 
+    <Target Name="ConsolePrintAllGeneratedArtifacts" AfterTargets="BuildProjects">
+        <ItemGroup>
+            <PackageFiles Include="$(PackageOutputPath)\**\*.*;"/>
+        </ItemGroup>
+
+        <Message Importance="High" Text="** Generated Artifacts:$(Newline)"/>
+        <Message Importance="High" Text="%(PackageFiles.FullPath)"/>
+    </Target>
+
     <!-- TESTS -->
-    <Target Name="RunTests" AfterTargets="BuildProjects" BeforeTargets="CreateGithubReleaseWithTag">
+    <Target Name="RunTests"
+            Condition=" '$(ShouldRunTestSuite)' == 'true' "
+            AfterTargets="ConsolePrintAllGeneratedArtifacts">
+
+        <MSBuild Targets="Restore"
+                 Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
+                 Properties="Configuration=$(Configuration)"/>
+
         <PropertyGroup>
-            <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Configuration=$(Configuration)</_Laerdal_Testbed_Parameters>
-            <_Laerdal_Testbed_Parameters>$(_Laerdal_Testbed_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Testbed_Parameters>
+            <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
+            <TestParameters>$(TestParameters) --logger            'trx'</TestParameters>
+            <TestParameters>$(TestParameters) --verbosity         '4'</TestParameters>
+            <TestParameters>$(TestParameters) --configuration     '$(Configuration)'</TestParameters>
+            <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
         </PropertyGroup>
 
-        <!-- in azure pipelines this doesnt work as intended for net framework projects because     -->
-        <!-- quite simply they dont have any target called 'Restore' like net7+ projects do ;)      -->
-        <!--                                                                                        -->
-        <!-- <MSBuild Targets="Restore"                                                             -->
-        <!--          Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"                   -->
-        <!--          Properties="$(_Laerdal_Testbed_Parameters);RestorePackagesPath=packages/" />  -->
-
-        <!-- todo   update the tests project to dotNetSix and update these tasks accordingly to run it -->
-
-        <!-- this is the only way to reliably restore nuget packages for dotnet framework projects -->
-        <!--        <Exec Command=" nuget  restore   Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj  -PackagesDirectory packages/ "/> -->
-
-        <!--        <MSBuild Targets="Test"-->
-        <!--                 Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"-->
-        <!--                 Properties="$(_Laerdal_Testbed_Parameters)"/>-->
+        <Exec Command=" dotnet   $(TestParameters) "/>
     </Target>
 
     <!-- GITHUB RELEASE -->
