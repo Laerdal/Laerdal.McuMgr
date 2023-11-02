@@ -9,15 +9,40 @@ trigger:
   branches:
     include:
       - '*'
- 
+
 pool:
   name: 'Azure Pipelines'
   vmImage: 'macOS-12'
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
-  - name: 'Laerdal_Test_Results_Folderpath'
+
+  - name: Laerdal_Test_Results_Folderpath
     value: '$(Build.Repository.LocalPath)/TestResults'
+
+  - name: is_from_fork # its vital to use the notation variables['x'] for the environment variables below    if we use variables.x the value will be evaluated as empty!
+    value: ${{ eq(variables['System.PullRequest.IsFork'], 'True') }}
+
+  - name: has_green_build_reason
+    value: ${{ in(variables['Build.Reason'], 'PullRequest', 'Manual', 'Schedule', 'BuildCompletion', 'ResourceTrigger') }}
+
+  - name: is_triggered_from_central_branches
+    value: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/develop') }}
+
+  - name: contains_build_keyword_in_commit_message
+    value: ${{ contains(variables['Build.SourceVersionMessage'], '[build]') }}
+
+  - name: should_build
+    ${{ if          eq(variables.is_from_fork, True)                              }}: # order   must be checked first
+      value: 'No' # we want to explicitly disable any and all activity related to 3rd party forks in github
+    ${{ elseif      eq(variables.has_green_build_reason, True)                    }}:
+      value: 'Yes'
+    ${{ elseif      eq(variables.is_triggered_from_central_branches, True)        }}:
+      value: 'Yes'
+    ${{ elseif      eq(variables.contains_build_keyword_in_commit_message, True)  }}:
+      value: 'Yes'
+    ${{ else }}:
+      value: 'No'
 
 resources:
   repositories:
@@ -25,39 +50,19 @@ resources:
       type: git
       ref: refs/heads/develop
 
-# to future maintainers    its vital to STOP the build from firing on PRs coming from forks because stuff like github usernames and access tokens can be easily
-# to future maintainers    leaked by malevolent forkers (who can use a trivial .sh script to upload our secrets somewhere) and that would be a security issue
 jobs:
 
   - job: 'Skip_Build'
-    condition: | # notice that (a) we explicitly disable any build coming from forks (b) this condition must be kept right here and not moved to the top of the file
-      not(
-        and(
-          eq(variables['System.PullRequest.IsFork'], 'False'),
-          or(
-                in(       variables['Build.Reason'],               'PullRequest', 'Manual', 'Schedule', 'BuildCompletion', 'ResourceTrigger'  ),
-                in(       variables['Build.SourceBranch'],         'refs/heads/main', 'refs/heads/master', 'refs/heads/develop'               ),
-                contains( variables['Build.SourceVersionMessage'], '[build]'                                                                  )
-          )
-        )
-      )
-    displayName: "Should we auto-build? ..." 
+    condition: ${{ eq(variables.should_build, 'No') }}
+    displayName: "Should we auto-build? ... ${{ variables.should_build }} (is_from_fork=__${{ variables.is_from_fork }}__ ** has_green_build_reason=__${{ variables.has_green_build_reason }}__ ** is_triggered_from_central_branches=__${{ variables.is_triggered_from_central_branches }}__ ** contains_build_keyword_in_commit_message=__${{ variables.contains_build_keyword_in_commit_message }}__ ** IsFork=__${{ variables['System.PullRequest.IsFork'] }}__ ** Build.Reason=__${{ variables['Build.Reason'] }}__ ** SourceBranch=__${{ variables['Build.SourceBranch'] }}__ ** SourceVersionMessage=__${{ variables['Build.SourceVersionMessage'] }}__)"
     steps:
-      - checkout: none # keep this   to debug place this below IsFork="${{ variables['System.PullRequest.IsFork'] }}" ** Build.Reason="${{ variables['Build.Reason'] }}" ** SourceBranch="${{ variables['Build.SourceBranch'] }}" ** SourceVersionMessage="${{ variables['Build.SourceVersionMessage'] }}" )
-        displayName: '(Skipping checkout completely ...'
+      - checkout: none # keep this 
+        displayName: "(Skipping checkout completely ...)"
       - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
         displayName: '(Set Warning-Icon ... )'
 
   - job: 'Build'
-    condition: | # notice that (a) we explicitly disable any build coming from forks (b) this condition must be kept right here and not moved to the top of the file
-        and(
-            eq(variables['System.PullRequest.IsFork'], 'False'),
-            or(
-                  in(       variables['Build.Reason'],               'PullRequest', 'Manual', 'Schedule', 'BuildCompletion', 'ResourceTrigger'  ),
-                  in(       variables['Build.SourceBranch'],         'refs/heads/main', 'refs/heads/master', 'refs/heads/develop'               ),
-                  contains( variables['Build.SourceVersionMessage'], '[build]'                                                                  )
-            )
-        )
+    condition: ${{ eq(variables.should_build, 'Yes') }}
     displayName: 'Build Agent'
     steps:
       - checkout: self
@@ -66,34 +71,34 @@ jobs:
         fetchTags: false
         fetchDepth: 0
         persistCredentials: True
-    
+
       - task: Bash@3
         displayName: 'Setup Build Environment for "Laerdal.McuMgr.Bindings"'
         inputs:
           targetType: filePath
           filePath: 'Laerdal.SetupBuildEnvironment.sh'
-    
+
       - task: NuGetToolInstaller@1
         displayName: 'Install Nuget'
         inputs:
           checkLatest: true
-    
+
       - script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
         displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
-    
+
       - task: NuGetCommand@2
         displayName: 'NuGet Sources Add (for Classic Xamarin)'
         inputs:
           command: 'custom'
           arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
-    
+
       - task: DotNetCoreCLI@2
         displayName: 'NuGet Sources Add (for .Net6+)'
         inputs:
           command: 'custom'
           custom: 'nuget'
           arguments: ' add source "$(Build.ArtifactStagingDirectory)/Artifacts" '
-    
+      
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       - task: DotNetCoreCLI@2
@@ -102,7 +107,7 @@ jobs:
           command: 'custom'
           custom: 'msbuild'
           arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"   -p:Laerdal_Github_Username="$(Github.ComponentsTeam.Username)"   -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
-    
+
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
@@ -115,7 +120,7 @@ jobs:
           publishRunAttachments: true
           failTaskOnFailedTests: true
           failTaskOnMissingResultsFile: true
-    
+      
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
         inputs:
