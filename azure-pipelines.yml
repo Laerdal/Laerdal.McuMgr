@@ -81,7 +81,7 @@ jobs:
 
   - job: 'Skip_Build'
     condition: eq(variables.should_build, 'No')
-    displayName: "Should we auto-build? ... ${{ variables.should_build }}"
+    displayName: "Should we auto-build? ... ${{ variables.should_build }} (is_pr=${{ variables.is_pr }}, is_manual_build=${{ variables.is_manual_build }}, is_scheduled_build=${{ variables.is_scheduled_build }}, is_triggered_from_another_build=${{ variables.is_triggered_from_another_build }}, is_triggered_from_resource_trigger=${{ variables.is_triggered_from_resource_trigger }}, is_triggered_from_central_branches=${{ variables.is_triggered_from_central_branches }}, contains_build_keyword_in_commit_message=${{ variables.contains_build_keyword_in_commit_message }}, is_from_fork=${{ variables.is_from_fork }}, Build.Reason=${{ variables.Build.Reason }}, Build.SourceBranch=${{ variables.Build.SourceBranch }}, Build.SourceVersionMessage=${{ variables.Build.SourceVersionMessage }}, System.PullRequest.IsFork=${{ variables.System.PullRequest.IsFork }})" 
     steps:
       - checkout: none # keep this
         displayName: '(Skipping checkout completely ...)'
