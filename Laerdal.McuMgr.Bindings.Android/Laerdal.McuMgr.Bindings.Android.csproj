@@ -18,7 +18,8 @@
         <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
         <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(monoandroid))' == 'true'   ">true</IsXamarinAndroid>
         
-        <!-- notice that on windows the monoandroid build is disabled because it doesnt work -->
+        <!-- notice that on windows the monoandroid build is disabled because it doesnt work   we make sure to only  -->
+        <!-- build once on the very first framework so as to avoid rebuilding the same native codebase over and over -->
         <ShouldBuildNativeLibraries Condition=" ('$(IsUnix)' == 'true' and '$(IsXamarinAndroid)' == 'true') or ('$(IsWindows)' == 'true' and '$(IsNet6)' == 'true') ">true</ShouldBuildNativeLibraries>
         
         <DebugType>pdbonly</DebugType>
@@ -59,10 +60,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.802.0</Version>
-        <FileVersion>1.0.802.0</FileVersion>
-        <PackageVersion>1.0.802.0</PackageVersion>
-        <AssemblyVersion>1.0.802.0</AssemblyVersion>
+        <Version>1.0.826.0</Version>
+        <FileVersion>1.0.826.0</FileVersion>
+        <PackageVersion>1.0.826.0</PackageVersion>
+        <AssemblyVersion>1.0.826.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>

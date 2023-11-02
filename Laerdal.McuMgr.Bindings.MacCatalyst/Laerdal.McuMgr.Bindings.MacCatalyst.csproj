@@ -7,30 +7,24 @@
         <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
 
-        <!-- if we are building under osx then we issue a proper full blown build    notice that xamarin.ios10 must always be first for the        -->
-        <!-- native swift-libs to be build properly so that they will be readymade when the net6 and net7 builds kick in right after xamarin.ios10 -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+        <!-- if we are building under osx then we issue a proper full blown build    notice that net6.0-maccatalyst must always be first   -->
+        <!-- for the native swift-libs to be build properly so that they will be readymade when the net7 build kick in right afterwards    -->
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
         <TargetFrameworks Condition=" '$(IsOSX)' == 'False' ">netstandard2.0;</TargetFrameworks>
 
-        <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or '$(TargetFramework.ToLower().StartsWith(xamarin.ios))' == 'true' ">true</IsIOS>
+        <IsMacCatalyst Condition="  $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">true</IsMacCatalyst>
 
         <IsNet6 Condition="         '$(TargetFramework.ToLower().StartsWith(net6))'        == 'true'   ">true</IsNet6>
         <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))'        == 'true'   ">true</IsNet7>
-        <IsXamarin Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin))'     == 'true'   ">true</IsXamarin>
-        
-        <IsNetX Condition="         '$(IsNet6)'    == 'true' or  '$(IsNet7)' == 'true' ">true</IsNetX>
-        <IsNetXIos    Condition="   '$(IsNetX)'    == 'true' and '$(IsIOS)'  == 'true' ">true</IsNetXIos>
-        <IsXamarinIos Condition="   '$(IsXamarin)' == 'true' and '$(IsIOS)'  == 'true' ">true</IsXamarinIos>
+        <IsNetX Condition="         '$(IsNet6)'    == 'true' or  '$(IsNet7)' == 'true'                 ">true</IsNetX>
 
-        <ShouldBuildNativeLibraries Condition=" '$(IsXamarinIos)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNet6)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <TargetPlatformVersion Condition=" '$(IsNetXIos)'     == 'true' ">11.0</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsXamarinIos)'  == 'true' ">10.0</TargetPlatformVersion>
+        <TargetPlatformVersion>13.1</TargetPlatformVersion>
 
         <DebugType>full</DebugType>
         <Optimized>false</Optimized>
@@ -47,12 +41,12 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Laerdal.McuMgr.Bindings.iOS</PackageId>
-        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;Mac;</PackageTags>
+        <PackageId>Laerdal.McuMgr.Bindings.MacCatalyst</PackageId>
+        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;Mac;MacCatalyst;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageDescription>C# bindings around Nordic's McuMgr-related native libs for iOS.</PackageDescription>
+        <PackageDescription>C# bindings around Nordic's McuMgr-related native libs for MacCatalyst.</PackageDescription>
 
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
@@ -65,13 +59,13 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.740.0</Version>
-        <FileVersion>1.0.740.0</FileVersion>
-        <PackageVersion>1.0.740.0</PackageVersion>
-        <AssemblyVersion>1.0.740.0</AssemblyVersion>
+        <Version>1.0.801.0</Version>
+        <FileVersion>1.0.801.0</FileVersion>
+        <PackageVersion>1.0.801.0</PackageVersion>
+        <AssemblyVersion>1.0.801.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
+        <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
         <Description>$(PackageDescription)</Description>
         <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
@@ -101,7 +95,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Laerdal.McuMgr.Bindings.iOS.csproj.DotSettings"/>
+        <None Remove="Laerdal.McuMgr.Bindings.MacCatalyst.csproj.DotSettings"/>
         <None Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/Laerdal.Mac.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
 
@@ -115,17 +109,8 @@
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
-        <!-- nothing to compile for the time being -->
-        <!-- <Compile Include="iOS\*.cs"/> -->
-        <!-- <Compile Include="iOS\Specific\*.cs"/> -->
-
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
         <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
-
-        <!-- we had to remove the reference to Xamarin.Swift due to a b.ug in xamarin.legacy.sdk -->
-        <!-- https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/45#issuecomment-1355886218     -->
-        <!-- <PackageReference Condition=" '$(IsXamarinIos)' == 'true' " Include="Xamarin.Swift" Version="1.0.11"/> -->
-        <PackageReference Condition=" '$(IsXamarinIos)' == 'true' " Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
@@ -138,20 +123,18 @@
         <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
         
-        <Message Importance="high" Text="IsIOS:                  '$(IsIOS)'                    "/>
         <Message Importance="high" Text="IsNet6:                 '$(IsNet6)'                   "/>
         <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
         <Message Importance="high" Text="IsXamarin:              '$(IsXamarin)'                "/>
-        <Message Importance="high" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
-        <Message Importance="high" Text="IsXamarinIos:           '$(IsXamarinIos)'             "/>
+        <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
     <!-- cryptic errors in azure due to target-frameworks trying to build themselves in parallel thus stepping onto eachothers toes    thats because the   -->
-    <!-- intended way of building stuff is to let net6.0-ios build the ios libs and once that is done then and only then proceed to net7.0-ios             -->
-    <!-- which will find the compiled framework-libs already in place                                                                                      -->
+    <!-- intended way of building stuff is to let net6.0-maccatalyst build the maccatalyst libs and once that is done then and only then proceed to        -->
+    <!-- net7.0-maccatalyst which will find the compiled framework-libs already in place                                                                   -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="CompileProxyProjectAndGenerateFatLibs">
         <Error Condition=" '$(MSBuildNodeCount)' != '' and $(MSBuildNodeCount) &gt; 1 "
@@ -159,6 +142,7 @@
     </Target>
 
     <!-- 1  its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel       -->
+    <!--                                                                                                                                           -->
     <!-- 2  also note that we hook onto the PrepareForBuild task    if we target the task CoreCompile then this task will be invoked on localdev   -->
     <!--    but on in the azure pipelines for some weird reason                                                                                    -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
@@ -167,7 +151,7 @@
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" XCODEBUILD_TARGET_SDK=iphoneos ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" XCODEBUILD_TARGET_SDK=macosx SUPPORTS_MACCATALYST=YES ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
 
         <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
         <PropertyGroup>
