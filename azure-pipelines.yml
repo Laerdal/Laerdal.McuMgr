@@ -16,58 +16,8 @@ pool:
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
-
   - name: 'Laerdal_Test_Results_Folderpath'
     value: '$(Build.Repository.LocalPath)/TestResults'
-
-  - name: 'is_pr'
-    ${{ if eq(variables.Build.Reason, 'PullRequest') }}:
-      value: true
-  - name: 'is_manual_build'
-    ${{ if eq(variables.Build.Reason, 'Manual') }}:
-      value: true
-  - name: 'is_scheduled_build'
-    ${{ if eq(variables.Build.Reason, 'Schedule') }}:
-      value: true
-  - name: 'is_triggered_from_another_build'
-    ${{ if eq(variables.Build.Reason, 'BuildCompletion') }}:
-      value: true
-  - name: 'is_triggered_from_resource_trigger'
-    ${{ if eq(variables.Build.Reason, 'ResourceTrigger') }}:
-      value: true
-  - name: 'is_triggered_from_central_branches'
-    ${{ if in(variables.Build.SourceBranch, 'refs/heads/main', 'refs/heads/master', 'refs/heads/develop') }}:
-      value: true
-  - name: 'contains_build_keyword_in_commit_message'
-    ${{ if contains(variables.Build.SourceVersionMessage, '[build]') }}:
-      value: true
-  - name: 'is_from_fork'
-    ${{ if eq(variables.System.PullRequest.IsFork, 'True') }}:
-      value: true
-
-  - name: 'should_build'
-    ${{     if    eq(variables.is_pr, true)                                      }}:
-      value: 'Yes'
-    ${{ elseif    eq(variables.is_manual_build, true)                            }}:
-      value: 'Yes'
-    ${{ elseif    eq(variables.is_scheduled_build, true)                         }}:
-      value: 'Yes'
-    ${{ elseif    eq(variables.is_triggered_from_another_build, true)            }}:
-      value: 'Yes'
-    ${{ elseif    eq(variables.is_triggered_from_resource_trigger, true)         }}:
-      value: 'Yes'
-    ${{ elseif    eq(variables.is_triggered_from_central_branches, true)         }}:
-      value: 'Yes'
-    ${{ elseif    eq(variables.contains_build_keyword_in_commit_message, true)   }}:
-      value: 'Yes'
-    ${{ else }}:
-      value: 'No'
-  
-  # to future maintainers   keep this dead last and separate   this is a special case because we want to
-  # to future maintainers   explicitly disable any and all activity related to 3rd party forks in github
-  - name: 'should_build'
-    ${{     if    eq(variables.is_from_fork, true)                               }}: 
-      value: 'No'
 
 resources:
   repositories:
@@ -80,16 +30,34 @@ resources:
 jobs:
 
   - job: 'Skip_Build'
-    condition: eq(variables.should_build, 'No')
-    displayName: "Should we auto-build? ... ${{ variables.should_build }} (is_pr=${{ variables.is_pr }}, is_manual_build=${{ variables.is_manual_build }}, is_scheduled_build=${{ variables.is_scheduled_build }}, is_triggered_from_another_build=${{ variables.is_triggered_from_another_build }}, is_triggered_from_resource_trigger=${{ variables.is_triggered_from_resource_trigger }}, is_triggered_from_central_branches=${{ variables.is_triggered_from_central_branches }}, contains_build_keyword_in_commit_message=${{ variables.contains_build_keyword_in_commit_message }}, is_from_fork=${{ variables.is_from_fork }}, Build.Reason=${{ variables.Build.Reason }}, Build.SourceBranch=${{ variables.Build.SourceBranch }}, Build.SourceVersionMessage=${{ variables.Build.SourceVersionMessage }}, System.PullRequest.IsFork=${{ variables.System.PullRequest.IsFork }})" 
+    condition: | # notice that (a) we explicitly disable any build coming from forks (b) this condition must be kept right here and not moved to the top of the file
+      not(
+        and(
+          eq(variables['System.PullRequest.IsFork'], 'False'),
+          or(
+                in(       variables['Build.Reason'],               'PullRequest', 'Manual', 'Schedule', 'BuildCompletion', 'ResourceTrigger'  ),
+                in(       variables['Build.SourceBranch'],         'refs/heads/main', 'refs/heads/master', 'refs/heads/develop'               ),
+                contains( variables['Build.SourceVersionMessage'], '[build]'                                                                  )
+          )
+        )
+      )
+    displayName: "Should we auto-build? ..." 
     steps:
-      - checkout: none # keep this
-        displayName: '(Skipping checkout completely ...)'
+      - checkout: none # keep this   to debug place this below IsFork="${{ variables['System.PullRequest.IsFork'] }}" ** Build.Reason="${{ variables['Build.Reason'] }}" ** SourceBranch="${{ variables['Build.SourceBranch'] }}" ** SourceVersionMessage="${{ variables['Build.SourceVersionMessage'] }}" )
+        displayName: '(Skipping checkout completely ...'
       - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
-        displayName: '(Set Warning-Icon ...)'
+        displayName: '(Set Warning-Icon ... )'
 
   - job: 'Build'
-    condition: eq(variables.should_build, 'Yes')
+    condition: | # notice that (a) we explicitly disable any build coming from forks (b) this condition must be kept right here and not moved to the top of the file
+        and(
+            eq(variables['System.PullRequest.IsFork'], 'False'),
+            or(
+                  in(       variables['Build.Reason'],               'PullRequest', 'Manual', 'Schedule', 'BuildCompletion', 'ResourceTrigger'  ),
+                  in(       variables['Build.SourceBranch'],         'refs/heads/main', 'refs/heads/master', 'refs/heads/develop'               ),
+                  contains( variables['Build.SourceVersionMessage'], '[build]'                                                                  )
+            )
+        )
     displayName: 'Build Agent'
     steps:
       - checkout: self
