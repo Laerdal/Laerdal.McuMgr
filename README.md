@@ -70,6 +70,13 @@ The following types of operations are supported on devices running on Nordic's n
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
 
+## ✅ Nuget Platform-Support Matrix
+
+| Stack   | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                   | Windows / UWP (NetStandard2.0) |
+|---------|---------------------------------------------------------------------------|-----------------------------------|----------------------------------------------------|--------------------------------|
+| Xamarin | ✓ Min 5.0 / Recommended 10.0+ / Max 13.0 <br/> (api-levels: 20 / 29 / 33) | ✓ 10.0+ <br/> (sdk: iphoneos16.2) | ❌                                                  | ❌                              |    
+| Net6+   | ✓ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✓ 11.0+ <br/> (sdk: iphoneos16.2) | 🚧 13.1+ <br/> (MacOS: 10.15+ Catalina - Soon ...) | 🚧 (Much much later ...)       | 
+
 
 ## ❗️ Salient Points
 
@@ -81,8 +88,7 @@ in case you try to perform a firmware-upgrade on the desired device.**
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
 to the device.**
 
-- **At the time of this writing the generated nugets target iOS 16.4.**
-
+- **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
 
 
 ## 🚀 Using the Nugets in your Projects
@@ -92,11 +98,10 @@ Add the following Nuget packages. If you're dealing in Xamarin then you'll have 
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
        Laerdal.McuMgr.Bindings.Android             (only add this to those projects of yours that target Android)
+       Laerdal.McuMgr.Bindings.MacCatalyst (WIP!)  (only add this to those projects of yours that target MacCatalyst aka MacDesktop+iPad)
        Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
-
-
 
 ## 🤖 Android
 
