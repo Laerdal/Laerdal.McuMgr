@@ -34,15 +34,15 @@ variables:
 
   - name: should_build
     ${{ if          eq(variables.is_from_fork, True)                              }}: # order   must be checked first
-      value: 'No' # we want to explicitly disable any and all activity related to 3rd party forks in github
+      value: 'No [is from fork]' # we want to explicitly disable any and all activity related to 3rd party forks in github
     ${{ elseif      eq(variables.has_green_build_reason, True)                    }}:
-      value: 'Yes'
+      value: 'Yes [has green build reason]'
     ${{ elseif      eq(variables.is_triggered_from_central_branches, True)        }}:
-      value: 'Yes'
+      value: 'Yes [is triggered from central branches]'
     ${{ elseif      eq(variables.contains_build_keyword_in_commit_message, True)  }}:
-      value: 'Yes'
+      value: 'Yes [contains build keyword in commit message]'
     ${{ else }}:
-      value: 'No'
+      value: 'No [humdrum feature branch commit]'
 
 resources:
   repositories:
@@ -53,16 +53,16 @@ resources:
 jobs:
 
   - job: 'Skip_Build'
-    condition: ${{ eq(variables.should_build, 'No') }}
-    displayName: "Should we auto-build? ... ${{ variables.should_build }} (is_from_fork=__${{ variables.is_from_fork }}__ ** has_green_build_reason=__${{ variables.has_green_build_reason }}__ ** is_triggered_from_central_branches=__${{ variables.is_triggered_from_central_branches }}__ ** contains_build_keyword_in_commit_message=__${{ variables.contains_build_keyword_in_commit_message }}__ ** IsFork=__${{ variables['System.PullRequest.IsFork'] }}__ ** Build.Reason=__${{ variables['Build.Reason'] }}__ ** SourceBranch=__${{ variables['Build.SourceBranch'] }}__ ** SourceVersionMessage=__${{ variables['Build.SourceVersionMessage'] }}__)"
+    condition: ${{ startsWith(variables.should_build, 'No ') }}
+    displayName: "Should we auto-build? ... ${{ variables.should_build }}     (is_from_fork=__${{ variables.is_from_fork }}__ ** has_green_build_reason=__${{ variables.has_green_build_reason }}__ ** is_triggered_from_central_branches=__${{ variables.is_triggered_from_central_branches }}__ ** contains_build_keyword_in_commit_message=__${{ variables.contains_build_keyword_in_commit_message }}__ ** IsFork=__${{ variables['System.PullRequest.IsFork'] }}__ ** Build.Reason=__${{ variables['Build.Reason'] }}__ ** SourceBranch=__${{ variables['Build.SourceBranch'] }}__ ** SourceVersionMessage=__${{ variables['Build.SourceVersionMessage'] }}__)"
     steps:
-      - checkout: none # keep this 
+      - checkout: none # keep this   otherwise it will make a full checkout of the repo unnecessarily
         displayName: "(Skipping checkout completely ...)"
       - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
         displayName: '(Set Warning-Icon ... )'
 
   - job: 'Build'
-    condition: ${{ eq(variables.should_build, 'Yes') }}
+    condition: ${{ startsWith(variables.should_build, 'Yes ') }}
     displayName: 'Build Agent'
     steps:
       - checkout: self
