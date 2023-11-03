@@ -21,14 +21,14 @@
 
   [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.NetStandard?preferRelease=true)
 
-- Release Build Status:
+- Release Build Status (main branch):
 
-   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
+  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
 
 
-- Beta Build Status:
+- Beta Build Status (develop branch):
 
-   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
+  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
 
 # Forward Licensing Disclaimer
 
