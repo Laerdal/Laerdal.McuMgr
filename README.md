@@ -762,6 +762,17 @@ You'll find the resulting nugets in the folder `Artifacts/`.
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
+## Contributing
+
+We welcome contributions to this project in the form of bug reports, feature requests, and pull requests.
+
+- Before working on a branch or submitting a pull request, please open an issue describing the bug or feature request so as to expedite brainstorming.
+- Commits should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+- Pull requests should be made against the `develop` branch.
+- Pull requests should be made from a fork of the repository, not a clone.
+- Pull requests should have a descriptive title and include a link to the relevant issue.
+- Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to 
+the aspects being affected.
 
 ## Lead Maintainers
 
@@ -770,7 +781,7 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
 
-## Credits
+## Credits & Acknowledgements
 
 Special thanks goes to:
 
