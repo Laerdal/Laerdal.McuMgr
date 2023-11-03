@@ -5,30 +5,30 @@
 - Latest Nugets:
 
 
-      Laerdal.McuMgr:
+      Laerdal.McuMgr Nugets:
   
   [![Laerdal.McuMgr package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/b382f36b-e768-40a9-8bb9-e905b85ff610/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr?preferRelease=true)
 
-      Laerdal.McuMgr.Bindings.iOS:
+      Laerdal.McuMgr.Bindings.iOS Nugets:
 
   [![Laerdal.McuMgr.Bindings.iOS package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.iOS?preferRelease=true)
 
-      Laerdal.McuMgr.Bindings.Android:
+      Laerdal.McuMgr.Bindings.Android Nugets:
 
   [![Laerdal.McuMgr.Bindings.Android package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.Android?preferRelease=true)
 
-      Laerdal.McuMgr.Bindings.NetStandard (WIP!):
+      Laerdal.McuMgr.Bindings.NetStandard Nugets (WIP!):
 
   [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.NetStandard?preferRelease=true)
 
-- Release Build Status:
+- Release Build Status (main branch):
 
-   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
+  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
 
 
-- Beta Build Status:
+- Beta Build Status (develop branch):
 
-   [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.xamarin-nordic-mcumgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
+  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
 
 # Forward Licensing Disclaimer
 
@@ -70,6 +70,13 @@ The following types of operations are supported on devices running on Nordic's n
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
 
+## ✅ Nuget Platform-Support Matrix
+
+| Stack   | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                   | Windows / UWP (NetStandard2.0) |
+|---------|---------------------------------------------------------------------------|-----------------------------------|----------------------------------------------------|--------------------------------|
+| Xamarin | ✓ Min 5.0 / Recommended 10.0+ / Max 13.0 <br/> (api-levels: 20 / 29 / 33) | ✓ 10.0+ <br/> (sdk: iphoneos16.2) | ❌                                                  | ❌                              |    
+| Net6+   | ✓ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✓ 11.0+ <br/> (sdk: iphoneos16.2) | 🚧 13.1+ <br/> (MacOS: 10.15+ Catalina - Soon ...) | 🚧 (Much much later ...)       | 
+
 
 ## ❗️ Salient Points
 
@@ -81,8 +88,7 @@ in case you try to perform a firmware-upgrade on the desired device.**
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
 to the device.**
 
-- **At the time of this writing the generated nugets target iOS 16.4.**
-
+- **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
 
 
 ## 🚀 Using the Nugets in your Projects
@@ -92,11 +98,10 @@ Add the following Nuget packages. If you're dealing in Xamarin then you'll have 
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
        Laerdal.McuMgr.Bindings.Android             (only add this to those projects of yours that target Android)
+       Laerdal.McuMgr.Bindings.MacCatalyst (WIP!)  (only add this to those projects of yours that target MacCatalyst aka MacDesktop+iPad)
        Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
-
-
 
 ## 🤖 Android
 
@@ -762,6 +767,17 @@ You'll find the resulting nugets in the folder `Artifacts/`.
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
+## Contributing
+
+We welcome contributions to this project in the form of bug reports, feature requests, and pull requests.
+
+- Before working on a branch or submitting a pull request, please open an issue describing the bug or feature request so as to expedite brainstorming.
+- Commits should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+- Pull requests should be made against the `develop` branch.
+- Pull requests should be made from a fork of the repository, not a clone.
+- Pull requests should have a descriptive title and include a link to the relevant issue.
+- Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to 
+the aspects being affected.
 
 ## Lead Maintainers
 
@@ -770,7 +786,7 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
 
-## Credits
+## Credits & Acknowledgements
 
 Special thanks goes to:
 
