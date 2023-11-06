@@ -237,7 +237,7 @@
 
         <PropertyGroup>
             <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
-            <TestParameters>$(TestParameters) --logger            'trx;logFilePrefix=TEST-'</TestParameters>
+            <TestParameters>$(TestParameters) --logger            'trx;logFilePrefix=TEST'</TestParameters>
             <TestParameters>$(TestParameters) --verbosity         '4'</TestParameters>
             <TestParameters>$(TestParameters) --configuration     '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
