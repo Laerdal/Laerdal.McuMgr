@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             // Act
             _ = Task.Run(async () =>
             {
-                await Task.Delay(500).ConfigureAwait(false);
+                await Task.Delay(500);
 
                 fileDownloader.Cancel();
             });
