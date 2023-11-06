@@ -207,7 +207,7 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         
         <!-- todo   reenable this once sharpie is able to compile maccatalyst or a workaround is found  https://github.com/xamarin/xamarin-macios/issues/19374 -->
-        <!-- <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/> -->
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
