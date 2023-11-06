@@ -57,7 +57,7 @@ jobs:
     displayName: "Should we auto-build? ... ${{ variables.should_build }}     (is_from_fork=__${{ variables.is_from_fork }}__ ** has_green_build_reason=__${{ variables.has_green_build_reason }}__ ** is_triggered_from_central_branches=__${{ variables.is_triggered_from_central_branches }}__ ** contains_build_keyword_in_commit_message=__${{ variables.contains_build_keyword_in_commit_message }}__ ** IsFork=__${{ variables['System.PullRequest.IsFork'] }}__ ** Build.Reason=__${{ variables['Build.Reason'] }}__ ** SourceBranch=__${{ variables['Build.SourceBranch'] }}__ ** SourceVersionMessage=__${{ variables['Build.SourceVersionMessage'] }}__)"
     steps:
       - checkout: none # keep this   otherwise it will make a full checkout of the repo unnecessarily
-        displayName: "(Skipping checkout completely ...)"
+        displayName: '(Skipping checkout completely ...)'
       - script: 'echo "##vso[task.complete result=SucceededWithIssues;]Build skipped because this is a PR coming from a fork or because this is from a feature branch in which the latest commit message doesnt contain the keyword [build]"'
         displayName: '(Set Warning-Icon ... )'
 
