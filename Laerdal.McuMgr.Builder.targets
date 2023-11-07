@@ -201,12 +201,10 @@
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
         <!--    BuildInParalle=false doesnt work for dotnet   we have to use the /m:1 flag on the command line         -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
-        
-        <!-- todo   reenable this once sharpie is able to compile maccatalyst or a workaround is found  https://github.com/xamarin/xamarin-macios/issues/19374 -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/</_Laerdal_Build_Parameters>
@@ -246,11 +244,13 @@
         <Exec Command=" dotnet   $(TestParameters) "/>
 
         <ItemGroup>
-            <PackageFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
+            <TestReportFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
         </ItemGroup>
 
-        <Message Importance="High" Text="** Test-Suite Report Files:$(Newline)"/>
-        <Message Importance="High" Text="%(PackageFiles.FullPath)"/>
+        <Message Importance="High" Text="**** Test-Suite Report Files (@(TestReportFiles->Count() files in total)): "/>
+        <Message Importance="High" Text="****                                                                       "/>
+        <Message Importance="High" Text="****     '%(TestReportFiles.FullPath)'                                     "/>
+        <Message Importance="High" Text="****                                                                       "/>
     </Target>
 
     <!-- GITHUB RELEASE -->
