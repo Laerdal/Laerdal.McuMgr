@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             // Act
             _ = Task.Run(async () =>
             {
-                await Task.Delay(500).ConfigureAwait(false);
+                await Task.Delay(500);
 
                 firmwareInstaller.Cancel();
             });

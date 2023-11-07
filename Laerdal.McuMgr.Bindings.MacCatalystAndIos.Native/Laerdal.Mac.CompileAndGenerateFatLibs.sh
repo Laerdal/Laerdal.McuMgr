@@ -173,7 +173,8 @@ function create_fat_binaries() {
     -scope "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
     -output "$SWIFT_OUTPUT_PATH/ApiDef" \
     -namespace "$SWIFT_PROJECT_NAME" \
-    "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h"
+    "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h" \
+    -clang -arch arm64 # vital   needed for mac-catalyst
   local exitCode=$?
 
   if [ $exitCode -ne 0 ]; then

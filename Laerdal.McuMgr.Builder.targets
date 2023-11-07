@@ -147,16 +147,14 @@
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
-        <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
+
         <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;$(Version)&quot;" />
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;.*?&quot;"
@@ -207,7 +205,7 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         
         <!-- todo   reenable this once sharpie is able to compile maccatalyst or a workaround is found  https://github.com/xamarin/xamarin-macios/issues/19374 -->
-        <!-- <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/> -->
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
@@ -239,7 +237,7 @@
 
         <PropertyGroup>
             <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
-            <TestParameters>$(TestParameters) --logger            'trx;logFilePrefix=TEST-'</TestParameters>
+            <TestParameters>$(TestParameters) --logger            'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
             <TestParameters>$(TestParameters) --verbosity         '4'</TestParameters>
             <TestParameters>$(TestParameters) --configuration     '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
