@@ -244,11 +244,13 @@
         <Exec Command=" dotnet   $(TestParameters) "/>
 
         <ItemGroup>
-            <PackageFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
+            <TestReportFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
         </ItemGroup>
 
-        <Message Importance="High" Text="** Test-Suite Report Files:$(Newline)"/>
-        <Message Importance="High" Text="%(PackageFiles.FullPath)"/>
+        <Message Importance="High" Text="**** Test-Suite Report Files (@(TestReportFiles->Count() files in total)): "/>
+        <Message Importance="High" Text="****                                                                       "/>
+        <Message Importance="High" Text="****     '%(TestReportFiles.FullPath)'                                     "/>
+        <Message Importance="High" Text="****                                                                       "/>
     </Target>
 
     <!-- GITHUB RELEASE -->
