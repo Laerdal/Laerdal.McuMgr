@@ -759,7 +759,7 @@ dotnet                                              \
           '"/m:1"'                                  ^
           '"/p:Laerdal_Version_Full=1.0.x.0"'
 
-# Note: Make sure to +1 the 'x' number each time in the scriptlet above before running it.
+# Note: Make sure to +1 the 'x' number each time in the aforementioned scripts before running them.
 ```
 
 ## Known issues
