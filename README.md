@@ -744,22 +744,23 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 
     To make this process a bit easier you can use the following script at the top level directory (on branches other than 'main' or 'develop' to keep yourself on the safe side):
 
-
-    # on macos *sh
-    dotnet                                                            \
-         msbuild                                                      \
-         Laerdal.McuMgr.Builder.targets                               \
-         '"/m:1"'                                                     \
+```bash
+# on macos *sh
+dotnet                                              \
+         msbuild                                    \
+         Laerdal.McuMgr.Builder.targets             \
+         '"/m:1"'                                   \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
-    # on windows powershell
-    & dotnet  msbuild                              ^
-         Laerdal.McuMgr.Builder.targets            ^
-         '"/m:1"'                                  ^
-         '"/p:Laerdal_Version_Full=1.0.x.0"'
+# on windows powershell
+& dotnet                                            ^
+          msbuild                                   ^
+          Laerdal.McuMgr.Builder.targets            ^
+          '"/m:1"'                                  ^
+          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
-    Note: Make sure to +1 the 'x' number each time in the scriptlet above before running it.
-
+# Note: Make sure to +1 the 'x' number each time in the aforementioned scripts before running them.
+```
 
 ## Known issues
 
