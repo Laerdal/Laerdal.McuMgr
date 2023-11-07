@@ -42,6 +42,12 @@
         
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
+
+        <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
+        <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
+        <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
+        <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>Laerdal.McuMgr.Bindings.MacCatalyst/Laerdal.McuMgr.Bindings.MacCatalyst.csproj</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
+        <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
     </PropertyGroup>
 
     <Target Name="PrintConfiguration">
@@ -65,12 +71,6 @@
 
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
-
-            <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
-            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
-            <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
-            <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>Laerdal.McuMgr.Bindings.MacCatalyst/Laerdal.McuMgr.Bindings.MacCatalyst.csproj</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
-            <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o               '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major          '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
