@@ -45,7 +45,13 @@
     </ItemGroup>
 
     <Target Name="PrintAndroidLibraries" AfterTargets="CoreCompile">
-        <Message Importance="High" Text="**** Included Android Libraries for NetX: '@(AndroidLibrary)' "/>
+        <Message Importance="High" Text="**** Included Android Libraries for NetX (@(AndroidLibrary->Count()) in total): " />
+        <Message Importance="high" Text="****                                                                            " />
+        <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                             " />
+        <Message Importance="high" Text="****                                                                            " />
+
+        <Error Text="Expected to find at least 9 .jar/.aar libraries to embed, but found '@(AndroidLibrary->Count())' instead! Something's wrong!"
+               Condition=" @(AndroidLibrary->Count()) != 9 "/>
     </Target>
 
     <ItemGroup>

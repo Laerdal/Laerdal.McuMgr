@@ -50,8 +50,15 @@
     </ItemGroup>
 
     <Target Name="PrintAndroidLibraries" AfterTargets="CoreCompile">
-        <Message Importance="High" Text="**** Included Android Libraries for Xamarin: '@(AndroidLibrary)' "/>
+        <Message Importance="High" Text="**** Included Android Libraries for Xamarin (@(AndroidLibrary->Count()) in total): " />
+        <Message Importance="high" Text="****                                                                               " />
+        <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                                " />
+        <Message Importance="high" Text="****                                                                               " />
+
+        <Error Text="Expected to find exactly 24 .jar/.aar libraries to embed, but found '@(AndroidLibrary->Count())' instead! Something's wrong!"
+               Condition=" @(AndroidLibrary->Count()) != 24 "/>
     </Target>
+
 
     <ItemGroup>
         <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>

@@ -65,10 +65,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.740.0</Version>
-        <FileVersion>1.0.740.0</FileVersion>
-        <PackageVersion>1.0.740.0</PackageVersion>
-        <AssemblyVersion>1.0.740.0</AssemblyVersion>
+        <Version>1.0.850.0</Version>
+        <FileVersion>1.0.850.0</FileVersion>
+        <PackageVersion>1.0.850.0</PackageVersion>
+        <AssemblyVersion>1.0.850.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
