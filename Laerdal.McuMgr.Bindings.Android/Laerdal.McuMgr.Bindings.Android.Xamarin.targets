@@ -23,9 +23,14 @@
 
         <!-- and now we set everything properly ourselves ala net6+   salient points:                                  -->
         <!--                                                                                                           -->
-        <!-- 1  we dont use AndroidAarLibrary at all because it turned out not to be irrelevant                        -->
+        <!-- 1  DO NOT USE WILDCARDS FOR 'AndroidLibrary' BECAUSE WILDCARDS GET EVALUATED WHEN MSBUILD FIRST LOADS     -->
+        <!--    CAUSING THE AZURE PIPELINES TO NOT MATCH ANYTHING AND THUS BREAK THE BUILD!                            -->
         <!--                                                                                                           -->
-        <!-- 2  also notice that we have intentionally omitted any and all kotlin libraries as these java-libs are     -->
+        <!--    SOLUTION: JUST USE FULLBLOWN EXPLICIT FILEPATHS INSTEAD                                                -->
+        <!--                                                                                                           -->
+        <!-- 2  we dont use AndroidAarLibrary at all because it turned out not to be irrelevant                        -->
+        <!--                                                                                                           -->
+        <!-- 3  also notice that we have intentionally omitted any and all kotlin libraries as these java-libs are     -->
         <!--    automatically included via implicitly referenced nugets (xamarin.kotlin.*) brought in by the net6+     -->
         <!--    build system itself    we do however include kotlinx-coroutines*.jar because those are not brought in  -->
         <!--    automatically                                                                                          -->
@@ -33,30 +38,64 @@
         <!-- https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/OneDotNetEmbeddedResources.md   -->
         <!--                                                                                                           -->
         <TransformFile Include="Transforms/*.xml"/>
+        
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble*.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core*.jar" Bind="false" />
+
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-rx2.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-rx3.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-jdk8.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-jdk9.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-core.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-slf4j.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-debug.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-swing.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-guava.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-javafx.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-reactor.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-android.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-reactive.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-core-jvm.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/kotlinx-coroutines-play-services.jar" Bind="false" />
+        
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.2.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.8.1.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.8.1.jar" Bind="false" />
 
         <!-- todo  reexamine whether we really need these -->
         <Reference Include="Mono.Android"/>
         <Reference Include="Java.Interop"/>
     </ItemGroup>
 
-    <Target Name="PrintAndroidLibraries" AfterTargets="CoreCompile">
-        <Message Importance="High" Text="**** Included Android Libraries for Xamarin (@(AndroidLibrary->Count()) in total): " />
-        <Message Importance="high" Text="****                                                                               " />
-        <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                                " />
-        <Message Importance="high" Text="****                                                                               " />
 
-        <Error Text="Expected to find exactly 24 .jar/.aar libraries to embed, but found '@(AndroidLibrary->Count())' instead! Something's wrong!"
-               Condition=" @(AndroidLibrary->Count()) != 24 "/>
+    <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">
+        <Message Importance="High" Text="**** Transform files to use for NetX-Android (@(TransformFile->Count()) in total):      " />
+        <Message Importance="high" Text="****                                                                                    " />
+        <Message Importance="high" Text="****   '%(TransformFile.Identity)'                                                      " />
+        <Message Importance="high" Text="****                                                                                    " />
+
+        <Message Importance="High" Text="**** Android libraries to embed for NetX-Android (@(AndroidLibrary->Count()) in total): " />
+        <Message Importance="high" Text="****                                                                                    " />
+        <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                                     " />
+        <Message Importance="high" Text="****                                                                                    " />
+
+        <Error Text="No transform files found on disk! This looks fishy ... erroring out ..."
+               Condition=" @(TransformFile->Count()) == 0 "/>
+        
+        <ItemGroup>
+            <MissingTransformFiles Include="@(TransformFile)" Condition="    ! Exists(%(FullPath)) " />
+            <MissingAndroidLibraries Include="@(AndroidLibrary)" Condition=" ! Exists(%(FullPath)) " />
+        </ItemGroup>
+
+        <Error Text="@(MissingTransformFiles->Count()) file(s) specified by the property 'TransformFile' were not found on disk: $(MissingTransformFiles)"
+               Condition=" @(MissingTransformFiles->Count()) != 0 "/>
+
+        <Error Text="@(MissingAndroidLibraries->Count()) file(s) specified by the property 'AndroidLibrary' were not found on disk: $(MissingAndroidLibraries)"
+               Condition=" @(MissingAndroidLibraries->Count()) != 0 "/>
     </Target>
 
 
