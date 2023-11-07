@@ -2,7 +2,7 @@
 # to future maintainers   so any sensitive pieces of info (tokens, passwords, etc) should be stored in ENCRYPTED Azure DevOps pipeline variables
 # to future maintainers
 # to future maintainers   in the same vein of thought its important to always keep an eye on the pipelines trigger-settings for PR validation
-# to future maintainers   to ensure that PR builds coming from people outside Laerdal fire if and only if a Laerdal dev has explicitly comments
+# to future maintainers   to ensure that PR builds coming from people outside Laerdal fire if and only a Laerdal dev has explicitly comments
 # to future maintainers   on the PR with the following string [build]    if this string is not present the PR build should NOT fire
 
 trigger:
