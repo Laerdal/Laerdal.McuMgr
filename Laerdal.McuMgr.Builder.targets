@@ -42,6 +42,12 @@
         
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
+
+        <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
+        <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
+        <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
+        <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>Laerdal.McuMgr.Bindings.MacCatalyst/Laerdal.McuMgr.Bindings.MacCatalyst.csproj</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
+        <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
     </PropertyGroup>
 
     <Target Name="PrintConfiguration">
@@ -65,12 +71,6 @@
 
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
-
-            <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
-            <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
-            <Laerdal_McuMgrBindings_ProjectFile_Android>Laerdal.McuMgr.Bindings.Android/Laerdal.McuMgr.Bindings.Android.csproj</Laerdal_McuMgrBindings_ProjectFile_Android>
-            <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>Laerdal.McuMgr.Bindings.MacCatalyst/Laerdal.McuMgr.Bindings.MacCatalyst.csproj</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
-            <Laerdal_McuMgrBindings_ProjectFile_NetStandard>Laerdal.McuMgr.Bindings.NetStandard/Laerdal.McuMgr.Bindings.NetStandard.csproj</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o               '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major          '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
@@ -147,16 +147,14 @@
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
-        <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
                              ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
+
         <_replaceRegexInFile InputFile="$(ProjectFile)"
-                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
+                             Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;.*?&quot;"
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;$(Version)&quot;" />
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;.*?&quot;"
@@ -203,12 +201,10 @@
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
         <!--    BuildInParalle=false doesnt work for dotnet   we have to use the /m:1 flag on the command line         -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
-        
-        <!-- todo   reenable this once sharpie is able to compile maccatalyst or a workaround is found  https://github.com/xamarin/xamarin-macios/issues/19374 -->
-        <!-- <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/> -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/</_Laerdal_Build_Parameters>
@@ -239,7 +235,7 @@
 
         <PropertyGroup>
             <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
-            <TestParameters>$(TestParameters) --logger            'trx;logFilePrefix=TEST-'</TestParameters>
+            <TestParameters>$(TestParameters) --logger            'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
             <TestParameters>$(TestParameters) --verbosity         '4'</TestParameters>
             <TestParameters>$(TestParameters) --configuration     '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
@@ -248,11 +244,13 @@
         <Exec Command=" dotnet   $(TestParameters) "/>
 
         <ItemGroup>
-            <PackageFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
+            <TestReportFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
         </ItemGroup>
 
-        <Message Importance="High" Text="** Test-Suite Report Files:$(Newline)"/>
-        <Message Importance="High" Text="%(PackageFiles.FullPath)"/>
+        <Message Importance="High" Text="**** Test-Suite Report Files (@(TestReportFiles->Count() files in total)): "/>
+        <Message Importance="High" Text="****                                                                       "/>
+        <Message Importance="High" Text="****     '%(TestReportFiles.FullPath)'                                     "/>
+        <Message Importance="High" Text="****                                                                       "/>
     </Target>
 
     <!-- GITHUB RELEASE -->
