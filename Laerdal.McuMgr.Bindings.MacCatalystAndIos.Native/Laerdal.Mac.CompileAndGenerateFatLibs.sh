@@ -110,7 +110,7 @@ function build() {
 function create_fat_binaries() {
   echo "** Create fat binaries for '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY-$SWIFT_BUILD_CONFIGURATION'"
 
-  echo "**** (FatBinaries 1/9) Copy '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY' build as a fat framework"
+  echo "**** (FatBinaries 1/8) Copy '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY' build as a fat framework"
   cp \
     -R \
     "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME" \
@@ -128,7 +128,7 @@ function create_fat_binaries() {
   echo "**** LISTING LIPO INPUT FILES"
   ls -lR "$SWIFT_BUILD_PATH/Build/Products/$OUTPUT_FOLDER_NAME/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
-  echo "**** (FatBinaries 2/9) Turn artifacts in '$OUTPUT_FOLDER_NAME' into fat libraries"
+  echo "**** (FatBinaries 2/8) Turn artifacts in '$OUTPUT_FOLDER_NAME' into fat libraries"
   lipo \
     -create \
     -output "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME" \
@@ -143,7 +143,7 @@ function create_fat_binaries() {
   echo "**** LISTING LIPO OUTPUT FILES"
   ls -lR "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
 
-  echo "**** (FatBinaries 3/9) Verify results"
+  echo "**** (FatBinaries 3/8) Verify results"
   lipo \
     -info \
     "$SWIFT_BUILD_PATH/fat/$SWIFT_PROJECT_NAME.framework/$SWIFT_PROJECT_NAME"
@@ -154,7 +154,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 4/9) Copy fat frameworks to the output folder"
+  echo "**** (FatBinaries 4/8) Copy fat frameworks to the output folder"
   rm -Rf "$SWIFT_OUTPUT_PATH" &&
     mkdir -p "$SWIFT_OUTPUT_PATH" &&
     cp -Rf \
@@ -167,12 +167,12 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 5/9) Generating binding api definition and structs"
+  echo "**** (FatBinaries 5/8) Generating binding api definition and structs"
   sharpie \
     bind \
     -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY" \
     -scope "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/" \
-    -output "$SWIFT_OUTPUT_PATH/ApiDef" \
+    -output "$OUTPUT_SHARPIE_HEADER_FILES_PATH" \
     -namespace "$SWIFT_PROJECT_NAME" \
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h" \
     -clang -arch arm64 # vital   needed for mac-catalyst
@@ -183,20 +183,7 @@ function create_fat_binaries() {
     exit 1
   fi
 
-  echo "**** (FatBinaries 6/9) Replace existing metadata with the updated ones"
-  mkdir -p "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" &&
-    cp \
-      -Rf \
-      "$SWIFT_OUTPUT_PATH/ApiDef/." \
-      "$OUTPUT_SHARPIE_HEADER_FILES_PATH/"
-  local exitCode=$?
-
-  if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to replace existing metadata with the updated ones"
-    exit 1
-  fi
-
-  echo "**** (FatBinaries 7/9) Print metadata files in their original form"
+  echo "**** (FatBinaries 6/8) Print metadata files in their original form"
 
   echo
   echo "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs (original):"
@@ -214,7 +201,7 @@ function create_fat_binaries() {
   echo "===================================================="
   echo
 
-  echo "**** (FatBinaries 8/9) Replace NativeHandle -> IntPtr in the generated c# files"
+  echo "**** (FatBinaries 7/8) Replace NativeHandle -> IntPtr in the generated c# files"
 
   rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
@@ -297,7 +284,7 @@ function create_fat_binaries() {
 
   rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
-  echo "**** (FatBinaries 9/9) Print metadata files in their eventual form"
+  echo "**** (FatBinaries 8/8) Print metadata files in their eventual form"
 
   echo
   echo "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs (eventual):"
