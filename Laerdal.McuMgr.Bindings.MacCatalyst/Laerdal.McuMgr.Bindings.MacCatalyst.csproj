@@ -38,6 +38,9 @@
         <NoBindingEmbedding>false</NoBindingEmbedding>
 
         <NoWarn>$(NoWarn);CS0114;NETSDK1202</NoWarn>
+
+        <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
+        <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -122,13 +125,16 @@
         <Message Importance="High" Text="TargetFramework:        '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
-        
+
         <Message Importance="high" Text="IsNet6:                 '$(IsNet6)'                   "/>
         <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
         <Message Importance="high" Text="IsXamarin:              '$(IsXamarin)'                "/>
         <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
+
+        <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)' "/>
+        <Message Importance="high" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
@@ -148,37 +154,17 @@
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
             Condition=" '$(ShouldBuildNativeLibraries)' == 'true' ">
-
-        <PropertyGroup>
-            <FrameworkTargetParentFolderpath>Frameworks</FrameworkTargetParentFolderpath>
-            <FrameworkTargetParentFolderpath>$([System.IO.Path]::GetFullPath('$(FrameworkTargetParentFolderpath)'))</FrameworkTargetParentFolderpath>
-        </PropertyGroup>
         
         <!-- 1. build and generate the fat libs from the proxy swift project                                                -->
-        <!--                                                                                                                -->
-        <!--    [Warning] we intentionally set SWIFT_OUTPUT_PATH directly to the desired output folder  thats because we    -->
-        <!--    [Warning] want to be 100% sure that any and all symbolic links and hard links will be spawned at the proper -->
-        <!--    [Warning] places inside the output folder                                                                   -->
-        <!--    [Warning]                                                                                                   -->
-        <!--    [Warning] the previous technique was to copy the framework folder to another folder using the <Copy> task   -->
-        <!--    [Warning] this was causing symbolic links to be omitted completely during the copying process   and this    -->
-        <!--    [Warning] would in turn corrupt the resulting nugets in the sense that it was causing the following kind    -->
-        <!--    [Warning] of cryptic codesign errors when we try to build maui apps with it!                                -->
-        <!--                                                                                                                -->
-        <!--           Xamarin.Shared.targets(2174,3): Error  : /usr/bin/codesign exited with code 1:                       -->
-        <!--           McuMgrBindingsiOS.framework: bundle format is ambiguous (could be app or framework)                  -->
-        <!--                                                                                                                -->
-        <!--    https://blog.inventic.eu/2015/03/os-x-codesign-failed-bundle-format-is-ambiguous-could-be-app-or-framework/ -->
-        <!--                                                                                                                -->
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
 
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(FrameworkTargetParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
+        <!-- warning   its absolutely vital to remove any softlink files as they are causing -->
+        <!-- warning   codesign to fail when using the resulting nuget in maui apps   go figure ... -->
+        <Exec WorkingDirectory="$(NativeFrameworkParentFolderpath)" Command=" bash -c &quot; find . -type l -ls -delete &quot; "/>
 
-        <!-- to future maintainers     we need to keep this dummy file around in order to ensure that the folder Frameworks/McuMgrBindingsiOS.framework -->
-        <!-- to future maintainers     will always be automatically created upon git checkout in the azure pipelines  if we dont do this then the azure -->
-        <!-- to future maintainers     pipelines will generate a nuget without the Frameworks/McuMgrBindingsiOS.framework folder as a <NativeReference> -->
-        <!-- to future maintainers     causing the iOS nuget to be poisoned and cause cryptic errors in runtime about missing symbols etc               -->
-        <Touch Files="$(FrameworkTargetParentFolderpath)/McuMgrBindingsiOS.framework/.keepme_in_git_otherwise_azure_pipelines_will_break" AlwaysCreate="true" />
+        <!-- remove any .DS_Store files from the .framework folder just be on the safe side -->
+        <Exec WorkingDirectory="$(NativeFrameworkParentFolderpath)" Command=" bash -c &quot; find . -name '.DS_Store' -type f -delete &quot; "/>
 
         <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
         <PropertyGroup>
@@ -200,6 +186,20 @@
                 SourceFiles="@(SharpieGeneratedFiles)"
                 DestinationFolder="$(SharpieTargetFolder)"
         />
+    </Target>
+
+    <!-- this is meant to be invoked by the builder script separately and before the main build kicks in -->
+    <Target Name="EnsureFrameworkFolderIsCreated">
+        <MakeDir Directories="$(NativeFrameworkActualTargetFolderpath)" Condition=" !Exists('$(NativeFrameworkActualTargetFolderpath)') "  />
+    </Target>
+    
+    <Target Name="CreateKeepMeFileUnderFrameworkFolder" AfterTargets="CoreBuild">
+        <!-- to future maintainers     we need to keep this dummy file around in order to ensure that the folder Frameworks/McuMgrBindingsiOS.framework -->
+        <!-- to future maintainers     will always be automatically created upon git checkout in the azure pipelines  if we dont do this then the azure -->
+        <!-- to future maintainers     pipelines will generate a nuget without the Frameworks/McuMgrBindingsiOS.framework folder as a <NativeReference> -->
+        <!-- to future maintainers     causing the iOS nuget to be poisoned and cause cryptic errors in runtime about missing symbols etc               -->
+
+        <Touch Files="$(NativeFrameworkActualTargetFolderpath)/.keepme_in_git_otherwise_azure_pipelines_will_break" AlwaysCreate="true"/>
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
