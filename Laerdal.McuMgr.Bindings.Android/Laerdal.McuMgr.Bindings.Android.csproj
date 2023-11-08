@@ -26,7 +26,6 @@
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
 
-        <!-- hide some warnings -->
         <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
     </PropertyGroup>
 

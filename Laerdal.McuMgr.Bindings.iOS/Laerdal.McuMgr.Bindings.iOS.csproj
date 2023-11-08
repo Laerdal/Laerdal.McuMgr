@@ -43,7 +43,7 @@
         <!-- see : https://github.com/xamarin/xamarin-macios/pull/12694 -->
         <NoBindingEmbedding>false</NoBindingEmbedding>
 
-        <NoWarn>CS0114;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0114;NETSDK1202</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>

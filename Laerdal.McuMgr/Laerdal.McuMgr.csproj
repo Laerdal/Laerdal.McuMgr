@@ -98,7 +98,7 @@
         <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
         <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->
         <!-- Otherwise add the new keyword. Can be ignored.                                                                                                  -->
-        <NoWarn>CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
