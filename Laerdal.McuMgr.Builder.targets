@@ -215,15 +215,6 @@
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" />
     </Target>
 
-    <Target Name="ConsolePrintAllGeneratedArtifacts" AfterTargets="BuildProjects">
-        <ItemGroup>
-            <PackageFiles Include="$(PackageOutputPath)\**\*.*;"/>
-        </ItemGroup>
-
-        <Message Importance="High" Text="** Generated Artifacts:$(Newline)"/>
-        <Message Importance="High" Text="%(PackageFiles.FullPath)"/>
-    </Target>
-
     <!-- TESTS -->
     <Target Name="RunTests"
             Condition=" '$(ShouldRunTestSuite)' == 'true' "
@@ -251,6 +242,17 @@
         <Message Importance="High" Text="****                                                                        "/>
         <Message Importance="High" Text="****     '%(TestReportFiles.FullPath)'                                      "/>
         <Message Importance="High" Text="****                                                                        "/>
+    </Target>
+
+    <Target Name="ConsolePrintAllGeneratedArtifacts" AfterTargets="RunTests">
+        <ItemGroup>
+            <PackageFiles Include="$(PackageOutputPath)\**\*.*;"/>
+        </ItemGroup>
+
+        <Message Importance="High" Text="**** Generated Artifacts:                      "/>
+        <Message Importance="High" Text="****                                           "/>
+        <Message Importance="High" Text="****     %(PackageFiles.FullPath)              "/>
+        <Message Importance="High" Text="****                                           "/>
     </Target>
 
     <!-- GITHUB RELEASE -->

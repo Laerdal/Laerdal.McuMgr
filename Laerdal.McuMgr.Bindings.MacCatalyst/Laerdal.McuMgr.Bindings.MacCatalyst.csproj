@@ -59,10 +59,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.854.0</Version>
-        <FileVersion>1.0.854.0</FileVersion>
-        <PackageVersion>1.0.854.0</PackageVersion>
-        <AssemblyVersion>1.0.854.0</AssemblyVersion>
+        <Version>1.0.860.0</Version>
+        <FileVersion>1.0.860.0</FileVersion>
+        <PackageVersion>1.0.860.0</PackageVersion>
+        <AssemblyVersion>1.0.860.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -172,7 +172,7 @@
         <!--                                                                                                                -->
 
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
-<!--        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(FrameworkTargetParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>-->
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(FrameworkTargetParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
 
         <!-- to future maintainers     we need to keep this dummy file around in order to ensure that the folder Frameworks/McuMgrBindingsiOS.framework -->
         <!-- to future maintainers     will always be automatically created upon git checkout in the azure pipelines  if we dont do this then the azure -->
