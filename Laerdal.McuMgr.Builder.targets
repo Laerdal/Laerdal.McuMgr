@@ -197,10 +197,15 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
+        <!-- its absolute vital to call these targets first explicitly and separately from the main build otherwise the    -->
+        <!-- resulting nugets will be poisoned and will not work in xamarin/maui apps at all due to missing native symbols -->
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated"/>
+
         <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
-        <!--    BuildInParalle=false doesnt work for dotnet   we have to use the /m:1 flag on the command line         -->
+        <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>

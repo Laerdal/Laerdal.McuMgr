@@ -68,10 +68,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.854.0</Version>
-        <FileVersion>1.0.854.0</FileVersion>
-        <PackageVersion>1.0.854.0</PackageVersion>
-        <AssemblyVersion>1.0.854.0</AssemblyVersion>
+        <Version>1.0.870.0</Version>
+        <FileVersion>1.0.870.0</FileVersion>
+        <PackageVersion>1.0.870.0</PackageVersion>
+        <AssemblyVersion>1.0.870.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
@@ -182,7 +182,18 @@
         <!-- remove any .DS_Store files from the .framework folder just be on the safe side -->
         <Exec WorkingDirectory="$(NativeFrameworkParentFolderpath)" Command=" bash -c &quot; find . -name '.DS_Store' -type f -delete &quot; "/>
 
-        <!-- 2. copy the sharpie-generated files over to the local project structure -->
+        <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
+        <PropertyGroup>
+            <SharpieTargetFolder>iOS/ObjcBinding/Sharpie_Generated/</SharpieTargetFolder>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <FilesToClean Include="$(SharpieTargetFolder)\**\*"/>
+        </ItemGroup>
+
+        <Delete Files="@(FilesToClean)" ContinueOnError="true"/>
+
+        <!-- 3. copy the sharpie-generated files over to the local project structure -->
         <ItemGroup>
             <SharpieGeneratedFiles Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/SharpieOutput/SwiftFrameworkProxy.Binding/**"/>
         </ItemGroup>
@@ -190,23 +201,6 @@
         <Copy
                 SourceFiles="@(SharpieGeneratedFiles)"
                 DestinationFolder="$(SharpieTargetFolder)"
-        />
-
-        <!-- 3. copy .framework directories over to the proper local directory -->
-        <ItemGroup>
-            <FrameworkFilesToClean Include="Frameworks/McuMgrBindingsiOS.framework/**/*"/>
-            <McuMgrBindingsiOSFrameworkFiles Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/VendorFrameworks/swift-framework-proxy/McuMgrBindingsiOS.framework/**/*.*"/>
-        </ItemGroup>
-
-        <Delete
-                Files="@(FrameworkFilesToClean)"
-                ContinueOnError="true"
-        />
-
-        <Copy
-                SourceFiles="@(McuMgrBindingsiOSFrameworkFiles)"
-                DestinationFolder="Frameworks/McuMgrBindingsiOS.framework/%(RecursiveDir)"
-                SkipUnchangedFiles="true"
         />
     </Target>
 
