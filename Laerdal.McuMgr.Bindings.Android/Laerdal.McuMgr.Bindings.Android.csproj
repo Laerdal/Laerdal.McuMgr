@@ -59,10 +59,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.852.0</Version>
-        <FileVersion>1.0.852.0</FileVersion>
-        <PackageVersion>1.0.852.0</PackageVersion>
-        <AssemblyVersion>1.0.852.0</AssemblyVersion>
+        <Version>1.0.854.0</Version>
+        <FileVersion>1.0.854.0</FileVersion>
+        <PackageVersion>1.0.854.0</PackageVersion>
+        <AssemblyVersion>1.0.854.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>

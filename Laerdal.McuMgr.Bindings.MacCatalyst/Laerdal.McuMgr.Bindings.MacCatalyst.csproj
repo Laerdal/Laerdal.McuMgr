@@ -59,10 +59,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.852.0</Version>
-        <FileVersion>1.0.852.0</FileVersion>
-        <PackageVersion>1.0.852.0</PackageVersion>
-        <AssemblyVersion>1.0.852.0</AssemblyVersion>
+        <Version>1.0.854.0</Version>
+        <FileVersion>1.0.854.0</FileVersion>
+        <PackageVersion>1.0.854.0</PackageVersion>
+        <AssemblyVersion>1.0.854.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -172,13 +172,13 @@
         <!--                                                                                                                -->
 
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(FrameworkTargetParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
+<!--        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(FrameworkTargetParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>-->
 
         <!-- to future maintainers     we need to keep this dummy file around in order to ensure that the folder Frameworks/McuMgrBindingsiOS.framework -->
         <!-- to future maintainers     will always be automatically created upon git checkout in the azure pipelines  if we dont do this then the azure -->
         <!-- to future maintainers     pipelines will generate a nuget without the Frameworks/McuMgrBindingsiOS.framework folder as a <NativeReference> -->
         <!-- to future maintainers     causing the iOS nuget to be poisoned and cause cryptic errors in runtime about missing symbols etc               -->
-        <Touch Files="$(FrameworkTargetParentFolderpath)/McuMgrBindingsiOS.framework/_keepme_in_git_otherwise_azure_pipelines_will_break_" AlwaysCreate="true" />
+        <Touch Files="$(FrameworkTargetParentFolderpath)/McuMgrBindingsiOS.framework/.keepme_in_git_otherwise_azure_pipelines_will_break" AlwaysCreate="true" />
 
         <!-- 2. cleanup the previous contents of iOS/ObjcBinding/Sharpie_Generated/ -->
         <PropertyGroup>
