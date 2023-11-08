@@ -15,9 +15,10 @@ declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}"
 declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
 declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
 
+declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
+
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./$SWIFT_PROJECT_NAME/build"
-declare SWIFT_OUTPUT_PATH="./VendorFrameworks/swift-framework-proxy"
 declare SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
 declare SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
