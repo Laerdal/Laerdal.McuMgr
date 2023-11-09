@@ -223,7 +223,7 @@
     <!-- TESTS -->
     <Target Name="RunTests"
             Condition=" '$(ShouldRunTestSuite)' == 'true' "
-            AfterTargets="ConsolePrintAllGeneratedArtifacts">
+            AfterTargets="BuildProjects">
 
         <MSBuild Targets="Restore"
                  Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
@@ -263,7 +263,7 @@
     <!-- GITHUB RELEASE -->
     <Target Name="CreateGithubReleaseWithTag"
             Condition=" '$(TF_BUILD)' != ''  AND  '$(Laerdal_Should_Tag_And_Release)' == 'True' "
-            AfterTargets="BuildProjects">
+            AfterTargets="RunTests">
 
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
