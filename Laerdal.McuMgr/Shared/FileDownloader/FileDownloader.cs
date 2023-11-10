@@ -264,7 +264,11 @@ namespace Laerdal.McuMgr.FileDownloader
                     {
                         try
                         {
-                            await Task.Delay(gracefulCancellationTimeoutInMs);
+                            if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary task rescheduling
+                            {
+                                await Task.Delay(gracefulCancellationTimeoutInMs);
+                            }
+
                             (this as IFileDownloaderEventEmittable).OnCancelled(new CancelledEventArgs()); //00
                         }
                         catch // (Exception ex)
@@ -275,8 +279,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
                     return;
 
-                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
-                    //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
+                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
                 void DownloadAsyncOnDownloadCompleted(object sender, DownloadCompletedEventArgs ea)
