@@ -197,10 +197,15 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
+        <!-- its absolute vital to call these targets first explicitly and separately from the main build otherwise the    -->
+        <!-- resulting nugets will be poisoned and will not work in xamarin/maui apps at all due to missing native symbols -->
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated"/>
+
         <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
-        <!--    BuildInParalle=false doesnt work for dotnet   we have to use the /m:1 flag on the command line         -->
+        <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
@@ -215,19 +220,10 @@
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" />
     </Target>
 
-    <Target Name="ConsolePrintAllGeneratedArtifacts" AfterTargets="BuildProjects">
-        <ItemGroup>
-            <PackageFiles Include="$(PackageOutputPath)\**\*.*;"/>
-        </ItemGroup>
-
-        <Message Importance="High" Text="** Generated Artifacts:$(Newline)"/>
-        <Message Importance="High" Text="%(PackageFiles.FullPath)"/>
-    </Target>
-
     <!-- TESTS -->
     <Target Name="RunTests"
             Condition=" '$(ShouldRunTestSuite)' == 'true' "
-            AfterTargets="ConsolePrintAllGeneratedArtifacts">
+            AfterTargets="BuildProjects">
 
         <MSBuild Targets="Restore"
                  Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
@@ -247,16 +243,27 @@
             <TestReportFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
         </ItemGroup>
 
-        <Message Importance="High" Text="**** Test-Suite Report Files (@(TestReportFiles->Count() files in total)): "/>
-        <Message Importance="High" Text="****                                                                       "/>
-        <Message Importance="High" Text="****     '%(TestReportFiles.FullPath)'                                     "/>
-        <Message Importance="High" Text="****                                                                       "/>
+        <Message Importance="High" Text="**** Test-Suite Report Files (@(TestReportFiles->Count()) files in total):  "/>
+        <Message Importance="High" Text="****                                                                        "/>
+        <Message Importance="High" Text="****     '%(TestReportFiles.FullPath)'                                      "/>
+        <Message Importance="High" Text="****                                                                        "/>
+    </Target>
+
+    <Target Name="ConsolePrintAllGeneratedArtifacts" AfterTargets="RunTests">
+        <ItemGroup>
+            <PackageFiles Include="$(PackageOutputPath)\**\*.*;"/>
+        </ItemGroup>
+
+        <Message Importance="High" Text="**** Generated Artifacts:                      "/>
+        <Message Importance="High" Text="****                                           "/>
+        <Message Importance="High" Text="****     %(PackageFiles.FullPath)              "/>
+        <Message Importance="High" Text="****                                           "/>
     </Target>
 
     <!-- GITHUB RELEASE -->
     <Target Name="CreateGithubReleaseWithTag"
             Condition=" '$(TF_BUILD)' != ''  AND  '$(Laerdal_Should_Tag_And_Release)' == 'True' "
-            AfterTargets="BuildProjects">
+            AfterTargets="RunTests">
 
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>

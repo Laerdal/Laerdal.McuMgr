@@ -67,10 +67,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.851.0</Version>
-        <FileVersion>1.0.851.0</FileVersion>
-        <PackageVersion>1.0.851.0</PackageVersion>
-        <AssemblyVersion>1.0.851.0</AssemblyVersion>
+        <Version>1.0.870.0</Version>
+        <FileVersion>1.0.870.0</FileVersion>
+        <PackageVersion>1.0.870.0</PackageVersion>
+        <AssemblyVersion>1.0.870.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -98,7 +98,7 @@
         <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
         <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->
         <!-- Otherwise add the new keyword. Can be ignored.                                                                                                  -->
-        <NoWarn>CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -163,21 +163,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.851.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.870.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.851.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.870.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.851.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.870.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.851.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.870.0"/>
     </ItemGroup>
 
 </Project>
