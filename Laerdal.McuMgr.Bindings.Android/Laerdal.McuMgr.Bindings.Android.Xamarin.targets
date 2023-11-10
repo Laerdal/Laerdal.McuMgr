@@ -11,6 +11,8 @@
 
         <!-- in this particular kind of project $TargetFrameworkVersion refers to the android version   not the dotnet framework version -->
         <TargetFrameworkVersion>v12.0</TargetFrameworkVersion>
+        
+        <NoWarn>$(NoWarn);NETSDK1202</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

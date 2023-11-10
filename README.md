@@ -72,10 +72,10 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack   | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                   | Windows / UWP (NetStandard2.0) |
-|---------|---------------------------------------------------------------------------|-----------------------------------|----------------------------------------------------|--------------------------------|
-| Xamarin | ✓ Min 5.0 / Recommended 10.0+ / Max 13.0 <br/> (api-levels: 20 / 29 / 33) | ✓ 10.0+ <br/> (sdk: iphoneos16.2) | ❌                                                  | ❌                              |    
-| Net6+   | ✓ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✓ 11.0+ <br/> (sdk: iphoneos16.2) | 🚧 13.1+ <br/> (MacOS: 10.15+ Catalina - Soon ...) | 🚧 (Much much later ...)       | 
+| Stack                       | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0)                                                   |
+|-----------------------------|---------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|
+| Xamarin ("Classic" .Net4.8) | ✅ Min 5.0 / Recommended 10.0+ / Max 13.0 <br/> (api-levels: 20 / 29 / 33) | ✅ 10.0+ <br/> (sdk: iphoneos16.2) | ❌ <br /> (completely unsupported)               | ❌ <br/> (apps will compile and launch but will throw not-implemented-exceptions) |    
+| DotNet 6+                   | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 11.0+ <br/> (sdk: iphoneos16.2) | ✅ 13.1+ <br/> (MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
