@@ -20,8 +20,9 @@
         
         <!-- notice that on windows the monoandroid build is disabled because it doesnt work   we make sure to only  -->
         <!-- build once on the very first framework so as to avoid rebuilding the same native codebase over and over -->
-        <ShouldBuildNativeLibraries Condition=" ('$(IsUnix)' == 'true' and '$(IsXamarinAndroid)' == 'true') or ('$(IsWindows)' == 'true' and '$(IsNet6)' == 'true') ">true</ShouldBuildNativeLibraries>
-        
+        <ShouldBuildNativeLibraries Condition=" '$(IsUnix)'    == 'true' and '$(IsXamarinAndroid)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsWindows)' == 'true' and '$(IsNet6)'           == 'true' ">true</ShouldBuildNativeLibraries>
+
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
@@ -91,7 +92,7 @@
         <Folder Include="Transforms\"/>
     </ItemGroup>
 
-    <Target Name="PrintBuildInfo" BeforeTargets="_CreateBindingResourceArchive">
+    <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
         <Message Importance="High" Text="OS:               '$(OS)'               "/>
         <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
         <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
@@ -105,6 +106,8 @@
         <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
         <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
+
+        <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
