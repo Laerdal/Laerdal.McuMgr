@@ -44,7 +44,7 @@ if [ $exitCode != 0 ]; then
 fi
 
 # install a specific version of dotnet7 to ensure consistent results
-curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 7.0 -Version 7.0.402
+curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 7.0 -Version 7.0.403
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'dotnet7'."
