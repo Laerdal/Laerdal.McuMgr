@@ -265,8 +265,12 @@ namespace Laerdal.McuMgr.FileUploader
                             {
                                 try
                                 {
-                                    await Task.Delay(gracefulCancellationTimeoutInMs); //                           we first wait to allow the cancellation to occur normally
-                                    (this as IFileUploaderEventEmittable).OnCancelled(new CancelledEventArgs()); //  but if it takes too long we give the killing blow manually
+                                    if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary task rescheduling
+                                    {
+                                        await Task.Delay(gracefulCancellationTimeoutInMs);                                        
+                                    }
+
+                                    (this as IFileUploaderEventEmittable).OnCancelled(new CancelledEventArgs()); //00
                                 }
                                 catch // (Exception ex)
                                 {
@@ -275,6 +279,9 @@ namespace Laerdal.McuMgr.FileUploader
                             });
                             return;
                     }
+                    
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
+                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
                 void UploadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)

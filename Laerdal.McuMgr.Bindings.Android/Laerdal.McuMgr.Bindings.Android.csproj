@@ -1,4 +1,10 @@
-﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+﻿<!-- to future maintainers    if you're building in windows on your localdev unfortunately you *might* have to switch over to using           -->
+<!-- to future maintainers                                                                                                                    -->
+<!-- to future maintainers             <Project Sdk="Microsoft.NET.Sdk">                                                                      -->
+<!-- to future maintainers                                                                                                                    -->
+<!-- to future maintainers    because Xamarin.Legacy.Sdk has unresolved eratic bugs under windows that go back entire years   its ok though   -->
+<!-- to future maintainers    because at some point in 2024-Q2 we will drop support for xamarin and switch over to Microsoft.NET.Sdk anyway   -->
+<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
     <PropertyGroup>
         <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
         <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
@@ -17,11 +23,12 @@
 
         <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
         <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(monoandroid))' == 'true'   ">true</IsXamarinAndroid>
-        
+
         <!-- notice that on windows the monoandroid build is disabled because it doesnt work   we make sure to only  -->
         <!-- build once on the very first framework so as to avoid rebuilding the same native codebase over and over -->
-        <ShouldBuildNativeLibraries Condition=" ('$(IsUnix)' == 'true' and '$(IsXamarinAndroid)' == 'true') or ('$(IsWindows)' == 'true' and '$(IsNet6)' == 'true') ">true</ShouldBuildNativeLibraries>
-        
+        <ShouldBuildNativeLibraries Condition=" '$(IsUnix)'    == 'true' and '$(IsXamarinAndroid)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsWindows)' == 'true' and '$(IsNet6)'           == 'true' ">true</ShouldBuildNativeLibraries>
+
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
@@ -48,7 +55,7 @@
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
         <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;Net6;Net7;Mono;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' " >README.md</PackageReadmeFile> 
+        <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' ">README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageDescription>Wrapper around Nordic's McuMgr-related native libs for Android - MAUI ready</PackageDescription>
 
@@ -59,10 +66,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.870.0</Version>
-        <FileVersion>1.0.870.0</FileVersion>
-        <PackageVersion>1.0.870.0</PackageVersion>
-        <AssemblyVersion>1.0.870.0</AssemblyVersion>
+        <Version>1.0.900.0</Version>
+        <FileVersion>1.0.900.0</FileVersion>
+        <PackageVersion>1.0.900.0</PackageVersion>
+        <AssemblyVersion>1.0.900.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -82,16 +89,16 @@
     <PropertyGroup>
         <AndroidLibsFolder>Libraries</AndroidLibsFolder>
         <AndroidLibsDependenciesFolder>$(AndroidLibsFolder)/Dependencies</AndroidLibsDependenciesFolder>
-        
+
         <CoreAarLibrary>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</CoreAarLibrary>
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Libraries\" />
+        <Folder Include="Libraries\"/>
         <Folder Include="Transforms\"/>
     </ItemGroup>
 
-    <Target Name="PrintBuildInfo" BeforeTargets="_CreateBindingResourceArchive">
+    <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
         <Message Importance="High" Text="OS:               '$(OS)'               "/>
         <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
         <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
@@ -105,6 +112,8 @@
         <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
         <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
+
+        <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
@@ -117,7 +126,7 @@
                Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
 
-    <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets" />    
-    <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets" />
-    <Import Condition=" '$(IsXamarinAndroid)'           == 'true' " Project="Laerdal.McuMgr.Bindings.Android.Xamarin.targets" />
+    <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets"/>
+    <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets"/>
+    <Import Condition=" '$(IsXamarinAndroid)'           == 'true' " Project="Laerdal.McuMgr.Bindings.Android.Xamarin.targets"/>
 </Project>

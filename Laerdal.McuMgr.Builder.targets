@@ -237,7 +237,9 @@
             <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
         </PropertyGroup>
 
-        <Exec Command=" dotnet   $(TestParameters) "/>
+        <Exec Command=" bash -c &quot;    dotnet   $(TestParameters)    &quot; "
+              ConsoleToMSBuild="true"
+              WorkingDirectory="$(MSBuildThisFileDirectory)"/>
 
         <ItemGroup>
             <TestReportFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
