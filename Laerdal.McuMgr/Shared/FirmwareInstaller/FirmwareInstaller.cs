@@ -57,7 +57,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             return verdict;
         }
-        
+
         public void Cancel() => _nativeFirmwareInstallerProxy?.Cancel();
         public void Disconnect() => _nativeFirmwareInstallerProxy?.Disconnect();
 
@@ -252,7 +252,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                             {
                                 try
                                 {
-                                    await Task.Delay(gracefulCancellationTimeoutInMs);
+                                    if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary task rescheduling
+                                    {
+                                        await Task.Delay(gracefulCancellationTimeoutInMs);
+                                    }
+
                                     OnCancelled(new CancelledEventArgs()); //00
                                 }
                                 catch // (Exception ex)
@@ -261,10 +265,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                                 }
                             });
                             return;
-
-                        //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see
-                        //    DownloadAsyncOnCancelled() getting called right above   but if that takes too long we give the killing blow manually
                     }
+
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
+                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
                 void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
@@ -300,7 +304,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         void IFirmwareInstallerEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
         void IFirmwareInstallerEventEmittable.OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => OnIdenticalFirmwareCachedOnTargetDeviceDetected(ea);
         void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndDataThroughputChanged(ea);
-        
+
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
@@ -310,17 +314,19 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private void OnStateChanged(StateChangedEventArgs ea)
         {
             _stateChanged?.Invoke(this, ea);
-            
+
             switch (ea)
             {
                 case { NewState: EFirmwareInstallationState.Idle }:
                     _fileUploadProgressEventsCount = 0; //its vital to reset the counter here to account for retries
                     break;
+
                 case { NewState: EFirmwareInstallationState.Testing } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
-                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new (ECachedFirmwareType.CachedButInactive));
+                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new(ECachedFirmwareType.CachedButInactive));
                     break;
+
                 case { NewState: EFirmwareInstallationState.Complete } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
-                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new (ECachedFirmwareType.CachedAndActive));
+                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new(ECachedFirmwareType.CachedAndActive));
                     break;
             }
         }
@@ -353,7 +359,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     newState: newState,
                     oldState: oldState
                 ));
-            
+
             // public void IdenticalFirmwareCachedOnTargetDeviceDetectedAdvertisement(...) //should not be implemented natively   this event is derived from onstatechanged and is not a native event!
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
@@ -361,7 +367,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
                 => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(state, fatalErrorType, errorMessage));
-            
+
             public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FirmwareInstaller?.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
                     averageThroughput: averageThroughput,

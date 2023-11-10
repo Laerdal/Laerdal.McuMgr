@@ -7,10 +7,12 @@
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
-    <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin         -->
-    <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended -->
+    <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin                                          -->
+    <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended                                  -->
+    <!--                                                                                                                                            -->
+    <!-- todo  once we drop support for xamarin we can remove _CreateBindingResourceArchive which is here just to catter to xamarin build mechanics -->
     <Target Name="CompileMcuMgrLaerdalWrapper"
-            BeforeTargets="_CreateBindingResourceArchive">
+            BeforeTargets="_CreateBindingResourceArchive;PrepareForBuild">
 
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
@@ -19,7 +21,9 @@
             <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
 
             <!-- Windows -->
-            <JavaHome Condition=" '$(IsWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2')               ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
+            <JavaHome Condition=" '$(IsWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2') ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
+            
+            <!-- last ditch effort -->
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
 
             <McuMgrLaerdalWrapperLibSourceDirectory>../Laerdal.McuMgr.Bindings.Android.Native</McuMgrLaerdalWrapperLibSourceDirectory>
@@ -71,9 +75,11 @@
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
     </Target>
 
-    <!-- android    download the jar and aar dependencies from maven -->
+    <!-- android    download the jar and aar dependencies from maven                                                                                -->
+    <!--                                                                                                                                            -->
+    <!-- todo  once we drop support for xamarin we can remove _CreateBindingResourceArchive which is here just to catter to xamarin build mechanics -->
     <Target Name="TackleJarDependencies"
-            BeforeTargets="_CreateBindingResourceArchive">
+            BeforeTargets="_CreateBindingResourceArchive;PrepareForBuild">
 
         <!-- 1. jars go here - notice the :jar postfix -->
 
