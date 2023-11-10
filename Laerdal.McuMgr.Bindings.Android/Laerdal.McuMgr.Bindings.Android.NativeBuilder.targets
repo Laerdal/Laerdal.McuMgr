@@ -10,7 +10,7 @@
     <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin         -->
     <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended -->
     <Target Name="CompileMcuMgrLaerdalWrapper"
-            BeforeTargets="_CreateBindingResourceArchive">
+            BeforeTargets="_CreateBindingResourceArchive;PrepareForBuild">
 
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
@@ -73,7 +73,7 @@
 
     <!-- android    download the jar and aar dependencies from maven -->
     <Target Name="TackleJarDependencies"
-            BeforeTargets="_CreateBindingResourceArchive">
+            BeforeTargets="_CreateBindingResourceArchive;PrepareForBuild">
 
         <!-- 1. jars go here - notice the :jar postfix -->
 
