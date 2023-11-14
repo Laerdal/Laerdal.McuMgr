@@ -682,11 +682,36 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 (we target version 7.0.402 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
+#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
 ```bash
 # cd into the root folder of the repo
-sudo   dotnet   workload   restore  --sdk-version=7.0.402  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+declare dotnet_7_workload_version="7.0.101"
+
+
+sudo    dotnet                                           \
+             workload                                    \
+             install                                     \
+                 ios                                     \
+                 android                                 \
+                 maccatalyst                             \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+
+
+cd "Laerdal.McuMgr.Bindings.iOS"
+sudo    dotnet                                           \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+cd -
+
+
+cd "Laerdal.McuMgr.Bindings.Android"
+sudo    dotnet                                           \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+cd -
 
 # note#1   theoretically 'dotnet workload restore' on the root level should also do the trick but in practice it sometimes runs into problems
 #
