@@ -66,10 +66,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.900.0</Version>
-        <FileVersion>1.0.900.0</FileVersion>
-        <PackageVersion>1.0.900.0</PackageVersion>
-        <AssemblyVersion>1.0.900.0</AssemblyVersion>
+        <Version>1.0.910.0</Version>
+        <FileVersion>1.0.910.0</FileVersion>
+        <PackageVersion>1.0.910.0</PackageVersion>
+        <AssemblyVersion>1.0.910.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -95,6 +95,7 @@
 
     <ItemGroup>
         <Folder Include="Libraries\"/>
+        <Folder Include="Libraries\Dependencies\" />
         <Folder Include="Transforms\"/>
     </ItemGroup>
 
