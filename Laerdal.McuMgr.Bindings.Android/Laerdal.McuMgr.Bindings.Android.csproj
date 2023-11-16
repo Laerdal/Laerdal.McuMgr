@@ -66,10 +66,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.910.0</Version>
-        <FileVersion>1.0.910.0</FileVersion>
-        <PackageVersion>1.0.910.0</PackageVersion>
-        <AssemblyVersion>1.0.910.0</AssemblyVersion>
+        <Version>1.0.915.0</Version>
+        <FileVersion>1.0.915.0</FileVersion>
+        <PackageVersion>1.0.915.0</PackageVersion>
+        <AssemblyVersion>1.0.915.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -130,4 +130,20 @@
     <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets"/>
     <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets"/>
     <Import Condition=" '$(IsXamarinAndroid)'           == 'true' " Project="Laerdal.McuMgr.Bindings.Android.Xamarin.targets"/>
+
+    <!-- DEPENDENCIES   these dependency sections must be here in the main file   if we place    -->
+    <!--                them inside xamarin.targets or netx.targets they get completely ignored! -->
+
+    <ItemGroup Condition=" '$(IsXamarinAndroid)' == 'true' ">
+        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.12.0.1" PrivateAssets="All" />
+
+        <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
+        <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.7.3.2" />
+    </ItemGroup>
+
 </Project>

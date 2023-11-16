@@ -99,10 +99,4 @@
         <Error Text="@(MissingAndroidLibraries->Count()) file(s) specified by the property 'AndroidLibrary' were not found on disk: $(MissingAndroidLibraries)"
                Condition=" @(MissingAndroidLibraries->Count()) != 0 "/>
     </Target>
-
-
-    <ItemGroup>
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
-    </ItemGroup>
-
 </Project>
