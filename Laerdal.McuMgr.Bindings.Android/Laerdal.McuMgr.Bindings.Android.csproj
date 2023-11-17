@@ -143,7 +143,7 @@
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.7.3.2" />
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="[1.7.3.1,2.0)" />
     </ItemGroup>
 
 </Project>
