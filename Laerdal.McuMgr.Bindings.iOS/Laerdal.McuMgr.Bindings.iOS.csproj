@@ -5,13 +5,13 @@
         <IsOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsOSX>
         <IsLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsLinux>
         <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+        <IsUnix Condition=" '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
         <!-- if we are building under osx then we issue a proper full blown build    notice that xamarin.ios10 must always be first for the        -->
         <!-- native swift-libs to be build properly so that they will be readymade when the net6 and net7 builds kick in right after xamarin.ios10 -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
@@ -117,7 +117,7 @@
         <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
+    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
         <!-- nothing to compile for the time being -->
         <!-- <Compile Include="iOS\*.cs"/> -->
         <!-- <Compile Include="iOS\Specific\*.cs"/> -->
@@ -219,7 +219,7 @@
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
-    <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
+    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
 
         <!-- McuMgrBindingsiOS.framework -->
         <NativeReference Include="Frameworks/McuMgrBindingsiOS.framework">

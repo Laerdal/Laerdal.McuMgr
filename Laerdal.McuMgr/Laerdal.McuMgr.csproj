@@ -2,10 +2,10 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
-        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
-        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+        <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
+        <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
+        <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
+        <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
         <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
@@ -16,11 +16,11 @@
         <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
 
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-ios11;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-ios11;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
 
         <IsNet6 Condition="            '$(TargetFramework.ToLower().StartsWith(net6))'                 == 'true' ">true</IsNet6>
         <IsNet7 Condition="            '$(TargetFramework.ToLower().StartsWith(net7))'                 == 'true' ">true</IsNet7>

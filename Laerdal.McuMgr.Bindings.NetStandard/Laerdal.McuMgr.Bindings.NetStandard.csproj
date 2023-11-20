@@ -2,10 +2,10 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
-        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
-        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+        <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
+        <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
+        <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
+        <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
         <TargetFrameworks>netstandard2.0;</TargetFrameworks>
 
