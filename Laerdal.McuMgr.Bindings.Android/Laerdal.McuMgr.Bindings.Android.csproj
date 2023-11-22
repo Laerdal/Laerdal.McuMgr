@@ -135,7 +135,7 @@
     <!--                them inside xamarin.targets or netx.targets they get completely ignored! -->
 
     <ItemGroup Condition=" '$(IsXamarinAndroid)' == 'true' ">
-        <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/>
+        <!-- <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/> -->
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
