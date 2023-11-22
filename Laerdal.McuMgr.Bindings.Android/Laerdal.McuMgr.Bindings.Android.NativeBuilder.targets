@@ -68,7 +68,7 @@
         <Delete Files="$(CoreAarLibrary)"/>
 
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   gradle     wrapper    --distribution-type=ALL  --gradle-version=7.6                    "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   gradle     wrapper    --distribution-type=BIN  --gradle-version=7.6                    "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                 " Condition=" '$(IsUnix)' == 'true' "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all   "/>
 
