@@ -103,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
                 
-                (FirmwareInstaller as IFirmwareInstallerEventSubscribable)!.Cancelled += (sender, args) =>
+                (FirmwareInstaller as IFirmwareInstallerEventSubscribable)!.Cancelled += (_, _) =>
                 {
                     _cancellationTokenSource.Cancel();
                 };
