@@ -1,7 +1,5 @@
-using System;
 using FluentAssertions;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
-using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FirmwareEraser
 {

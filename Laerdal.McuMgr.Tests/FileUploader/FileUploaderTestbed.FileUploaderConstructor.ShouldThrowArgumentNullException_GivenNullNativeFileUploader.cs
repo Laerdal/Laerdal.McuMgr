@@ -1,7 +1,5 @@
-using System;
 using FluentAssertions;
 using Laerdal.McuMgr.FileUploader.Contracts;
-using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FileUploader
 {

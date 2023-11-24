@@ -1,10 +1,7 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
-using Xunit;
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter
 {

@@ -1,7 +1,5 @@
-using System;
 using FluentAssertions;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
-using Xunit;
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {
