@@ -686,27 +686,32 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop 
 
 ```bash
 # cd into the root folder of the repo
-declare dotnet_7_workload_version="7.0.101"
-
-
+declare dotnet_7_workload_version="7.0.101"              \
+&&                                                       \
 sudo    dotnet                                           \
              workload                                    \
              install                                     \
                  ios                                     \
                  android                                 \
                  maccatalyst                             \
+                 maui                                    \
+                 maui-ios                                \
+                 maui-tizen                              \
+                 maui-android                            \
+                 maui-maccatalyst                        \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
-
-
-cd "Laerdal.McuMgr.Bindings.iOS"
+&&                                                       \
+cd "Laerdal.McuMgr.Bindings.iOS"                         \
+&&                                                       \
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
                  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
-cd -
-
-
-cd "Laerdal.McuMgr.Bindings.Android"
+&&                                                       \
+cd -                                                     \
+&&                                                       \
+cd "Laerdal.McuMgr.Bindings.Android"                     \
+&&                                                       \
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
