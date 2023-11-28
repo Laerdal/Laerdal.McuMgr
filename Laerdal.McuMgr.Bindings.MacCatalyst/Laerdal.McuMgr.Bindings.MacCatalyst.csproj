@@ -45,7 +45,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.MacCatalyst</PackageId>
-        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;Mac;MacCatalyst;</PackageTags>
+        <PackageTags>MAUI;Nordic;McuMgr;Bindings;Mac;MacCatalyst;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>

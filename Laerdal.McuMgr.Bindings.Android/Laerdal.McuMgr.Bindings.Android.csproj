@@ -53,7 +53,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
-        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;Net6;Net7;Mono;</PackageTags>
+        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Xamarin;Net6;Net7;Mono;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' ">README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>

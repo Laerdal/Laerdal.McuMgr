@@ -20,7 +20,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.NetStandard</PackageId>
-        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;NetStandard;</PackageTags>
+        <PackageTags>Laerdal;Xamarin;Nordic;McuMgr;Bindings;NetStandard;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>

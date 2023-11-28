@@ -51,7 +51,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.iOS</PackageId>
-        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;iOS;Mac;</PackageTags>
+        <PackageTags>MAUI;Nordic;McuMgr;Bindings;iOS;Mac;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>

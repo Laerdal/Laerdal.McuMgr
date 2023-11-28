@@ -52,7 +52,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
-        <PackageTags>Xamarin;McuMgr;Dfu;Ble</PackageTags>
+        <PackageTags>Laerdal;Xamarin;MAUI;Nordic;McuMgr;Tools;Firmware;</PackageTags>
         <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard - MAUI ready</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
