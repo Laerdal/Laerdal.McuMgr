@@ -19,7 +19,7 @@ variables:
 
   - name: Laerdal_Test_Results_Folderpath
     value: '$(Build.Repository.LocalPath)/TestResults'
-
+    
   - name: is_from_fork # its vital to use the notation variables['x'] for the environment variables below    if we use variables.x the value will be evaluated as empty!
     value: ${{ eq(variables['System.PullRequest.IsFork'], 'True') }}
 

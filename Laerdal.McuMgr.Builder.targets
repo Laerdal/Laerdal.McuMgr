@@ -111,14 +111,6 @@
 
     <!-- UPDATE PROJECT FILES WITH NEW PACKAGE AND ASSEMBLY VERSIONS -->
     <Target Name="WriteUpdatedPackageVersionsInCsprojFiles" DependsOnTargets="DeduceVersion">
-        <ItemGroup>
-            <ProjectFiles Include="$(Laerdal_McuMgr_ProjectFile)"/>
-            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"/>
-            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_Android)"/>
-            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"/>            
-            <ProjectFiles Include="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)"/>
-        </ItemGroup>
-
         <!-- https://stackoverflow.com/a/1294679/863651 -->
         <MsBuild Projects="$(MSBuildProjectFullPath)"
                  Targets="_updatePackageVersionsInCsprojFile"
