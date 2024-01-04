@@ -24,7 +24,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         );
 
         /// <summary>
-        /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
+        /// Begins the file-uploading process for a single file.
+        ///
+        /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
         /// <param name="localData">The local data to upload.</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
@@ -32,7 +34,14 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="maxRetriesCount">The maximum amount of retries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
-        Task UploadAsync(byte[] localData, string remoteFilePath, int timeoutForUploadInMs = -1, int maxRetriesCount = 10, int sleepTimeBetweenRetriesInMs = 1_000, int gracefulCancellationTimeoutInMs = 2_500);
+        Task UploadAsync(
+            byte[] localData,
+            string remoteFilePath,
+            int timeoutForUploadInMs = -1,
+            int maxRetriesCount = 10,
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = 2_500
+        );
         
         /// <summary>
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
