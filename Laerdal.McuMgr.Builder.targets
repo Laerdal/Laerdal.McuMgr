@@ -39,7 +39,8 @@
 
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">TestResults</Laerdal_Test_Results_Folderpath>
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(Laerdal_Test_Results_Folderpath)))</Laerdal_Test_Results_Folderpath>
-        
+
+        <Laerdal_Repository Condition="              '$(Laerdal_Repository)' == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
 
@@ -258,6 +259,12 @@
     <Target Name="CreateGithubReleaseWithTag"
             Condition=" '$(TF_BUILD)' != ''  AND  '$(Laerdal_Should_Tag_And_Release)' == 'True' "
             AfterTargets="RunTests">
+
+        <Error Condition=" '$(Laerdal_Repository)'          == '' " Text="'Laerdal_Repository' has to be set. Please call this script again with the argument '/p:Laerdal_Repository=...'" />
+        <Error Condition=" '$(Laerdal_Version_Base)'        == '' " Text="'Laerdal_Version_Base' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Base=...'" />
+        <Error Condition=" '$(Laerdal_Source_Branch)'       == '' " Text="'Laerdal_Source_Branch' has to be set. Please call this script again with the argument '/p:Laerdal_Source_Branch=...'" />
+        <Error Condition=" '$(Laerdal_Github_Username)'     == '' " Text="'Laerdal_Github_Username' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Username=...'" />
+        <Error Condition=" '$(Laerdal_Github_Access_Token)' == '' " Text="'Laerdal_Github_Access_Token' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Access_Token=...'" />
 
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
