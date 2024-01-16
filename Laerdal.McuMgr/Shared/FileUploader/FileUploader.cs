@@ -103,6 +103,7 @@ namespace Laerdal.McuMgr.FileUploader
             remove => _stateChanged -= value;
         }
         
+        /// <summary>Event raised when a specific file gets uploaded successfully</summary>
         public event EventHandler<UploadCompletedEventArgs> UploadCompleted
         {
             add
@@ -127,7 +128,8 @@ namespace Laerdal.McuMgr.FileUploader
             IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
-            int maxRetriesPerUpload = 10
+            int maxRetriesPerUpload = 10,
+            bool moveToNextUploadInCaseOfError = true
         )
         {
             RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
@@ -142,13 +144,20 @@ namespace Laerdal.McuMgr.FileUploader
                     await UploadAsync(
                         localData: x.Value,
                         remoteFilePath: x.Key,
-                        timeoutForUploadInMs: timeoutPerUploadInMs,
                         maxRetriesCount: maxRetriesPerUpload,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs);
+                        timeoutForUploadInMs: timeoutPerUploadInMs,
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
+                    );
                 }
-                catch (UploadErroredOutException) //00
+                catch (UploadErroredOutException)
                 {
-                    filesThatFailedToBeUploaded.Add(x.Key);
+                    if (moveToNextUploadInCaseOfError) //00
+                    {
+                        filesThatFailedToBeUploaded.Add(x.Key);
+                        continue;
+                    }
+
+                    throw;
                 }
             }
 
