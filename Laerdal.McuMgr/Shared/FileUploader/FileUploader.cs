@@ -289,7 +289,7 @@ namespace Laerdal.McuMgr.FileUploader
                     var isAboutFolderNotExisting = ea.ErrorMessage?.ToUpperInvariant().Contains("UNKNOWN (1)") ?? false;
                     if (isAboutFolderNotExisting)
                     {
-                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(Path.GetDirectoryName(remoteFilePath))); //specific case
+                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(remoteFilePath)); //specific case
                         return;
                     }
 
