@@ -21,9 +21,8 @@
 <!--                Laerdal.McuMgr.Builder.targets                               \                                                                                          -->
 <!--                '"/m:1"'                                                     \                                                                                          -->
 <!--                '"/p:TF_BUILD=1"'                                            \                                                                                          -->
-<!--                '"/p:Laerdal_Repository=Laerdal/Laerdal.McuMgr"'             \                                                                                          -->
 <!--                '"/p:Laerdal_Source_Branch=<main / develop / ...>"'          \                                                                                          -->
-<!--                '"/p:Laerdal_Github_Username=laerdal-components-team"'       \                                                                                          -->
+<!--                '"/p:Laerdal_Repository_Path=Laerdal/Laerdal.McuMgr"'        \                                                                                          -->
 <!--                '"/p:Laerdal_Github_Access_Token=XYZ"'                       \                                                                                          -->
 <!--                '"/p:Laerdal_Should_Tag_And_Release=True"'                                                                                                              -->
 <!--                                                                                                                                                                        -->
@@ -40,8 +39,8 @@
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">TestResults</Laerdal_Test_Results_Folderpath>
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(Laerdal_Test_Results_Folderpath)))</Laerdal_Test_Results_Folderpath>
 
-        <Laerdal_Repository Condition="              '$(Laerdal_Repository)' == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository>
-        <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)' == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
+        <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
+        <Laerdal_Repository_Path Condition="         '$(Laerdal_Repository_Path)'        == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository_Path>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
 
         <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
@@ -55,9 +54,8 @@
         <Message Importance="High" Text="** Configuration                 ='$(Configuration)'"/>
         <Message Importance="High" Text="** PackageOutputPath             ='$(PackageOutputPath)'"/>
 
-        <Message Importance="High" Text="** Laerdal_Repository            ='$(Laerdal_Repository)'"/>
         <Message Importance="High" Text="** Laerdal_Source_Branch         ='$(Laerdal_Source_Branch)'"/>
-        <Message Importance="High" Text="** Laerdal_Github_Username       ='$(Laerdal_Github_Username)'"/>
+        <Message Importance="High" Text="** Laerdal_Repository_Path       ='$(Laerdal_Repository_Path)'"/>
         <!-- <Message Importance="High" Text="** Laerdal_Github_Access_Token   ='$(Laerdal_Github_Access_Token)'"/> dont -->
     </Target>
 
@@ -260,20 +258,18 @@
             Condition=" '$(TF_BUILD)' != ''  AND  '$(Laerdal_Should_Tag_And_Release)' == 'True' "
             AfterTargets="RunTests">
 
-        <Error Condition=" '$(Laerdal_Repository)'          == '' " Text="'Laerdal_Repository' has to be set. Please call this script again with the argument '/p:Laerdal_Repository=...'" />
         <Error Condition=" '$(Laerdal_Version_Base)'        == '' " Text="'Laerdal_Version_Base' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Base=...'" />
         <Error Condition=" '$(Laerdal_Source_Branch)'       == '' " Text="'Laerdal_Source_Branch' has to be set. Please call this script again with the argument '/p:Laerdal_Source_Branch=...'" />
-        <Error Condition=" '$(Laerdal_Github_Username)'     == '' " Text="'Laerdal_Github_Username' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Username=...'" />
+        <Error Condition=" '$(Laerdal_Repository_Path)'     == '' " Text="'Laerdal_Repository_Path' has to be set. Please call this script again with the argument '/p:Laerdal_Repository_Path=...'" />
         <Error Condition=" '$(Laerdal_Github_Access_Token)' == '' " Text="'Laerdal_Github_Access_Token' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Access_Token=...'" />
 
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
 
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --user         '$(Laerdal_Github_Username)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository   '$(Laerdal_Repository)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch   '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version  '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token '$(Laerdal_Github_Access_Token)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch       '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version      '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token     '$(Laerdal_Github_Access_Token)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository-path  '$(Laerdal_Repository_Path)'</_Laerdal_Create_Github_Release_Script_Parameters>
         </PropertyGroup>
 
         <Message Importance="High" Text="   bash    '$(Laerdal_Create_Github_Release_Script_Filepath)'    $(_Laerdal_Create_Github_Release_Script_Parameters) "/>
