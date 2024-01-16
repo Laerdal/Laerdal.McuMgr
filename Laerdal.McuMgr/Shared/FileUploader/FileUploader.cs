@@ -232,7 +232,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
                     
-                    throw new UploadInternalErrorException(ex);
+                    throw new UploadInternalErrorException(remoteFilePath, ex);
                 }
                 finally
                 {
@@ -293,7 +293,7 @@ namespace Laerdal.McuMgr.FileUploader
                         return;
                     }
 
-                    taskCompletionSource.TrySetException(new UploadErroredOutException(ea.ErrorMessage)); //generic
+                    taskCompletionSource.TrySetException(new UploadErroredOutException(remoteFilePath, ea.ErrorMessage)); //generic
                 }
                 // ReSharper restore AccessToModifiedClosure
             }
