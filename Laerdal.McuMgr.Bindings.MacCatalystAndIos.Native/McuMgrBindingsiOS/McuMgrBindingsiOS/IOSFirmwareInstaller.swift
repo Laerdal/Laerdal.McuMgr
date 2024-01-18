@@ -135,14 +135,14 @@ public class IOSFirmwareInstaller: NSObject {
 
     @objc
     public func pause() {
-        _manager.pause()
+        _manager?.pause()
 
         setState(.paused);
     }
 
     @objc
     public func resume() {
-        _manager.resume()
+        _manager?.resume()
 
         setState(.uploading);
     }
@@ -151,12 +151,12 @@ public class IOSFirmwareInstaller: NSObject {
     public func cancel() {
         setState(.cancelling) //order
 
-        _manager.cancel() //order
+        _manager?.cancel() //order
     }
 
     @objc
     public func disconnect() {
-        _transporter.close()
+        _transporter?.close()
     }
 
     private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {

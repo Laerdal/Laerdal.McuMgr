@@ -46,7 +46,7 @@ public class IOSDeviceResetter: NSObject {
 
     @objc
     public func disconnect() {
-        _transporter.close()
+        _transporter?.close()
     }
 
     private var _currentState = EIOSDeviceResetterState.none

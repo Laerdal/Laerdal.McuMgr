@@ -41,7 +41,7 @@ public class IOSFirmwareEraser: NSObject {
 
     @objc
     public func disconnect() {
-        _transporter.close()
+        _transporter?.close()
     }
 
     private var _lastFatalErrorMessage: String

@@ -165,9 +165,15 @@ public class AndroidFirmwareInstaller
         //3 Set the selected memory alignment. In the app this defaults to 4 to match Nordic devices, but can be modified in the UI.
     }
 
-    public void disconnect()
-    {
-        _manager.getTransporter().release();
+    public void disconnect() {
+        if (_manager == null)
+            return;
+
+        final McuMgrTransport mcuMgrTransporter = _manager.getTransporter();
+        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
+            return;
+
+        mcuMgrTransporter.release();
     }
 
     private EAndroidFirmwareInstallationState _currentState = EAndroidFirmwareInstallationState.NONE;
