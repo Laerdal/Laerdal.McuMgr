@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Laerdal.McuMgr.Common.Helpers
 {
     static internal class RemoteFilePathHelpers
     {
-        static public void ValidateRemoteFilePathsWithDataBytes(IDictionary<string, byte[]> remoteFilePathsWithTheirDataBytes)
+        static public void ValidateRemoteFilePathsWithDataBytes<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
 
@@ -15,7 +16,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                 ValidateRemoteFilePath(pathAndDataBytes.Key);
                 
                 if (pathAndDataBytes.Value is null)
-                    throw new ArgumentException($"The given dictionary contains a null value for path '{pathAndDataBytes.Key}'!");
+                    throw new ArgumentException($"Path '{pathAndDataBytes.Key}' has its bytes set to null!");
             }
         }
         
@@ -45,11 +46,11 @@ namespace Laerdal.McuMgr.Common.Helpers
         }
         
         //used by the uploader
-        static public IDictionary<string, byte[]> SanitizeRemoteFilePathsWithDataBytes(IDictionary<string, byte[]> remoteFilePathsWithTheirDataBytes)
+        static public IReadOnlyDictionary<string, T> SanitizeRemoteFilePathsWithDataBytes<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
 
-            var results = new Dictionary<string, byte[]>(remoteFilePathsWithTheirDataBytes.Count);
+            var results = new Dictionary<string, T>(remoteFilePathsWithTheirDataBytes.Count);
             foreach (var pathWithDataBytes in remoteFilePathsWithTheirDataBytes)
             {
                 var sanitizedPath = SanitizeRemoteFilePath(pathWithDataBytes.Key);

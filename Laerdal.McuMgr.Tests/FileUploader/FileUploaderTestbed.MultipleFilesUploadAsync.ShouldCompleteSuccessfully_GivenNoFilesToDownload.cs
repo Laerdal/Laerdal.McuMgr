@@ -20,7 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task>(async () => await fileUploader.UploadAsync(new Dictionary<string, byte[]>()));
+            var work = new Func<Task>(async () => await fileUploader.UploadAsync(new Dictionary<string, IEnumerable<byte[]>>(0)));
 
             // Assert
             await work.Should().CompleteWithinAsync(500.Milliseconds());

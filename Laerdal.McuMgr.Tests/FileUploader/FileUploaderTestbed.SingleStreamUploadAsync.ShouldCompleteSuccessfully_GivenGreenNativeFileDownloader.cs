@@ -12,21 +12,23 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFUA.SCS.GGNFD.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FUT.SFUA.SCS.GGNFD.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
-        [InlineData("FUT.SFUA.SCS.GGNFD.030", "/path/to/file.bin", 2, +000)]
-        [InlineData("FUT.SFUA.SCS.GGNFD.040", "/path/to/file.bin", 2, +100)]
-        [InlineData("FUT.SFUA.SCS.GGNFD.050", "/path/to/file.bin", 3, -100)]
-        [InlineData("FUT.SFUA.SCS.GGNFD.060", "/path/to/file.bin", 3, +000)]
-        [InlineData("FUT.SFUA.SCS.GGNFD.070", "/path/to/file.bin", 3, +100)]
-        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileUploader(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
+        [InlineData("FUT.SSUA.SCS.GGNFD.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
+        [InlineData("FUT.SSUA.SCS.GGNFD.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
+        [InlineData("FUT.SSUA.SCS.GGNFD.030", "/path/to/file.bin", 2, +000)]
+        [InlineData("FUT.SSUA.SCS.GGNFD.040", "/path/to/file.bin", 2, +100)]
+        [InlineData("FUT.SSUA.SCS.GGNFD.050", "/path/to/file.bin", 3, -100)]
+        [InlineData("FUT.SSUA.SCS.GGNFD.060", "/path/to/file.bin", 3, +000)]
+        [InlineData("FUT.SSUA.SCS.GGNFD.070", "/path/to/file.bin", 3, +100)]
+        public async Task SingleStreamUploadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileUploader(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
         {
             // Arrange
+            var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+            
             var expectedRemoteFilepath = remoteFilePath.StartsWith("/")
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy(
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy100(
                 uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_(),
                 maxNumberOfTriesForSuccess: maxTriesCount
             );
@@ -36,7 +38,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                data: new byte[] { 1, 2, 3 },
+                data: stream,
                 maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
                 sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
@@ -71,11 +73,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy100 : MockedNativeFileUploaderProxySpy
         {
             private readonly int _maxNumberOfTriesForSuccess;
 
-            public MockedGreenNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, int maxNumberOfTriesForSuccess) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy100(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, int maxNumberOfTriesForSuccess) : base(uploaderCallbacksProxy)
             {
                 _maxNumberOfTriesForSuccess = maxNumberOfTriesForSuccess;
             }
