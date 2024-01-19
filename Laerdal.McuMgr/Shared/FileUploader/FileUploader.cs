@@ -169,6 +169,36 @@ namespace Laerdal.McuMgr.FileUploader
             //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
         }
 
+        public async Task UploadAsync(
+            Stream dataStream,
+            string remoteFilePath,
+            int timeoutForUploadInMs = -1,
+            int maxTriesCount = 10,
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = 2_500
+        )
+        {
+            var data = (byte[]) null;
+            try
+            {
+                data = await dataStream.ReadBytesAsync(disposeStream: false);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("Failed to read the data-stream", nameof(dataStream), ex);
+            }
+            
+            await UploadAsync(
+                localData: data,
+                remoteFilePath: remoteFilePath,
+                
+                maxTriesCount: maxTriesCount,
+                timeoutForUploadInMs: timeoutForUploadInMs,
+                sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+                gracefulCancellationTimeoutInMs: gracefulCancellationTimeoutInMs
+            );
+        }
+
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task UploadAsync(
             byte[] localData,

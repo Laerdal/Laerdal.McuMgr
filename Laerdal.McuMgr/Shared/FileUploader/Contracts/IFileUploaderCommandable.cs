@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
@@ -24,9 +25,33 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true
         );
+        
+        /// <summary>Begins the uploading process using the given data-stream.</summary>
+        ///
+        /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
+        ///
+        /// <remarks>
+        /// - Bare in mind that the stream will be read upfront and all at once into a byte array before the upload even begins.<br/>
+        /// - The stream will not get disposed off. It is the responsibility of the caller to dispose the stream whenever it is deemed appropriate (if at all.)
+        /// </remarks>
+        /// 
+        /// <param name="dataStream">The stream that holds the data (bytes) to upload.</param>
+        /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
+        /// <param name="timeoutForUploadInMs">The amount of time to wait for the upload to complete before bailing out.</param>
+        /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
+        /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
+        /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
+        Task UploadAsync(
+            Stream dataStream,
+            string remoteFilePath,
+            int timeoutForUploadInMs = -1,
+            int maxTriesCount = 10,
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = 2_500
+        );
 
         /// <summary>
-        /// Begins the file-uploading process for a single file.
+        /// Begins the uploading process using the given bytes (typically representing the contents of a file).
         ///
         /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>

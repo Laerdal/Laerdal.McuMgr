@@ -14,8 +14,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFDA.STUAAFE.GFEM.010", 1)]
-        [InlineData("FUT.SFDA.STUAAFE.GFEM.020", 2)]
+        [InlineData("FUT.SFUA.STUAAFE.GFEM.010", 1)]
+        [InlineData("FUT.SFUA.STUAAFE.GFEM.020", 2)]
         public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxTriesCount)
         {
             // Arrange
