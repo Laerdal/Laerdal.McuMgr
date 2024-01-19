@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 firmwareInstaller.Cancel();
             });
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxTriesCount: 0));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxTriesCount: 1));
 
             // Assert
             await work.Should()

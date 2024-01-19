@@ -187,7 +187,7 @@ namespace Laerdal.McuMgr.FileUploader
                 : DefaultGracefulCancellationTimeoutInMs;
 
             var isCancellationRequested = false;
-            for (var tryCount = 1; !isCancellationRequested;)
+            for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
@@ -221,7 +221,7 @@ namespace Laerdal.McuMgr.FileUploader
                     if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
 
-                    if (++tryCount > maxTriesCount) //order
+                    if (++triesCount > maxTriesCount) //order
                         throw new AllUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order

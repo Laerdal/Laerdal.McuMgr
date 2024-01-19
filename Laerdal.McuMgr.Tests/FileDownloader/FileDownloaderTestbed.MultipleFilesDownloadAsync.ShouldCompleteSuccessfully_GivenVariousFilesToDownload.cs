@@ -47,7 +47,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             // Act
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(
                 remoteFilePaths: remoteFilePathsToTest,
-                maxRetriesPerDownload: 3
+                maxRetriesPerDownload: 4
             ));
 
             // Assert

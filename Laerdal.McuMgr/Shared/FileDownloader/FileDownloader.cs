@@ -143,7 +143,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     var data = await DownloadAsync(
                         remoteFilePath: path,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
-                        maxRetriesCount: maxRetriesPerDownload,
+                        maxTriesCount: maxRetriesPerDownload,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs);
 
                     results[path] = data;
@@ -165,18 +165,21 @@ namespace Laerdal.McuMgr.FileDownloader
         public async Task<byte[]> DownloadAsync(
             string remoteFilePath,
             int timeoutForDownloadInMs = -1,
-            int maxRetriesCount = 10,
+            int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs
         )
         {
+            if (maxTriesCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero!");
+            
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
             
             var result = (byte[])null;
             var isCancellationRequested = false;
-            for (var retry = 0; !isCancellationRequested;)
+            for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<byte[]>(state: null);
 
@@ -214,8 +217,8 @@ namespace Laerdal.McuMgr.FileDownloader
                     if (ex is DownloadErroredOutRemoteFileNotFoundException) //order   no point to retry if the remote file is not there
                         throw;
 
-                    if (++retry > maxRetriesCount) //order
-                        throw new AllDownloadAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
+                    if (++triesCount > maxTriesCount) //order
+                        throw new AllDownloadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {

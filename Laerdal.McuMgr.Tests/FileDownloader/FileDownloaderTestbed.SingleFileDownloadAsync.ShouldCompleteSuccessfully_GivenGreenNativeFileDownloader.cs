@@ -12,14 +12,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFDA.SCS.GGNFD.010", "path/to/file.bin", 00, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FDT.SFDA.SCS.GGNFD.020", "/path/to/file.bin", 1, -100)] // negative sleep time should be interpreted as 0
-        [InlineData("FDT.SFDA.SCS.GGNFD.030", "/path/to/file.bin", 1, +000)]
-        [InlineData("FDT.SFDA.SCS.GGNFD.040", "/path/to/file.bin", 1, +100)]
-        [InlineData("FDT.SFDA.SCS.GGNFD.050", "/path/to/file.bin", 2, -100)]
-        [InlineData("FDT.SFDA.SCS.GGNFD.060", "/path/to/file.bin", 2, +000)]
-        [InlineData("FDT.SFDA.SCS.GGNFD.070", "/path/to/file.bin", 2, +100)]
-        public async Task SingleFileDownloadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader(string testcaseNickname, string remoteFilePath, int maxRetriesCount, int sleepTimeBetweenRetriesInMs)
+        [InlineData("FDT.SFDA.SCS.GGNFD.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
+        [InlineData("FDT.SFDA.SCS.GGNFD.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
+        [InlineData("FDT.SFDA.SCS.GGNFD.030", "/path/to/file.bin", 2, +000)]
+        [InlineData("FDT.SFDA.SCS.GGNFD.040", "/path/to/file.bin", 2, +100)]
+        [InlineData("FDT.SFDA.SCS.GGNFD.050", "/path/to/file.bin", 3, -100)]
+        [InlineData("FDT.SFDA.SCS.GGNFD.060", "/path/to/file.bin", 3, +000)]
+        [InlineData("FDT.SFDA.SCS.GGNFD.070", "/path/to/file.bin", 3, +100)]
+        public async Task SingleFileDownloadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileDownloader(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy(
                 mockedFileData: mockedFileData,
                 downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_(),
-                maxNumberOfTriesForSuccess: maxRetriesCount + 1
+                maxNumberOfTriesForSuccess: maxTriesCount
             );
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
@@ -38,13 +38,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount,
                 sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(((maxRetriesCount + 1) * 2).Seconds());
+            await work.Should().CompleteWithinAsync(((maxTriesCount + 1) * 2).Seconds());
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -52,7 +52,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             
             eventsMonitor
                 .OccurredEvents.Where(x => x.EventName == nameof(fileDownloader.FatalErrorOccurred))
-                .Should().HaveCount(maxRetriesCount); //one error for each try except the last one
+                .Should().HaveCount(maxTriesCount - 1); //one error for each try except the last one
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))

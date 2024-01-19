@@ -155,6 +155,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             int gracefulCancellationTimeoutInMs = 2_500
         )
         {
+            if (maxTriesCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "The maximum amount of tries must be greater than zero");
+            
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;

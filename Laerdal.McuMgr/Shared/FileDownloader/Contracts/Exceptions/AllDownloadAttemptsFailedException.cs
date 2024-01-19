@@ -4,8 +4,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Exceptions
 {
     public class AllDownloadAttemptsFailedException : DownloadErroredOutException, IDownloadException
     {
-        public AllDownloadAttemptsFailedException(string remoteFilePath, int maxRetriesCount, Exception innerException = null)
-            : base($"Failed to download '{remoteFilePath}' after trying {maxRetriesCount + 1} time(s)", innerException)
+        public AllDownloadAttemptsFailedException(string remoteFilePath, int triesCount, Exception innerException = null)
+            : base($"Failed to download '{remoteFilePath}' after trying {triesCount} time(s)", innerException)
         {
         }
         
