@@ -4,8 +4,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions
 {
     public class AllFirmwareInstallationAttemptsFailedException : FirmwareInstallationErroredOutException, IFirmwareInstallationException
     {
-        public AllFirmwareInstallationAttemptsFailedException(int maxRetriesCount, Exception innerException = null)
-            : base($"Failed to install firmware after trying {maxRetriesCount + 1} time(s)", innerException)
+        public AllFirmwareInstallationAttemptsFailedException(int triesCount, Exception innerException = null)
+            : base($"Failed to install firmware after trying {triesCount} time(s)", innerException)
         {
         }
         

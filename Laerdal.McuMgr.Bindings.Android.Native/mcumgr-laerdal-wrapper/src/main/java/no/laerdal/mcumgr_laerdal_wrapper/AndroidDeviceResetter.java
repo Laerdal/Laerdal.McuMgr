@@ -8,13 +8,15 @@ import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
+import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.response.dflt.McuMgrOsResponse;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class AndroidDeviceResetter {
 
-    private final DefaultManager _manager;
+    private DefaultManager _manager;
+    private final McuMgrTransport _transport;
 
     /**
      * Constructs a firmware installer for a specific android-context and bluetooth-device.
@@ -23,12 +25,21 @@ public class AndroidDeviceResetter {
      * @param bluetoothDevice the device to perform the firmware-install on
      */
     public AndroidDeviceResetter(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
-        final McuMgrTransport transport = new McuMgrBleTransport(context, bluetoothDevice);
-
-        _manager = new DefaultManager(transport);
+        _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
     public void beginReset() {
+        try
+        {
+            _manager = new DefaultManager(_transport);
+        }
+        catch (final Exception ex)
+        {
+            setState(EAndroidDeviceResetterState.FAILED);
+            fatalErrorOccurredAdvertisement("Failed to create manager: '" + ex.getMessage() + "'");
+            return;
+        }
+
         setState(EAndroidDeviceResetterState.RESETTING);
 
         _manager.reset(new McuMgrCallback<McuMgrOsResponse>() {
@@ -55,9 +66,15 @@ public class AndroidDeviceResetter {
         });
     }
 
-    public void disconnect()
-    {
-        _manager.getTransporter().release();
+    public void disconnect() { //noinspection ConstantValue
+        if (_manager == null)
+            return;
+
+        final McuMgrTransport mcuMgrTransporter = _manager.getTransporter();
+        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
+            return;
+
+        mcuMgrTransporter.release();
     }
 
     public EAndroidDeviceResetterState getState() {

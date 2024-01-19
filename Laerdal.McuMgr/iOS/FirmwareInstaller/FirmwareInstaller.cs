@@ -67,7 +67,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 int? byteAlignment = null
             )
             {
-                //todo   nsdata should be tracked in a private variable and then cleaned up properly   currently it might get disposed ahead of time
+                //todo   nsdata might have to be tracked in a private variable and then cleaned up properly   we suspect that it could
+                //todo   potentially be getting disposed ahead of time taking down with it the underlying native byte array on the ios side
+                //todo
+                //todo   https://stackoverflow.com/questions/77461311/should-i-keep-the-c-sharp-reference-to-an-nsdata-object-around-until-i-know-for
                 var nsData = NSData.FromArray(data);
 
                 var verdict = _nativeFirmwareInstaller.BeginInstallation(

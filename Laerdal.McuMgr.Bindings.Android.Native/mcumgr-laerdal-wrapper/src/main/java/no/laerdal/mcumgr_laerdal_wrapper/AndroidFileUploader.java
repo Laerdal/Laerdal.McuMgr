@@ -132,9 +132,15 @@ public class AndroidFileUploader
         transferController.resume();
     }
 
-    public void disconnect()
-    {
-        _fileSystemManager.getTransporter().release();
+    public void disconnect() {
+        if (_fileSystemManager == null)
+            return;
+
+        final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
+        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
+            return;
+
+        mcuMgrTransporter.release();
     }
 
     public void cancel()

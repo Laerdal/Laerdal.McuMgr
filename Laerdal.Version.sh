@@ -84,14 +84,6 @@ function log () {
     fi
 }
 
-function warn () {
-    if [ "${TF_BUILD:=}" != "" ]; then
-        echo "##vso[task.logissue type=warning]$@"
-    else
-        echo "WARNING : $@"
-    fi
-}
-
 # Azure DevOps build
 if [ "${TF_BUILD:=}" != "" ]; then
     log "TF_BUILD is set, assuming Azure DevOps build"
@@ -135,6 +127,9 @@ log "first_commit=$first_commit"
 # Suffix
 suffix=`echo $branch_name | sed 's/\//-/'`
 log "suffix=$suffix"
+
+git fetch origin "$master_branch:$master_branch"   >/dev/null 2>&1  # its vital to do this silently otherwise the
+git fetch origin "$develop_branch:$develop_branch" >/dev/null 2>&1  # output of this entire script will be malformed
 
 if [ "$branch_name" == "$develop_branch" ]; then
     develop_master_point=`git rev-list $branch_prefix$master_branch --merges --before=\`git show -s --format=%ct $commit\` --first-parent --max-count=1`

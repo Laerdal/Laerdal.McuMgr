@@ -28,7 +28,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
         /// <param name="timeoutInMs">The amount of time to wait for the operation to complete before bailing out. If set to zero or negative then the operation will wait indefinitely.</param>
-        /// <param name="maxRetriesCount">The maximum amount of retries before bailing out with <see cref="FirmwareInstallationErroredOutException"/>.</param>
+        /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="FirmwareInstallationErroredOutException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time (in ms) to sleep between retries.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         Task InstallAsync(
@@ -41,7 +41,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int timeoutInMs = -1,
-            int maxRetriesCount = 10,
+            int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 100,
             int gracefulCancellationTimeoutInMs = 2_500
         );

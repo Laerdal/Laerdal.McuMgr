@@ -103,7 +103,7 @@ public class IOSFileDownloader: NSObject {
 
     @objc
     public func disconnect() {
-        _transporter.close()
+        _transporter?.close()
     }
 
     //@objc   dont

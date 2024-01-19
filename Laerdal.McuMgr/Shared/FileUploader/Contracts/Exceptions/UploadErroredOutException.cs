@@ -4,14 +4,12 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
     public class UploadErroredOutException : Exception, IUploadException
     {
-        public UploadErroredOutException(string errorMessage)
-            : base($"An error occurred while uploading the requested resource: '{errorMessage}'")
+        public string RemoteFilePath { get; }
+
+        public UploadErroredOutException(string remoteFilePath, string errorMessage, Exception innerException = null)
+            : base($"An error occurred while uploading '{remoteFilePath}': '{errorMessage}'", innerException)
         {
-        }
-        
-        public UploadErroredOutException(string errorMessage, Exception innerException)
-            : base($"An error occurred while uploading the requested resource: '{errorMessage}'", innerException)
-        {
+            RemoteFilePath = remoteFilePath;
         }
     }
 }

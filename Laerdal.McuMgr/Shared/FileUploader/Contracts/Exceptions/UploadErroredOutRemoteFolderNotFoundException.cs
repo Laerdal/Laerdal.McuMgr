@@ -3,8 +3,9 @@
 namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
     public sealed class UploadErroredOutRemoteFolderNotFoundException : UploadErroredOutException, IUploadException
-    {
-        public UploadErroredOutRemoteFolderNotFoundException(string remoteFolderPath) : base($"Remote folder-path '{remoteFolderPath}' doesn't exist")
+    {       
+        public UploadErroredOutRemoteFolderNotFoundException(string remoteFilePath)
+            : base(remoteFilePath, $"One or more parent folders don't exist in remote file path '{remoteFilePath}'")
         {
         }
     }

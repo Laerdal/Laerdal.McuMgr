@@ -1,11 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileUploader
@@ -20,7 +16,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             // Act
-            var work = new Func<Task>(() => fileUploader.UploadAsync(localData: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin"));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(data: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin"));
 
             // Assert
             (await work.Should().ThrowExactlyAsync<UploadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");

@@ -1,10 +1,7 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileUploader

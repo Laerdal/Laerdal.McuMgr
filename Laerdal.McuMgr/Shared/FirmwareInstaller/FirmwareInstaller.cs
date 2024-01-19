@@ -150,17 +150,20 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int timeoutInMs = -1,
-            int maxRetriesCount = 10,
+            int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 100,
             int gracefulCancellationTimeoutInMs = 2_500
         )
         {
+            if (maxTriesCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "The maximum amount of tries must be greater than zero");
+            
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
 
             var isCancellationRequested = false;
-            for (var retry = 0; !isCancellationRequested;)
+            for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
@@ -197,8 +200,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
                 {
-                    if (++retry > maxRetriesCount) //order
-                        throw new AllFirmwareInstallationAttemptsFailedException(maxRetriesCount, innerException: ex);
+                    if (++triesCount > maxTriesCount) //order
+                        throw new AllFirmwareInstallationAttemptsFailedException(maxTriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {

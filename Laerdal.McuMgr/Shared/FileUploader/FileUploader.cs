@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
@@ -103,6 +104,7 @@ namespace Laerdal.McuMgr.FileUploader
             remove => _stateChanged -= value;
         }
         
+        /// <summary>Event raised when a specific file gets uploaded successfully</summary>
         public event EventHandler<UploadCompletedEventArgs> UploadCompleted
         {
             add
@@ -123,32 +125,43 @@ namespace Laerdal.McuMgr.FileUploader
             remove => _fileUploadProgressPercentageAndDataThroughputChanged -= value;
         }
 
-        public async Task<IEnumerable<string>> UploadAsync(
-            IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
+        public async Task<IEnumerable<string>> UploadAsync<TData>(
+            IDictionary<string, TData> remoteFilePathsAndTheirData,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
-            int maxRetriesPerUpload = 10
+            int maxTriesPerUpload = 10,
+            bool moveToNextUploadInCaseOfError = true,
+            bool autodisposeStreams = false
         )
         {
-            RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
-            var sanitizedRemoteFilePathsAndTheirDataBytes = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirDataBytes);
+            RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
+            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
 
             var filesThatFailedToBeUploaded = new List<string>(2);
 
-            foreach (var x in sanitizedRemoteFilePathsAndTheirDataBytes)
+            foreach (var x in sanitizedRemoteFilePathsAndTheirData)
             {
                 try
                 {
                     await UploadAsync(
-                        localData: x.Value,
+                        data: x.Value,
                         remoteFilePath: x.Key,
+
+                        maxTriesCount: maxTriesPerUpload,
+                        autodisposeStream: autodisposeStreams,
                         timeoutForUploadInMs: timeoutPerUploadInMs,
-                        maxRetriesCount: maxRetriesPerUpload,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs);
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
+                    );
                 }
-                catch (UploadErroredOutException) //00
+                catch (UploadErroredOutException)
                 {
-                    filesThatFailedToBeUploaded.Add(x.Key);
+                    if (moveToNextUploadInCaseOfError) //00
+                    {
+                        filesThatFailedToBeUploaded.Add(x.Key);
+                        continue;
+                    }
+
+                    throw;
                 }
             }
 
@@ -158,23 +171,29 @@ namespace Laerdal.McuMgr.FileUploader
             //    tactic because failures are fairly common when uploading 50 files or more over to aed devices and we wanted to ensure
             //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
         }
-
+        
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
-        public async Task UploadAsync(
-            byte[] localData,
+        public async Task UploadAsync<TData>(
+            TData data,
             string remoteFilePath,
             int timeoutForUploadInMs = -1,
-            int maxRetriesCount = 10,
+            int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = 2_500
+            int gracefulCancellationTimeoutInMs = 2_500,
+            bool autodisposeStream = false
         )
         {
+            if (maxTriesCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
+            
+            var dataArray = await GetDataAsByteArray_(data, autodisposeStream);
+            
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
-            
+
             var isCancellationRequested = false;
-            for (var retry = 0; !isCancellationRequested;)
+            for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
@@ -183,7 +202,7 @@ namespace Laerdal.McuMgr.FileUploader
                     StateChanged += UploadAsyncOnStateChanged;
                     FatalErrorOccurred += UploadAsyncOnFatalErrorOccurred;
 
-                    var verdict = BeginUpload(remoteFilePath, localData); //00 dont use task.run here for now
+                    var verdict = BeginUpload(remoteFilePath, dataArray); //00 dont use task.run here for now
                     if (verdict != EFileUploaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
@@ -208,8 +227,8 @@ namespace Laerdal.McuMgr.FileUploader
                     if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
 
-                    if (++retry > maxRetriesCount) //order
-                        throw new AllUploadAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
+                    if (++triesCount > maxTriesCount) //order
+                        throw new AllUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {
@@ -232,7 +251,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
                     
-                    throw new UploadInternalErrorException(ex);
+                    throw new UploadInternalErrorException(remoteFilePath, ex);
                 }
                 finally
                 {
@@ -289,17 +308,19 @@ namespace Laerdal.McuMgr.FileUploader
                     var isAboutFolderNotExisting = ea.ErrorMessage?.ToUpperInvariant().Contains("UNKNOWN (1)") ?? false;
                     if (isAboutFolderNotExisting)
                     {
-                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(Path.GetDirectoryName(remoteFilePath))); //specific case
+                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(remoteFilePath)); //specific case
                         return;
                     }
 
-                    taskCompletionSource.TrySetException(new UploadErroredOutException(ea.ErrorMessage)); //generic
+                    taskCompletionSource.TrySetException(new UploadErroredOutException(remoteFilePath, ea.ErrorMessage)); //generic
                 }
                 // ReSharper restore AccessToModifiedClosure
             }
             
             if (isCancellationRequested) //vital
                 throw new UploadCancelledException(); //20
+
+            return;
 
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
@@ -312,6 +333,15 @@ namespace Laerdal.McuMgr.FileUploader
             //    in cases where the ble connection bites the dust and is unrecoverable because in that case the file uploader will just keep
             //    on trying in vain forever for like 50 retries or something and pressing the cancel button wont have any effect because
             //    the upload cannot commence to begin with
+            
+            static async Task<byte[]> GetDataAsByteArray_<TD>(TD dataObject_, bool autodisposeStream_) => dataObject_ switch
+            {
+                Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_),
+                byte[] dataByteArray => dataByteArray,
+                IEnumerable<byte> dataEnumerableBytes => dataEnumerableBytes.ToArray(), //just in case
+                    
+                _ => throw new ArgumentException(nameof(data))
+            };
         }
 
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);

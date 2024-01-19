@@ -477,16 +477,16 @@ private void CleanupDeviceResetter()
 
             MassFileUploaderNumberOfFilesUploadedSuccessfully = 0;
 
-            var remoteFilePathsAndTheirDataBytes = _massFileUploadSelectedFileNamesAndTheirRawBytes.ToDictionary(
+            var remoteFilePathsAndTheirData = _massFileUploadSelectedFileNamesAndTheirRawBytes.ToDictionary(
                 keySelector: x => $"{MassFileUploadRemoteTargetFolderPath.TrimEnd('/')}/{x.Key}", //dont use path.combine here   it would be a bad idea
                 elementSelector: x => x.Value
             );
             
             await _massFileUploader.UploadAsync(
-                maxRetriesPerUpload: MassFileUploadingMaxRetriesPerUpload,
+                maxTriesPerUpload: MassFileUploadingMaxTriesPerUpload,
                 timeoutPerUploadInMs: 4 * 60 * 1_000, //4mins per upload
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
-                remoteFilePathsAndTheirDataBytes: remoteFilePathsAndTheirDataBytes
+                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData
             );
         }
         catch (UploadCancelledException) //order
@@ -682,11 +682,41 @@ git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 (we target version 7.0.402 to be on the safe side) and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
+#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
 ```bash
 # cd into the root folder of the repo
-sudo   dotnet   workload   restore  --sdk-version=7.0.402  --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+declare dotnet_7_workload_version="7.0.101"              \
+&&                                                       \
+sudo    dotnet                                           \
+             workload                                    \
+             install                                     \
+                 ios                                     \
+                 android                                 \
+                 maccatalyst                             \
+                 maui                                    \
+                 maui-ios                                \
+                 maui-tizen                              \
+                 maui-android                            \
+                 maui-maccatalyst                        \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+&&                                                       \
+cd "Laerdal.McuMgr.Bindings.iOS"                         \
+&&                                                       \
+sudo    dotnet                                           \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+&&                                                       \
+cd -                                                     \
+&&                                                       \
+cd "Laerdal.McuMgr.Bindings.Android"                     \
+&&                                                       \
+sudo    dotnet                                           \
+             workload                                    \
+             restore                                     \
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+cd -
 
 # note#1   theoretically 'dotnet workload restore' on the root level should also do the trick but in practice it sometimes runs into problems
 #
@@ -718,21 +748,23 @@ maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 
 #### 3) Make sure that Java17 is installed on your machine along with Gradle and Maven.
 
-#### 4) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
+#### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
+
+#### 5) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
-#### 5) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
+#### 6) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
 
      Note: You can grab the appropriate Mono release for MacOS from https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.182.macos10.xamarin.universal.pkg
 
 If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
 
-#### 6) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
-#### 7) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
+#### 8) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
-#### 8) Open 'Laerdal.McuMgr.sln' and build it.
+#### 9) Open 'Laerdal.McuMgr.sln' and build it.
 
 You'll find the resulting nugets in the folder `Artifacts/`.
 

@@ -53,7 +53,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
-        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;Android;Net6;Net7;Mono;</PackageTags>
+        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Xamarin;Net6;Net7;Mono;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' ">README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -66,10 +66,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.900.0</Version>
-        <FileVersion>1.0.900.0</FileVersion>
-        <PackageVersion>1.0.900.0</PackageVersion>
-        <AssemblyVersion>1.0.900.0</AssemblyVersion>
+        <Version>1.0.919.0</Version>
+        <FileVersion>1.0.919.0</FileVersion>
+        <PackageVersion>1.0.919.0</PackageVersion>
+        <AssemblyVersion>1.0.919.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -95,6 +95,7 @@
 
     <ItemGroup>
         <Folder Include="Libraries\"/>
+        <Folder Include="Libraries\Dependencies\" />
         <Folder Include="Transforms\"/>
     </ItemGroup>
 
@@ -129,4 +130,23 @@
     <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets"/>
     <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets"/>
     <Import Condition=" '$(IsXamarinAndroid)'           == 'true' " Project="Laerdal.McuMgr.Bindings.Android.Xamarin.targets"/>
+
+    <!-- DEPENDENCIES   these dependency sections must be here in the main file   if we place    -->
+    <!--                them inside xamarin.targets or netx.targets they get completely ignored! -->
+
+    <ItemGroup Condition=" '$(IsXamarinAndroid)' == 'true' ">
+        <!-- <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/> -->
+
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="[1.7.3.1,2.0)" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
+        <!-- these dependencies have been field-tested and are known to work at least as far back as Android 10.0 -->
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="[1.12.0.1,)" PrivateAssets="All" />
+
+        <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
+        <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="[1.7.3.1,2.0)" />
+    </ItemGroup>
+
 </Project>

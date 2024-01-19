@@ -72,13 +72,14 @@ fi
 # todo   was not found. Confirm that the expression in the Import declaration ";../16.0.1478/targets/Xamarin.Shared.Sdk.MultiTarget.targets"
 # todo   is correct, and that the file exists on disk.
 #
+declare dotnet_7_workload_version="7.0.101"
 sudo    dotnet                                           \
              workload                                    \
              install                                     \
                  ios                                     \
                  android                                 \
                  maccatalyst                             \
-                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+                    --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
@@ -89,7 +90,7 @@ cd "Laerdal.McuMgr.Bindings.iOS" || (echo "##vso[task.logissue type=error]Failed
 sudo         dotnet                                      \
              workload                                    \
              restore                                     \
-                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
@@ -101,7 +102,7 @@ cd "Laerdal.McuMgr.Bindings.Android" || (echo "##vso[task.logissue type=error]Fa
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
-                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/7.0.96.json
+                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."

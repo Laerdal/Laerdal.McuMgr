@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -7,7 +5,6 @@ using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileUploader
@@ -27,7 +24,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                localData: new byte[] { 1 },
+                data: new byte[] { 1 },
                 remoteFilePath: remoteFilePath,
                 timeoutForUploadInMs: 100
             ));

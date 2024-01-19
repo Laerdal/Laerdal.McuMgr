@@ -4,9 +4,8 @@ declare VERBOSE=0
 declare TAG_VERSION=""
 
 declare GIT_BRANCH=""
-declare GITHUB_USERNAME=""
-declare GITHUB_REPOSITORY=""
 declare GITHUB_ACCESS_TOKEN=""
+declare GITHUB_REPOSITORY_PATH=""
 
 function parse_arguments() {
   while [[ $# -gt 0 ]]; do
@@ -17,13 +16,8 @@ function parse_arguments() {
       shift
       ;;
 
-    -u | --user)
-      GITHUB_USERNAME="$2"
-      shift
-      ;;
-
-    -r | --repository)
-      GITHUB_REPOSITORY="$2"
+    -r | --repository-path)
+      GITHUB_REPOSITORY_PATH="$2"
       shift
       ;;
 
@@ -58,13 +52,7 @@ function parse_arguments() {
     exit 1
   fi
 
-  if [[ -z $GITHUB_USERNAME ]]; then
-    echo "Missing github-username."
-    usage
-    exit 1
-  fi
-
-  if [[ -z $GITHUB_REPOSITORY ]]; then
+  if [[ -z $GITHUB_REPOSITORY_PATH ]]; then
     echo "Missing github-repository."
     usage
     exit 1
@@ -91,7 +79,7 @@ function validate_tag_format() {
 function usage() {
   local -r script_name=$(basename "$0")
 
-  echo "Usage: $script_name [--verbose|-v] [--user|-u]=<username> [--repository|-r]=<repository> [--git-branch|-b]=<branch> [--access-token|-a]=<token> [--tag-version|-t]=<version>"
+  echo "Usage: $script_name [--verbose|-v] [--repository-path|-r]=<repository_path> [--git-branch|-b]=<branch> [--access-token|-a]=<token> [--tag-version|-t]=<version>"
 }
 
 function create_release_on_github() {
@@ -127,7 +115,7 @@ function create_release_on_github() {
 EOF
   )
 
-  local -r api_url="https://api.github.com/repos/$GITHUB_REPOSITORY/releases"
+  local -r api_url="https://api.github.com/repos/$GITHUB_REPOSITORY_PATH/releases"
 
   echo "** Creating release on GitHub ..."
 
@@ -141,7 +129,7 @@ EOF
       -w "%{http_code}" \
       -H "Content-Type:application/json" \
       -H "Accept:application/vnd.github+json" \
-      -u "$GITHUB_USERNAME:$GITHUB_ACCESS_TOKEN" \
+      -H "Authorization: Bearer $GITHUB_ACCESS_TOKEN" \
       "$api_url"
   )
   local -r curl_exit_code=$?
@@ -158,8 +146,6 @@ EOF
   if [[ $http_status_code -ge 300 ]]; then
     exit_with_error "API returned HTTP status $http_status_code"
   fi
-
-  echo " success!"
 }
 
 function log() {

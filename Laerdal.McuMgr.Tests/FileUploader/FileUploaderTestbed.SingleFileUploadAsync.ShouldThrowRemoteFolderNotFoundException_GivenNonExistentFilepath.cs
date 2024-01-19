@@ -1,7 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -9,7 +6,6 @@ using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileUploader
@@ -18,10 +14,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.010", "UNKNOWN (1)", 0)] //android + ios
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.020", "UNKNOWN (1)", 1)] //android + ios
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.030", "UNKNOWN (1)", 2)] //android + ios
-        public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxRetriesCount)
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.010", "UNKNOWN (1)", 1)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.020", "UNKNOWN (1)", 2)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.030", "UNKNOWN (1)", 3)] //android + ios
+        public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -38,9 +34,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                localData: mockedFileData,
+                data: mockedFileData, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
+                maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 sleepTimeBetweenRetriesInMs: 10
             ));
 

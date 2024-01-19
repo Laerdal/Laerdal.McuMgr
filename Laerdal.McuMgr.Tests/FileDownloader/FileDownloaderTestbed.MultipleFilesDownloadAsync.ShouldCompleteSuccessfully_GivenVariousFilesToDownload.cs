@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Xunit;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -52,7 +47,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             // Act
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(
                 remoteFilePaths: remoteFilePathsToTest,
-                maxRetriesPerDownload: 3
+                maxRetriesPerDownload: 4
             ));
 
             // Assert

@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -48,10 +43,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(
-                maxRetriesPerUpload: 3,
-                remoteFilePathsAndTheirDataBytes: remoteFilePathsToTest
-            ));
+            var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(remoteFilePathsAndTheirData: remoteFilePathsToTest, maxTriesPerUpload: 4));
 
             // Assert
             var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(3.Seconds())).Which;

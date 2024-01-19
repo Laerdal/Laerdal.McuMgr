@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrCallback;
+import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
@@ -58,9 +59,15 @@ public class AndroidFirmwareEraser {
         });
     }
 
-    public void disconnect()
-    {
-        _imageManager.getTransporter().release();
+    public void disconnect() {
+        if (_imageManager == null)
+            return;
+
+        final McuMgrTransport mcuMgrTransporter = _imageManager.getTransporter();
+        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
+            return;
+
+        mcuMgrTransporter.release();
     }
 
     private EAndroidFirmwareEraserState _currentState = EAndroidFirmwareEraserState.NONE;

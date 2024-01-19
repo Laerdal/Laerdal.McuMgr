@@ -5,12 +5,12 @@
         <IsOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsOSX>
         <IsLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsLinux>
         <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+        <IsUnix Condition=" '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
         <!-- if we are building under osx then we issue a proper full blown build    notice that net6.0-maccatalyst must always be first   -->
         <!-- for the native swift-libs to be build properly so that they will be readymade when the net7 build kick in right afterwards    -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'True' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
@@ -45,7 +45,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.MacCatalyst</PackageId>
-        <PackageTags>MAUI;Nordic;McuMgr;Ble;Bindings;Mac;MacCatalyst;</PackageTags>
+        <PackageTags>MAUI;Nordic;McuMgr;Bindings;Mac;MacCatalyst;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -62,10 +62,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.900.0</Version>
-        <FileVersion>1.0.900.0</FileVersion>
-        <PackageVersion>1.0.900.0</PackageVersion>
-        <AssemblyVersion>1.0.900.0</AssemblyVersion>
+        <Version>1.0.919.0</Version>
+        <FileVersion>1.0.919.0</FileVersion>
+        <PackageVersion>1.0.919.0</PackageVersion>
+        <AssemblyVersion>1.0.919.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -111,7 +111,7 @@
         <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
+    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
         <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
     </ItemGroup>
@@ -203,7 +203,7 @@
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
-    <ItemGroup Condition=" '$(IsOSX)' == 'True' ">
+    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
 
         <!-- McuMgrBindingsiOS.framework -->
         <NativeReference Include="Frameworks/McuMgrBindingsiOS.framework">

@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -8,7 +6,6 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Xunit;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
@@ -17,9 +14,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFDA.STDEOE.GFEM.010", 0)]
-        [InlineData("FDT.SFDA.STDEOE.GFEM.020", 1)]
-        public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
+        [InlineData("FDT.SFDA.STDEOE.GFEM.010", 1)]
+        [InlineData("FDT.SFDA.STDEOE.GFEM.020", 2)]
+        public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -32,15 +29,15 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
-                remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount
+                maxTriesCount: maxTriesCount,
+                remoteFilePath: remoteFilePath
             ));
 
             // Assert
             await work.Should()
                 .ThrowExactlyAsync<AllDownloadAttemptsFailedException>()
                 .WithMessage("*failed to download*")
-                .WithTimeoutInMs((int)((maxRetriesCount + 1) * 3).Seconds().TotalMilliseconds);
+                .WithTimeoutInMs((int)(maxTriesCount * 3).Seconds().TotalMilliseconds);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00

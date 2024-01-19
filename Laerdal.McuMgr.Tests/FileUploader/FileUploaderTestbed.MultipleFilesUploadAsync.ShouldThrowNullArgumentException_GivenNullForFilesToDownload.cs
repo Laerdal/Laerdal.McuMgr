@@ -1,10 +1,7 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -23,7 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task>(async () => await fileUploader.UploadAsync(remoteFilePathsAndTheirDataBytes: null));
+            var work = new Func<Task>(async () => await fileUploader.UploadAsync<byte[]>(remoteFilePathsAndTheirData: null));
 
             // Assert
             await work.Should().ThrowExactlyAsync<ArgumentNullException>().WithTimeoutInMs(500);

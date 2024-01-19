@@ -1,7 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -9,7 +6,6 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Xunit;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
@@ -18,9 +14,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFDA.STUEOE.GRNEM.010", "", 1)] //    we want to ensure that our error sniffing logic will 
-        [InlineData("FDT.SFDA.STUEOE.GRNEM.020", null, 1)] //  not be error out itself by rogue native error messages
-        public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
+        [InlineData("FDT.SFDA.STUEOE.GRNEM.010", "", 2)] //    we want to ensure that our error sniffing logic will 
+        [InlineData("FDT.SFDA.STUEOE.GRNEM.020", null, 2)] //  not be error out itself by rogue native error messages
+        public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -37,8 +33,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                maxTriesCount: maxTriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 sleepTimeBetweenRetriesInMs: 10
             ));
 
@@ -57,7 +53,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             eventsMonitor.OccurredEvents
                 .Count(x => x.EventName == nameof(fileDownloader.FatalErrorOccurred))
                 .Should()
-                .Be(1 + maxRetriesCount);
+                .Be(maxTriesCount);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FatalErrorOccurred))

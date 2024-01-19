@@ -1,7 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -10,7 +7,6 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
-using Xunit;
 using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
@@ -36,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 firmwareInstaller.Cancel();
             });
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxRetriesCount: 0));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxTriesCount: 1));
 
             // Assert
             await work.Should()
@@ -107,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
                 
-                (FirmwareInstaller as IFirmwareInstallerEventSubscribable)!.Cancelled += (sender, args) =>
+                (FirmwareInstaller as IFirmwareInstallerEventSubscribable)!.Cancelled += (_, _) =>
                 {
                     _cancellationTokenSource.Cancel();
                 };

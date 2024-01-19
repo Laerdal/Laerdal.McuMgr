@@ -2,10 +2,10 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))</IsOSX>
-        <IsLinux>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))</IsLinux>
-        <IsWindows>$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'True' OR '$(IsLinux)' == 'True' ">True</IsUnix>
+        <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
+        <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
+        <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
+        <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
         <TargetFrameworks>netstandard2.0;</TargetFrameworks>
 
@@ -20,7 +20,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.NetStandard</PackageId>
-        <PackageTags>Xamarin;Nordic;McuMgr;Ble;Bindings;NetStandard;</PackageTags>
+        <PackageTags>Laerdal;Xamarin;Nordic;McuMgr;Bindings;NetStandard;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -37,10 +37,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass --> 
-        <Version>1.0.900.0</Version>
-        <FileVersion>1.0.900.0</FileVersion>
-        <PackageVersion>1.0.900.0</PackageVersion>
-        <AssemblyVersion>1.0.900.0</AssemblyVersion>
+        <Version>1.0.919.0</Version>
+        <FileVersion>1.0.919.0</FileVersion>
+        <PackageVersion>1.0.919.0</PackageVersion>
+        <AssemblyVersion>1.0.919.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr C# Implementation (WIP)</Summary>

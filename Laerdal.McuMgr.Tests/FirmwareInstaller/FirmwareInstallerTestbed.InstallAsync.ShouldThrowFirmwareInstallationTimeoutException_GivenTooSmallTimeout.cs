@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -7,7 +5,6 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
-using Xunit;
 using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
@@ -24,7 +21,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }, maxRetriesCount: 0, timeoutInMs: 100));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }, maxTriesCount: 1, timeoutInMs: 100));
 
             // Assert
             await work.Should()

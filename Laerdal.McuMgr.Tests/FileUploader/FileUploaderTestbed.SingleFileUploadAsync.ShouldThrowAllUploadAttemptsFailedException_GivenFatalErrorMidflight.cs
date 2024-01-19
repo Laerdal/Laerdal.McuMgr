@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
@@ -8,7 +6,6 @@ using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Xunit;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileUploader
@@ -17,9 +14,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFDA.STUAAFE.GFEM.010", 0)]
-        [InlineData("FUT.SFDA.STUAAFE.GFEM.020", 1)]
-        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
+        [InlineData("FUT.SFUA.STUAAFE.GFEM.010", 1)]
+        [InlineData("FUT.SFUA.STUAAFE.GFEM.020", 2)]
+        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -32,16 +29,16 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                localData: mockedFileData,
-                remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount
+                data: mockedFileData,
+                maxTriesCount: maxTriesCount,
+                remoteFilePath: remoteFilePath
             ));
 
             // Assert
             await work.Should()
                 .ThrowExactlyAsync<AllUploadAttemptsFailedException>()
                 .WithMessage("*failed to upload*")
-                .WithTimeoutInMs((int)((maxRetriesCount + 1) * 3).Seconds().TotalMilliseconds);
+                .WithTimeoutInMs((int)((maxTriesCount + 1) * 3).Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
