@@ -15,13 +15,13 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="remoteFilePathsAndTheirDataBytes">The files to upload.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
-        /// <param name="maxRetriesPerUpload">Maximum amount of retries per upload before bailing out. In case of errors the mechanism will try "1 + maxRetriesPerUpload" before bailing out.</param>
+        /// <param name="maxTriesPerUpload">Maximum amount of retries per upload before bailing out. In case of errors the mechanism will try "1 + maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
         Task<IEnumerable<string>> UploadAsync(
             IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
-            int maxRetriesPerUpload = 10,
+            int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true
         );
 
@@ -33,14 +33,14 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="localData">The local data to upload.</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="timeoutForUploadInMs">The amount of time to wait for the upload to complete before bailing out.</param>
-        /// <param name="maxRetriesCount">The maximum amount of retries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
+        /// <param name="maxTriesCount">The maximum amount of retries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         Task UploadAsync(
             byte[] localData,
             string remoteFilePath,
             int timeoutForUploadInMs = -1,
-            int maxRetriesCount = 10,
+            int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500
         );

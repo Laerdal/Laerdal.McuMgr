@@ -483,7 +483,7 @@ private void CleanupDeviceResetter()
             );
             
             await _massFileUploader.UploadAsync(
-                maxRetriesPerUpload: MassFileUploadingMaxRetriesPerUpload,
+                maxTriesPerUpload: MassFileUploadingMaxTriesPerUpload,
                 timeoutPerUploadInMs: 4 * 60 * 1_000, //4mins per upload
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
                 remoteFilePathsAndTheirDataBytes: remoteFilePathsAndTheirDataBytes

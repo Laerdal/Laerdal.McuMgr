@@ -14,9 +14,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFUA.STUAAFE.GRNEM.010", "", 1)] //    we want to ensure that our error sniffing logic will 
-        [InlineData("FDT.SFUA.STUAAFE.GRNEM.020", null, 1)] //  not be error out itself by rogue native error messages
-        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxRetriesCount)
+        [InlineData("FDT.SFUA.STUAAFE.GRNEM.010", "", 2)] //    we want to ensure that our error sniffing logic will 
+        [InlineData("FDT.SFUA.STUAAFE.GRNEM.020", null, 3)] //  not be error out itself by rogue native error messages
+        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -33,8 +33,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 localData: mockedFileData,
+                maxTriesCount: maxTriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 sleepTimeBetweenRetriesInMs: 10
             ));
 
@@ -53,7 +53,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             eventsMonitor.OccurredEvents
                 .Count(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
                 .Should()
-                .Be(1 + maxRetriesCount);
+                .Be(maxTriesCount);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FatalErrorOccurred))

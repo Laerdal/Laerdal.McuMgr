@@ -14,9 +14,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFDA.STUAAFE.GFEM.010", 0)]
-        [InlineData("FUT.SFDA.STUAAFE.GFEM.020", 1)]
-        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxRetriesCount)
+        [InlineData("FUT.SFDA.STUAAFE.GFEM.010", 1)]
+        [InlineData("FUT.SFDA.STUAAFE.GFEM.020", 2)]
+        public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -30,15 +30,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 localData: mockedFileData,
-                remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount
+                maxTriesCount: maxTriesCount,
+                remoteFilePath: remoteFilePath
             ));
 
             // Assert
             await work.Should()
                 .ThrowExactlyAsync<AllUploadAttemptsFailedException>()
                 .WithMessage("*failed to upload*")
-                .WithTimeoutInMs((int)((maxRetriesCount + 1) * 3).Seconds().TotalMilliseconds);
+                .WithTimeoutInMs((int)((maxTriesCount + 1) * 3).Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00

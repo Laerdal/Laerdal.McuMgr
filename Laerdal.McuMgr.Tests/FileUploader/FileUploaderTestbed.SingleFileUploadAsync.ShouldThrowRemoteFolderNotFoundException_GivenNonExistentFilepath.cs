@@ -14,10 +14,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.010", "UNKNOWN (1)", 0)] //android + ios
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.020", "UNKNOWN (1)", 1)] //android + ios
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.030", "UNKNOWN (1)", 2)] //android + ios
-        public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxRetriesCount)
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.010", "UNKNOWN (1)", 1)] //android + ios
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.020", "UNKNOWN (1)", 2)] //android + ios
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.030", "UNKNOWN (1)", 3)] //android + ios
+        public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -35,8 +35,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 localData: mockedFileData,
+                maxTriesCount: maxTriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 remoteFilePath: remoteFilePath,
-                maxRetriesCount: maxRetriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 sleepTimeBetweenRetriesInMs: 10
             ));
 

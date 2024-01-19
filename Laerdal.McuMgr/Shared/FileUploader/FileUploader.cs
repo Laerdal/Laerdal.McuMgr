@@ -128,7 +128,7 @@ namespace Laerdal.McuMgr.FileUploader
             IDictionary<string, byte[]> remoteFilePathsAndTheirDataBytes,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
-            int maxRetriesPerUpload = 10,
+            int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true
         )
         {
@@ -144,7 +144,8 @@ namespace Laerdal.McuMgr.FileUploader
                     await UploadAsync(
                         localData: x.Value,
                         remoteFilePath: x.Key,
-                        maxRetriesCount: maxRetriesPerUpload,
+
+                        maxTriesCount: maxTriesPerUpload,
                         timeoutForUploadInMs: timeoutPerUploadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
                     );
@@ -173,17 +174,20 @@ namespace Laerdal.McuMgr.FileUploader
             byte[] localData,
             string remoteFilePath,
             int timeoutForUploadInMs = -1,
-            int maxRetriesCount = 10,
+            int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500
         )
         {
+            if (maxTriesCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
+            
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
-            
+
             var isCancellationRequested = false;
-            for (var retry = 0; !isCancellationRequested;)
+            for (var tryCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
@@ -217,8 +221,8 @@ namespace Laerdal.McuMgr.FileUploader
                     if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
 
-                    if (++retry > maxRetriesCount) //order
-                        throw new AllUploadAttemptsFailedException(remoteFilePath, maxRetriesCount, innerException: ex);
+                    if (++tryCount > maxTriesCount) //order
+                        throw new AllUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {
