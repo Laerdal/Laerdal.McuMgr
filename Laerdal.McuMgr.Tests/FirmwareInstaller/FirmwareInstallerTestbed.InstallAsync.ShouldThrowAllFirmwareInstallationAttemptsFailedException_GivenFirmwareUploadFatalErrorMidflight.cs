@@ -22,7 +22,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             // Act
             var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
                 data: new byte[] { 1, 2, 3 },
-                maxRetriesCount: 1,
+                maxTriesCount: 2,
                 sleepTimeBetweenRetriesInMs: 0
             ));
 
