@@ -477,7 +477,7 @@ private void CleanupDeviceResetter()
 
             MassFileUploaderNumberOfFilesUploadedSuccessfully = 0;
 
-            var remoteFilePathsAndTheirDataBytes = _massFileUploadSelectedFileNamesAndTheirRawBytes.ToDictionary(
+            var remoteFilePathsAndTheirData = _massFileUploadSelectedFileNamesAndTheirRawBytes.ToDictionary(
                 keySelector: x => $"{MassFileUploadRemoteTargetFolderPath.TrimEnd('/')}/{x.Key}", //dont use path.combine here   it would be a bad idea
                 elementSelector: x => x.Value
             );
@@ -486,7 +486,7 @@ private void CleanupDeviceResetter()
                 maxTriesPerUpload: MassFileUploadingMaxTriesPerUpload,
                 timeoutPerUploadInMs: 4 * 60 * 1_000, //4mins per upload
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
-                remoteFilePathsAndTheirDataBytes: remoteFilePathsAndTheirDataBytes
+                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData
             );
         }
         catch (UploadCancelledException) //order

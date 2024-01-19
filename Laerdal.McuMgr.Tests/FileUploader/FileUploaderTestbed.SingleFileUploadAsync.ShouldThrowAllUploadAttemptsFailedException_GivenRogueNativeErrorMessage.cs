@@ -32,8 +32,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                localData: mockedFileData,
-                maxTriesCount: maxTriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
+                data: mockedFileData, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
+                maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
                 sleepTimeBetweenRetriesInMs: 10
             ));

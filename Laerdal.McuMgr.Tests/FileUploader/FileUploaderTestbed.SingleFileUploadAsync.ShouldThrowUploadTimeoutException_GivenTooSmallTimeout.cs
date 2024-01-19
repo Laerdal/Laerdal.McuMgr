@@ -24,7 +24,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                localData: new byte[] { 1 },
+                data: new byte[] { 1 },
                 remoteFilePath: remoteFilePath,
                 timeoutForUploadInMs: 100
             ));

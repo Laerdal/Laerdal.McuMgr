@@ -38,7 +38,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                dataStream: stream,
+                data: stream,
                 maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
                 sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
