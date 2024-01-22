@@ -133,10 +133,10 @@ namespace Laerdal.McuMgr.FileUploader
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true,
             bool autodisposeStreams = false
-        )
+        ) where TData : notnull
         {
             RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
-            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
+            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
 
             var filesThatFailedToBeUploaded = new List<string>(2);
 
@@ -182,8 +182,11 @@ namespace Laerdal.McuMgr.FileUploader
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
             bool autodisposeStream = false
-        )
+        ) where TData : notnull
         {
+            if (data is null)
+                throw new ArgumentNullException(nameof(data));
+            
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
             
@@ -344,11 +347,17 @@ namespace Laerdal.McuMgr.FileUploader
             
             static async Task<byte[]> GetDataAsByteArray_<TD>(TD dataObject_, bool autodisposeStream_) => dataObject_ switch
             {
+                
                 Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_),
+                
+                Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_),
+                Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
+                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
+                
                 byte[] dataByteArray => dataByteArray,
                 IEnumerable<byte> dataEnumerableBytes => dataEnumerableBytes.ToArray(), //just in case
                     
-                _ => throw new ArgumentException(nameof(data))
+                _ => throw new NotSupportedException($"Unsupported data type {dataObject_?.GetType().FullName ?? "N/A"} passed to UploadAsync()")
             };
         }
 
