@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
@@ -293,6 +294,13 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void DownloadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
+                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    if (isAboutUnauthorized)
+                    {
+                        taskCompletionSource.TrySetException(new UnauthorizedException());
+                        return;
+                    }
+                    
                     var isAboutRemoteFileNotFound = ea.ErrorMessage
                         ?.ToUpperInvariant()
                         .Replace("NO_ENTRY (5)", "NO ENTRY (5)") //normalize the error for android so that it will be the same as in ios
