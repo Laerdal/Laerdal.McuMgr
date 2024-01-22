@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
@@ -159,6 +160,13 @@ namespace Laerdal.McuMgr.FirmwareEraser
 
             void EraseAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
             {
+                var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false; //just in case
+                if (isAboutUnauthorized)
+                {
+                    taskCompletionSource.TrySetException(new UnauthorizedException());
+                    return;
+                }
+                
                 taskCompletionSource.TrySetException(new FirmwareErasureErroredOutException(ea.ErrorMessage)); //generic
             }
             

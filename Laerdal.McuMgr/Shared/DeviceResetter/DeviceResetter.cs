@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
@@ -148,6 +149,13 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             void ResetAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
             {
+                var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                if (isAboutUnauthorized)
+                {
+                    taskCompletionSource.TrySetException(new UnauthorizedException());
+                    return;
+                }
+
                 taskCompletionSource.TrySetException(new DeviceResetterErroredOutException(ea.ErrorMessage)); //generic
             }
             

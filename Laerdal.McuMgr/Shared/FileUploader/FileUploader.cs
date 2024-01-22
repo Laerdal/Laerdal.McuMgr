@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
@@ -305,6 +306,13 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void UploadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
+                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    if (isAboutUnauthorized)
+                    {
+                        taskCompletionSource.TrySetException(new UnauthorizedException());
+                        return;
+                    }
+                    
                     var isAboutFolderNotExisting = ea.ErrorMessage?.ToUpperInvariant().Contains("UNKNOWN (1)") ?? false;
                     if (isAboutFolderNotExisting)
                     {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
@@ -276,6 +277,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                 void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
+                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    if (isAboutUnauthorized)
+                    {
+                        taskCompletionSource.TrySetException(new UnauthorizedException());
+                        return;
+                    }
+                    
                     if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut || ea.State == EFirmwareInstallationState.Uploading)
                     {
                         taskCompletionSource.TrySetException(new FirmwareInstallationUploadingStageErroredOutException());
