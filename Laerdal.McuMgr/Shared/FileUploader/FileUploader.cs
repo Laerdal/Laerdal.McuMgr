@@ -352,7 +352,9 @@ namespace Laerdal.McuMgr.FileUploader
                 
                 Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_),
                 Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
-                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
+#if NETCOREAPP
+                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_), //only supported in the netcore era
+#endif
                 
                 byte[] dataByteArray => dataByteArray,
                 IEnumerable<byte> dataEnumerableBytes => dataEnumerableBytes.ToArray(), //just in case
