@@ -400,8 +400,17 @@ namespace Laerdal.McuMgr.FileUploader
             public void UploadCompletedAdvertisement(string resource)
                 => FileUploader?.OnUploadCompleted(new UploadCompletedEventArgs(resource));
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
+            public void FatalErrorOccurredAdvertisement(
+                string resource,
+                string errorMessage,
+                EMcuMgrErrorCode mcuMgrErrorCode,
+                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+            ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
+                resource,
+                errorMessage,
+                mcuMgrErrorCode,
+                fileUploaderGroupReturnCode
+            ));
 
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(

@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
+import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.FileUploader;
@@ -42,7 +43,7 @@ public class AndroidFileUploader
 
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement("N/A", "Provided target-path is empty!");
+            onError("N/A", "Provided target-path is empty!", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -51,7 +52,7 @@ public class AndroidFileUploader
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
             setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!");
+            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -59,14 +60,14 @@ public class AndroidFileUploader
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
             setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path is not an absolute path!");
+            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path!", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (data == null) { // data being null is not ok   but data.length==0 is perfectly ok because we might want to create empty files
             setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided data is null");
+            onError(_remoteFilePathSanitized, "Provided data is null", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
@@ -78,7 +79,7 @@ public class AndroidFileUploader
         catch (final Exception ex)
         {
             setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
+            onError(_remoteFilePathSanitized, ex.getMessage(), ex);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -196,7 +197,33 @@ public class AndroidFileUploader
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String remoteFilePath, final String errorMessage)
+    public void onError(
+            final String remoteFilePath,
+            final String errorMessage,
+            final Exception exception
+    )
+    {
+        if (!(exception instanceof McuMgrErrorException))
+        {
+            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, 0, 0);
+            return;
+        }
+
+        McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
+        fatalErrorOccurredAdvertisement(
+                remoteFilePath,
+                errorMessage,
+                mcuMgrErrorException.getCode().value(),
+                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -1)
+        );
+    }
+
+    public void fatalErrorOccurredAdvertisement(
+            final String remoteFilePath,
+            final String errorMessage,
+            final int mcuMgrErrorCode, //         io.runtime.mcumgr.McuMgrErrorCode
+            final int fsManagerGroupReturnCode // io.runtime.mcumgr.managers.FsManager.ReturnCode
+    )
     {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -266,7 +293,7 @@ public class AndroidFileUploader
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
+            onError(_remoteFilePathSanitized, error.getMessage(), error);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
         }

@@ -186,6 +186,13 @@ extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadDidFail(with error: Error) {
         setState(EIOSFileUploaderState.error)
+
+        // todo pass the raw error code if error == 11 -> ACCESS_DENIED
+        //
+        //    this means we made an unauthorized call (we forgot to authenticate first)
+        //    or that the authentication got reset during multi-file uploads (does sometimes happen believe it or not)
+        //
+
         fatalErrorOccurredAdvertisement(error.localizedDescription)
         busyStateChangedAdvertisement(false)
     }
