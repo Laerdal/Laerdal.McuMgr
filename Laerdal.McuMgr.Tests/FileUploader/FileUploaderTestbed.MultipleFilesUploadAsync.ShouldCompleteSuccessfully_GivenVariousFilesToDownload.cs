@@ -56,7 +56,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             });
             
             eventsMonitor.OccurredEvents
-                .Count(args => args.EventName == nameof(fileUploader.UploadCompleted))
+                .Count(args => args.EventName == nameof(fileUploader.FileUploaded))
                 .Should()
                 .Be(filesThatShouldBeSuccessfullyUploaded.Length);
 
@@ -105,7 +105,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     }
                     else
                     {
-                        UploadCompletedAdvertisement(remoteFilePath);
+                        FileUploadedAdvertisement(remoteFilePath);
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
                     }
                 });

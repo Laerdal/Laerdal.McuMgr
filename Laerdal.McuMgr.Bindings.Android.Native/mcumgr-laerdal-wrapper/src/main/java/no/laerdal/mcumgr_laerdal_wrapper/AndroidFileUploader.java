@@ -233,7 +233,7 @@ public class AndroidFileUploader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void uploadCompletedAdvertisement(final String remoteFilePath)
+    public void fileUploadedAdvertisement(final String remoteFilePath)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -313,7 +313,7 @@ public class AndroidFileUploader
         {
             //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
             setState(EAndroidFileUploaderState.COMPLETE);
-            uploadCompletedAdvertisement(_remoteFilePathSanitized);
+            fileUploadedAdvertisement(_remoteFilePathSanitized);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
         }

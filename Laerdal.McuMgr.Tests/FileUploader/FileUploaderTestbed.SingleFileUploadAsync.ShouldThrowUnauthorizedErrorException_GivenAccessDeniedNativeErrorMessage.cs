@@ -18,10 +18,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             // Act
-            var work = new Func<Task>(() => fileUploader.UploadAsync(data: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin"));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(data: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin", maxTriesCount: 2));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<UploadUnauthorizedException>();
+            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>()).WithInnerExceptionExactly<UploadUnauthorizedException>();
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00

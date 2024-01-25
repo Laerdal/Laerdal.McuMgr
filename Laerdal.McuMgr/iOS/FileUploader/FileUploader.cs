@@ -106,8 +106,8 @@ namespace Laerdal.McuMgr.FileUploader
                     oldState: oldState
                 );
 
-            public override void UploadCompletedAdvertisement(string resource)
-                => _nativeFileUploaderCallbacksProxy?.UploadCompletedAdvertisement(resource);
+            public override void FileUploadedAdvertisement(string resource)
+                => _nativeFileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);

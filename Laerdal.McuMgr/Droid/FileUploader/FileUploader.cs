@@ -120,11 +120,11 @@ namespace Laerdal.McuMgr.FileUploader
                 _fileUploaderCallbacksProxy?.CancelledAdvertisement();
             }
 
-            public override void UploadCompletedAdvertisement(string resource)
+            public override void FileUploadedAdvertisement(string resource)
             {
-                base.UploadCompletedAdvertisement(resource); //just in case
+                base.FileUploadedAdvertisement(resource); //just in case
 
-                _fileUploaderCallbacksProxy?.UploadCompletedAdvertisement(resource);
+                _fileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)

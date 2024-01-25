@@ -127,8 +127,8 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func uploadCompletedAdvertisement() {
-        _listener.uploadCompletedAdvertisement(_remoteFilePathSanitized)
+    private func fileUploadedAdvertisement() {
+        _listener.fileUploadedAdvertisement(_remoteFilePathSanitized)
     }
 
     //@objc   dont
@@ -206,7 +206,7 @@ extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadDidFinish() {
         setState(EIOSFileUploaderState.complete)
-        uploadCompletedAdvertisement()
+        fileUploadedAdvertisement()
         busyStateChangedAdvertisement(false)
     }
 

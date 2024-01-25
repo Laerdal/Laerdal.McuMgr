@@ -2,11 +2,11 @@
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public readonly struct UploadCompletedEventArgs : IMcuMgrEventArgs
+    public readonly struct FileUploadedEventArgs : IMcuMgrEventArgs
     {
         public string Resource { get; }
 
-        public UploadCompletedEventArgs(string resource)
+        public FileUploadedEventArgs(string resource)
         {
             Resource = resource;
         }

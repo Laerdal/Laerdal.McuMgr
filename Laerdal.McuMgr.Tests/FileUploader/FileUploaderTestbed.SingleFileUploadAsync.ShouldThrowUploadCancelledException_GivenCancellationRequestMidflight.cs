@@ -51,7 +51,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             eventsMonitor
                 .Should()
-                .NotRaise(nameof(fileUploader.UploadCompleted));
+                .NotRaise(nameof(fileUploader.FileUploaded));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -112,7 +112,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    UploadCompletedAdvertisement(remoteFilePath);
+                    FileUploadedAdvertisement(remoteFilePath);
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
                 }, _cancellationTokenSource.Token);

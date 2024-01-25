@@ -58,8 +58,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _uploaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
             
-            public void UploadCompletedAdvertisement(string resource)
-                => _uploaderCallbacksProxy.UploadCompletedAdvertisement(resource); //raises the actual event
+            public void FileUploadedAdvertisement(string resource)
+                => _uploaderCallbacksProxy.FileUploadedAdvertisement(resource); //raises the actual event
 
             public void FatalErrorOccurredAdvertisement(
                 string resource,

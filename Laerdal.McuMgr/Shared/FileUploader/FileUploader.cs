@@ -49,7 +49,7 @@ namespace Laerdal.McuMgr.FileUploader
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
-        private event EventHandler<UploadCompletedEventArgs> _uploadCompleted;
+        private event EventHandler<FileUploadedEventArgs> _fileUploaded;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
         private event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> _fileUploadProgressPercentageAndDataThroughputChanged;
@@ -105,14 +105,14 @@ namespace Laerdal.McuMgr.FileUploader
         }
         
         /// <summary>Event raised when a specific file gets uploaded successfully</summary>
-        public event EventHandler<UploadCompletedEventArgs> UploadCompleted
+        public event EventHandler<FileUploadedEventArgs> FileUploaded
         {
             add
             {
-                _uploadCompleted -= value;
-                _uploadCompleted += value;
+                _fileUploaded -= value;
+                _fileUploaded += value;
             }
-            remove => _uploadCompleted -= value;
+            remove => _fileUploaded -= value;
         }
 
         public event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> FileUploadProgressPercentageAndDataThroughputChanged
@@ -308,25 +308,25 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void UploadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutUnauthorized = ea.McuMgrErrorCode == EMcuMgrErrorCode.AccessDenied;
+                    var isAboutUnauthorized = ea.ErrorCode == EMcuMgrErrorCode.AccessDenied;
                     if (isAboutUnauthorized)
                     {
                         taskCompletionSource.TrySetException(new UploadUnauthorizedException(
                             remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea.McuMgrErrorCode,
-                            groupReturnCode: ea.FileUploaderGroupReturnCode,
+                            mcuMgrErrorCode: ea.ErrorCode,
+                            groupReturnCode: ea.GroupReturnCode,
                             nativeErrorMessage: ea.ErrorMessage
                         ));
                         return;
                     }
                     
-                    var isAboutFolderNotExisting = ea.McuMgrErrorCode == EMcuMgrErrorCode.Unknown;
+                    var isAboutFolderNotExisting = ea.ErrorCode == EMcuMgrErrorCode.Unknown;
                     if (isAboutFolderNotExisting)
                     {
                         taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException( //specific case
                             remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea.McuMgrErrorCode,
-                            groupReturnCode: ea.FileUploaderGroupReturnCode,
+                            mcuMgrErrorCode: ea.ErrorCode,
+                            groupReturnCode: ea.GroupReturnCode,
                             nativeErrorMessage: ea.ErrorMessage
                         ));
                         return;
@@ -334,8 +334,8 @@ namespace Laerdal.McuMgr.FileUploader
 
                     taskCompletionSource.TrySetException(new UploadErroredOutException( //generic
                         remoteFilePath: remoteFilePath,
-                        mcuMgrErrorCode: ea.McuMgrErrorCode,
-                        groupReturnCode: ea.FileUploaderGroupReturnCode,
+                        mcuMgrErrorCode: ea.ErrorCode,
+                        groupReturnCode: ea.GroupReturnCode,
                         nativeErrorMessage: ea.ErrorMessage
                     ));
                 }
@@ -380,7 +380,7 @@ namespace Laerdal.McuMgr.FileUploader
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnUploadCompleted(UploadCompletedEventArgs ea) => _uploadCompleted?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
@@ -411,8 +411,8 @@ namespace Laerdal.McuMgr.FileUploader
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void UploadCompletedAdvertisement(string resource)
-                => FileUploader?.OnUploadCompleted(new UploadCompletedEventArgs(resource));
+            public void FileUploadedAdvertisement(string resource)
+                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resource));
 
             public void FatalErrorOccurredAdvertisement(
                 string resource,
