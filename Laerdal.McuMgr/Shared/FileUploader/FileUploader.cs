@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
-using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
@@ -309,21 +308,36 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void UploadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    var isAboutUnauthorized = ea.McuMgrErrorCode == EMcuMgrErrorCode.AccessDenied;
                     if (isAboutUnauthorized)
                     {
-                        taskCompletionSource.TrySetException(new UnauthorizedException());
+                        taskCompletionSource.TrySetException(new UploadUnauthorizedException(
+                            remoteFilePath: remoteFilePath,
+                            mcuMgrErrorCode: ea.McuMgrErrorCode,
+                            groupReturnCode: ea.FileUploaderGroupReturnCode,
+                            nativeErrorMessage: ea.ErrorMessage
+                        ));
                         return;
                     }
                     
-                    var isAboutFolderNotExisting = ea.ErrorMessage?.ToUpperInvariant().Contains("UNKNOWN (1)") ?? false;
+                    var isAboutFolderNotExisting = ea.McuMgrErrorCode == EMcuMgrErrorCode.Unknown;
                     if (isAboutFolderNotExisting)
                     {
-                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(remoteFilePath)); //specific case
+                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException( //specific case
+                            remoteFilePath: remoteFilePath,
+                            mcuMgrErrorCode: ea.McuMgrErrorCode,
+                            groupReturnCode: ea.FileUploaderGroupReturnCode,
+                            nativeErrorMessage: ea.ErrorMessage
+                        ));
                         return;
                     }
 
-                    taskCompletionSource.TrySetException(new UploadErroredOutException(remoteFilePath, ea.ErrorMessage)); //generic
+                    taskCompletionSource.TrySetException(new UploadErroredOutException( //generic
+                        remoteFilePath: remoteFilePath,
+                        mcuMgrErrorCode: ea.McuMgrErrorCode,
+                        groupReturnCode: ea.FileUploaderGroupReturnCode,
+                        nativeErrorMessage: ea.ErrorMessage
+                    ));
                 }
                 // ReSharper restore AccessToModifiedClosure
             }

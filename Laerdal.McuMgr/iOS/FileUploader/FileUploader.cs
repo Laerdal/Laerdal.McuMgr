@@ -119,13 +119,13 @@ namespace Laerdal.McuMgr.FileUploader
                 resource,
                 errorMessage,
                 EMcuMgrErrorCode.Ok, //todo              implement this properly in ios
-                EFileUploaderGroupReturnCode.OK //todo   implement this properly in ios
+                EFileUploaderGroupReturnCode.Ok //todo   implement this properly in ios
             );
             public void FatalErrorOccurredAdvertisement(  //conformance to the interface
                 string resource,
                 string errorMessage, // ReSharper disable once MethodOverloadWithOptionalParameter
                 EMcuMgrErrorCode mcuMgrErrorCode = EMcuMgrErrorCode.Ok,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode = EFileUploaderGroupReturnCode.OK
+                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode = EFileUploaderGroupReturnCode.Ok
             ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileUploaderGroupReturnCode);
 
             public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)

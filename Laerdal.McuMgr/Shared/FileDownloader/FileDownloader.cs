@@ -297,7 +297,10 @@ namespace Laerdal.McuMgr.FileDownloader
                     var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
                     if (isAboutUnauthorized)
                     {
-                        taskCompletionSource.TrySetException(new UnauthorizedException());
+                        taskCompletionSource.TrySetException(new UnauthorizedException(
+                            resource: remoteFilePath,
+                            nativeErrorMessage: ea.ErrorMessage
+                        ));
                         return;
                     }
                     

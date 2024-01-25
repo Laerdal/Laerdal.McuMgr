@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
@@ -91,16 +92,16 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
                     if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "UNKNOWN (1)");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "UNKNOWN (1)", EMcuMgrErrorCode.Unknown, EFileUploaderGroupReturnCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Busy, EFileUploaderGroupReturnCode.Unset);
                     }  
                     else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin".ToUpperInvariant()))
                     {
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah", EMcuMgrErrorCode.NotSupported, EFileUploaderGroupReturnCode.Unset);
                     }
                     else
                     {

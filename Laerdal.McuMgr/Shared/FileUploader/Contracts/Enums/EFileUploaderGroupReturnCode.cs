@@ -2,22 +2,23 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Enums
 {
     public enum EFileUploaderGroupReturnCode //@formatter:off
     {
-        OK                        = 0,
-        UNKNOWN                   = 1,
-        INVALID_NAME              = 2,
-        NOT_FOUND                 = 3,
-        IS_DIRECTORY              = 4,
-        OPEN_FAILED               = 5,
-        SEEK_FAILED               = 6,
-        READ_FAILED               = 7,
-        TRUNCATE_FAILED           = 8,
-        DELETE_FAILED             = 9,
-        WRITE_FAILED              = 10,
-        OFFSET_NOT_VALID          = 11,
-        OFFSET_LARGER_THAN_FILE   = 12,
-        CHECKSUM_HASH_NOT_FOUND   = 13,
-        MOUNT_POINT_NOT_FOUND     = 14,
-        READ_ONLY_FILESYSTEM      = 15,
-        FILE_EMPTY                = 16, //@formatter:on
+        Unset                  = -99,
+        Ok                     = 00,
+        Unknown                = 01,
+        InvalidName            = 02,
+        NotFound               = 03,
+        IsDirectory            = 04,
+        OpenFailed             = 05,
+        SeekFailed             = 06,
+        ReadFailed             = 07,
+        TruncateFailed         = 08,
+        DeleteFailed           = 09,
+        WriteFailed            = 10,
+        OffsetNotValid         = 11,
+        OffsetLargerThanFile   = 12,
+        ChecksumHashNotFound   = 13,
+        MountPointNotFound     = 14,
+        ReadOnlyFilesystem     = 15,
+        FileEmpty              = 16, //@formatter:on
     }
 }

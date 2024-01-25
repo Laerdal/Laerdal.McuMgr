@@ -59,8 +59,8 @@ namespace Laerdal.McuMgr.FileUploader
                 _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
             
-            
-            #region commands 
+
+            #region commands
 
             public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {

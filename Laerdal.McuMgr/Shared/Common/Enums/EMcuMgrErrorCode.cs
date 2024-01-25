@@ -2,18 +2,19 @@ namespace Laerdal.McuMgr.Common.Enums
 {
     public enum EMcuMgrErrorCode // must mirror io.runtime.mcumgr.McuMgrErrorCode  @formatter:off
     {
-        Ok           = 00,
-        Unknown      = 01,
-        NoMemory     = 02,
-        InValue      = 03,
-        Timeout      = 04,
-        NoEntry      = 05,
-        BadState     = 06,
-        TooLarge     = 07,
-        NotSupported = 08,
-        Corrupt      = 09,
-        Busy         = 10,
-        AccessDenied = 11,
+        Unset        = -99, //this is our own to mark that we haven't received any error code from the device
+        Ok           = 000,
+        Unknown      = 001,
+        NoMemory     = 002,
+        InValue      = 003,
+        Timeout      = 004,
+        NoEntry      = 005,
+        BadState     = 006,
+        TooLarge     = 007,
+        NotSupported = 008,
+        Corrupt      = 009,
+        Busy         = 010,
+        AccessDenied = 011,
         PerUser      = 256,
     } // @formatter:on
 }
