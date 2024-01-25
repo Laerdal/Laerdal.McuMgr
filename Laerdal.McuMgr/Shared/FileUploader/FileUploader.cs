@@ -225,7 +225,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                     throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
                 }
-                catch (UploadErroredOutException ex) //errors with code in_value(3) happen all the time in android when multiuploading files
+                catch (UploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
                 {
                     if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
@@ -311,7 +311,7 @@ namespace Laerdal.McuMgr.FileUploader
                     var isAboutUnauthorized = ea.ErrorCode == EMcuMgrErrorCode.AccessDenied;
                     if (isAboutUnauthorized)
                     {
-                        taskCompletionSource.TrySetException(new UploadUnauthorizedException(
+                        taskCompletionSource.TrySetException(new UploadUnauthorizedException( //specific case
                             remoteFilePath: remoteFilePath,
                             mcuMgrErrorCode: ea.ErrorCode,
                             groupReturnCode: ea.GroupReturnCode,
