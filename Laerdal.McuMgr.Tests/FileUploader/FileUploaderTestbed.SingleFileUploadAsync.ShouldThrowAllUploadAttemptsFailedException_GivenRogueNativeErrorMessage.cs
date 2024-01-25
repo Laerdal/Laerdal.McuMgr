@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
@@ -15,7 +16,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     {
         [Theory]
         [InlineData("FDT.SFUA.STUAAFE.GRNEM.010", "", 2)] //    we want to ensure that our error sniffing logic will 
-        [InlineData("FDT.SFUA.STUAAFE.GRNEM.020", null, 3)] //  not be error out itself by rogue native error messages
+        [InlineData("FDT.SFUA.STUAAFE.GRNEM.020", null, 3)] //  not error out itself by rogue native error messages
         public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxTriesCount)
         {
             // Arrange
@@ -48,7 +49,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             eventsMonitor.Should().NotRaise(nameof(fileUploader.Cancelled));
-            eventsMonitor.Should().NotRaise(nameof(fileUploader.UploadCompleted));
+            eventsMonitor.Should().NotRaise(nameof(fileUploader.FileUploaded));
 
             eventsMonitor.OccurredEvents
                 .Count(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
@@ -93,7 +94,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Corrupt, EFileUploaderGroupReturnCode.Unset);
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                 });

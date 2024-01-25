@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Net.Mime;
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
@@ -9,6 +10,7 @@ using Android.Runtime;
 using Laerdal.McuMgr.Bindings.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
@@ -33,7 +35,7 @@ namespace Laerdal.McuMgr.FileUploader
             return new AndroidFileUploaderProxy(
                 context: androidContext,
                 bluetoothDevice: bluetoothDevice,
-                fileUploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy()
+                fileUploaderCallbacksProxy: new FileUploader.GenericNativeFileUploaderCallbacksProxy()
             );
         }
 
@@ -57,8 +59,8 @@ namespace Laerdal.McuMgr.FileUploader
                 _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
             
-            
-            #region commands 
+
+            #region commands
 
             public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
@@ -70,12 +72,22 @@ namespace Laerdal.McuMgr.FileUploader
 
 
             #region android callbacks -> csharp event emitters
-            
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-            {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage);
 
-                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int mcuMgrErrorCode, int fileUploaderGroupReturnCode)
+            {
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileUploaderGroupReturnCode); //just in case
+
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileUploaderGroupReturnCode) fileUploaderGroupReturnCode);
+            }
+            
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileUploaderGroupReturnCode fileUploaderGroupReturnCode)
+            {
+                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    resource,
+                    errorMessage,
+                    mcuMgrErrorCode,
+                    fileUploaderGroupReturnCode
+                );
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
@@ -108,11 +120,11 @@ namespace Laerdal.McuMgr.FileUploader
                 _fileUploaderCallbacksProxy?.CancelledAdvertisement();
             }
 
-            public override void UploadCompletedAdvertisement(string resource)
+            public override void FileUploadedAdvertisement(string resource)
             {
-                base.UploadCompletedAdvertisement(resource); //just in case
+                base.FileUploadedAdvertisement(resource); //just in case
 
-                _fileUploaderCallbacksProxy?.UploadCompletedAdvertisement(resource);
+                _fileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)

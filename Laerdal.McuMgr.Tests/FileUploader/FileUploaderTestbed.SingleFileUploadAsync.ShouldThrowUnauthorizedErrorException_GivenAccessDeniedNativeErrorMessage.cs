@@ -1,42 +1,39 @@
 using FluentAssertions;
-using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
-
-#pragma warning disable xUnit1026
 
 namespace Laerdal.McuMgr.Tests.FileUploader
 {
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenNoFilesToUpload()
+        public async Task SingleFileUploadAsync_ShouldThrowUnauthorizedErrorException_GivenAccessDeniedNativeErrorMessage()
         {
             // Arrange
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy5(new GenericNativeFileUploaderCallbacksProxy_());
+            var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy100(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
-            using var eventsMonitor = fileUploader.Monitor();
-
             // Act
-            var work = new Func<Task>(async () => await fileUploader.UploadAsync(new Dictionary<string, IEnumerable<byte[]>>(0)));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(data: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin", maxTriesCount: 2));
 
             // Assert
-            await work.Should().CompleteWithinAsync(500.Milliseconds());
-
-            eventsMonitor.OccurredEvents.Should().HaveCount(0);
+            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>()).WithInnerExceptionExactly<UploadUnauthorizedException>();
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeFalse();
+            mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy5 : MockedNativeFileUploaderProxySpy
+        private class MockedErroneousNativeFileUploaderProxySpy100 : MockedNativeFileUploaderProxySpy
         {
-            public MockedGreenNativeFileUploaderProxySpy5(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
+            public MockedErroneousNativeFileUploaderProxySpy100(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy)
+                : base(uploaderCallbacksProxy)
             {
             }
 
@@ -46,12 +43,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 Task.Run(async () => //00 vital
                 {
-                    await Task.Delay(10);
+                    await Task.Delay(100);
+
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+
+                    await Task.Delay(100);
                     
-                    await Task.Delay(20);
-                    FileUploadedAdvertisement(remoteFilePath);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileUploaderGroupReturnCode.Unset);
+
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                 });
 
                 return verdict;

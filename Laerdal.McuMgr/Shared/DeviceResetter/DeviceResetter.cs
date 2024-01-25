@@ -152,7 +152,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
                 if (isAboutUnauthorized)
                 {
-                    taskCompletionSource.TrySetException(new UnauthorizedException());
+                    taskCompletionSource.TrySetException(new UnauthorizedException(ea.ErrorMessage));
                     return;
                 }
 

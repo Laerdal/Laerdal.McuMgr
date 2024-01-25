@@ -106,14 +106,27 @@ namespace Laerdal.McuMgr.FileUploader
                     oldState: oldState
                 );
 
-            public override void UploadCompletedAdvertisement(string resource)
-                => _nativeFileUploaderCallbacksProxy?.UploadCompletedAdvertisement(resource);
-            
+            public override void FileUploadedAdvertisement(string resource)
+                => _nativeFileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
+
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(
+                string resource,
+                string errorMessage
+            ) => FatalErrorOccurredAdvertisement(
+                resource,
+                errorMessage,
+                EMcuMgrErrorCode.Ok, //todo              implement this properly in ios
+                EFileUploaderGroupReturnCode.Ok //todo   implement this properly in ios
+            );
+            public void FatalErrorOccurredAdvertisement(  //conformance to the interface
+                string resource,
+                string errorMessage, // ReSharper disable once MethodOverloadWithOptionalParameter
+                EMcuMgrErrorCode mcuMgrErrorCode = EMcuMgrErrorCode.Ok,
+                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode = EFileUploaderGroupReturnCode.Ok
+            ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileUploaderGroupReturnCode);
 
             public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
                 => FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
