@@ -30,6 +30,8 @@ namespace Laerdal.McuMgr.FileUploader
             _nativeFileUploaderProxy = nativeFileUploaderProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderProxy));
             _nativeFileUploaderProxy.FileUploader = this; //vital
         }
+        
+        public bool InvalidateCachedTransport() => _nativeFileUploaderProxy?.InvalidateCachedTransport() ?? false;
 
         public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
         {

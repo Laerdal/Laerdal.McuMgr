@@ -58,7 +58,6 @@ namespace Laerdal.McuMgr.FileUploader
             {
                 _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
-            
 
             #region commands
 
@@ -67,6 +66,11 @@ namespace Laerdal.McuMgr.FileUploader
                 return TranslateFileUploaderVerdict(base.BeginUpload(remoteFilePath, data));
             }
             
+            public new bool InvalidateCachedTransport()
+            {
+                return base.InvalidateCachedTransport();
+            }
+
             #endregion commands
             
 

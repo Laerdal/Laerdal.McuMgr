@@ -35,7 +35,7 @@ public class AndroidFileUploader
         _bluetoothDevice = bluetoothDevice;
     }
 
-    public boolean scrapCurrentTransport()
+    public boolean invalidateCachedTransport()
     {
         if (_transport == null) //already scrapped
             return true;

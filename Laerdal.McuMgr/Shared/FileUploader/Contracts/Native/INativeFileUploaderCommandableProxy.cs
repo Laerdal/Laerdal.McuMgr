@@ -6,6 +6,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
     {
         void Cancel();
         void Disconnect();
+        
         EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);
+
+        bool InvalidateCachedTransport();
     }
 }

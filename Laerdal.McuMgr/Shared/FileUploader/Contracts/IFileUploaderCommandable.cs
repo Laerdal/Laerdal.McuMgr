@@ -60,6 +60,13 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="data">The file-data.</param>
         EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);
+        
+        /// <summary>
+        /// Scraps the current transport. This is useful in case the transport is in a bad state and needs to be restarted.
+        /// Method has an effect if and only if the upload has been terminated first (canceled or failed or completed).
+        /// </summary>
+        /// <returns>True if the transport has been scrapped without issues - False otherwise (which typically means that an upload is still ongoing)</returns>
+        bool InvalidateCachedTransport();
 
         /// <summary>Cancels the file-uploading process</summary>
         void Cancel();

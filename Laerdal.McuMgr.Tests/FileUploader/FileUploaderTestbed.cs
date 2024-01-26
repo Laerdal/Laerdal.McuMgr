@@ -35,6 +35,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 return EFileUploaderVerdict.Success;
             }
+            
+            public bool InvalidateCachedTransport()
+            {
+                throw new NotImplementedException();
+            }
 
             public virtual void Cancel()
             {

@@ -61,6 +61,13 @@ namespace Laerdal.McuMgr.FileUploader
 
                 return verdict;
             }
+            
+            public bool InvalidateCachedTransport()
+            {               
+                // return _nativeFileUploader.InvalidateCachedTransport(); //todo
+
+                return true;
+            }
 
             #endregion commands
 
