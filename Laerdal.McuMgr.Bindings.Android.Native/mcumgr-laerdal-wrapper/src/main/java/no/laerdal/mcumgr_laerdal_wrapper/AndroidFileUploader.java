@@ -19,7 +19,7 @@ public class AndroidFileUploader
     private FsManager _fileSystemManager;
     @SuppressWarnings("FieldCanBeLocal")
     private final McuMgrBleTransport _transport;
-    private TransferController _controller;
+    private TransferController _uploadController;
 
     private int _initialBytes;
     private long _uploadStartTimestamp;
@@ -72,9 +72,55 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
 
+        EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce();
+        if (verdict != EAndroidFileUploaderVerdict.SUCCESS)
+            return verdict;
+
+        ensureFileUploaderCallbackProxyIsInitializedExactlyOnce(); //order
+
+        resetUploadState(); //order
+
+        setLoggingEnabled(false);
+        _uploadController = new FileUploader( //00
+                _fileSystemManager,
+                _remoteFilePathSanitized,
+                data,
+                3, // window capacity
+                4 //  memory alignment
+        ).uploadAsync(_fileUploaderCallbackProxy);
+
+        return EAndroidFileUploaderVerdict.SUCCESS;
+
+        //00   file-uploader is the new improved way of performing the file upload   it makes use of the window uploading mechanism
+        //     aka sending multiple packets without waiting for the response
+    }
+
+    private void resetUploadState() {
+        _initialBytes = 0;
+        _uploadStartTimestamp = 0;
+
+        setState(EAndroidFileUploaderState.IDLE);
+        busyStateChangedAdvertisement(true);
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+    }
+
+    private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
+    private void ensureFileUploaderCallbackProxyIsInitializedExactlyOnce() {
+        if (_fileUploaderCallbackProxy != null) //already initialized
+            return;
+
+        _fileUploaderCallbackProxy = new FileUploaderCallbackProxy();
+    }
+
+    private EAndroidFileUploaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce() {
+        if (_fileSystemManager != null) //already initialized
+            return EAndroidFileUploaderVerdict.SUCCESS;
+
         try
         {
-            _fileSystemManager = new FsManager(_transport);
+            _fileSystemManager = new FsManager(_transport); //order
+
+            requestHighConnectionPriority(_fileSystemManager); //order
         }
         catch (final Exception ex)
         {
@@ -84,31 +130,12 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        setLoggingEnabled(false);
-        requestHighConnectionPriority();
-
-        _initialBytes = 0;
-        setState(EAndroidFileUploaderState.IDLE);
-        busyStateChangedAdvertisement(true);
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-
-        _controller = new FileUploader( //00
-                _fileSystemManager,
-                _remoteFilePathSanitized,
-                data,
-                3, // window capacity
-                4 //  memory alignment
-        ).uploadAsync(new FileUploaderCallbackProxy());
-
         return EAndroidFileUploaderVerdict.SUCCESS;
-
-        //00   file-uploader is the new improved way of performing the file upload   it makes use of the window uploading mechanism
-        //     aka sending multiple packets without waiting for the response
     }
 
     public void pause()
     {
-        final TransferController transferController = _controller;
+        final TransferController transferController = _uploadController;
         if (transferController == null)
             return;
 
@@ -120,7 +147,7 @@ public class AndroidFileUploader
 
     public void resume()
     {
-        final TransferController transferController = _controller;
+        final TransferController transferController = _uploadController;
         if (transferController == null)
             return;
 
@@ -148,16 +175,16 @@ public class AndroidFileUploader
     {
         setState(EAndroidFileUploaderState.CANCELLING); //order
 
-        final TransferController transferController = _controller;
+        final TransferController transferController = _uploadController;
         if (transferController == null)
             return;
 
         transferController.cancel(); //order
     }
 
-    private void requestHighConnectionPriority()
+    static private void requestHighConnectionPriority(final FsManager fileSystemManager)
     {
-        final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
+        final McuMgrTransport mcuMgrTransporter = fileSystemManager.getTransporter();
         if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
             return;
 
@@ -296,6 +323,8 @@ public class AndroidFileUploader
             onError(_remoteFilePathSanitized, error.getMessage(), error);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _uploadController = null; //order
         }
 
         @Override
@@ -306,6 +335,8 @@ public class AndroidFileUploader
             cancelledAdvertisement();
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _uploadController = null; //order
         }
 
         @Override
@@ -316,6 +347,8 @@ public class AndroidFileUploader
             fileUploadedAdvertisement(_remoteFilePathSanitized);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _uploadController = null; //order
         }
     }
 }
