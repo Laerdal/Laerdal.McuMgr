@@ -18,7 +18,7 @@ public class AndroidFileUploader
     private FsManager _fileSystemManager;
     @SuppressWarnings("FieldCanBeLocal")
     private final McuMgrBleTransport _transport;
-    private TransferController _controller;
+    private TransferController _uploadController;
 
     private int _initialBytes;
     private long _uploadStartTimestamp;
@@ -71,17 +71,9 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
 
-        try
-        {
-            _fileSystemManager = new FsManager(_transport);
-        }
-        catch (final Exception ex)
-        {
-            setState(EAndroidFileUploaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
-
-            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
-        }
+        EAndroidFileUploaderVerdict result = ensureFilesystemManagerIsInitializedExactlyOnce();
+        if (result != EAndroidFileUploaderVerdict.SUCCESS)
+            return result;
 
         setLoggingEnabled(false);
         requestHighConnectionPriority();
@@ -91,7 +83,7 @@ public class AndroidFileUploader
         busyStateChangedAdvertisement(true);
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
 
-        _controller = new FileUploader( //00
+        _uploadController = new FileUploader( //00
                 _fileSystemManager,
                 _remoteFilePathSanitized,
                 data,
@@ -105,9 +97,28 @@ public class AndroidFileUploader
         //     aka sending multiple packets without waiting for the response
     }
 
+    private EAndroidFileUploaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce() {
+        if (_fileSystemManager != null) //already initialized
+            return EAndroidFileUploaderVerdict.SUCCESS;
+
+        try
+        {
+            _fileSystemManager = new FsManager(_transport);
+        }
+        catch (final Exception ex)
+        {
+            setState(EAndroidFileUploaderState.ERROR);
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        return EAndroidFileUploaderVerdict.SUCCESS;
+    }
+
     public void pause()
     {
-        final TransferController transferController = _controller;
+        final TransferController transferController = _uploadController;
         if (transferController == null)
             return;
 
@@ -119,7 +130,7 @@ public class AndroidFileUploader
 
     public void resume()
     {
-        final TransferController transferController = _controller;
+        final TransferController transferController = _uploadController;
         if (transferController == null)
             return;
 
@@ -147,7 +158,7 @@ public class AndroidFileUploader
     {
         setState(EAndroidFileUploaderState.CANCELLING); //order
 
-        final TransferController transferController = _controller;
+        final TransferController transferController = _uploadController;
         if (transferController == null)
             return;
 
