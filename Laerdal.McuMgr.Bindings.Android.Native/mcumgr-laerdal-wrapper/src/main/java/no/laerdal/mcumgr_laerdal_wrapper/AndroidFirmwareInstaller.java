@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
+import android.util.Pair;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
@@ -17,6 +18,8 @@ import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import io.runtime.mcumgr.image.McuMgrImage;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
@@ -85,14 +88,13 @@ public class AndroidFirmwareInstaller
         McuMgrImageSet images = new McuMgrImageSet();
         try
         {
-            McuMgrImage.getHash(data); // check if the bin file is valid
-            images.add(data);
+            images.add(data); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
         }
         catch (final Exception ex)
         {
             try
             {
-                images.add(new ZipPackage(data).getBinaries());
+                images.add(new ZipPackage(data).getBinaries()); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
             }
             catch (final Exception ex2)
             {
