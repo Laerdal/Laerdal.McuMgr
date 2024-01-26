@@ -16,10 +16,13 @@ import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 @SuppressWarnings("unused")
 public class AndroidFileUploader
 {
+    private final Context _context;
+    private final BluetoothDevice _bluetoothDevice;
+
     private FsManager _fileSystemManager;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final McuMgrBleTransport _transport;
+    private McuMgrBleTransport _transport;
     private TransferController _uploadController;
+    private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
 
     private int _initialBytes;
     private long _uploadStartTimestamp;
@@ -28,7 +31,25 @@ public class AndroidFileUploader
 
     public AndroidFileUploader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
     {
-        _transport = new McuMgrBleTransport(context, bluetoothDevice);
+        _context = context;
+        _bluetoothDevice = bluetoothDevice;
+    }
+
+    public boolean scrapCurrentTransport()
+    {
+        if (_transport == null) //already scrapped
+            return true;
+
+        if (_currentState != EAndroidFileUploaderState.NONE //if an upload is already in progress we bail out
+                && _currentState != EAndroidFileUploaderState.ERROR
+                && _currentState != EAndroidFileUploaderState.COMPLETE
+                && _currentState != EAndroidFileUploaderState.CANCELLED)
+            return false;
+
+        disposeFilesystemManager(); // order
+        disposeTransport(); //         order
+
+        return true;
     }
 
     public EAndroidFileUploaderVerdict beginUpload(final String remoteFilePath, final byte[] data)
@@ -72,7 +93,9 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
 
-        EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce();
+        ensureTransportIsInitializedExactlyOnce(); //order
+
+        final EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
         if (verdict != EAndroidFileUploaderVerdict.SUCCESS)
             return verdict;
 
@@ -104,7 +127,14 @@ public class AndroidFileUploader
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
     }
 
-    private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
+    private void ensureTransportIsInitializedExactlyOnce()
+    {
+        if (_transport != null)
+            return;
+
+        _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+    }
+
     private void ensureFileUploaderCallbackProxyIsInitializedExactlyOnce() {
         if (_fileUploaderCallbackProxy != null) //already initialized
             return;
@@ -190,6 +220,35 @@ public class AndroidFileUploader
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) mcuMgrTransporter;
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+    }
+
+
+    private void disposeTransport()
+    {
+        if (_transport == null)
+            return;
+
+        try {
+            _transport.disconnect();
+        } catch (Exception ex) {
+            // ignore
+        }
+
+        _transport = null;
+    }
+
+    private void disposeFilesystemManager()
+    {
+        if (_fileSystemManager == null)
+            return;
+
+        try {
+            _fileSystemManager.closeAll();
+        } catch (McuMgrException e) {
+            // ignore
+        }
+
+        _fileSystemManager = null;
     }
 
     private void setLoggingEnabled(final boolean enabled)
