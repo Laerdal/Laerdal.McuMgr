@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
-import android.util.Pair;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
@@ -16,10 +15,7 @@ import io.runtime.mcumgr.dfu.FirmwareUpgradeManager.State;
 import io.runtime.mcumgr.dfu.model.McuMgrImageSet;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
-import io.runtime.mcumgr.image.McuMgrImage;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
-
-import java.util.List;
 
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
@@ -252,9 +248,7 @@ public class AndroidFirmwareInstaller
     public void pause()
     {
         if (!_manager.isInProgress())
-        {
             return;
-        }
 
         _handler.removeCallbacks(_graphUpdater);
         setState(EAndroidFirmwareInstallationState.PAUSED);
@@ -268,9 +262,7 @@ public class AndroidFirmwareInstaller
     public void resume()
     {
         if (!_manager.isPaused())
-        {
             return;
-        }
 
         busyStateChangedAdvertisement(true);
         setState(EAndroidFirmwareInstallationState.UPLOADING);
@@ -385,8 +377,8 @@ public class AndroidFirmwareInstaller
             _bytesSent = bytesSent;
 
             final long uptimeMillis = SystemClock.uptimeMillis();
-            if (_bytesSentSinceUploadStated == NOT_STARTED)
-            { //00
+            if (_bytesSentSinceUploadStated == NOT_STARTED) //00
+            {
                 _lastProgress = NOT_STARTED;
 
                 _uploadStartTimestamp = uptimeMillis; //20
@@ -397,10 +389,8 @@ public class AndroidFirmwareInstaller
             }
 
             final boolean uploadComplete = bytesSent == imageSize;
-            if (!uploadComplete)
-            { //40
+            if (!uploadComplete) //40
                 return;
-            }
 
             //Timber.i("Image (%d bytes) sent in %d ms (avg speed: %f kB/s)", imageSize - bytesSentSinceUploadStated, uptimeMillis - uploadStartTimestamp, (float) (imageSize - bytesSentSinceUploadStated) / (float) (uptimeMillis - uploadStartTimestamp));
 
@@ -419,7 +409,7 @@ public class AndroidFirmwareInstaller
             //
             //40 we need to ensure that the upload has completed before we reset the counter
             //
-            //50 finish the graph
+            //50 we explicitly invoke the graphupdater one last time to force it into completing the graph for good
             //
             //60 reset the initial bytes counter so if there is a next image uploaded afterward it will start the throughput calculations again
         }
@@ -429,9 +419,7 @@ public class AndroidFirmwareInstaller
     {
         final McuMgrTransport transporter = _manager.getTransporter();
         if (!(transporter instanceof McuMgrBleTransport))
-        {
             return;
-        }
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
@@ -441,9 +429,7 @@ public class AndroidFirmwareInstaller
     {
         final McuMgrTransport transporter = _manager.getTransporter();
         if (!(transporter instanceof McuMgrBleTransport))
-        {
             return;
-        }
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
         bleTransporter.setLoggingEnabled(enabled);
@@ -455,9 +441,7 @@ public class AndroidFirmwareInstaller
         public void run()
         {
             if (_manager.getState() != FirmwareUpgradeManager.State.UPLOAD || _manager.isPaused())
-            {
                 return;
-            }
 
             final long timestamp = SystemClock.uptimeMillis();
             final int progressPercentage = (int) (_bytesSent * 100.f /* % */ / _imageSize); //0
@@ -465,8 +449,9 @@ public class AndroidFirmwareInstaller
             {
                 _lastProgress = progressPercentage;
 
-                final float bytesSentSinceUploadStarted = _bytesSent - _bytesSentSinceUploadStated; //1
                 final float timeSinceUploadStarted = timestamp - _uploadStartTimestamp;
+                final float bytesSentSinceUploadStarted = _bytesSent - _bytesSentSinceUploadStated; //1
+
                 final float averageThroughput = bytesSentSinceUploadStarted / timeSinceUploadStarted; //2
 
                 firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput);

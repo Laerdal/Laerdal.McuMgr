@@ -296,6 +296,8 @@ public class AndroidFileUploader
             fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _uploadController = null; //order
         }
 
         @Override
@@ -306,6 +308,8 @@ public class AndroidFileUploader
             cancelledAdvertisement();
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _uploadController = null; //order
         }
 
         @Override
@@ -316,6 +320,8 @@ public class AndroidFileUploader
             uploadCompletedAdvertisement(_remoteFilePathSanitized);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _uploadController = null; //order
         }
     }
 }
