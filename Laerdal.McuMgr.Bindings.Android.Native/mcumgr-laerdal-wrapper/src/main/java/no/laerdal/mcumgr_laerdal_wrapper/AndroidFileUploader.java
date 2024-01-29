@@ -40,10 +40,7 @@ public class AndroidFileUploader
         if (_transport == null) //already scrapped
             return true;
 
-        if (_currentState != EAndroidFileUploaderState.NONE //if an upload is already in progress we bail out
-                && _currentState != EAndroidFileUploaderState.ERROR
-                && _currentState != EAndroidFileUploaderState.COMPLETE
-                && _currentState != EAndroidFileUploaderState.CANCELLED)
+        if (!IsCold()) //if the upload is already in progress we bail out
             return false;
 
         disposeFilesystemManager(); // order
@@ -54,11 +51,10 @@ public class AndroidFileUploader
 
     public EAndroidFileUploaderVerdict beginUpload(final String remoteFilePath, final byte[] data)
     {
-        if (_currentState != EAndroidFileUploaderState.NONE  //if the upload is already in progress we bail out
-                && _currentState != EAndroidFileUploaderState.ERROR
-                && _currentState != EAndroidFileUploaderState.COMPLETE
-                && _currentState != EAndroidFileUploaderState.CANCELLED)
-        {
+        if (!IsCold()) {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError("N/A", "Another upload is already in progress", null);
+
             return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
         }
 
@@ -274,6 +270,14 @@ public class AndroidFileUploader
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+    }
+
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidFileUploaderState.NONE
+                || _currentState == EAndroidFileUploaderState.ERROR
+                || _currentState == EAndroidFileUploaderState.COMPLETE
+                || _currentState == EAndroidFileUploaderState.CANCELLED;
     }
 
     private String _lastFatalErrorMessage;
