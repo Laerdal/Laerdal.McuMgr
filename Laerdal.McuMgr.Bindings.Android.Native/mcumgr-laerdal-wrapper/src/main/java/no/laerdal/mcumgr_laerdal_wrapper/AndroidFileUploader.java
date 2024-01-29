@@ -12,12 +12,13 @@ import io.runtime.mcumgr.transfer.FileUploader;
 import io.runtime.mcumgr.transfer.TransferController;
 import io.runtime.mcumgr.transfer.UploadCallback;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+import org.jetbrains.annotations.Contract;
 
 @SuppressWarnings("unused")
 public class AndroidFileUploader
 {
-    private final Context _context;
-    private final BluetoothDevice _bluetoothDevice;
+    private Context _context;
+    private BluetoothDevice _bluetoothDevice;
 
     private FsManager _fileSystemManager;
     private McuMgrBleTransport _transport;
@@ -33,6 +34,30 @@ public class AndroidFileUploader
     {
         _context = context;
         _bluetoothDevice = bluetoothDevice;
+    }
+
+    public boolean trySetContext(@NonNull final Context context)
+    {
+        if (!IsCold())
+            return false;
+
+        if (!invalidateCachedTransport()) //order
+            return false;
+
+        _context = context;
+        return true;
+    }
+
+    public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
+    {
+        if (!IsCold())
+            return false;
+
+        if (!invalidateCachedTransport()) //order
+            return false;
+
+        _bluetoothDevice = bluetoothDevice; //order
+        return true;
     }
 
     public boolean invalidateCachedTransport()
@@ -60,7 +85,7 @@ public class AndroidFileUploader
 
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             setState(EAndroidFileUploaderState.ERROR);
-            onError("N/A", "Provided target-path is empty!", null);
+            onError("N/A", "Provided target-path is empty", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -69,7 +94,7 @@ public class AndroidFileUploader
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
             setState(EAndroidFileUploaderState.ERROR);
-            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!", null);
+            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -77,7 +102,7 @@ public class AndroidFileUploader
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
             setState(EAndroidFileUploaderState.ERROR);
-            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path!", null);
+            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -272,6 +297,7 @@ public class AndroidFileUploader
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
 
+    @Contract(pure = true)
     private boolean IsCold()
     {
         return _currentState == EAndroidFileUploaderState.NONE
