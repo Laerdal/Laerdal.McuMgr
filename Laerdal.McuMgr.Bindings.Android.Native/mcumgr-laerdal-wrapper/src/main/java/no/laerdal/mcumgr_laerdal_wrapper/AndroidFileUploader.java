@@ -30,6 +30,10 @@ public class AndroidFileUploader
     private String _remoteFilePathSanitized;
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
+    public AndroidFileUploader()
+    {
+    }
+
     public AndroidFileUploader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
     {
         _context = context;
@@ -41,7 +45,7 @@ public class AndroidFileUploader
         if (!IsCold())
             return false;
 
-        if (!invalidateCachedTransport()) //order
+        if (!tryInvalidateCachedTransport()) //order
             return false;
 
         _context = context;
@@ -53,14 +57,14 @@ public class AndroidFileUploader
         if (!IsCold())
             return false;
 
-        if (!invalidateCachedTransport()) //order
+        if (!tryInvalidateCachedTransport()) //order
             return false;
 
         _bluetoothDevice = bluetoothDevice; //order
         return true;
     }
 
-    public boolean invalidateCachedTransport()
+    public boolean tryInvalidateCachedTransport()
     {
         if (_transport == null) //already scrapped
             return true;
@@ -81,6 +85,20 @@ public class AndroidFileUploader
             onError("N/A", "Another upload is already in progress", null);
 
             return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
+        }
+
+        if (_context == null) {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError("N/A", "No context specified - call trySetContext() first", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        if (_bluetoothDevice == null) {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError("N/A", "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {

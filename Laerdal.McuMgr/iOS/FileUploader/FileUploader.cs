@@ -62,9 +62,21 @@ namespace Laerdal.McuMgr.FileUploader
                 return verdict;
             }
             
-            public bool InvalidateCachedTransport()
+            public bool TrySetContext(object context)
+            {
+                return true; //nothing to do in ios   only android needs this
+            }
+            
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                // return base.TrySetBluetoothDevice(androidBluetoothDevice); //todo
+
+                return true;
+            }
+            
+            public bool TryInvalidateCachedTransport()
             {               
-                // return _nativeFileUploader.InvalidateCachedTransport(); //todo
+                // return _nativeFileUploader.TryInvalidateCachedTransport(); //todo
 
                 return true;
             }

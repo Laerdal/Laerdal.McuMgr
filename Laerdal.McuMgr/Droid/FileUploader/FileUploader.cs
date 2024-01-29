@@ -66,9 +66,23 @@ namespace Laerdal.McuMgr.FileUploader
                 return TranslateFileUploaderVerdict(base.BeginUpload(remoteFilePath, data));
             }
             
-            public new bool InvalidateCachedTransport()
+            public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
             {
-                return base.InvalidateCachedTransport();
+                var androidContext = context as Context ?? throw new ArgumentException($"Expected {nameof(Context)} to be an AndroidContext but got '{context?.GetType().Name ?? "null"}' instead", nameof(context));
+                
+                return base.TrySetContext(androidContext);
+            }
+            
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                var androidBluetoothDevice = bluetoothDevice as BluetoothDevice ?? throw new ArgumentException($"Expected {nameof(BluetoothDevice)} to be an AndroidBluetoothDevice but got '{bluetoothDevice?.GetType().Name ?? "null"}' instead", nameof(bluetoothDevice));
+                
+                return base.TrySetBluetoothDevice(androidBluetoothDevice);
+            }
+            
+            public new bool TryInvalidateCachedTransport()
+            {
+                return base.TryInvalidateCachedTransport();
             }
 
             #endregion commands

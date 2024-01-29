@@ -35,11 +35,6 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 return EFileUploaderVerdict.Success;
             }
-            
-            public bool InvalidateCachedTransport()
-            {
-                throw new NotImplementedException();
-            }
 
             public virtual void Cancel()
             {
@@ -75,6 +70,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => _uploaderCallbacksProxy.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event
+            
+            public bool TrySetContext(object context) => throw new NotImplementedException();
+            public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();
+            public bool TryInvalidateCachedTransport() => throw new NotImplementedException();
         }
     }
 }

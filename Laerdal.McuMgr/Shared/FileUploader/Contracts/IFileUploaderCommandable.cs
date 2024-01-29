@@ -66,7 +66,15 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// Method has an effect if and only if the upload has been terminated first (canceled or failed or completed).
         /// </summary>
         /// <returns>True if the transport has been scrapped without issues - False otherwise (which typically means that an upload is still ongoing)</returns>
-        bool InvalidateCachedTransport();
+        bool TryInvalidateCachedTransport();
+        
+        /// <summary>Sets the context. Mainly needed by Android - this call has no effect in iOS.</summary>
+        /// <returns>True if the context was successfully set to the specified one - False otherwise (which typically means that an upload is still ongoing)</returns>
+        bool TrySetContext(object context);
+        
+        /// <summary>Sets the bluetooth device.</summary>
+        /// <returns>True if the bluetooth device was successfully set to the specified one - False otherwise (which typically means that an upload is still ongoing)</returns>
+        bool TrySetBluetoothDevice(object bluetoothDevice);
 
         /// <summary>Cancels the file-uploading process</summary>
         void Cancel();
