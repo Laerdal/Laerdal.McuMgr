@@ -141,8 +141,8 @@ public class AndroidFileUploader
         ensureFileUploaderCallbackProxyIsInitializedExactlyOnce(); //order
 
         resetUploadState(); //order
-
         setLoggingEnabled(false);
+
         _uploadController = new FileUploader( //00
                 _fileSystemManager,
                 _remoteFilePathSanitized,
@@ -260,7 +260,6 @@ public class AndroidFileUploader
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) mcuMgrTransporter;
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
-
 
     private void disposeTransport()
     {

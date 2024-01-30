@@ -72,7 +72,7 @@ namespace Laerdal.McuMgr.FileUploader
                 
                 return base.TrySetContext(androidContext);
             }
-            
+
             public bool TrySetBluetoothDevice(object bluetoothDevice)
             {
                 var androidBluetoothDevice = bluetoothDevice as BluetoothDevice ?? throw new ArgumentException($"Expected {nameof(BluetoothDevice)} to be an AndroidBluetoothDevice but got '{bluetoothDevice?.GetType().Name ?? "null"}' instead", nameof(bluetoothDevice));
