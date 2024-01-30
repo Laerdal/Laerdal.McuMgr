@@ -212,7 +212,7 @@ public class IOSFileUploader: NSObject {
         case .some(let error as NSError):
             errorCode = error.code // typically FileTransferError
         default:
-            errorCode = -99
+            errorCode = -99 //unset
         }
 
         _listener.fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, errorCode)
