@@ -204,10 +204,18 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage
 
-        _listener.fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage)
+        var errorCode = -1
+        switch error {
+        case .some(let error as NSError):
+            errorCode = error.code // typically FileTransferError
+        default:
+            errorCode = -99
+        }
+
+        _listener.fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, errorCode)
     }
 
     //@objc   dont
@@ -287,7 +295,7 @@ extension IOSFileUploader: FileUploadDelegate {
         //    or that the authentication got reset during multi-file uploads (does sometimes happen believe it or not)
         //
 
-        fatalErrorOccurredAdvertisement(error.localizedDescription)
+        fatalErrorOccurredAdvertisement(error.localizedDescription, error)
         busyStateChangedAdvertisement(false)
     }
 

@@ -347,7 +347,7 @@ public class AndroidFileUploader
                 remoteFilePath,
                 errorMessage,
                 mcuMgrErrorException.getCode().value(),
-                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -1)
+                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
         );
     }
 
