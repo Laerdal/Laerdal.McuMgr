@@ -282,6 +282,12 @@ function create_fat_binaries() {
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForFirmwareInstaller/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFirmwareInstaller/gi' {} \;
 
+  # some plain methods unfortunately get autoprojected into properties by sharpie so we need to fix that    
+  find \
+        "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
+        -type f \
+        -exec sed -i.bak 's/bool TryInvalidateCachedTransport { get; }/bool TryInvalidateCachedTransport();/gi' {} \;
+
   rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
   echo "**** (FatBinaries 8/8) Print metadata files in their eventual form"

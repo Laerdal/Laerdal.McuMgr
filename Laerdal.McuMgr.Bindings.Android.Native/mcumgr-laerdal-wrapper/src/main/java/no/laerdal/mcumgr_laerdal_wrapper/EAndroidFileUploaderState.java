@@ -3,7 +3,7 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 public enum EAndroidFileUploaderState
 {
     NONE(0),
-    IDLE(1),
+    IDLE(1), // this means that the uploader has been activated and will start uploading as soon as possible
     UPLOADING(2),
     PAUSED(3),
     COMPLETE(4),

@@ -12,38 +12,98 @@ import io.runtime.mcumgr.transfer.FileUploader;
 import io.runtime.mcumgr.transfer.TransferController;
 import io.runtime.mcumgr.transfer.UploadCallback;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+import org.jetbrains.annotations.Contract;
 
 @SuppressWarnings("unused")
 public class AndroidFileUploader
 {
+    private Context _context;
+    private BluetoothDevice _bluetoothDevice;
+
     private FsManager _fileSystemManager;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final McuMgrBleTransport _transport;
+    private McuMgrBleTransport _transport;
     private TransferController _uploadController;
+    private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
 
     private int _initialBytes;
     private long _uploadStartTimestamp;
     private String _remoteFilePathSanitized;
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
+    public AndroidFileUploader()
+    {
+    }
+
     public AndroidFileUploader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
     {
-        _transport = new McuMgrBleTransport(context, bluetoothDevice);
+        _context = context;
+        _bluetoothDevice = bluetoothDevice;
+    }
+
+    public boolean trySetContext(@NonNull final Context context)
+    {
+        if (!IsCold())
+            return false;
+
+        if (!tryInvalidateCachedTransport()) //order
+            return false;
+
+        _context = context;
+        return true;
+    }
+
+    public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
+    {
+        if (!IsCold())
+            return false;
+
+        if (!tryInvalidateCachedTransport()) //order
+            return false;
+
+        _bluetoothDevice = bluetoothDevice; //order
+        return true;
+    }
+
+    public boolean tryInvalidateCachedTransport()
+    {
+        if (_transport == null) //already scrapped
+            return true;
+
+        if (!IsCold()) //if the upload is already in progress we bail out
+            return false;
+
+        disposeFilesystemManager(); // order
+        disposeTransport(); //         order
+
+        return true;
     }
 
     public EAndroidFileUploaderVerdict beginUpload(final String remoteFilePath, final byte[] data)
     {
-        if (_currentState != EAndroidFileUploaderState.NONE  //if the upload is already in progress we bail out
-                && _currentState != EAndroidFileUploaderState.ERROR
-                && _currentState != EAndroidFileUploaderState.COMPLETE
-                && _currentState != EAndroidFileUploaderState.CANCELLED)
-        {
+        if (!IsCold()) {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError("N/A", "Another upload is already in progress", null);
+
             return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
+        }
+
+        if (_context == null) {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError("N/A", "No context specified - call trySetContext() first", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        if (_bluetoothDevice == null) {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError("N/A", "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             setState(EAndroidFileUploaderState.ERROR);
-            onError("N/A", "Provided target-path is empty!", null);
+            onError("N/A", "Provided target-path is empty", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -52,7 +112,7 @@ public class AndroidFileUploader
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
             setState(EAndroidFileUploaderState.ERROR);
-            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!", null);
+            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -60,7 +120,7 @@ public class AndroidFileUploader
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
             setState(EAndroidFileUploaderState.ERROR);
-            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path!", null);
+            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -72,15 +132,17 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
 
-        EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce();
+        ensureTransportIsInitializedExactlyOnce(); //order
+
+        final EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
         if (verdict != EAndroidFileUploaderVerdict.SUCCESS)
             return verdict;
 
         ensureFileUploaderCallbackProxyIsInitializedExactlyOnce(); //order
 
         resetUploadState(); //order
-
         setLoggingEnabled(false);
+
         _uploadController = new FileUploader( //00
                 _fileSystemManager,
                 _remoteFilePathSanitized,
@@ -104,7 +166,14 @@ public class AndroidFileUploader
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
     }
 
-    private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
+    private void ensureTransportIsInitializedExactlyOnce()
+    {
+        if (_transport != null)
+            return;
+
+        _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+    }
+
     private void ensureFileUploaderCallbackProxyIsInitializedExactlyOnce() {
         if (_fileUploaderCallbackProxy != null) //already initialized
             return;
@@ -192,6 +261,34 @@ public class AndroidFileUploader
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
+    private void disposeTransport()
+    {
+        if (_transport == null)
+            return;
+
+        try {
+            _transport.disconnect();
+        } catch (Exception ex) {
+            // ignore
+        }
+
+        _transport = null;
+    }
+
+    private void disposeFilesystemManager()
+    {
+        if (_fileSystemManager == null)
+            return;
+
+        try {
+            _fileSystemManager.closeAll();
+        } catch (McuMgrException e) {
+            // ignore
+        }
+
+        _fileSystemManager = null;
+    }
+
     private void setLoggingEnabled(final boolean enabled)
     {
         final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
@@ -215,6 +312,15 @@ public class AndroidFileUploader
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+    }
+
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidFileUploaderState.NONE
+                || _currentState == EAndroidFileUploaderState.ERROR
+                || _currentState == EAndroidFileUploaderState.COMPLETE
+                || _currentState == EAndroidFileUploaderState.CANCELLED;
     }
 
     private String _lastFatalErrorMessage;
@@ -241,7 +347,7 @@ public class AndroidFileUploader
                 remoteFilePath,
                 errorMessage,
                 mcuMgrErrorException.getCode().value(),
-                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -1)
+                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
         );
     }
 

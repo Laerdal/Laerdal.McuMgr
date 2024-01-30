@@ -4,73 +4,120 @@ import CoreBluetooth
 // @objc(IOSFileUploadX)
 public class IOSFileUploader: NSObject {
 
-    private var _listener: IOSListenerForFileUploader!
+    private let _listener: IOSListenerForFileUploader!
     private var _transporter: McuMgrBleTransport!
-    private var _currentState: EIOSFileUploaderState
+    private var _cbPeripheral: CBPeripheral!
+    private var _currentState: EIOSFileUploaderState = .none
     private var _fileSystemManager: FileSystemManager!
-    private var _lastFatalErrorMessage: String
+    private var _lastFatalErrorMessage: String = ""
     private var _remoteFilePathSanitized: String!
 
-    private var _lastBytesSend: Int = -1
+    private var _lastBytesSend: Int = 0
     private var _lastBytesSendTimestamp: Date? = nil
+
+    @objc
+    public init(_ listener: IOSListenerForFileUploader!) {
+        _listener = listener
+    }
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFileUploader!) {
         _listener = listener
-        _transporter = McuMgrBleTransport(cbPeripheral)
-        _currentState = .none
-        _lastFatalErrorMessage = ""
+        _cbPeripheral = cbPeripheral
+    }
+
+    @objc
+    public func trySetBluetoothDevice(_ cbPeripheral: CBPeripheral!) -> Bool {
+        if !IsCold() {
+            return false
+        }
+
+        if !tryInvalidateCachedTransport() { //order
+            return false
+        }
+
+        _cbPeripheral = cbPeripheral //order
+        return true
+    }
+
+    @objc
+    public func tryInvalidateCachedTransport() -> Bool {
+        if _transporter == nil { //already scrapped
+            return true
+        }
+
+        if !IsCold() { //if the upload is already in progress we bail out
+            return false
+        }
+
+        disposeFilesystemManager() // order
+        disposeTransport() //         order
+
+        return true;
     }
 
     @objc
     public func beginUpload(_ remoteFilePath: String, _ data: Data) -> EIOSFileUploadingInitializationVerdict {
-        if _currentState != .none && _currentState != .cancelled && _currentState != .complete && _currentState != .error { //if another upload is already in progress we bail out
+        if !IsCold() { //if another upload is already in progress we bail out
+            setState(EIOSFileUploaderState.error)
+            onError("Another upload is already in progress")
+
             return EIOSFileUploadingInitializationVerdict.failedOtherUploadAlreadyInProgress
         }
 
-        _lastBytesSend = -1
-        _lastBytesSendTimestamp = nil
+        if _cbPeripheral == nil {
+            setState(EIOSFileUploaderState.error);
+            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
+
+            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings;
+        }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Target-file provided is dud")
+            onError("Target-file provided is dud")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Target-file points to a directory instead of a file")
+            onError("Target-file points to a directory instead of a file")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Target-path is not absolute!")
+            onError("Target-path is not absolute!")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
 
-        // if (data == nil) { // data being null is not ok but in swift Data can never be null anyway   btw data.length==0 is perfectly ok because we might want to create empty files
-        //      setState(EAndroidFileUploaderState.ERROR);
-        //      fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided data is null");
+        // if data == nil { // data being nil is not ok but in swift Data can never be nil anyway   btw data.length==0 is perfectly ok because we might want to create empty files
+        //      setState(EIOSFileUploaderState.ERROR)
+        //      fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided data is nil")
         //
-        //      return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
+        //      return EIOSFileUploaderVerdict.FAILED__INVALID_DATA
         // }
 
-        _fileSystemManager = FileSystemManager(transporter: _transporter) // the delegate aspect is implemented in the extension below
-        _fileSystemManager.logDelegate = self
+        ensureTransportIsInitializedExactlyOnce() //order
 
-        setState(EIOSFileUploaderState.idle)
-        busyStateChangedAdvertisement(true)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        let verdict = ensureFilesystemManagerIsInitializedExactlyOnce() //order
+        if verdict != EIOSFileUploadingInitializationVerdict.success {
+            return verdict
+        }
 
-        let success = _fileSystemManager.upload(name: _remoteFilePathSanitized, data: data, delegate: self)
+        resetUploadState() //order
+
+        let success = _fileSystemManager.upload( //order
+                name: _remoteFilePathSanitized,
+                data: data,
+                delegate: self
+        )
         if !success {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Failed to commence file-uploading (check logs for details)")
+            onError("Failed to commence file-uploading (check logs for details)")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
@@ -106,14 +153,69 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func disconnect() {
+        disposeTransport()
+    }
+
+    private func resetUploadState() {
+        _lastBytesSend = 0
+        _lastBytesSendTimestamp = nil
+
+        setState(EIOSFileUploaderState.idle)
+        busyStateChangedAdvertisement(true)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+    }
+
+    private func ensureFilesystemManagerIsInitializedExactlyOnce() -> EIOSFileUploadingInitializationVerdict {
+        if _fileSystemManager != nil { //already initialized
+            return EIOSFileUploadingInitializationVerdict.success
+        }
+
+        _fileSystemManager = FileSystemManager(transporter: _transporter) //00
+        _fileSystemManager.logDelegate = self //00
+
+        return EIOSFileUploadingInitializationVerdict.success
+
+        //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileUploader: McuMgrLogDelegate
+    }
+
+    private func ensureTransportIsInitializedExactlyOnce() {
+        if _transporter != nil {
+            return;
+        }
+
+        _transporter = McuMgrBleTransport(_cbPeripheral)
+    }
+
+    private func disposeTransport() {
         _transporter?.close()
+        _transporter = nil;
+    }
+
+    private func disposeFilesystemManager() {
+        //_fileSystemManager?.cancelTransfer()  dont
+        _fileSystemManager = nil;
+    }
+
+    private func IsCold() -> Bool {
+        return _currentState == EIOSFileUploaderState.none
+                || _currentState == EIOSFileUploaderState.error
+                || _currentState == EIOSFileUploaderState.complete
+                || _currentState == EIOSFileUploaderState.cancelled
     }
 
     //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String) {
+    private func onError(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage
 
-        _listener.fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage)
+        var errorCode = -1
+        switch error {
+        case .some(let error as NSError):
+            errorCode = error.code // typically FileTransferError
+        default:
+            errorCode = -99 //unset
+        }
+
+        _listener.fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, errorCode)
     }
 
     //@objc   dont
@@ -193,7 +295,7 @@ extension IOSFileUploader: FileUploadDelegate {
         //    or that the authentication got reset during multi-file uploads (does sometimes happen believe it or not)
         //
 
-        fatalErrorOccurredAdvertisement(error.localizedDescription)
+        onError(error.localizedDescription, error)
         busyStateChangedAdvertisement(false)
     }
 
