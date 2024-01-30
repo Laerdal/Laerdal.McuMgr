@@ -60,14 +60,14 @@ public class IOSFileUploader: NSObject {
     public func beginUpload(_ remoteFilePath: String, _ data: Data) -> EIOSFileUploadingInitializationVerdict {
         if !IsCold() { //if another upload is already in progress we bail out
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Another upload is already in progress")
+            onError("Another upload is already in progress")
 
             return EIOSFileUploadingInitializationVerdict.failedOtherUploadAlreadyInProgress
         }
 
         if _cbPeripheral == nil {
             setState(EIOSFileUploaderState.error);
-            fatalErrorOccurredAdvertisement("No bluetooth-device specified - call trySetBluetoothDevice() first");
+            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings;
         }
@@ -75,21 +75,21 @@ public class IOSFileUploader: NSObject {
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Target-file provided is dud")
+            onError("Target-file provided is dud")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Target-file points to a directory instead of a file")
+            onError("Target-file points to a directory instead of a file")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Target-path is not absolute!")
+            onError("Target-path is not absolute!")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
@@ -117,7 +117,7 @@ public class IOSFileUploader: NSObject {
         )
         if !success {
             setState(EIOSFileUploaderState.error)
-            fatalErrorOccurredAdvertisement("Failed to commence file-uploading (check logs for details)")
+            onError("Failed to commence file-uploading (check logs for details)")
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
@@ -204,7 +204,7 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ error: Error? = nil) {
+    private func onError(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage
 
         var errorCode = -1
@@ -295,7 +295,7 @@ extension IOSFileUploader: FileUploadDelegate {
         //    or that the authentication got reset during multi-file uploads (does sometimes happen believe it or not)
         //
 
-        fatalErrorOccurredAdvertisement(error.localizedDescription, error)
+        onError(error.localizedDescription, error)
         busyStateChangedAdvertisement(false)
     }
 
