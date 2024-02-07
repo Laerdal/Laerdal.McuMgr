@@ -365,7 +365,6 @@ namespace Laerdal.McuMgr.FileUploader
             
             static async Task<byte[]> GetDataAsByteArray_<TD>(TD dataObject_, bool autodisposeStream_) => dataObject_ switch
             {
-                
                 Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_),
                 
                 Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_),
