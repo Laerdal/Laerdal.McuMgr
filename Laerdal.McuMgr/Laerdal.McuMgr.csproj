@@ -7,37 +7,24 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
-        <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
-
-        <!-- notice that on windows the monoandroid build is disabled because the android bindings fail to be generated -->
-        <!-- due to a b.ug in Xamarin.Legacy.Sdk https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                -->
-        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
+        <!-- - note that we build against netstandard2.1 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
+        <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
+        <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
-
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-ios11;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
 
-        <IsNet6 Condition="            '$(TargetFramework.ToLower().StartsWith(net6))'                 == 'true' ">true</IsNet6>
         <IsNet7 Condition="            '$(TargetFramework.ToLower().StartsWith(net7))'                 == 'true' ">true</IsNet7>
-        <IsNet6IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net6.0-ios))'           == 'true' ">true</IsNet6IOS>
         <IsNet7IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net7.0-ios))'           == 'true' ">true</IsNet7IOS>
-        <IsNet6Android Condition="     '$(TargetFramework.ToLower().StartsWith(net6.0-android))'       == 'true' ">true</IsNet6Android>
         <IsNet7Android Condition="     '$(TargetFramework.ToLower().StartsWith(net7.0-android))'       == 'true' ">true</IsNet7Android>
         <IsNetStandard Condition="     '$(TargetFramework.ToLower().StartsWith(netstandard))'          == 'true' ">true</IsNetStandard>
         <IsXamarinIOS Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin.ios))'          == 'true' ">true</IsXamarinIOS>
-        <IsXamarinAndroid Condition="  '$(TargetFramework.ToLower().StartsWith(monoandroid))'          == 'true' ">true</IsXamarinAndroid>
-        <IsNet6MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0-maccatalyst))'   == 'true' ">true</IsNet6MacCatalyst>
         <IsNet7MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0-maccatalyst))'   == 'true' ">true</IsNet7MacCatalyst>
 
-        <IsNetX Condition="                '$(IsNet6)'             == 'true' OR '$(IsNet7)'             == 'true' ">true</IsNetX>
-        <IsNetXIOS Condition="             '$(IsNet6IOS)'          == 'true' OR '$(IsNet7IOS)'          == 'true' ">true</IsNetXIOS>
-        <IsNetXAndroid Condition="         '$(IsNet6Android)'      == 'true' OR '$(IsNet7Android)'      == 'true' ">true</IsNetXAndroid>
-        <IsNetXMacCatalyst Condition="     '$(IsNet6MacCatalyst)'  == 'true' OR '$(IsNet7MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
+        <IsNetX Condition="                '$(IsNet7)'             == 'true' ">true</IsNetX>
+        <IsNetXIOS Condition="             '$(IsNet7IOS)'          == 'true' ">true</IsNetXIOS>
+        <IsNetXAndroid Condition="         '$(IsNet7Android)'      == 'true' ">true</IsNetXAndroid>
+        <IsNetXMacCatalyst Condition="     '$(IsNet7MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
 
         <IsIOS Condition="                 '$(IsXamarinIOS)'       == 'true' OR '$(IsNetXIOS)'          == 'true' ">true</IsIOS>
         <IsAndroid Condition="             '$(IsXamarinAndroid)'   == 'true' OR '$(IsNetXAndroid)'      == 'true' ">true</IsAndroid>
@@ -118,12 +105,9 @@
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
         <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
-        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
 
-        <Message Importance="high" Text="IsNet6MacCatalyst: '$(IsNet6MacCatalyst)' "/>
         <Message Importance="high" Text="IsNet7MacCatalyst: '$(IsNet7MacCatalyst)' "/>
         <Message Importance="high" Text="IsNetXAndroid:     '$(IsNetXAndroid)'     "/>
         <Message Importance="high" Text="IsNetXMacCatalyst: '$(IsNetXMacCatalyst)' "/>
