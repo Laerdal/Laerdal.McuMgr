@@ -1,4 +1,4 @@
-﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <!-- SHARED -->
     <PropertyGroup>
@@ -126,7 +126,6 @@
 
         <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
-        <Message Importance="high" Text="IsXamarin:              '$(IsXamarin)'                "/>
         <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
 

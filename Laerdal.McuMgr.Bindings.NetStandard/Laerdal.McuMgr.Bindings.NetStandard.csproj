@@ -7,7 +7,7 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;</TargetFrameworks>
 
         <Optimized>false</Optimized>
         <DebugType>full</DebugType>
@@ -20,7 +20,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.NetStandard</PackageId>
-        <PackageTags>Laerdal;Xamarin;Nordic;McuMgr;Bindings;NetStandard;</PackageTags>
+        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;NetStandard;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>

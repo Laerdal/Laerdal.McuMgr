@@ -188,8 +188,8 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
-        <!-- its absolute vital to call these targets first explicitly and separately from the main build otherwise the    -->
-        <!-- resulting nugets will be poisoned and will not work in xamarin/maui apps at all due to missing native symbols -->
+        <!-- its absolute vital to call these targets first explicitly and separately from the main build otherwise the   -->
+        <!-- resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols        -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated"/>
 

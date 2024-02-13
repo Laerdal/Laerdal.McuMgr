@@ -1,4 +1,4 @@
-﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <!-- SHARED -->
     <PropertyGroup>
@@ -18,7 +18,6 @@
         <IsNet7IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net7.0-ios))'           == 'true' ">true</IsNet7IOS>
         <IsNet7Android Condition="     '$(TargetFramework.ToLower().StartsWith(net7.0-android))'       == 'true' ">true</IsNet7Android>
         <IsNetStandard Condition="     '$(TargetFramework.ToLower().StartsWith(netstandard))'          == 'true' ">true</IsNetStandard>
-        <IsXamarinIOS Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin.ios))'          == 'true' ">true</IsXamarinIOS>
         <IsNet7MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0-maccatalyst))'   == 'true' ">true</IsNet7MacCatalyst>
 
         <IsNetX Condition="                '$(IsNet7)'             == 'true' ">true</IsNetX>
@@ -26,9 +25,9 @@
         <IsNetXAndroid Condition="         '$(IsNet7Android)'      == 'true' ">true</IsNetXAndroid>
         <IsNetXMacCatalyst Condition="     '$(IsNet7MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
 
-        <IsIOS Condition="                 '$(IsXamarinIOS)'       == 'true' OR '$(IsNetXIOS)'          == 'true' ">true</IsIOS>
-        <IsAndroid Condition="             '$(IsXamarinAndroid)'   == 'true' OR '$(IsNetXAndroid)'      == 'true' ">true</IsAndroid>
-        <IsAppleStuff Condition="          '$(IsNetXMacCatalyst)'  == 'true' OR '$(IsIOS)'              == 'true' ">true</IsAppleStuff>
+        <IsIOS Condition="                 '$(IsNetXIOS)'          == 'true'                         ">true</IsIOS>
+        <IsAndroid Condition="             '$(IsNetXAndroid)'      == 'true'                         ">true</IsAndroid>
+        <IsAppleStuff Condition="          '$(IsNetXMacCatalyst)'  == 'true' OR '$(IsIOS)' == 'true' ">true</IsAppleStuff>
         
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -39,7 +38,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
-        <PackageTags>Laerdal;Xamarin;MAUI;Nordic;McuMgr;Tools;Firmware;</PackageTags>
+        <PackageTags>Laerdal;MAUI;Nordic;McuMgr;Tools;Firmware;</PackageTags>
         <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard - MAUI ready</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
@@ -61,7 +60,7 @@
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
-        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
+        <Summary>McuMgr Managed-Wrapper Library</Summary>
         <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Copyright>$(Authors)</Copyright>
         <Description>$(PackageDescription)</Description>

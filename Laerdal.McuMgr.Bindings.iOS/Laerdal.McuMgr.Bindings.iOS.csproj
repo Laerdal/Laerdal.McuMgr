@@ -1,4 +1,4 @@
-﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <!-- SHARED -->
     <PropertyGroup>
@@ -12,16 +12,15 @@
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true'  ">$(TargetFrameworks);net7.0-ios</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'false' ">$(TargetFrameworks);netstandard2.1</TargetFrameworks>
 
-        <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or '$(TargetFramework.ToLower().StartsWith(xamarin.ios))' == 'true' ">true</IsIOS>
+        <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</IsIOS>
         
-        <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))' == 'true' ">true</IsNet7>
-        <IsNetX Condition="         '$(IsNet7)' == 'true'                                     ">true</IsNetX>
-        <IsNetXIos Condition="      '$(IsNetX)'    == 'true' and '$(IsIOS)'  == 'true'        ">true</IsNetXIos>
-        <IsXamarinIos Condition="   '$(IsXamarin)' == 'true' and '$(IsIOS)'  == 'true'        ">true</IsXamarinIos>
+        <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'   ">true</IsNet7>
+        <IsNetX Condition="         '$(IsNet7)'  ==  'true'                                     ">true</IsNetX>
+        <IsNetXIos Condition="      '$(IsNetX)'  ==  'true'  and  '$(IsIOS)'  ==  'true'        ">true</IsNetXIos>
 
         <ShouldBuildNativeLibraries Condition=" '$(IsNet7)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <TargetPlatformVersion Condition=" '$(IsNetXIos)'     == 'true' ">11.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsNetXIos)'   == 'true' ">11.0</TargetPlatformVersion>
 
         <DebugType>full</DebugType>
         <Optimized>false</Optimized>
@@ -135,9 +134,7 @@
         <Message Importance="high" Text="IsIOS:                  '$(IsIOS)'                    "/>
         <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
-        <Message Importance="high" Text="IsXamarin:              '$(IsXamarin)'                "/>
         <Message Importance="high" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
-        <Message Importance="high" Text="IsXamarinIos:           '$(IsXamarinIos)'             "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
 
         <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)' "/>
