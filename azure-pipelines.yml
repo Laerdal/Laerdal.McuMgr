@@ -93,7 +93,7 @@ jobs:
           arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
 
       - task: DotNetCoreCLI@2
-        displayName: 'NuGet Sources Add (for .Net6+)'
+        displayName: 'NuGet Sources Add (for .Net8+)'
         inputs:
           command: 'custom'
           custom: 'nuget'
@@ -102,7 +102,7 @@ jobs:
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       - task: DotNetCoreCLI@2
-        displayName: 'Build .Net6+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
+        displayName: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         inputs:
           command: 'custom'
           custom: 'msbuild'
