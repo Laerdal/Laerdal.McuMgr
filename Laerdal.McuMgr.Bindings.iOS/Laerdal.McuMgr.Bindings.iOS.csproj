@@ -30,7 +30,7 @@
         <DebugSymbols>true</DebugSymbols>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
-        <!-- see : https://github.com/xamarin/xamarin-macios/pull/12694 -->
+        <!-- see : https://github.com/xamarin/xamarin-macios/pull/12694    todo    test if we still need this in the dotnet8 era -->
         <NoBindingEmbedding>false</NoBindingEmbedding>
 
         <NoWarn>$(NoWarn);CS0114;NETSDK1202</NoWarn>
@@ -58,10 +58,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.999.0</Version>
-        <FileVersion>1.0.999.0</FileVersion>
-        <PackageVersion>1.0.999.0</PackageVersion>
-        <AssemblyVersion>1.0.999.0</AssemblyVersion>
+        <Version>1.0.1001.0</Version>
+        <FileVersion>1.0.1001.0</FileVersion>
+        <PackageVersion>1.0.1001.0</PackageVersion>
+        <AssemblyVersion>1.0.1001.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>

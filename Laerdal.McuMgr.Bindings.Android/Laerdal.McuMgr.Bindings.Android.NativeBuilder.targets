@@ -2,8 +2,7 @@
 
 <Project>
 
-    <Target Name="CheckAndroidLibraryFilesExist"
-            AfterTargets="CompileMcuMgrLaerdalWrapper">
+    <Target Name="CheckAndroidLibraryFilesExist" AfterTargets="CompileMcuMgrLaerdalWrapper">
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
