@@ -5,7 +5,7 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <TargetFrameworks>$(TargetFrameworks);net7.0-android</TargetFrameworks>
+        <TargetFramework>net7.0-android</TargetFramework>
 
         <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
         <IsNetX Condition="               '$(IsNet7)' == 'true'                                              ">true</IsNetX>
@@ -37,7 +37,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
-        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Net7;Mono;</PackageTags>
+        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Net7;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' ">README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -50,10 +50,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1001.0</Version>
-        <FileVersion>1.0.1001.0</FileVersion>
-        <PackageVersion>1.0.1001.0</PackageVersion>
-        <AssemblyVersion>1.0.1001.0</AssemblyVersion>
+        <Version>1.0.1008.0</Version>
+        <FileVersion>1.0.1008.0</FileVersion>
+        <PackageVersion>1.0.1008.0</PackageVersion>
+        <AssemblyVersion>1.0.1008.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>

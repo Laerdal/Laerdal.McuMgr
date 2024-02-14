@@ -9,8 +9,8 @@
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'  ">$(TargetFrameworks);net7.0-ios</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'false' ">$(TargetFrameworks);netstandard2.1</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'  ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'false' ">$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
 
         <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</IsIOS>
         
@@ -58,10 +58,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1001.0</Version>
-        <FileVersion>1.0.1001.0</FileVersion>
-        <PackageVersion>1.0.1001.0</PackageVersion>
-        <AssemblyVersion>1.0.1001.0</AssemblyVersion>
+        <Version>1.0.1008.0</Version>
+        <FileVersion>1.0.1008.0</FileVersion>
+        <PackageVersion>1.0.1008.0</PackageVersion>
+        <AssemblyVersion>1.0.1008.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>

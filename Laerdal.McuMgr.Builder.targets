@@ -197,7 +197,10 @@
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
         <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="CompileMcuMgrLaerdalWrapper"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Rebuild"/>
+        
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
