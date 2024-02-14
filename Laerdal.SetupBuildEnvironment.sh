@@ -37,6 +37,8 @@ if [ $exitCode != 0 ]; then
 fi
 
 # shellcheck disable=SC2016
+echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
+# shellcheck disable=SC2016
 echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
 source /Users/runner/.bash_profile
 
