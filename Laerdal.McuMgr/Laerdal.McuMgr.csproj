@@ -10,20 +10,20 @@
         <!-- - note that we build against netstandard2.1 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net8.0-maccatalyst;</TargetFrameworks>
 
-        <IsNet7 Condition="            '$(TargetFramework.ToLower().StartsWith(net7))'                 == 'true' ">true</IsNet7>
-        <IsNet7IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net7.0-ios))'           == 'true' ">true</IsNet7IOS>
-        <IsNet7Android Condition="     '$(TargetFramework.ToLower().StartsWith(net7.0-android))'       == 'true' ">true</IsNet7Android>
+        <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
+        <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true' ">true</IsNet8IOS>
+        <IsNet8Android Condition="     '$(TargetFramework.ToLower().StartsWith(net8.0-android))'       == 'true' ">true</IsNet8Android>
         <IsNetStandard Condition="     '$(TargetFramework.ToLower().StartsWith(netstandard))'          == 'true' ">true</IsNetStandard>
-        <IsNet7MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0-maccatalyst))'   == 'true' ">true</IsNet7MacCatalyst>
+        <IsNet8MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0-maccatalyst))'   == 'true' ">true</IsNet8MacCatalyst>
 
-        <IsNetX Condition="                '$(IsNet7)'             == 'true' ">true</IsNetX>
-        <IsNetXIOS Condition="             '$(IsNet7IOS)'          == 'true' ">true</IsNetXIOS>
-        <IsNetXAndroid Condition="         '$(IsNet7Android)'      == 'true' ">true</IsNetXAndroid>
-        <IsNetXMacCatalyst Condition="     '$(IsNet7MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
+        <IsNetX Condition="                '$(IsNet8)'             == 'true' ">true</IsNetX>
+        <IsNetXIOS Condition="             '$(IsNet8IOS)'          == 'true' ">true</IsNetXIOS>
+        <IsNetXAndroid Condition="         '$(IsNet8Android)'      == 'true' ">true</IsNetXAndroid>
+        <IsNetXMacCatalyst Condition="     '$(IsNet8MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
 
         <IsIOS Condition="                 '$(IsNetXIOS)'          == 'true'                         ">true</IsIOS>
         <IsAndroid Condition="             '$(IsNetXAndroid)'      == 'true'                         ">true</IsAndroid>
@@ -53,10 +53,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1008.0</Version>
-        <FileVersion>1.0.1008.0</FileVersion>
-        <PackageVersion>1.0.1008.0</PackageVersion>
-        <AssemblyVersion>1.0.1008.0</AssemblyVersion>
+        <Version>1.0.1009.0</Version>
+        <FileVersion>1.0.1009.0</FileVersion>
+        <PackageVersion>1.0.1009.0</PackageVersion>
+        <AssemblyVersion>1.0.1009.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -104,10 +104,10 @@
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
+        <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
 
-        <Message Importance="high" Text="IsNet7MacCatalyst: '$(IsNet7MacCatalyst)' "/>
+        <Message Importance="high" Text="IsNet8MacCatalyst: '$(IsNet8MacCatalyst)' "/>
         <Message Importance="high" Text="IsNetXAndroid:     '$(IsNetXAndroid)'     "/>
         <Message Importance="high" Text="IsNetXMacCatalyst: '$(IsNetXMacCatalyst)' "/>
 
@@ -146,21 +146,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1008.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1009.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1008.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1009.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1008.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1009.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1008.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1009.0"/>
     </ItemGroup>
 
 </Project>

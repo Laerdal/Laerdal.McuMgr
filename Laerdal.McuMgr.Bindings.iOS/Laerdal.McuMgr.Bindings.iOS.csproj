@@ -9,16 +9,16 @@
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'  ">$(TargetFrameworks)net7.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'  ">$(TargetFrameworks)net8.0-ios;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'false' ">$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
 
         <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</IsIOS>
         
-        <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'   ">true</IsNet7>
-        <IsNetX Condition="         '$(IsNet7)'  ==  'true'                                     ">true</IsNetX>
+        <IsNet8 Condition="         '$(TargetFramework.ToLower().StartsWith(net8))' == 'true'   ">true</IsNet8>
+        <IsNetX Condition="         '$(IsNet8)'  ==  'true'                                     ">true</IsNetX>
         <IsNetXIos Condition="      '$(IsNetX)'  ==  'true'  and  '$(IsIOS)'  ==  'true'        ">true</IsNetXIos>
 
-        <ShouldBuildNativeLibraries Condition=" '$(IsNet7)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <TargetPlatformVersion Condition=" '$(IsNetXIos)'   == 'true' ">11.0</TargetPlatformVersion>
 
@@ -58,10 +58,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1008.0</Version>
-        <FileVersion>1.0.1008.0</FileVersion>
-        <PackageVersion>1.0.1008.0</PackageVersion>
-        <AssemblyVersion>1.0.1008.0</AssemblyVersion>
+        <Version>1.0.1009.0</Version>
+        <FileVersion>1.0.1009.0</FileVersion>
+        <PackageVersion>1.0.1009.0</PackageVersion>
+        <AssemblyVersion>1.0.1009.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
@@ -132,7 +132,7 @@
         <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
         
         <Message Importance="high" Text="IsIOS:                  '$(IsIOS)'                    "/>
-        <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
+        <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
         <Message Importance="high" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
@@ -143,7 +143,7 @@
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
     <!-- cryptic errors in azure due to target-frameworks trying to build themselves in parallel thus stepping onto eachothers toes    thats because the   -->
-    <!-- intended way of building stuff is to let net7.0-ios build the ios libs and once that is done then and only then proceed to any additional target  -->
+    <!-- intended way of building stuff is to let net8.0-ios build the ios libs and once that is done then and only then proceed to any additional target  -->
     <!-- frameworks which will find the compiled framework-libs already in place                                                                           -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="CompileProxyProjectAndGenerateFatLibs">

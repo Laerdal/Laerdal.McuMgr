@@ -7,9 +7,9 @@
         <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
         <IsUnix Condition=" '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <!-- if we are building under osx then we issue a proper full blown build    notice that net7.0-maccatalyst must always be first for the   -->
+        <!-- if we are building under osx then we issue a proper full blown build    notice that net8.0-maccatalyst must always be first for the   -->
         <!-- native swift-libs to be build properly so that they will be readymade when/if we add additional builds right afterwards in the future -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net8.0-maccatalyst;</TargetFrameworks>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
@@ -17,10 +17,10 @@
 
         <IsMacCatalyst Condition="  $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">true</IsMacCatalyst>
 
-        <IsNet7 Condition="         '$(TargetFramework.ToLower().StartsWith(net7))'  == 'true'  ">true</IsNet7>
-        <IsNetX Condition="         '$(IsNet7)' == 'true'                                       ">true</IsNetX>
+        <IsNet8 Condition="         '$(TargetFramework.ToLower().StartsWith(net8))'  == 'true'  ">true</IsNet8>
+        <IsNetX Condition="         '$(IsNet8)' == 'true'                                       ">true</IsNetX>
 
-        <ShouldBuildNativeLibraries Condition=" '$(IsNet7)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <TargetPlatformVersion>13.1</TargetPlatformVersion>
 
@@ -60,10 +60,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1008.0</Version>
-        <FileVersion>1.0.1008.0</FileVersion>
-        <PackageVersion>1.0.1008.0</PackageVersion>
-        <AssemblyVersion>1.0.1008.0</AssemblyVersion>
+        <Version>1.0.1009.0</Version>
+        <FileVersion>1.0.1009.0</FileVersion>
+        <PackageVersion>1.0.1009.0</PackageVersion>
+        <AssemblyVersion>1.0.1009.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -124,7 +124,7 @@
         <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet7:                 '$(IsNet7)'                   "/>
+        <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
         <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
         <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
@@ -135,7 +135,7 @@
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
     <!-- cryptic errors in azure due to target-frameworks trying to build themselves in parallel thus stepping onto eachothers toes    thats because the   -->
-    <!-- intended way of building stuff is to let net7.0-maccatalyst build the maccatalyst libs and once that is done then and only then proceed to        -->
+    <!-- intended way of building stuff is to let net8.0-maccatalyst build the maccatalyst libs and once that is done then and only then proceed to        -->
     <!-- compiling any additional target-framework which will find the compiled framework-libs already in place                                            -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="CompileProxyProjectAndGenerateFatLibs">
