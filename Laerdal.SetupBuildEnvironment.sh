@@ -29,12 +29,16 @@ if [ $exitCode != 0 ]; then
   exit 10
 fi
 
-brew   install   gradle
+brew   reinstall     gradle@7
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'gradle'."
   exit 20
 fi
+
+# shellcheck disable=SC2016
+echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
+source /Users/runner/.bash_profile
 
 brew   install   openjdk@17
 declare exitCode=$?
@@ -191,11 +195,11 @@ if [ $exitCode != 0 ]; then
   exit 170
 fi
 
-echo
-echo "** mtouch:"
-/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
-  exit 180
-fi
+#echo
+#echo "** mtouch:"
+#/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
+#declare exitCode=$?
+#if [ $exitCode != 0 ]; then
+#  echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
+#  exit 180
+#fi
