@@ -106,7 +106,7 @@ jobs:
         inputs:
           command: 'custom'
           custom: 'msbuild'
-          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"  -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'

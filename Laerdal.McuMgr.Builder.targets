@@ -39,6 +39,7 @@
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">TestResults</Laerdal_Test_Results_Folderpath>
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), $(Laerdal_Test_Results_Folderpath)))</Laerdal_Test_Results_Folderpath>
 
+        <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Repository_Path Condition="         '$(Laerdal_Repository_Path)'        == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository_Path>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
@@ -182,10 +183,12 @@
 
         <!-- build mcumgr.bindings -->
         <PropertyGroup>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr.Bindings/</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Configuration=$(Configuration)</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);PackageOutputPath=$(PackageOutputPath)</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);DeterministicSourcePaths=False</_Laerdal_Build_Parameters>
+            <!-- in azure we have to specify the path to gradle explicitly so as to ensure we are using gradle 7.6 for smooth compilation of the android java-libs  -->
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)GradlePath=$(Laerdal_Gradle_Path);</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr.Bindings/;</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Configuration=$(Configuration);</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)PackageOutputPath=$(PackageOutputPath);</_Laerdal_Build_Parameters>
+            <!--<_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False</_Laerdal_Build_Parameters>-->
         </PropertyGroup>
 
         <!-- its absolute vital to call these targets first explicitly and separately from the main build otherwise the   -->
@@ -206,8 +209,8 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
         <PropertyGroup>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters);Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly)</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)SourceRoot=$(MSBuildThisFileDirectory)/Laerdal.McuMgr/;</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly);</_Laerdal_Build_Parameters>
         </PropertyGroup>
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
