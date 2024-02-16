@@ -12,7 +12,7 @@ trigger:
 
 pool:
   name: 'Azure Pipelines'
-  vmImage: 'macOS-13'
+  vmImage: 'macOS-latest'
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
