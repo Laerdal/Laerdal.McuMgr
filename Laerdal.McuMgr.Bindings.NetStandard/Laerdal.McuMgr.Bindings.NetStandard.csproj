@@ -7,7 +7,7 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <TargetFrameworks>netstandard2.1;</TargetFrameworks>
+        <TargetFramework>netstandard2.1</TargetFramework>
 
         <Optimized>false</Optimized>
         <DebugType>full</DebugType>

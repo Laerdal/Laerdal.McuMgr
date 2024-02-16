@@ -9,11 +9,11 @@
 
         <!-- if we are building under osx then we issue a proper full blown build    notice that net8.0-maccatalyst must always be first for the   -->
         <!-- native swift-libs to be build properly so that they will be readymade when/if we add additional builds right afterwards in the future -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net8.0-maccatalyst;</TargetFrameworks>
+        <TargetFramework Condition=" '$(IsOSX)' == 'true' ">net8.0-maccatalyst</TargetFramework>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'False' ">netstandard2.1;</TargetFrameworks>
+        <TargetFramework Condition=" '$(IsOSX)' == 'false' ">netstandard2.1</TargetFramework>
 
         <IsMacCatalyst Condition="  $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">true</IsMacCatalyst>
 
