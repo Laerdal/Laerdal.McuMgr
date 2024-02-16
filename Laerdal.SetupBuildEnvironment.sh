@@ -29,12 +29,18 @@ if [ $exitCode != 0 ]; then
   exit 10
 fi
 
-brew   install   gradle
+brew   reinstall     gradle@7
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'gradle'."
   exit 20
 fi
+
+# shellcheck disable=SC2016
+echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
+# shellcheck disable=SC2016
+echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
+source /Users/runner/.bash_profile
 
 brew   install   openjdk@17
 declare exitCode=$?
@@ -43,11 +49,11 @@ if [ $exitCode != 0 ]; then
   exit 30
 fi
 
-# install a specific version of dotnet7 to ensure consistent results
-curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 7.0 -Version 7.0.403
+# install a specific version of dotnet8 to ensure consistent results
+curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 8.0 -Version 8.0.100
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'dotnet7'."
+  echo "##vso[task.logissue type=error]Failed to install 'dotnet8'."
   exit 40
 fi
 
@@ -66,20 +72,13 @@ fi
 # 
 # todo   unfortunately issuing a 'dotnet workload restore' on the root folder doesnt work as intended
 # todo   on the azure pipelines and we need to figure out why
-# todo
-# todo   Users/runner/.dotnet/sdk/7.0.402/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.targets(1240,3): error MSB4019:
-# todo   The imported project "/Users/runner/.dotnet/sdk/7.0.402/Sdks/Microsoft.NET.Sdk/16.0.1478/targets/Xamarin.Shared.Sdk.MultiTarget.targets"
-# todo   was not found. Confirm that the expression in the Import declaration ";../16.0.1478/targets/Xamarin.Shared.Sdk.MultiTarget.targets"
-# todo   is correct, and that the file exists on disk.
 #
-declare dotnet_7_workload_version="7.0.101"
 sudo    dotnet                                           \
              workload                                    \
              install                                     \
                  ios                                     \
                  android                                 \
-                 maccatalyst                             \
-                    --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+                 maccatalyst
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
@@ -89,8 +88,7 @@ fi
 cd "Laerdal.McuMgr.Bindings.iOS" || (echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS" && exit 65)
 sudo         dotnet                                      \
              workload                                    \
-             restore                                     \
-                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+             restore
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
@@ -101,8 +99,7 @@ cd - || exit 71
 cd "Laerdal.McuMgr.Bindings.Android" || (echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.Android" && exit 75)
 sudo    dotnet                                           \
              workload                                    \
-             restore                                     \
-                 --from-rollback-file=https://maui.blob.core.windows.net/metadata/rollbacks/${dotnet_7_workload_version}.json
+             restore
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
@@ -200,11 +197,11 @@ if [ $exitCode != 0 ]; then
   exit 170
 fi
 
-echo
-echo "** mtouch:"
-/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
-  exit 180
-fi
+#echo
+#echo "** mtouch:"
+#/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
+#declare exitCode=$?
+#if [ $exitCode != 0 ]; then
+#  echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
+#  exit 180
+#fi
