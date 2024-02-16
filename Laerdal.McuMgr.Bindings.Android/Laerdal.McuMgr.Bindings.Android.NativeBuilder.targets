@@ -2,20 +2,17 @@
 
 <Project>
 
-    <Target Name="CheckAndroidLibraryFilesExist"
-            AfterTargets="CompileMcuMgrLaerdalWrapper">
+    <Target Name="CheckAndroidLibraryFilesExist" AfterTargets="CompileMcuMgrLaerdalWrapper">
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
-    <!-- android    its vital to run these targets before _CreateBindingResourceArchive which is a xamarin                                          -->
-    <!-- android    bindings specific build target otherwise the aar generation process wont work 100% as intended                                  -->
-    <!--                                                                                                                                            -->
-    <!-- todo  once we drop support for xamarin we can remove _CreateBindingResourceArchive which is here just to catter to xamarin build mechanics -->
-    <Target Name="CompileMcuMgrLaerdalWrapper"
-            BeforeTargets="_CreateBindingResourceArchive;PrepareForBuild">
-
+    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild">
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
+			<!-- in azure we specify the gradlepath explicitly because by default macos13 uses gradle8.6          -->
+			<!-- which has incompatibility problems versus gradle7.6 which is what we need for smooth compilation -->
+			<GradlePath Condition=" '$(GradlePath)' == '' ">gradle</GradlePath>
+
             <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default -->
             <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
             <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
@@ -68,7 +65,8 @@
         <Delete Files="$(CoreAarLibrary)"/>
 
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   gradle     wrapper    --distribution-type=BIN  --gradle-version=7.6                    "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                            "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6             "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                 " Condition=" '$(IsUnix)' == 'true' "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all   "/>
 
@@ -76,10 +74,7 @@
     </Target>
 
     <!-- android    download the jar and aar dependencies from maven                                                                                -->
-    <!--                                                                                                                                            -->
-    <!-- todo  once we drop support for xamarin we can remove _CreateBindingResourceArchive which is here just to catter to xamarin build mechanics -->
-    <Target Name="TackleJarDependencies"
-            BeforeTargets="_CreateBindingResourceArchive;PrepareForBuild">
+    <Target Name="TackleJarDependencies" BeforeTargets="PrepareForBuild">
 
         <!-- 1. jars go here - notice the :jar postfix    to pick the right versions have a look at the folder Laerdal.McuMgr.Bindings.Android.Native/lib which contains all .jar files listed below -->
 
@@ -95,7 +90,7 @@
         <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-annotations.jar')              " DestinationFileName="jackson-annotations.jar              " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.14.2/jackson-annotations-2.14.2.jar"/>
         <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-dataformat-cbor.jar')          " DestinationFileName="jackson-dataformat-cbor.jar          " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.14.2/jackson-dataformat-cbor-2.14.2.jar"/>
 
-        <!-- kotlinx coroutines are needed by both monoandroid and .net6+ but we settle those through explicit nuget references over to xamarin.androix.koltin -->
+        <!-- kotlinx coroutines are needed by .net6+ but we settle those through explicit nuget references over to xamarin.androix.koltin -->
         <!-- <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/kotlinx-coroutines-*.jar')        " DestinationFileName="kotlinx-coroutines-*.jar             " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx2/1.7.3/kotlinx-coroutines-*-1.7.3.jar"/> -->
 
         <!-- 2. aars go here - notice the .aar postfix  -->
