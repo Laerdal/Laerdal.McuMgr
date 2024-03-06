@@ -85,10 +85,16 @@ if [ $exitCode != 0 ]; then
   exit 60
 fi
 
-cd "Laerdal.McuMgr.Bindings.iOS" || (echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS" && exit 65)
+cd "Laerdal.McuMgr.Bindings.iOS"
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS"
+  exit 65
+fi
 sudo         dotnet                                      \
              workload                                    \
              restore
+
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
@@ -96,7 +102,13 @@ if [ $exitCode != 0 ]; then
 fi
 cd - || exit 71
 
-cd "Laerdal.McuMgr.Bindings.Android" || (echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.Android" && exit 75)
+cd "Laerdal.McuMgr.Bindings.Android"
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.Android"
+  exit 75
+fi
+
 sudo    dotnet                                           \
              workload                                    \
              restore
