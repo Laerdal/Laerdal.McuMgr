@@ -41,12 +41,12 @@
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />                                             
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />                               
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />                  
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.2.jar" Bind="false" />      
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.8.1.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.8.1.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.3.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.9.2.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.9.2.jar" Bind="false" />
     </ItemGroup>
 
     <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">
