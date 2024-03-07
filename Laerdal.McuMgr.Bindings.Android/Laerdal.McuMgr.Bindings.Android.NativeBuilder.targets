@@ -15,7 +15,7 @@
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
-    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild">
+    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
 			<!-- in azure we specify the gradlepath explicitly because by default macos13 uses gradle8.6          -->
