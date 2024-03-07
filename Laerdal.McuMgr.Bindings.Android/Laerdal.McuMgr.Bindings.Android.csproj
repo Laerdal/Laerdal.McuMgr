@@ -50,10 +50,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1015.0</Version>
-        <FileVersion>1.0.1015.0</FileVersion>
-        <PackageVersion>1.0.1015.0</PackageVersion>
-        <AssemblyVersion>1.0.1015.0</AssemblyVersion>
+        <Version>1.0.1020.0</Version>
+        <FileVersion>1.0.1020.0</FileVersion>
+        <PackageVersion>1.0.1020.0</PackageVersion>
+        <AssemblyVersion>1.0.1020.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -91,6 +91,8 @@
         <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
         <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
+        <Message Importance="high" Text="BuildingProject:  '$(BuildingProject)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
         <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>

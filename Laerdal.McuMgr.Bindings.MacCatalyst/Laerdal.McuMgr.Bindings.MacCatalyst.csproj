@@ -60,10 +60,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1015.0</Version>
-        <FileVersion>1.0.1015.0</FileVersion>
-        <PackageVersion>1.0.1015.0</PackageVersion>
-        <AssemblyVersion>1.0.1015.0</AssemblyVersion>
+        <Version>1.0.1020.0</Version>
+        <FileVersion>1.0.1020.0</FileVersion>
+        <PackageVersion>1.0.1020.0</PackageVersion>
+        <AssemblyVersion>1.0.1020.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -149,7 +149,7 @@
     <!--    but on in the azure pipelines for some weird reason                                                                                    -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
-            Condition=" '$(ShouldBuildNativeLibraries)' == 'true' ">
+            Condition=" '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
         
         <!-- 1. build and generate the fat libs from the proxy swift project                                                -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
