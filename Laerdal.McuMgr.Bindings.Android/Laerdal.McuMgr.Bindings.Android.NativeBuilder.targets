@@ -2,11 +2,20 @@
 
 <Project>
 
+    <Target Name="SpicNSpan" AfterTargets="Clean">
+        <!-- when performing a cleanup its vital to also clean any and all pre-existing .jar and .aar artifacts -->
+        <!-- otherwise any new .jar/.aar files might not be fully updated to their respective latest versions   -->
+        <RemoveDir Directories="Libraries" />
+        
+        <MakeDir Directories="Libraries" />
+        <MakeDir Directories="Libraries/Dependencies" />
+    </Target>
+    
     <Target Name="CheckAndroidLibraryFilesExist" AfterTargets="CompileMcuMgrLaerdalWrapper">
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
-    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild">
+    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
 			<!-- in azure we specify the gradlepath explicitly because by default macos13 uses gradle8.6          -->
@@ -96,19 +105,19 @@
         <!-- 2. aars go here - notice the .aar postfix  -->
 
         <!-- download -->
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.2.aar')           " DestinationFileName="nordicsemi-android-ble-2.7.2.aar                                         " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.7.2/ble-2.7.2.aar                      "/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.8.1.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-1.8.1.aar                                  " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/1.8.1/mcumgr-ble-1.8.1.aar        "/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.8.1.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-1.8.1.aar                                 " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/1.8.1/mcumgr-core-1.8.1.aar      "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.3.aar')           " DestinationFileName="nordicsemi-android-ble-2.7.3.aar                                         " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.7.3/ble-2.7.3.aar                      "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.9.2.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-1.9.2.aar                                  " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/1.9.2/mcumgr-ble-1.9.2.aar        "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.9.2.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-1.9.2.aar                                 " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/1.9.2/mcumgr-core-1.9.2.aar      "/>
 
         <!-- unzip -->
-        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.2.jar')           " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.2.aar                                    "/>
-        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.8.1.jar')    " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.8.1.aar                             "/>
-        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.8.1.jar')   " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.8.1.aar                            "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.3.jar')           " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.3.aar                                    "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.9.2.jar')    " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.9.2.aar                             "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.9.2.jar')   " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.9.2.aar                            "/>
 
         <!-- copy -->
-        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.2.jar')           " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.2.jar           " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble/classes.jar                                  "/>
-        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.8.1.jar')    " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.8.1.jar    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           "/>
-        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.8.1.jar')   " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.8.1.jar   " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core/classes.jar                          "/>
+        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.3.jar')           " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.3.jar           " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble/classes.jar                                  "/>
+        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.9.2.jar')    " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-1.9.2.jar    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           "/>
+        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.9.2.jar')   " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-1.9.2.jar   " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core/classes.jar                          "/>
     </Target>
 
 </Project>

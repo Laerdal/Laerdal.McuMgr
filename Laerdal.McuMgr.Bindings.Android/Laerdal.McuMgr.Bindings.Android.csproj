@@ -5,13 +5,13 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <TargetFramework>net8.0-android</TargetFramework>
+        <TargetFramework>net7.0-android</TargetFramework>
 
-        <IsNet8 Condition="               '$(TargetFramework.ToLower().StartsWith(net8))' == 'true'          ">true</IsNet8>
-        <IsNetX Condition="               '$(IsNet8)' == 'true'                                              ">true</IsNetX>
+        <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
+        <IsNetX Condition="               '$(IsNet7)' == 'true'                                              ">true</IsNetX>
 
         <!-- keep this sort of parameterization around because it will be very difficult to reintroduce it if we add more target-frameworks in the future -->
-        <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNet7)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
@@ -37,7 +37,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
-        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Net8;</PackageTags>
+        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Net7;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' ">README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -50,15 +50,15 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1010.0</Version>
-        <FileVersion>1.0.1010.0</FileVersion>
-        <PackageVersion>1.0.1010.0</PackageVersion>
-        <AssemblyVersion>1.0.1010.0</AssemblyVersion>
+        <Version>1.0.1028.0</Version>
+        <FileVersion>1.0.1028.0</FileVersion>
+        <PackageVersion>1.0.1028.0</PackageVersion>
+        <AssemblyVersion>1.0.1028.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
         <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
-        <Summary>.Net8+ McuMgr Bindings for Android</Summary>
+        <Summary>.Net7+ McuMgr Bindings for Android</Summary>
         <Copyright>$(Authors)</Copyright>
         <Description>$(PackageDescription)</Description>
 
@@ -91,9 +91,11 @@
         <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
         <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
+        <Message Importance="high" Text="BuildingProject:  '$(BuildingProject)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
+        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
 
         <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
@@ -101,7 +103,7 @@
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
     <!-- cryptic errors in azure due to target-frameworks trying to build themselves in parallel thus stepping onto eachothers toes    thats because the   -->
-    <!-- intended way of building stuff is to let net8.0-android build the android libs and once that is done then and only then proceed to any additional -->
+    <!-- intended way of building stuff is to let net7.0-android build the android libs and once that is done then and only then proceed to any additional -->
     <!-- target-frameworks which will find the .aar and .jars already in place                                                                             -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="PrepareForBuild">
@@ -114,11 +116,11 @@
 
     <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
         <!-- these dependencies have been field-tested and are known to work at least as far back as Android 10.0 -->
-        <PackageReference Include="Xamarin.AndroidX.Core" Version="[1.12.0.1,)" PrivateAssets="All" />
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.12.0.4" PrivateAssets="All" />
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="[1.7.3.1,2.0)" />
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.8.0.1" />
     </ItemGroup>
 
 </Project>
