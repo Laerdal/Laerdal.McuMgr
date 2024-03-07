@@ -2,6 +2,15 @@
 
 <Project>
 
+    <Target Name="SpicNSpan" AfterTargets="Clean">
+        <!-- when performing a cleanup its vital to also clean any and all pre-existing .jar and .aar artifacts -->
+        <!-- otherwise any new .jar/.aar files might not be fully updated to their respective latest versions   -->
+        <RemoveDir Directories="Libraries" />
+        
+        <MakeDir Directories="Libraries" />
+        <MakeDir Directories="Libraries/Dependencies" />
+    </Target>
+    
     <Target Name="CheckAndroidLibraryFilesExist" AfterTargets="CompileMcuMgrLaerdalWrapper">
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
