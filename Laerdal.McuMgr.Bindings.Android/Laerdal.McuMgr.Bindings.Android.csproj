@@ -7,6 +7,8 @@
 
         <TargetFramework>net7.0-android</TargetFramework>
 
+        <!-- to future maintainers     we stick with net7 for now in android because as it turned out the net8 toolchain generates broken      -->
+        <!-- to future maintainers     android dlls that cause missing-symbols-errors in runtime   what a freakshow net8 turned out to be man  -->
         <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
         <IsNetX Condition="               '$(IsNet7)' == 'true'                                              ">true</IsNetX>
 
