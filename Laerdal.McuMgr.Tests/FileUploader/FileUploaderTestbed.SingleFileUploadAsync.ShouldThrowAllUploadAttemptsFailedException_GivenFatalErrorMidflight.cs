@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
@@ -45,7 +46,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             eventsMonitor.Should().NotRaise(nameof(fileUploader.Cancelled));
-            eventsMonitor.Should().NotRaise(nameof(fileUploader.UploadCompleted));
+            eventsMonitor.Should().NotRaise(nameof(fileUploader.FileUploaded));
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FatalErrorOccurred))
@@ -83,7 +84,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(2_000);
                     
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred");
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Corrupt, EFileUploaderGroupReturnCode.Unset);
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                 });

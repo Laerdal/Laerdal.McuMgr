@@ -1,4 +1,4 @@
-﻿<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <!-- SHARED -->
     <PropertyGroup>
@@ -7,41 +7,28 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <!-- it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
-        <TargetFrameworks>$(TargetFrameworks)netstandard2.0;</TargetFrameworks>
+        <!-- - note that we build against netstandard2.1 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
+        <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
+        <!-- - in azure we omit building maccatalyst for the time being because net8 needs maccatalyst 17.2+ which is only available on macos14 which microsoft currently (Q1 2024) doesn't provide us with in azure just yet -->
+        <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                          ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
+        <!-- <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(ShouldSkipMacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks> -->
 
-        <!-- notice that on windows the monoandroid build is disabled because the android bindings fail to be generated -->
-        <!-- due to a b.ug in Xamarin.Legacy.Sdk https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                -->
-        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
-
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)xamarin.ios10;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net6.0-maccatalyst;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' ">$(TargetFrameworks)net7.0-maccatalyst;</TargetFrameworks>
-
-        <IsNet6 Condition="            '$(TargetFramework.ToLower().StartsWith(net6))'                 == 'true' ">true</IsNet6>
-        <IsNet7 Condition="            '$(TargetFramework.ToLower().StartsWith(net7))'                 == 'true' ">true</IsNet7>
-        <IsNet6IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net6.0-ios))'           == 'true' ">true</IsNet6IOS>
-        <IsNet7IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net7.0-ios))'           == 'true' ">true</IsNet7IOS>
-        <IsNet6Android Condition="     '$(TargetFramework.ToLower().StartsWith(net6.0-android))'       == 'true' ">true</IsNet6Android>
-        <IsNet7Android Condition="     '$(TargetFramework.ToLower().StartsWith(net7.0-android))'       == 'true' ">true</IsNet7Android>
+        <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
+        <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true' ">true</IsNet8IOS>
+        <IsNet8Android Condition="     '$(TargetFramework.ToLower().StartsWith(net8.0-android))'       == 'true' ">true</IsNet8Android>
         <IsNetStandard Condition="     '$(TargetFramework.ToLower().StartsWith(netstandard))'          == 'true' ">true</IsNetStandard>
-        <IsXamarinIOS Condition="      '$(TargetFramework.ToLower().StartsWith(xamarin.ios))'          == 'true' ">true</IsXamarinIOS>
-        <IsXamarinAndroid Condition="  '$(TargetFramework.ToLower().StartsWith(monoandroid))'          == 'true' ">true</IsXamarinAndroid>
-        <IsNet6MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0-maccatalyst))'   == 'true' ">true</IsNet6MacCatalyst>
-        <IsNet7MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0-maccatalyst))'   == 'true' ">true</IsNet7MacCatalyst>
+        <IsNet8MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0-maccatalyst))'   == 'true' ">true</IsNet8MacCatalyst>
 
-        <IsNetX Condition="                '$(IsNet6)'             == 'true' OR '$(IsNet7)'             == 'true' ">true</IsNetX>
-        <IsNetXIOS Condition="             '$(IsNet6IOS)'          == 'true' OR '$(IsNet7IOS)'          == 'true' ">true</IsNetXIOS>
-        <IsNetXAndroid Condition="         '$(IsNet6Android)'      == 'true' OR '$(IsNet7Android)'      == 'true' ">true</IsNetXAndroid>
-        <IsNetXMacCatalyst Condition="     '$(IsNet6MacCatalyst)'  == 'true' OR '$(IsNet7MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
+        <IsNetX Condition="                '$(IsNet8)'             == 'true' ">true</IsNetX>
+        <IsNetXIOS Condition="             '$(IsNet8IOS)'          == 'true' ">true</IsNetXIOS>
+        <IsNetXAndroid Condition="         '$(IsNet8Android)'      == 'true' ">true</IsNetXAndroid>
+        <IsNetXMacCatalyst Condition="     '$(IsNet8MacCatalyst)'  == 'true' ">true</IsNetXMacCatalyst>
 
-        <IsIOS Condition="                 '$(IsXamarinIOS)'       == 'true' OR '$(IsNetXIOS)'          == 'true' ">true</IsIOS>
-        <IsAndroid Condition="             '$(IsXamarinAndroid)'   == 'true' OR '$(IsNetXAndroid)'      == 'true' ">true</IsAndroid>
-        <IsAppleStuff Condition="          '$(IsNetXMacCatalyst)'  == 'true' OR '$(IsIOS)'              == 'true' ">true</IsAppleStuff>
+        <IsIOS Condition="                 '$(IsNetXIOS)'          == 'true'                         ">true</IsIOS>
+        <IsAndroid Condition="             '$(IsNetXAndroid)'      == 'true'                         ">true</IsAndroid>
+        <IsAppleStuff Condition="          '$(IsNetXMacCatalyst)'  == 'true' OR '$(IsIOS)' == 'true' ">true</IsAppleStuff>
         
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -52,7 +39,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr</PackageId>
-        <PackageTags>Laerdal;Xamarin;MAUI;Nordic;McuMgr;Tools;Firmware;</PackageTags>
+        <PackageTags>Laerdal;MAUI;Nordic;McuMgr;Tools;Firmware;</PackageTags>
         <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard - MAUI ready</PackageDescription>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
@@ -67,14 +54,14 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.919.0</Version>
-        <FileVersion>1.0.919.0</FileVersion>
-        <PackageVersion>1.0.919.0</PackageVersion>
-        <AssemblyVersion>1.0.919.0</AssemblyVersion>
+        <Version>1.0.1029.0</Version>
+        <FileVersion>1.0.1029.0</FileVersion>
+        <PackageVersion>1.0.1029.0</PackageVersion>
+        <AssemblyVersion>1.0.1029.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
-        <Summary>Xamarin McuMgr Managed-Wrapper Library</Summary>
+        <Summary>McuMgr Managed-Wrapper Library</Summary>
         <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Copyright>$(Authors)</Copyright>
         <Description>$(PackageDescription)</Description>
@@ -109,22 +96,20 @@
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:               '$(OS)'               "/>
-        <Message Importance="High" Text="Platform:         '$(Platform)'         "/>
-        <Message Importance="High" Text="PackageId:        '$(PackageId)'        "/>
-        <Message Importance="High" Text="Configuration:    '$(Configuration)'    "/>
-        <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
-        <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
-        <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+        <Message Importance="High" Text="OS:                    '$(OS)'                    "/>
+        <Message Importance="High" Text="Platform:              '$(Platform)'              "/>
+        <Message Importance="High" Text="PackageId:             '$(PackageId)'             "/>
+        <Message Importance="High" Text="Configuration:         '$(Configuration)'         "/>
+        <Message Importance="High" Text="PackageVersion:        '$(PackageVersion)'        "/>
+        <Message Importance="High" Text="TargetFramework:       '$(TargetFramework)'       "/>
+        <Message Importance="High" Text="DefineConstants:       '$(DefineConstants)'       "/>
+        <Message Importance="high" Text="MSBuildNodeCount:      '$(MSBuildNodeCount)'      "/>
+        <Message Importance="high" Text="ShouldSkipMacCatalyst: '$(ShouldSkipMacCatalyst)' "/>
 
-        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
-        <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
+        <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
-        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
 
-        <Message Importance="high" Text="IsNet6MacCatalyst: '$(IsNet6MacCatalyst)' "/>
-        <Message Importance="high" Text="IsNet7MacCatalyst: '$(IsNet7MacCatalyst)' "/>
+        <Message Importance="high" Text="IsNet8MacCatalyst: '$(IsNet8MacCatalyst)' "/>
         <Message Importance="high" Text="IsNetXAndroid:     '$(IsNetXAndroid)'     "/>
         <Message Importance="high" Text="IsNetXMacCatalyst: '$(IsNetXMacCatalyst)' "/>
 
@@ -163,21 +148,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.919.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1029.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.919.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1029.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.919.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1029.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.919.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1029.0"/>
     </ItemGroup>
 
 </Project>

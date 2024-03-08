@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// <br/><br/>
         /// In case you pass a data-stream into this method then the data-stream will be read immediately into a byte array (from its current position)
-        /// but the data-stream will not be disposed of unless the option <see cref="autodisposeStreams"/> is set explicitly to true.
+        /// but the data-stream will not be disposed of unless the option 'autodisposeStreams' is set explicitly to true.
         /// </remarks>
         /// <param name="remoteFilePathsAndTheirData">The files to upload.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// <br/><br/>
         /// In the case you pass a data-stream into this method then the data-stream will be read immediately into a byte array (from its current position)
-        /// but the data-stream will not be disposed of unless the option <see cref="autodisposeStream"/> is set explicitly to true.
+        /// but the data-stream will not be disposed of unless the option 'autodisposeStreams' is set explicitly to true.
         /// </remarks>
         /// <param name="localData">The local data to upload.</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
@@ -60,6 +60,21 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="data">The file-data.</param>
         EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);
+        
+        /// <summary>
+        /// Scraps the current transport. This is useful in case the transport is in a bad state and needs to be restarted.
+        /// Method has an effect if and only if the upload has been terminated first (canceled or failed or completed).
+        /// </summary>
+        /// <returns>True if the transport has been scrapped without issues - False otherwise (which typically means that an upload is still ongoing)</returns>
+        bool TryInvalidateCachedTransport();
+        
+        /// <summary>Sets the context. Mainly needed by Android - this call has no effect in iOS.</summary>
+        /// <returns>True if the context was successfully set to the specified one - False otherwise (which typically means that an upload is still ongoing)</returns>
+        bool TrySetContext(object context);
+        
+        /// <summary>Sets the bluetooth device.</summary>
+        /// <returns>True if the bluetooth device was successfully set to the specified one - False otherwise (which typically means that an upload is still ongoing)</returns>
+        bool TrySetBluetoothDevice(object bluetoothDevice);
 
         /// <summary>Cancels the file-uploading process</summary>
         void Cancel();

@@ -12,7 +12,7 @@ trigger:
 
 pool:
   name: 'Azure Pipelines'
-  vmImage: 'macOS-12'
+  vmImage: 'macOS-13'
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
@@ -65,6 +65,7 @@ jobs:
     condition: ${{ startsWith(variables.should_build, 'Yes ') }}
     displayName: 'Build Agent'
     steps:
+
       - checkout: self
         displayName: 'Checkout'
         clean: true
@@ -75,8 +76,8 @@ jobs:
       - task: Bash@3
         displayName: 'Setup Build Environment for "Laerdal.McuMgr.Bindings"'
         inputs:
-          targetType: filePath
           filePath: 'Laerdal.SetupBuildEnvironment.sh'
+          targetType: 'filePath'
 
       - task: NuGetToolInstaller@1
         displayName: 'Install Nuget'
@@ -93,20 +94,23 @@ jobs:
           arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
 
       - task: DotNetCoreCLI@2
-        displayName: 'NuGet Sources Add (for .Net6+)'
+        displayName: 'NuGet Sources Add (for .Net8+)'
         inputs:
-          command: 'custom'
           custom: 'nuget'
+          command: 'custom'
           arguments: ' add source "$(Build.ArtifactStagingDirectory)/Artifacts" '
       
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
+      #
+      # also noticed that we intentionally skip the maccatalyst build on azure because under net8 we need macos14 to be available on azure but
+      # its not available just yet in 2024 Q1 :(
       - task: DotNetCoreCLI@2
-        displayName: 'Build .Net6+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
+        displayName: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         inputs:
           command: 'custom'
           custom: 'msbuild'
-          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1   -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1  -p:ShouldSkipMacCatalyst="true"  -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"  -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'

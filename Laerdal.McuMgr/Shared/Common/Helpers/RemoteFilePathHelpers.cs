@@ -46,7 +46,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         }
         
         //used by the uploader
-        static public IReadOnlyDictionary<string, T> SanitizeRemoteFilePathsWithDataBytes<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        static public IReadOnlyDictionary<string, T> SanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
 

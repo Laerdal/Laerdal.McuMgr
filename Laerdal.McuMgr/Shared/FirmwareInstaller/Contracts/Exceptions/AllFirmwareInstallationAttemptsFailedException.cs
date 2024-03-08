@@ -10,12 +10,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions
         }
         
         public AllFirmwareInstallationAttemptsFailedException(string errorMessage)
-            : base($"An error occurred while uploading the requested resource: '{errorMessage}'")
+            : base($"An error occurred while installing the firmware: '{errorMessage}'")
         {
         }
         
         public AllFirmwareInstallationAttemptsFailedException(string errorMessage, Exception innerException)
-            : base($"An error occurred while uploading the requested resource: '{errorMessage}'", innerException)
+            : base($"An error occurred while installing the firmware: '{errorMessage}'", innerException)
         {
         }
     }

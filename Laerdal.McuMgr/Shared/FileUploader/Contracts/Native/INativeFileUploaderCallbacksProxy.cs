@@ -11,8 +11,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
         void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
-        void UploadCompletedAdvertisement(string resource);
-        void FatalErrorOccurredAdvertisement(string resource, string errorMessage);
+        void FileUploadedAdvertisement(string resource);
+        void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileUploaderGroupReturnCode fileUploaderGroupReturnCode);
         void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput);
     }
 }

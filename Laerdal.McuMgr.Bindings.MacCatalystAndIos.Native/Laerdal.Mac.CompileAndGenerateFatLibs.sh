@@ -205,6 +205,9 @@ function create_fat_binaries() {
 
   rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 
+  # starting from net8 sharpie seems to generate a file that is missing the using CoreBluetooth; directive from the top of the file so we have to add it ourselves
+  sed -i.bak '1s/^/using CoreBluetooth;\n/' "$OUTPUT_SHARPIE_HEADER_FILES_PATH/ApiDefinitions.cs"
+
   find \
     "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
@@ -281,6 +284,12 @@ function create_fat_binaries() {
     "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
     -type f \
     -exec sed -i.bak 's/interface IOSListenerForFirmwareInstaller/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFirmwareInstaller/gi' {} \;
+
+  # some plain methods unfortunately get autoprojected into properties by sharpie so we need to fix that    
+  find \
+        "$OUTPUT_SHARPIE_HEADER_FILES_PATH/" \
+        -type f \
+        -exec sed -i.bak 's/bool TryInvalidateCachedTransport { get; }/bool TryInvalidateCachedTransport();/gi' {} \;
 
   rm -f "$OUTPUT_SHARPIE_HEADER_FILES_PATH"/*.bak || :
 

@@ -1,39 +1,28 @@
-﻿<!-- to future maintainers    if you're building in windows on your localdev unfortunately you *might* have to switch over to using           -->
-<!-- to future maintainers                                                                                                                    -->
-<!-- to future maintainers             <Project Sdk="Microsoft.NET.Sdk">                                                                      -->
-<!-- to future maintainers                                                                                                                    -->
-<!-- to future maintainers    because Xamarin.Legacy.Sdk has unresolved eratic bugs under windows that go back entire years   its ok though   -->
-<!-- to future maintainers    because at some point in 2024-Q2 we will drop support for xamarin and switch over to Microsoft.NET.Sdk anyway   -->
-<Project Sdk="Xamarin.Legacy.Sdk/0.2.0-alpha4">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
         <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <!-- we need to always keep the monoandroid first in the list of frameworks except for windows   otherwise the build will fail!        -->
-        <!-- the reason we exclude windows is because there is a long-standing b.ug affecting xamarin.legacy.sdk which causes the monoandroid  -->
-        <!-- target to error out https://github.com/xamarin/Xamarin.Legacy.Sdk/issues/42                                                       -->
-        <TargetFrameworks Condition=" '$(IsWindows)' != 'true' ">$(TargetFrameworks)monoandroid12.0;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net6.0-android;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net7.0-android;</TargetFrameworks>
+        <!-- to future maintainers     we stick with net7 for now in android because as it turned out the net8 toolchain generates broken      -->
+        <!-- to future maintainers     android dlls that cause missing-symbols-errors in runtime   what a freakshow net8 turned out to be man  -->
+        <!--                                                                                                                                   -->
+        <!--                                             https://github.com/dotnet/maui/issues/21102                                           -->
+        <!--                                                                                                                                   -->
+        <TargetFramework>net7.0-android</TargetFramework>
 
-        <IsNet6 Condition="               '$(TargetFramework.ToLower().StartsWith(net6))' == 'true'          ">true</IsNet6>
         <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
+        <IsNetX Condition="               '$(IsNet7)' == 'true'                                              ">true</IsNetX>
 
-        <IsNetX Condition="               '$(IsNet6)' == 'true'  OR  '$(IsNet7)' == 'true'                   ">true</IsNetX>
-        <IsXamarinAndroid Condition="     '$(TargetFramework.ToLower().StartsWith(monoandroid))' == 'true'   ">true</IsXamarinAndroid>
-
-        <!-- notice that on windows the monoandroid build is disabled because it doesnt work   we make sure to only  -->
-        <!-- build once on the very first framework so as to avoid rebuilding the same native codebase over and over -->
-        <ShouldBuildNativeLibraries Condition=" '$(IsUnix)'    == 'true' and '$(IsXamarinAndroid)' == 'true' ">true</ShouldBuildNativeLibraries>
-        <ShouldBuildNativeLibraries Condition=" '$(IsWindows)' == 'true' and '$(IsNet6)'           == 'true' ">true</ShouldBuildNativeLibraries>
+        <!-- keep this sort of parameterization around because it will be very difficult to reintroduce it if we add more target-frameworks in the future -->
+        <ShouldBuildNativeLibraries Condition=" '$(IsNet7)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
 
-        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;BG8605;BG8606;NETSDK1202;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -53,7 +42,7 @@
 
     <PropertyGroup>
         <PackageId>Laerdal.McuMgr.Bindings.Android</PackageId>
-        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Xamarin;Net6;Net7;Mono;</PackageTags>
+        <PackageTags>Laerdal;Nordic;McuMgr;Bindings;Android;Net7;</PackageTags>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
         <PackageReadmeFile Condition=" '$(IsNetX)' == 'true' ">README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -66,15 +55,15 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.919.0</Version>
-        <FileVersion>1.0.919.0</FileVersion>
-        <PackageVersion>1.0.919.0</PackageVersion>
-        <AssemblyVersion>1.0.919.0</AssemblyVersion>
+        <Version>1.0.1029.0</Version>
+        <FileVersion>1.0.1029.0</FileVersion>
+        <PackageVersion>1.0.1029.0</PackageVersion>
+        <AssemblyVersion>1.0.1029.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
         <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
-        <Summary>.Net6+ McuMgr Bindings for Android</Summary>
+        <Summary>.Net7+ McuMgr Bindings for Android</Summary>
         <Copyright>$(Authors)</Copyright>
         <Description>$(PackageDescription)</Description>
 
@@ -107,20 +96,20 @@
         <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
         <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
+        <Message Importance="high" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
+        <Message Importance="high" Text="BuildingProject:  '$(BuildingProject)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet6:           '$(IsNet6)'           "/>
         <Message Importance="high" Text="IsNet7:           '$(IsNet7)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
-        <Message Importance="high" Text="IsXamarinAndroid: '$(IsXamarinAndroid)' "/>
 
         <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
     <!-- cryptic errors in azure due to target-frameworks trying to build themselves in parallel thus stepping onto eachothers toes    thats because the   -->
-    <!-- intended way of building stuff is to let net6.0-android build the android libs and once that is done then and only then proceed to net7.0-android -->
-    <!-- which will find the .aar and .jars already in place                                                                                               -->
+    <!-- intended way of building stuff is to let net7.0-android build the android libs and once that is done then and only then proceed to any additional -->
+    <!-- target-frameworks which will find the .aar and .jars already in place                                                                             -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="PrepareForBuild">
         <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
@@ -129,24 +118,14 @@
 
     <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets"/>
     <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets"/>
-    <Import Condition=" '$(IsXamarinAndroid)'           == 'true' " Project="Laerdal.McuMgr.Bindings.Android.Xamarin.targets"/>
-
-    <!-- DEPENDENCIES   these dependency sections must be here in the main file   if we place    -->
-    <!--                them inside xamarin.targets or netx.targets they get completely ignored! -->
-
-    <ItemGroup Condition=" '$(IsXamarinAndroid)' == 'true' ">
-        <!-- <PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.4.0"/> -->
-
-        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="[1.7.3.1,2.0)" />
-    </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
         <!-- these dependencies have been field-tested and are known to work at least as far back as Android 10.0 -->
-        <PackageReference Include="Xamarin.AndroidX.Core" Version="[1.12.0.1,)" PrivateAssets="All" />
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.12.0.4" PrivateAssets="All" />
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="[1.7.3.1,2.0)" />
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.8.0.1" />
     </ItemGroup>
 
 </Project>

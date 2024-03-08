@@ -6,12 +6,16 @@
         <LangVersion>10.0</LangVersion>
 
         <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">31</SupportedOSPlatformVersion>
+        <!-- <TargetPlatformVersion>21.0</TargetPlatformVersion>                                                                                   -->
+        <!-- <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">21</SupportedOSPlatformVersion> -->
 
         <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
         <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
         <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion>
+
+        <!-- net8 supports android13 and it corresponds to android-api level 34.0 -->
+        <!-- <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34.0</TargetPlatformVersion>    -->
+        <!-- <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34</SupportedOSPlatformVersion> -->
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,15 +42,19 @@
         <!-- https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/OneDotNetEmbeddedResources.md   -->
         <!--                                                                                                           -->
         <TransformFile Include="Transforms/*.xml"/>
-        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
+
+        <!-- the condition is placed intentionally to work around a limitation of the IDE   this means we have to build twice to make a  -->
+        <!-- vanilla build truly work in terms of embedding the aar properly   also rebuilding doesnt work through the IDE unfortunately -->
+        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" Condition=" 'Exists($(CoreAarLibrary))' == 'true' " />
+        
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />                                             
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />                               
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />                  
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.2.jar" Bind="false" />      
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.8.1.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.8.1.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.3.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.9.2.jar" Bind="false" />
+        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.9.2.jar" Bind="false" />
     </ItemGroup>
 
     <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">

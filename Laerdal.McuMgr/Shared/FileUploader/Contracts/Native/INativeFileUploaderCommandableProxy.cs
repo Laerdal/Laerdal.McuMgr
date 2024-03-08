@@ -6,6 +6,11 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
     {
         void Cancel();
         void Disconnect();
+        
         EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);
+
+        bool TrySetContext(object context);
+        bool TrySetBluetoothDevice(object bluetoothDevice);
+        bool TryInvalidateCachedTransport();
     }
 }

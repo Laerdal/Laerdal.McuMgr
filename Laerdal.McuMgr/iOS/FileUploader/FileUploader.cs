@@ -61,6 +61,23 @@ namespace Laerdal.McuMgr.FileUploader
 
                 return verdict;
             }
+            
+            public bool TrySetContext(object context)
+            {
+                return true; //nothing to do in ios   only android needs this and supports it
+            }
+
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                var iosBluetoothDevice = bluetoothDevice as CBPeripheral ?? throw new ArgumentException($"Expected {nameof(bluetoothDevice)} to be of type {nameof(CBPeripheral)}", nameof(bluetoothDevice));
+                
+                return _nativeFileUploader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
+            }
+
+            public bool TryInvalidateCachedTransport()
+            {               
+                return _nativeFileUploader?.TryInvalidateCachedTransport() ?? false;
+            }
 
             #endregion commands
 
@@ -106,14 +123,33 @@ namespace Laerdal.McuMgr.FileUploader
                     oldState: oldState
                 );
 
-            public override void UploadCompletedAdvertisement(string resource)
-                => _nativeFileUploaderCallbacksProxy?.UploadCompletedAdvertisement(resource);
-            
+            public override void FileUploadedAdvertisement(string resource)
+                => _nativeFileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
+
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(
+                string resource,
+                string errorMessage,
+                nint mcuMgrErrorCode
+            ) => FatalErrorOccurredAdvertisement(
+                resource,
+                errorMessage,
+                (EMcuMgrErrorCode)(int)mcuMgrErrorCode,
+                EFileUploaderGroupReturnCode.Unset
+            );
+            public void FatalErrorOccurredAdvertisement( //conformance to the interface
+                string resource,
+                string errorMessage, // ReSharper disable once MethodOverloadWithOptionalParameter
+                EMcuMgrErrorCode mcuMgrErrorCode,
+                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+            ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                resource,
+                errorMessage,
+                mcuMgrErrorCode,
+                fileUploaderGroupReturnCode
+            );
 
             public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
                 => FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(

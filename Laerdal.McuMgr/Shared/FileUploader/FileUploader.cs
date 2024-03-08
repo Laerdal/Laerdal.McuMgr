@@ -30,6 +30,10 @@ namespace Laerdal.McuMgr.FileUploader
             _nativeFileUploaderProxy = nativeFileUploaderProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderProxy));
             _nativeFileUploaderProxy.FileUploader = this; //vital
         }
+        
+        public bool TrySetContext(object context) => _nativeFileUploaderProxy?.TrySetContext(context) ?? false;
+        public bool TrySetBluetoothDevice(object bluetoothDevice) => _nativeFileUploaderProxy?.TrySetContext(bluetoothDevice) ?? false;
+        public bool TryInvalidateCachedTransport() => _nativeFileUploaderProxy?.TryInvalidateCachedTransport() ?? false;
 
         public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
         {
@@ -49,7 +53,7 @@ namespace Laerdal.McuMgr.FileUploader
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
-        private event EventHandler<UploadCompletedEventArgs> _uploadCompleted;
+        private event EventHandler<FileUploadedEventArgs> _fileUploaded;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
         private event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> _fileUploadProgressPercentageAndDataThroughputChanged;
@@ -105,14 +109,14 @@ namespace Laerdal.McuMgr.FileUploader
         }
         
         /// <summary>Event raised when a specific file gets uploaded successfully</summary>
-        public event EventHandler<UploadCompletedEventArgs> UploadCompleted
+        public event EventHandler<FileUploadedEventArgs> FileUploaded
         {
             add
             {
-                _uploadCompleted -= value;
-                _uploadCompleted += value;
+                _fileUploaded -= value;
+                _fileUploaded += value;
             }
-            remove => _uploadCompleted -= value;
+            remove => _fileUploaded -= value;
         }
 
         public event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> FileUploadProgressPercentageAndDataThroughputChanged
@@ -132,10 +136,10 @@ namespace Laerdal.McuMgr.FileUploader
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true,
             bool autodisposeStreams = false
-        )
+        ) where TData : notnull
         {
             RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
-            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
+            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
 
             var filesThatFailedToBeUploaded = new List<string>(2);
 
@@ -181,8 +185,11 @@ namespace Laerdal.McuMgr.FileUploader
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
             bool autodisposeStream = false
-        )
+        ) where TData : notnull
         {
+            if (data is null)
+                throw new ArgumentNullException(nameof(data));
+            
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
             
@@ -222,7 +229,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                     throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
                 }
-                catch (UploadErroredOutException ex) //errors with code in_value(3) happen all the time in android when multiuploading files
+                catch (UploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
                 {
                     if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
@@ -305,14 +312,36 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void UploadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutFolderNotExisting = ea.ErrorMessage?.ToUpperInvariant().Contains("UNKNOWN (1)") ?? false;
+                    var isAboutUnauthorized = ea.ErrorCode == EMcuMgrErrorCode.AccessDenied;
+                    if (isAboutUnauthorized)
+                    {
+                        taskCompletionSource.TrySetException(new UploadUnauthorizedException( //specific case
+                            remoteFilePath: remoteFilePath,
+                            mcuMgrErrorCode: ea.ErrorCode,
+                            groupReturnCode: ea.GroupReturnCode,
+                            nativeErrorMessage: ea.ErrorMessage
+                        ));
+                        return;
+                    }
+                    
+                    var isAboutFolderNotExisting = ea.ErrorCode == EMcuMgrErrorCode.Unknown;
                     if (isAboutFolderNotExisting)
                     {
-                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(remoteFilePath)); //specific case
+                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException( //specific case
+                            remoteFilePath: remoteFilePath,
+                            mcuMgrErrorCode: ea.ErrorCode,
+                            groupReturnCode: ea.GroupReturnCode,
+                            nativeErrorMessage: ea.ErrorMessage
+                        ));
                         return;
                     }
 
-                    taskCompletionSource.TrySetException(new UploadErroredOutException(remoteFilePath, ea.ErrorMessage)); //generic
+                    taskCompletionSource.TrySetException(new UploadErroredOutException( //generic
+                        remoteFilePath: remoteFilePath,
+                        mcuMgrErrorCode: ea.ErrorCode,
+                        groupReturnCode: ea.GroupReturnCode,
+                        nativeErrorMessage: ea.ErrorMessage
+                    ));
                 }
                 // ReSharper restore AccessToModifiedClosure
             }
@@ -337,17 +366,24 @@ namespace Laerdal.McuMgr.FileUploader
             static async Task<byte[]> GetDataAsByteArray_<TD>(TD dataObject_, bool autodisposeStream_) => dataObject_ switch
             {
                 Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_),
+                
+                Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_),
+                Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
+#if NETCOREAPP
+                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_), //only supported in the netcore era
+#endif
+                
                 byte[] dataByteArray => dataByteArray,
                 IEnumerable<byte> dataEnumerableBytes => dataEnumerableBytes.ToArray(), //just in case
                     
-                _ => throw new ArgumentException(nameof(data))
+                _ => throw new NotSupportedException($"Unsupported data type {dataObject_?.GetType().FullName ?? "N/A"} passed to UploadAsync()")
             };
         }
 
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnUploadCompleted(UploadCompletedEventArgs ea) => _uploadCompleted?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
@@ -378,11 +414,20 @@ namespace Laerdal.McuMgr.FileUploader
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void UploadCompletedAdvertisement(string resource)
-                => FileUploader?.OnUploadCompleted(new UploadCompletedEventArgs(resource));
+            public void FileUploadedAdvertisement(string resource)
+                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resource));
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
+            public void FatalErrorOccurredAdvertisement(
+                string resource,
+                string errorMessage,
+                EMcuMgrErrorCode mcuMgrErrorCode,
+                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+            ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
+                resource,
+                errorMessage,
+                mcuMgrErrorCode,
+                fileUploaderGroupReturnCode
+            ));
 
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(

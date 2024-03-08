@@ -8,7 +8,6 @@ import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
-import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.response.dflt.McuMgrOsResponse;
 import org.jetbrains.annotations.NotNull;
 
