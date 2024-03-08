@@ -42,7 +42,11 @@
         <!-- https://github.com/xamarin/xamarin-android/blob/main/Documentation/guides/OneDotNetEmbeddedResources.md   -->
         <!--                                                                                                           -->
         <TransformFile Include="Transforms/*.xml"/>
-        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
+
+        <!-- the condition is placed intentionally to work around a limitation of the IDE   this means we have to build twice to make a  -->
+        <!-- vanilla build truly work in terms of embedding the aar properly   also rebuilding doesnt work through the IDE unfortunately -->
+        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" Condition=" 'Exists($(CoreAarLibrary))' == 'true' " />
+        
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />

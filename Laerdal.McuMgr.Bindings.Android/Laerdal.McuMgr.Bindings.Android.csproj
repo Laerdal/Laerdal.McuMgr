@@ -5,10 +5,13 @@
         <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
         <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
 
-        <TargetFramework>net7.0-android</TargetFramework>
-
         <!-- to future maintainers     we stick with net7 for now in android because as it turned out the net8 toolchain generates broken      -->
         <!-- to future maintainers     android dlls that cause missing-symbols-errors in runtime   what a freakshow net8 turned out to be man  -->
+        <!--                                                                                                                                   -->
+        <!--                                             https://github.com/dotnet/maui/issues/21102                                           -->
+        <!--                                                                                                                                   -->
+        <TargetFramework>net7.0-android</TargetFramework>
+
         <IsNet7 Condition="               '$(TargetFramework.ToLower().StartsWith(net7))' == 'true'          ">true</IsNet7>
         <IsNetX Condition="               '$(IsNet7)' == 'true'                                              ">true</IsNetX>
 
@@ -52,10 +55,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1028.0</Version>
-        <FileVersion>1.0.1028.0</FileVersion>
-        <PackageVersion>1.0.1028.0</PackageVersion>
-        <AssemblyVersion>1.0.1028.0</AssemblyVersion>
+        <Version>1.0.1029.0</Version>
+        <FileVersion>1.0.1029.0</FileVersion>
+        <PackageVersion>1.0.1029.0</PackageVersion>
+        <AssemblyVersion>1.0.1029.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
