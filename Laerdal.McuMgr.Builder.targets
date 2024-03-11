@@ -229,7 +229,7 @@
 
         <MSBuild Targets="Restore"
                  Projects="Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj"
-                 Properties="Configuration=$(Configuration)"/>
+                 Properties="Configuration=$(Configuration);ShouldSkipMacCatalyst=$(ShouldSkipMacCatalyst);"/>
 
         <PropertyGroup>
             <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
