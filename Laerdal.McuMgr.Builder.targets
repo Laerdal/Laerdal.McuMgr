@@ -31,7 +31,7 @@
     <PropertyGroup>
         <Newline>%0A</Newline>
         <Configuration Condition="      '$(Configuration)'      == '' ">Release</Configuration>
-        <ShouldRunTestSuite Condition=" '$(ShouldRunTestSuite)' == '' " >true</ShouldRunTestSuite>
+        <ShouldRunTestSuite Condition=" '$(ShouldRunTestSuite)' == '' ">true</ShouldRunTestSuite>
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Artifacts/`))</PackageOutputPath>

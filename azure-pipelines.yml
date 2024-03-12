@@ -87,11 +87,11 @@ jobs:
       - script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
         displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
 
-      - task: NuGetCommand@2
-        displayName: 'NuGet Sources Add (for Classic Xamarin)'
-        inputs:
-          command: 'custom'
-          arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
+#      - task: NuGetCommand@2
+#        displayName: 'NuGet Sources Add (for Classic Xamarin)'
+#        inputs:
+#          command: 'custom'
+#          arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
 
       - task: DotNetCoreCLI@2
         displayName: 'NuGet Sources Add (for .Net8+)'
@@ -99,7 +99,7 @@ jobs:
           custom: 'nuget'
           command: 'custom'
           arguments: ' add source "$(Build.ArtifactStagingDirectory)/Artifacts" '
-      
+
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       #

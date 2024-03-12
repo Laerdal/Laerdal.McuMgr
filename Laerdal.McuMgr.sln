@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		Laerdal.Version.sh = Laerdal.Version.sh
 		global.json = global.json
 		Laerdal.SetupBuildEnvironment.sh = Laerdal.SetupBuildEnvironment.sh
+		.github\workflows\github-actions.yml = .github\workflows\github-actions.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr", "Laerdal.McuMgr\Laerdal.McuMgr.csproj", "{4E2952A5-394E-4184-8E12-F2D5342A43B2}"
