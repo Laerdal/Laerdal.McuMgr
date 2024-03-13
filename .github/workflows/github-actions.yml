@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 1
 
       - name: 'Setup Build Environment'
-        run: 'chmod +x $Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh && $Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh'
+        run: ' chmod +x "$Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh" '
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
@@ -44,7 +44,7 @@ jobs:
         run: |
           dotnet                                                                        \
               msbuild                                                                   \
-              '$Build_Repository_LocalPath/Laerdal.McuMgr.Builder.targets'              \
+              "$Build_Repository_LocalPath/Laerdal.McuMgr.Builder.targets"              \
               -m:1                                                                      \
               -p:ShouldSkipMacCatalyst="true"                                           \
               -p:PackageOutputPath="$Build_Artifact_Staging_Directory/Artifacts/"       \
