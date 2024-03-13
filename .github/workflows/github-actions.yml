@@ -34,7 +34,7 @@ jobs:
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
-        run: 'dotnet nuget add source  "$Build_Artifact_Staging_Directory/Artifacts"   --name "LocalArtifacts"'
+        run: ' dotnet nuget add source  "$Build_Artifact_Staging_Directory/Artifacts"   --name "LocalArtifacts" '
         shell: bash
         env:
           Build_Artifact_Staging_Directory: ${{ runner.temp }}
@@ -49,16 +49,17 @@ jobs:
           Source_Branch_Fullpath: ${{ github.ref }}
           Github_Repository_Path: ${{ github.repository }}
           Components_Team_Github_Access_Token: ${{ secrets.components_team_github_access_token }}
-        working-directory: $Build_Repository_Folderpath
         run: |
-          dotnet                                                                        \
-              msbuild                                                                   \
-              "Laerdal.McuMgr.Builder.targets"                                          \
-              -m:1                                                                      \
-              -p:ShouldSkipMacCatalyst="true"                                           \
-              -p:PackageOutputPath="$Build_Artifact_Staging_Directory/Artifacts/"       \
-              -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"               \
-              -p:Laerdal_Source_Branch="$Source_Branch_Fullpath"                        \
-              -p:Laerdal_Repository_Path="$Github_Repository_Path"                      \
-              -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"     \
-              -p:Laerdal_Test_Results_Folderpath="$Laerdal_Test_Results_Folderpath"
+              cd          "$Build_Repository_Folderpath"                                   \
+              &&                                                                           \
+              dotnet                                                                       \
+                 msbuild                                                                   \
+                 "Laerdal.McuMgr.Builder.targets"                                          \
+                 -m:1                                                                      \
+                 -p:ShouldSkipMacCatalyst="true"                                           \
+                 -p:PackageOutputPath="$Build_Artifact_Staging_Directory/Artifacts/"       \
+                 -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"               \
+                 -p:Laerdal_Source_Branch="$Source_Branch_Fullpath"                        \
+                 -p:Laerdal_Repository_Path="$Github_Repository_Path"                      \
+                 -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"     \
+                 -p:Laerdal_Test_Results_Folderpath="$Laerdal_Test_Results_Folderpath"
