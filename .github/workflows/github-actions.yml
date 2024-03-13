@@ -39,6 +39,10 @@ jobs:
         env:
           Build_Artifact_Staging_Directory: ${{ runner.temp }}
 
+      - name: 'List Nuget Sources'
+        run: dotnet nuget list source
+        shell: bash
+
       - name: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         shell: bash
         env:
