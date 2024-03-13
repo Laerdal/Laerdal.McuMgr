@@ -5,13 +5,13 @@
 name: Builder
 
 env:
-  Build_Repository_LocalPath: ${{ github.workspace }}
-  Laerdal_Test_Results_Folderpath: '$Build_Repository_LocalPath/TestResults'
+  Build_Repository_Folderpath: ${{ github.workspace }}
+  Laerdal_Test_Results_Folderpath: $Build_Repository_Folderpath/TestResults
 
 on:
   push:
     branches:
-    - "**" # only trigger on branches, not on tags
+    - "**" # only trigger on branches not on tags
 
   pull_request:
     branches: 
@@ -30,21 +30,26 @@ jobs:
           fetch-depth: 1
 
       - name: 'Setup Build Environment'
-        run: ' chmod +x "$Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh" '
+        run: ' chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
-        run: ' nuget  sources  add  -name "Artifacts"  -source "$Build_Artifact_Staging_Directory/Artifacts" '
+        run: nuget  sources  add  -name "Artifacts"  -source "$Build_Artifact_Staging_Directory/Artifacts"
         shell: bash
         env:
           Build_Artifact_Staging_Directory: ${{ runner.temp }}
 
       - name: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         shell: bash
+        env:
+          Source_Branch_Fullpath: ${{ github.ref }}
+          Github_Repository_Path: ${{ github.repository }}
+          Components_Team_Github_Access_Token: ${{ secrets.components_team_github_access_token }}
+        working-directory: $Build_Repository_Folderpath
         run: |
           dotnet                                                                        \
               msbuild                                                                   \
-              "$Build_Repository_LocalPath/Laerdal.McuMgr.Builder.targets"              \
+              "Laerdal.McuMgr.Builder.targets"                                          \
               -m:1                                                                      \
               -p:ShouldSkipMacCatalyst="true"                                           \
               -p:PackageOutputPath="$Build_Artifact_Staging_Directory/Artifacts/"       \
@@ -53,7 +58,3 @@ jobs:
               -p:Laerdal_Repository_Path="$Github_Repository_Path"                      \
               -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"     \
               -p:Laerdal_Test_Results_Folderpath="$Laerdal_Test_Results_Folderpath"
-        env:
-          Source_Branch_Fullpath: ${{ github.ref }}
-          Github_Repository_Path: ${{ github.repository }}
-          Components_Team_Github_Access_Token: ${{ secrets.components_team_github_access_token }}
