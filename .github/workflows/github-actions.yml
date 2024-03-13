@@ -11,10 +11,13 @@ env:
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches:
+    - "**" # only trigger on branches, not on tags
 
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: 
+    - "main"
+    - "develop"
 
 jobs:
   build:
@@ -24,6 +27,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Setup Build Environment
         run: Laerdal.SetupBuildEnvironment.sh
