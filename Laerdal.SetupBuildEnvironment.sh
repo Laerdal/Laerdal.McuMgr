@@ -36,10 +36,10 @@ brew   reinstall     gradle@7
 #  exit 20
 #fi
 
-# shellcheck disable=SC2016
-echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
-# shellcheck disable=SC2016
-echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
+# in github ci gradle@7 is installed under    /opt/homebrew/opt/gradle@7/bin
+# but in azure devops it is installed under   /usr/local/opt/gradle@7/bin
+echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
 source /Users/runner/.bash_profile
 
 brew   install   openjdk@17
@@ -156,13 +156,14 @@ if [ $exitCode != 0 ]; then
 fi
 
 echo
-echo "** Gradle Version:"
-gradle           --version
+echo "** Gradle Location and Version:"
+which gradle    &&    gradle           --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'gradle'."
   exit 120
 fi
+
 
 echo
 echo "** Sharpie Version:"

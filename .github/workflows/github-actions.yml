@@ -22,6 +22,11 @@ jobs:
 
     runs-on: macos-14
 
+#   variable substitution is not supported in github at all    so we cant do stuff like this
+#
+#   env:
+#     Build_Artifacts_Folderpath: $Build_Repository_Folderpath/Artifacts
+
     steps:
 
       - uses: actions/checkout@v3
@@ -56,7 +61,7 @@ jobs:
                  -p:ShouldSkipMacCatalyst="true"                                                \
                                                                                                 \
                                -p:PackageOutputPath="$Build_Repository_Folderpath/Artifacts"    \
-                             -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"        \
+                             -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"     \
                            -p:Laerdal_Source_Branch="$Source_Branch_Fullpath"                   \
                          -p:Laerdal_Repository_Path="$Github_Repository_Path"                   \
                      -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"      \
