@@ -13,7 +13,7 @@ on:
     - "**" # only trigger on branches not on tags
 
   pull_request:
-    branches: 
+    branches:
     - "main"
     - "develop"
 
@@ -21,10 +21,6 @@ jobs:
   build:
 
     runs-on: macos-14
-    
-    env:
-      Test_Results_Folderpath: "$Build_Repository_Folderpath/TestResults"
-      Build_Artifacts_Folderpath: "$Build_Repository_Folderpath/Artifacts"
 
     steps:
 
@@ -37,7 +33,7 @@ jobs:
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
-        run: ' dotnet nuget add source   "$Build_Artifacts_Folderpath"   --name "LocalArtifacts" '
+        run: ' dotnet nuget add source   "$Build_Repository_Folderpath/Artifacts"   --name "LocalArtifacts" '
         shell: bash
 
       - name: 'List Nuget Sources'
@@ -59,9 +55,9 @@ jobs:
                  -m:1                                                                           \
                  -p:ShouldSkipMacCatalyst="true"                                                \
                                                                                                 \
-                               -p:PackageOutputPath="$Build_Artifacts_Folderpath"               \
+                               -p:PackageOutputPath="$Build_Repository_Folderpath/Artifacts"    \
                              -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"        \
                            -p:Laerdal_Source_Branch="$Source_Branch_Fullpath"                   \
                          -p:Laerdal_Repository_Path="$Github_Repository_Path"                   \
                      -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"      \
-                 -p:Laerdal_Test_Results_Folderpath="$Test_Results_Folderpath"
+                 -p:Laerdal_Test_Results_Folderpath="$Build_Repository_Folderpath/TestResults"
