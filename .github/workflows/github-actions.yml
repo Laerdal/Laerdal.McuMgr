@@ -6,7 +6,6 @@ name: Builder
 
 env:
   Build_Repository_Folderpath: ${{ github.workspace }}
-  Laerdal_Test_Results_Folderpath: $Build_Repository_Folderpath/TestResults
 
 on:
   push:
@@ -22,6 +21,10 @@ jobs:
   build:
 
     runs-on: macos-14
+    
+    env:
+      Test_Results_Folderpath: "$Build_Repository_Folderpath/TestResults"
+      Build_Artifacts_Folderpath: "$Build_Repository_Folderpath/Artifacts"
 
     steps:
 
@@ -34,10 +37,8 @@ jobs:
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
-        run: ' dotnet nuget add source  "$Build_Artifact_Staging_Directory/Artifacts"   --name "LocalArtifacts" '
+        run: ' dotnet nuget add source   "$Build_Artifacts_Folderpath"   --name "LocalArtifacts" '
         shell: bash
-        env:
-          Build_Artifact_Staging_Directory: ${{ runner.temp }}
 
       - name: 'List Nuget Sources'
         run: dotnet nuget list source
@@ -57,9 +58,9 @@ jobs:
                  "Laerdal.McuMgr.Builder.targets"                                          \
                  -m:1                                                                      \
                  -p:ShouldSkipMacCatalyst="true"                                           \
-                 -p:PackageOutputPath="$Build_Artifact_Staging_Directory/Artifacts/"       \
+                 -p:PackageOutputPath="$Build_Artifacts_Folderpath"                        \
                  -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"               \
                  -p:Laerdal_Source_Branch="$Source_Branch_Fullpath"                        \
                  -p:Laerdal_Repository_Path="$Github_Repository_Path"                      \
                  -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"     \
-                 -p:Laerdal_Test_Results_Folderpath="$Laerdal_Test_Results_Folderpath"
+                 -p:Laerdal_Test_Results_Folderpath="$Test_Results_Folderpath"
