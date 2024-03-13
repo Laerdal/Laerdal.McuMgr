@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 1
 
       - name: 'Setup Build Environment'
-        run: ' chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
+        run: ' echo "$Build_Repository_Folderpath"   &&   chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
