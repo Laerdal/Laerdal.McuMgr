@@ -10,6 +10,7 @@
         <!-- - note that we build against netstandard2.1 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <!-- - in azure we omit building maccatalyst for the time being because net8 needs maccatalyst 17.2+ which is only available on macos14 which microsoft currently (Q1 2024) doesn't provide us with in azure just yet -->
+
         <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                          ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
@@ -54,10 +55,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1029.0</Version>
-        <FileVersion>1.0.1029.0</FileVersion>
-        <PackageVersion>1.0.1029.0</PackageVersion>
-        <AssemblyVersion>1.0.1029.0</AssemblyVersion>
+        <Version>1.0.1037.0</Version>
+        <FileVersion>1.0.1037.0</FileVersion>
+        <PackageVersion>1.0.1037.0</PackageVersion>
+        <AssemblyVersion>1.0.1037.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -148,21 +149,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1029.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1037.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1029.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1037.0"/>
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1029.0"/>
+    <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(ShouldSkipMacCatalyst)' != 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1037.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1029.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1037.0"/>
     </ItemGroup>
 
 </Project>

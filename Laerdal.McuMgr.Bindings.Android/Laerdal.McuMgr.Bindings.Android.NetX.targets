@@ -43,9 +43,7 @@
         <!--                                                                                                           -->
         <TransformFile Include="Transforms/*.xml"/>
 
-        <!-- the condition is placed intentionally to work around a limitation of the IDE   this means we have to build twice to make a  -->
-        <!-- vanilla build truly work in terms of embedding the aar properly   also rebuilding doesnt work through the IDE unfortunately -->
-        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" Condition=" 'Exists($(CoreAarLibrary))' == 'true' " />
+        <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
         
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />

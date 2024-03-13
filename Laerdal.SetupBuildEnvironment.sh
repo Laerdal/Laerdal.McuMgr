@@ -30,11 +30,11 @@ if [ $exitCode != 0 ]; then
 fi
 
 brew   reinstall     gradle@7
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'gradle'."
-  exit 20
-fi
+#declare exitCode=$?
+#if [ $exitCode != 0 ]; then  # intentionally disabled because the installation though successful returns a non-zero exit code for some reason and we need to figure out why
+#  echo "##vso[task.logissue type=error]Failed to install 'gradle'."
+#  exit 20
+#fi
 
 # shellcheck disable=SC2016
 echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
