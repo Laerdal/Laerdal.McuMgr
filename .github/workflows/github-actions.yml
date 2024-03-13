@@ -34,7 +34,7 @@ jobs:
         shell: bash
 
       - name: 'Add Artifacts folder as a local NuGet Source'
-        run: nuget  sources  add  -name "Artifacts"  -source "$Build_Artifact_Staging_Directory/Artifacts"
+        run: 'dotnet nuget add source  "$Build_Artifact_Staging_Directory/Artifacts"   --name "LocalArtifacts"'
         shell: bash
         env:
           Build_Artifact_Staging_Directory: ${{ runner.temp }}
