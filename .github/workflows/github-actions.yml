@@ -50,6 +50,6 @@ jobs:
               -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"     \
               -p:Laerdal_Test_Results_Folderpath="$Laerdal_Test_Results_Folderpath"
         env:
-          Source_Branch_Fullpath: ${{ GITHUB_REF }}
-          Github_Repository_Path: ${{ GITHUB_REPOSITORY }}
-          Components_Team_Github_Access_Token: ${{ secrets.COMPONENTS_TEAM_GITHUB_ACCESS_TOKEN }}
+          Source_Branch_Fullpath: ${{ github.ref }}
+          Github_Repository_Path: ${{ github.repository }}
+          Components_Team_Github_Access_Token: ${{ secrets.components_team_github_access_token }}
