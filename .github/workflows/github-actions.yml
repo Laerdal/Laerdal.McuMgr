@@ -1,7 +1,6 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 #
 # https://docs.github.com/en/actions/migrating-to-github-actions/automated-migrations/migrating-from-azure-devops-with-github-actions-importer#environment-variable-mapping
+#
 
 name: Builder
 
@@ -30,22 +29,22 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Build Environment
-        run: Laerdal.SetupBuildEnvironment.sh
+      - name: 'Setup Build Environment'
+        run: '$Build_Repository_LocalPath/Laerdal.SetupBuildEnvironment.sh'
         shell: bash
 
-      - name: Add Artifacts folder as a local NuGet Source
-        run: nuget sources add -name "Artifacts" -source "$Build_Artifact_Staging_Directory/Artifacts"
+      - name: 'Add Artifacts folder as a local NuGet Source'
+        run: ' nuget  sources  add  -name "Artifacts"  -source "$Build_Artifact_Staging_Directory/Artifacts" '
         shell: bash
         env:
           Build_Artifact_Staging_Directory: ${{ runner.temp }}
 
-      - name: Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)
+      - name: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
         shell: bash
         run: |
           dotnet                                                                        \
               msbuild                                                                   \
-              Laerdal.McuMgr.Builder.targets                                            \
+              '$Build_Repository_LocalPath/Laerdal.McuMgr.Builder.targets'              \
               -m:1                                                                      \
               -p:ShouldSkipMacCatalyst="true"                                           \
               -p:PackageOutputPath="$Build_Artifact_Staging_Directory/Artifacts/"       \
