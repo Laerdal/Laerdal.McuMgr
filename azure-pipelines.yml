@@ -19,7 +19,7 @@ variables:
 
   - name: Laerdal_Test_Results_Folderpath
     value: '$(Build.Repository.LocalPath)/TestResults'
-    
+
   - name: is_from_fork # its vital to use the notation variables['x'] for the environment variables below    if we use variables.x the value will be evaluated as empty!
     value: ${{ eq(variables['System.PullRequest.IsFork'], 'True') }}
 
@@ -86,12 +86,6 @@ jobs:
 
       - script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
         displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
-
-#      - task: NuGetCommand@2
-#        displayName: 'NuGet Sources Add (for Classic Xamarin)'
-#        inputs:
-#          command: 'custom'
-#          arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
 
       - task: DotNetCoreCLI@2
         displayName: 'NuGet Sources Add (for .Net8+)'
