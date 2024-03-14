@@ -210,6 +210,16 @@ if [ $exitCode != 0 ]; then
   exit 170
 fi
 
+echo
+echo "** Adding 'Artifacts' Folder as a Nuget Source:"
+dotnet   nuget   add   source   "Artifacts"   --name "LocalArtifacts"
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
+  exit 170
+fi
+dotnet list nuget source
+
 #echo
 #echo "** mtouch:"
 #/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version

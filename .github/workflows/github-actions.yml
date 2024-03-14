@@ -35,11 +35,7 @@ jobs:
           fetch-depth: 1
 
       - name: '🛠 Setup Build Environment'
-        run: ' echo "$Build_Repository_Folderpath"   &&   chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
-        shell: bash
-
-      - name: 'Add Artifacts folder as a local NuGet Source'
-        run: ' dotnet nuget add source   "$Build_Repository_Folderpath/Artifacts"   --name "LocalArtifacts" '
+        run: ' chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
         shell: bash
 
       # todo   experiment with building maccatalyst now that we have macos14 at our disposal 
