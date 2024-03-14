@@ -1,27 +1,5 @@
 #!/bin/bash
 
-# this script is meant to be used only in our azure pipelines to setup the
-# build environment for the xamarin bindings   its not meant to be used on localdev
-
-# for macos13
-# wget      https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-13-Ventura.pkg
-# sudo      installer    -verbose    -target /    -pkg MacPorts-2.8.1-13-Ventura.pkg
-
-# for macos12
-# wget   https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-12-Monterey.pkg
-# sudo   installer    -verbose    -target /    -pkg MacPorts-2.8.1-12-Monterey.pkg
-
-# sudo    /opt/local/bin/port   install mono
-# sudo  tar -xjf   /opt/local/var/macports/software/mono/mono-*.tbz2  -C /opt/local/var/macports/software/mono/
-# sudo   sh -c   "echo   '\nexport PATH=\"/opt/local/var/macports/software/mono/opt/local/bin:\$PATH\"\n'   >> ~/.bash_profile"
-
-# echo    "--------------------------------------------------"
-# cat   ~/.bash_profile
-# echo    "--------------------------------------------------"
-
-# source  ~/.bash_profile
-# ------------------- #
-
 brew   install   --cask   objectivesharpie
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
@@ -210,9 +188,11 @@ if [ $exitCode != 0 ]; then
   exit 170
 fi
 
+declare -r CurrentDirectory="$( dirname "$( readlink -f "${BASH_SOURCE[0]:-"$(command -v -- "$0")"}" )" )"
+
 echo
 echo "** Adding 'Artifacts' Folder as a Nuget Source:"
-dotnet   nuget   add   source   "Artifacts"   --name "LocalArtifacts"
+mkdir -p "${CurrentDirectory}/Artifacts" && dotnet   nuget   add   source   "${CurrentDirectory}/Artifacts"   --name "LocalArtifacts"
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
