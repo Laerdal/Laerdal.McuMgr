@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <!-- we need to stick to net8.0 because xunit only supports mainstream target -->
+        <!-- frameworks meaning that netstandard, ios and android are not supported   -->
+        <TargetFramework>net8.0</TargetFramework>
         
         <Nullable>disable</Nullable>
         <IsPackable>false</IsPackable>
