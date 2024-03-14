@@ -70,11 +70,11 @@ jobs:
         if: always()
         with:
           files: |
-            $Build_Repository_Folderpath/TestResults/**/TEST-*.xml
-            $Build_Repository_Folderpath/TestResults/**/TEST-*.trx
+            TestResults/**/TEST-*.xml
+            TestResults/**/TEST-*.trx
 
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
         uses: actions/upload-artifact@v3
         with:
-          name: 'NuGet Packages'
-          path: '$(Build.ArtifactStagingDirectory)/Artifacts/**/*.nupkg'
+          name: 'nugets'
+          path: Artifacts/**/*.nupkg
