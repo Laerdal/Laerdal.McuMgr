@@ -218,7 +218,7 @@ if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
   exit 170
 fi
-dotnet list nuget source
+dotnet nuget list source
 
 #echo
 #echo "** mtouch:"

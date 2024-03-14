@@ -38,7 +38,6 @@ jobs:
         run: ' chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
         shell: bash
 
-      # todo   experiment with building maccatalyst now that we have macos14 at our disposal 
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: bash
         env:
@@ -52,7 +51,7 @@ jobs:
              msbuild                                                                        \
              "Laerdal.McuMgr.Builder.targets"                                               \
              -m:1                                                                           \
-             -p:ShouldSkipMacCatalyst="true"                                                \
+             -p:ShouldSkipMacCatalyst="false"                                               \
                                                                                             \
                            -p:PackageOutputPath="$Build_Repository_Folderpath/Artifacts"    \
                          -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"     \
