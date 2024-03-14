@@ -1,0 +1,27 @@
+name: 'Deploy Nugets'
+
+on:
+
+  workflow_run:
+    types: [ "completed" ]
+    branches: [ "main", "develop", "ksidirop/MAN-296-migrate-to-github-actions" ]
+    workflows: [ "Builder" ]
+
+  workflow_dispatch: # Allows to run this workflow manually from the Actions tab
+
+jobs:
+
+  deploy:
+    runs-on: macos-14
+
+    needs: [ "build" ]
+
+    steps:
+
+      - name: '⬇️ Download Artifacts'
+        uses: actions/download-artifact@v3
+        with:
+          name: 'nugets'
+          path: 'Artifacts/'
+
+      # todo   push to nuget server
