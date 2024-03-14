@@ -29,11 +29,12 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - name: '🔽 Checkout'
+        uses: 'actions/checkout@v3'
         with:
           fetch-depth: 1
 
-      - name: 'Setup Build Environment'
+      - name: '🛠 Setup Build Environment'
         run: ' echo "$Build_Repository_Folderpath"   &&   chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
         shell: bash
 
@@ -41,11 +42,8 @@ jobs:
         run: ' dotnet nuget add source   "$Build_Repository_Folderpath/Artifacts"   --name "LocalArtifacts" '
         shell: bash
 
-      - name: 'List Nuget Sources'
-        run: dotnet nuget list source
-        shell: bash
-
-      - name: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
+      # todo   experiment with building maccatalyst now that we have macos14 at our disposal 
+      - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: bash
         env:
           Source_Branch_Fullpath: ${{ github.ref }}
@@ -67,7 +65,7 @@ jobs:
                  -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"      \
              -p:Laerdal_Test_Results_Folderpath="$Build_Repository_Folderpath/TestResults"
 
-      - name: Publish Test Results # https://github.com/marketplace/actions/publish-test-results
+      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: EnricoMi/publish-unit-test-result-action/macos@v2
         if: always()
         with:
