@@ -2,19 +2,23 @@ name: 'Deploy Nugets'
 
 on:
 
-  workflow_run:
-    types: [ "completed" ]
-    branches: [ "main", "develop" ]
-    workflows: [ "Builder" ]
+  push:
+    branches: [ "main", "master", "develop", "ksidirop/MAN-296-migrate-to-github-actions" ]
 
-  workflow_dispatch: # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch: # allows to run this workflow manually from the Actions tab
+
+
 
 jobs:
+
+  compile:
+    uses: './.github/workflows/github-compile.yml' # reuse the compile workflow
+
 
   deploy:
     runs-on: macos-14
 
-    needs: [ "build" ]
+    needs: 'compile'
 
     steps:
 
