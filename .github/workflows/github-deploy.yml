@@ -8,6 +8,9 @@ on:
   workflow_dispatch: # allows to run this workflow manually from the Actions tab
 
 
+env:
+  AZURE_ARTIFACTS_FEED_URL: 'https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json'
+
 
 jobs:
 
@@ -28,4 +31,5 @@ jobs:
           name: 'nugets'
           path: 'Artifacts/**/*.nupkg'
 
-      
+      - name: '🚀 Publish to Laerdal Private Nuget Server in Azure'
+        run: ' dotnet   nuget   push   --api-key "${{ env.AZURE_ARTIFACTS_API_KEY }}"   --source "${{ env.AZURE_ARTIFACTS_FEED_URL }}"   "Artifacts/**/*.nupkg" '
