@@ -32,4 +32,4 @@ jobs:
           path: 'Artifacts/**/*.nupkg'
 
       - name: '🚀 Publish to Laerdal Private Nuget Server in Azure' # https://learn.microsoft.com/en-us/azure/devops/artifacts/quickstarts/github-actions?view=azure-devops
-        run: ' dotnet   nuget   push   --api-key "${{ env.AZURE_ARTIFACTS_API_KEY }}"   --source "${{ env.AZURE_ARTIFACTS_FEED_URL }}"   "Artifacts/**/*.nupkg" '
+        run: ' dotnet   nuget   push   --api-key "${{ secrets.AZURE_ARTIFACTS_API_KEY }}"   --source "${{ env.AZURE_ARTIFACTS_FEED_URL }}"   "Artifacts/**/*.nupkg" '
