@@ -15,7 +15,7 @@ jobs:
     uses: './.github/workflows/github-compile.yml' # reuse the compile workflow
 
 
-  deploy:
+  deploy: # inspired by https://stackoverflow.com/a/77663335/863651
     runs-on: macos-14
 
     needs: 'compile'
@@ -28,4 +28,4 @@ jobs:
           name: 'nugets'
           path: 'Artifacts/**/*.nupkg'
 
-      # todo   push to nuget server
+      
