@@ -44,7 +44,7 @@
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Repository_Path Condition="         '$(Laerdal_Repository_Path)'        == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository_Path>
-        <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop'  OR  '$(Laerdal_Source_Branch)' == 'refs/pull/develop' ) ">True</Laerdal_Should_Tag_And_Release>
+        <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/master'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop' ) ">True</Laerdal_Should_Tag_And_Release>
 
         <Laerdal_McuMgr_ProjectFile>Laerdal.McuMgr/Laerdal.McuMgr.csproj</Laerdal_McuMgr_ProjectFile>
         <Laerdal_McuMgrBindings_ProjectFile_iOS>Laerdal.McuMgr.Bindings.iOS/Laerdal.McuMgr.Bindings.iOS.csproj</Laerdal_McuMgrBindings_ProjectFile_iOS>
