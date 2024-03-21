@@ -87,7 +87,7 @@ function create_release_on_github() {
 
   local eventual_tag_name=""
   local eventual_singleline_summary=""
-  if [[ $GIT_BRANCH == "refs/heads/main" ]]; then
+  if [[ $GIT_BRANCH == "refs/heads/main" || $GIT_BRANCH == "refs/heads/master" ]]; then
     eventual_tag_name="v$TAG_VERSION" # builds targeting main have this simple and straightforward tag name
     eventual_singleline_summary="Release $eventual_tag_name"
 

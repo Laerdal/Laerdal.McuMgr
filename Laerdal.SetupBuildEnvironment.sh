@@ -192,7 +192,7 @@ declare -r CurrentDirectory="$( dirname "$( readlink -f "${BASH_SOURCE[0]:-"$(co
 
 echo
 echo "** Adding 'Artifacts' Folder as a Nuget Source:"
-mkdir -p "${CurrentDirectory}/Artifacts" && dotnet   nuget   add   source   "${CurrentDirectory}/Artifacts"   --name "LocalArtifacts"
+mkdir -p "${CurrentDirectory}/Artifacts"   &&   dotnet   nuget   add   source   "${CurrentDirectory}/Artifacts"   --name "LocalArtifacts"
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
