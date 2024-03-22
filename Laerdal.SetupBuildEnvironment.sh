@@ -1,27 +1,5 @@
 #!/bin/bash
 
-# this script is meant to be used only in our azure pipelines to setup the
-# build environment for the xamarin bindings   its not meant to be used on localdev
-
-# for macos13
-# wget      https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-13-Ventura.pkg
-# sudo      installer    -verbose    -target /    -pkg MacPorts-2.8.1-13-Ventura.pkg
-
-# for macos12
-# wget   https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-12-Monterey.pkg
-# sudo   installer    -verbose    -target /    -pkg MacPorts-2.8.1-12-Monterey.pkg
-
-# sudo    /opt/local/bin/port   install mono
-# sudo  tar -xjf   /opt/local/var/macports/software/mono/mono-*.tbz2  -C /opt/local/var/macports/software/mono/
-# sudo   sh -c   "echo   '\nexport PATH=\"/opt/local/var/macports/software/mono/opt/local/bin:\$PATH\"\n'   >> ~/.bash_profile"
-
-# echo    "--------------------------------------------------"
-# cat   ~/.bash_profile
-# echo    "--------------------------------------------------"
-
-# source  ~/.bash_profile
-# ------------------- #
-
 brew   install   --cask   objectivesharpie
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
@@ -36,10 +14,10 @@ brew   reinstall     gradle@7
 #  exit 20
 #fi
 
-# shellcheck disable=SC2016
-echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
-# shellcheck disable=SC2016
-echo 'export PATH="/usr/local/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
+# in github ci gradle@7 is installed under    /opt/homebrew/opt/gradle@7/bin
+# but in azure devops it is installed under   /usr/local/opt/gradle@7/bin
+echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
 source /Users/runner/.bash_profile
 
 brew   install   openjdk@17
@@ -130,7 +108,7 @@ echo "** XCode Installations:"
 
 ls  -ld  /Applications/Xcode* || exit 90
 
-sudo   xcode-select   -s  /Applications/Xcode_14.2.app/Contents/Developer
+sudo   xcode-select   -s   /Applications/Xcode_14.3.app/Contents/Developer  # todo  experiment with /Applications/Xcode_15.2.app and see if it works
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
@@ -156,13 +134,14 @@ if [ $exitCode != 0 ]; then
 fi
 
 echo
-echo "** Gradle Version:"
-gradle           --version
+echo "** Gradle Location and Version:"
+which gradle    &&    gradle           --version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'gradle'."
   exit 120
 fi
+
 
 echo
 echo "** Sharpie Version:"
@@ -208,6 +187,18 @@ if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'nuget'."
   exit 170
 fi
+
+declare -r CurrentDirectory="$( dirname "$( readlink -f "${BASH_SOURCE[0]:-"$(command -v -- "$0")"}" )" )"
+
+echo
+echo "** Adding 'Artifacts' Folder as a Nuget Source:"
+mkdir -p "${CurrentDirectory}/Artifacts"   &&   dotnet   nuget   add   source   "${CurrentDirectory}/Artifacts"   --name "LocalArtifacts"
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
+  exit 170
+fi
+dotnet nuget list source
 
 #echo
 #echo "** mtouch:"

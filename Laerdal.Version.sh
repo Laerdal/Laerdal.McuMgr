@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# set -x # for debugging
+
 function usage(){
     echo "usage: ./Laerdal.Version.sh [--master-branch master] [--develop-branch develop] [--major 1] [--minor 0] [--patch 0] [--revision 0] [--build-id 0] [--commit HEAD] [--branch branchname] [-o | --output version.txt] [-h | --help]"
     echo "parameters:"
@@ -16,18 +18,18 @@ function usage(){
     echo "  -v | --verbose                     Verbose mode"
 }
 
-declare master_branch="master"
-declare develop_branch="develop"
-declare major=1
-declare minor=0
-declare patch=0
-declare revision=0
-declare build_id=0
-declare commit="HEAD"
-declare output="version.txt"
-declare version_core=$major.$minor.$patch
-declare version_extension=
-declare version_full=$version_core$version_extension
+master_branch="master"
+develop_branch="develop"
+major=1
+minor=0
+patch=0
+revision=0
+build_id=0
+commit="HEAD"
+output="version.txt"
+version_core=$major.$minor.$patch
+version_extension=
+version_full=$version_core$version_extension
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -84,6 +86,14 @@ function log () {
     fi
 }
 
+function warn () {
+    if [ "${TF_BUILD:=}" != "" ]; then
+        echo "##vso[task.logissue type=warning]$*"
+    else
+        echo "WARNING : $*"
+    fi
+}
+
 # Azure DevOps build
 if [ "${TF_BUILD:=}" != "" ]; then
     log "TF_BUILD is set, assuming Azure DevOps build"
@@ -133,21 +143,20 @@ git fetch origin "$develop_branch:$develop_branch" >/dev/null 2>&1  # output of 
 
 if [ "$branch_name" == "$develop_branch" ]; then
     develop_master_point=`git rev-list $branch_prefix$master_branch --merges --before=\`git show -s --format=%ct $commit\` --first-parent --max-count=1`
-    if [ -z $develop_master_point ]; then
-        # has never been merged,
+    if [ -z $develop_master_point ]; then # has never been merged
         develop_master_point=`git merge-base $branch_prefix$master_branch $commit --fork-point`
     fi
     log "develop_master_point=$develop_master_point"
+
 elif [ "$branch_name" != "$master_branch" ]; then
     head_develop_point=`git rev-list $branch_prefix$develop_branch --merges --before=\`git show -s --format=%ct $commit\` --first-parent --max-count=1`
-    if [ -z $head_develop_point ]; then
-        # has never been merged,
-        head_develop_point=`git merge-base $branch_prefix$develop_branch $commit --fork-point`
+    if [ -z $head_develop_point ]; then # has never been merged
+        head_develop_point=$(git merge-base $branch_prefix$develop_branch $commit --fork-point)
     fi
+
     log "head_develop_point=$head_develop_point"
     develop_master_point=`git rev-list $branch_prefix$master_branch --merges --before=\`git show -s --format=%ct $head_develop_point\` --first-parent --max-count=1`
-    if [ -z $develop_master_point ]; then
-        # has never been merged,
+    if [ -z $develop_master_point ]; then # has never been merged
         develop_master_point=`git merge-base $branch_prefix$master_branch $head_develop_point --fork-point`
     fi
     log "develop_master_point=$develop_master_point"
@@ -157,12 +166,15 @@ fi
 # Minor
 if [ "$minor_override" != "true" ]; then
     if [ "$branch_name" == "$master_branch" ]; then
-        minor=`git rev-list $first_commit..$commit --count --first-parent --ancestry-path`
+        minor=$( git rev-list "$first_commit..$commit" --count --first-parent --ancestry-path )
+        
     elif [ "$branch_name" == "$develop_branch" ]; then
-        minor=`git rev-list $first_commit..$develop_master_point --count --first-parent --ancestry-path`
+        minor=$( git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path )
+        
     else
-        minor=`git rev-list $first_commit..$develop_master_point --count --first-parent --ancestry-path`
+        minor=$( git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path )
     fi
+
 else
     log "Minor version override: $minor"
 fi
@@ -171,11 +183,33 @@ fi
 if [ "$patch_override" != "true" ]; then
     if [ "$branch_name" == "$master_branch" ]; then
         patch=0
+
     elif [ "$branch_name" == "$develop_branch" ]; then
-        patch=`git rev-list $first_commit..$commit --count --first-parent --ancestry-path --not \`git rev-list $first_commit..$commit --before=\\\`git show -s --format=%ct $develop_master_point --first-parent --ancestry-path\\\`\``
+        declare -r before=$( git show -s --format=%ct "$develop_master_point" --first-parent --ancestry-path   )
+        declare -r not=$(    git rev-list "$first_commit..$commit" --before=$before | head -n 750              )  # its vital to trim the number of parameters to around 750 otherwise we will get an error below
+      
+        patch=$(                                     \
+            git                                      \
+                rev-list                             \
+                     "$first_commit..$commit"        \
+                     --count                         \
+                     --first-parent                  \
+                     --ancestry-path                 \
+                     --not $not  )  # do not doublequote $not as this will break the script
+
     else
-        patch=`git rev-list $first_commit..$head_develop_point --count --first-parent --ancestry-path --not \`git rev-list $first_commit..$head_develop_point --before=\\\`git show -s --format=%ct $develop_master_point --first-parent --ancestry-path\\\`\``
+        declare -r before=$( git show -s --format=%ct "$develop_master_point" --first-parent --ancestry-path     )
+        declare -r not=$(    git rev-list "$first_commit..$head_develop_point" --before="$before" | head -n 750  )  # its vital to trim the number of parameters to around 750 otherwise we will get an error below
+
+        patch=$(                                           \
+          git  rev-list                                    \
+                  "$first_commit..$head_develop_point"     \
+                  --count                                  \
+                  --first-parent                           \
+                  --ancestry-path                          \
+                  --not $not  )  # do not doublequote $not as this will break the script 
     fi
+
 else
     log "Patch version override: $patch"
 fi
