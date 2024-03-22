@@ -2,8 +2,10 @@ name: 'Deploy Nugets'
 
 on:
 
-  push:
-    branches: [ "main", "master", "develop", "ksidirop/MAN-296-migrate-to-github-actions" ]
+# currently disabled until we sort out billing issues in github
+#
+#  push:
+#    branches: [ "main", "master", "develop", "ksidirop/MAN-296-migrate-to-github-actions" ]
 
   workflow_dispatch: # allows to run this workflow manually from the Actions tab
 
