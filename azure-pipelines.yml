@@ -19,7 +19,7 @@ variables:
 
   - name: Laerdal_Test_Results_Folderpath
     value: '$(Build.Repository.LocalPath)/TestResults'
-    
+
   - name: is_from_fork # its vital to use the notation variables['x'] for the environment variables below    if we use variables.x the value will be evaluated as empty!
     value: ${{ eq(variables['System.PullRequest.IsFork'], 'True') }}
 
@@ -67,38 +67,17 @@ jobs:
     steps:
 
       - checkout: self
-        displayName: 'Checkout'
+        displayName: '🔽 Checkout'
         clean: true
         fetchTags: false
         fetchDepth: 0
         persistCredentials: True
 
       - task: Bash@3
-        displayName: 'Setup Build Environment for "Laerdal.McuMgr.Bindings"'
+        displayName: '🛠 Setup Build Environment'
         inputs:
           filePath: 'Laerdal.SetupBuildEnvironment.sh'
           targetType: 'filePath'
-
-      - task: NuGetToolInstaller@1
-        displayName: 'Install Nuget'
-        inputs:
-          checkLatest: true
-
-      - script: 'mkdir "$(Build.ArtifactStagingDirectory)/Artifacts"'
-        displayName: 'Create Directory "$(Build.ArtifactStagingDirectory)/Artifacts"'
-
-#      - task: NuGetCommand@2
-#        displayName: 'NuGet Sources Add (for Classic Xamarin)'
-#        inputs:
-#          command: 'custom'
-#          arguments: ' sources   Add   -Name     LocalNugets   -Source   "$(Build.ArtifactStagingDirectory)/Artifacts" '
-
-      - task: DotNetCoreCLI@2
-        displayName: 'NuGet Sources Add (for .Net8+)'
-        inputs:
-          custom: 'nuget'
-          command: 'custom'
-          arguments: ' add source "$(Build.ArtifactStagingDirectory)/Artifacts" '
 
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
@@ -106,14 +85,14 @@ jobs:
       # also noticed that we intentionally skip the maccatalyst build on azure because under net8 we need macos14 to be available on azure but
       # its not available just yet in 2024 Q1 :(
       - task: DotNetCoreCLI@2
-        displayName: 'Build .Net8+ Bindings and McuMgr itself and announce new release in GitHub (if needed)'
+        displayName: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         inputs:
           command: 'custom'
           custom: 'msbuild'
           arguments: 'Laerdal.McuMgr.Builder.targets    -m:1  -p:ShouldSkipMacCatalyst="true"  -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"  -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
+        displayName: '📡 Publish Test Results'
         inputs:
           testRunTitle: 'McuMgr Test Suite (Platform-Agnostic)'
           mergeTestResults: true
@@ -127,6 +106,7 @@ jobs:
       
       # bare in mind that this task doesnt support wildcards
       - task: PublishBuildArtifacts@1
+        displayName: '📡 Publish Artifacts'
         inputs:
           ArtifactName: 'drop'
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/Artifacts/'
