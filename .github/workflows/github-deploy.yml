@@ -28,10 +28,28 @@ jobs:
     steps:
 
       - name: '⬇️ Download Artifacts'
-        uses: actions/download-artifact@v3
+        uses: 'actions/download-artifact@v3'
         with:
           name: 'nugets'
           path: 'Artifacts/'
 
-      - name: '🚀 Publish to Laerdal Private Nuget Server in Azure' # https://learn.microsoft.com/en-us/azure/devops/artifacts/quickstarts/github-actions?view=azure-devops
-        run: ' dotnet   nuget   push   --api-key "${{ secrets.AZURE_ARTIFACTS_API_KEY }}"   --source "${{ env.AZURE_ARTIFACTS_FEED_URL }}"   "Artifacts/**/*.nupkg" '
+      # note   for this to work we need to make the mcumgr repo public (open source) because as long as the repo is private it cannot have access to the secret variables
+      # todo   remove this once we fully transition over to the laerdal nuget server on github
+      - name: '🚀 Publish to the Laerdal Private Nuget Server in Azure' # https://learn.microsoft.com/en-us/azure/devops/artifacts/quickstarts/github-actions?view=azure-devops
+        run: |
+          dotnet                                                           \
+                  nuget                                                    \
+                  push                                                     \
+                  --source "${{ env.SCL_AZURE_ARTIFACTS_FEED_URL }}"       \
+                  --api-key "${{ secrets.SCL_AZURE_ARTIFACTS_API_KEY }}"   \
+                  "Artifacts/**/*.nupkg"
+
+      # note   for this to work we need to make the mcumgr repo public (open source) because as long as the repo is private it cannot have access to the secret variables
+      - name: '🚀 Publish to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
+        run: |
+          dotnet                                                           \
+                  nuget                                                    \
+                  push                                                     \
+                  --source "${{ env.SCL_GITHUB_ARTIFACTS_FEED_URL }}"      \
+                  --api-key "${{ secrets.SCL_GITHUB_ARTIFACTS_API_KEY }}"  \
+                  "Artifacts/**/*.nupkg"
