@@ -74,10 +74,11 @@ jobs:
         persistCredentials: True
 
       - task: Bash@3
-        displayName: '🛠 Setup Build Environment'
+        displayName: 'Setup Build Environment for "Laerdal.Helpers"'
         inputs:
-          filePath: 'Laerdal.SetupBuildEnvironment.sh'
-          targetType: 'filePath'
+          targetType: filePath
+          filePath: 'Laerdal.Scripts/Laerdal.SetupBuildEnvironment.sh'
+          arguments: ' "https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json"   "$(Laerdal.NugetFeed.Username)"   "$(Laerdal.NugetFeed.AccessToken)" '
 
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs

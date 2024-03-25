@@ -5,20 +5,18 @@
 name: 'Builder'
 
 env:
-  Build_Repository_Folderpath: ${{ github.workspace }}
+  build_repository_folderpath: ${{ github.workspace }}
 
 on:
   workflow_call: #     reusable workflows   other workflows can trigger this
   workflow_dispatch: # allows to run this workflow manually from the actions tab
 
-# currently disabled until we sort out billing issues in github
-#
-#  push:
-#    branches:
-#      - '**' #        '*' matches zero or more characters but does not match the `/` character    '**' matches zero or more of any character
-#      - '!main' #     main    will trigger/reuse this workflow by other means   via workflow call
-#      - '!master' #   master  will trigger/reuse this workflow by other means   via workflow call
-#      - '!develop' #  develop will trigger/reuse this workflow by other means   via workflow call
+  push:
+    branches:
+      - '**' #        '*' matches zero or more characters but does not match the `/` character    '**' matches zero or more of any character
+      - '!main' #     main    will trigger/reuse this workflow by other means   via workflow call
+      - '!master' #   master  will trigger/reuse this workflow by other means   via workflow call
+      - '!develop' #  develop will trigger/reuse this workflow by other means   via workflow call
 
 
 jobs:
@@ -30,7 +28,7 @@ jobs:
     #   variable substitution is not supported in github at all    so we cant do stuff like this
     #
     #   env:
-    #     Build_Artifacts_Folderpath: $Build_Repository_Folderpath/Artifacts
+    #     Build_Artifacts_Folderpath: $build_repository_folderpath/Artifacts
 
     steps:
 
@@ -40,30 +38,32 @@ jobs:
           fetch-depth: 1
 
       - name: '🛠 Setup Build Environment'
-        run: ' chmod +x "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh"   &&   "$Build_Repository_Folderpath/Laerdal.SetupBuildEnvironment.sh" '
-        shell: bash
+        shell: 'bash'
+        run: |
+          chmod  +x  "$build_repository_folderpath/Laerdal.Scripts/Laerdal.SetupBuildEnvironment.sh"   \
+                &&                                                                                     \
+          "$build_repository_folderpath/Laerdal.Scripts/Laerdal.SetupBuildEnvironment.sh"              \
+                "https://nuget.pkg.github.com/Laerdal/index.json"                                      \
+                "${{ secrets.scl_github_nuget_feed_username }}"                                        \
+                "${{ secrets.scl_github_access_token        }}"
 
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: bash
-        env:
-          Source_Branch_Fullpath: ${{ github.ref }}
-          Github_Repository_Path: ${{ github.repository }}
-          Components_Team_Github_Access_Token: ${{ secrets.components_team_github_access_token }}
         run: |
-          cd          "$Build_Repository_Folderpath"                                        \
-          &&                                                                                \
+          cd               "$build_repository_folderpath"                                   \
+                     &&                                                                     \
           dotnet                                                                            \
              msbuild                                                                        \
              "Laerdal.McuMgr.Builder.targets"                                               \
              -m:1                                                                           \
              -p:ShouldSkipMacCatalyst="false"                                               \
                                                                                             \
-                           -p:PackageOutputPath="$Build_Repository_Folderpath/Artifacts"    \
+                           -p:PackageOutputPath="$build_repository_folderpath/Artifacts"    \
                          -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"     \
-                       -p:Laerdal_Source_Branch="$Source_Branch_Fullpath"                   \
-                     -p:Laerdal_Repository_Path="$Github_Repository_Path"                   \
-                 -p:Laerdal_Github_Access_Token="$Components_Team_Github_Access_Token"      \
-             -p:Laerdal_Test_Results_Folderpath="$Build_Repository_Folderpath/TestResults"
+                       -p:Laerdal_Source_Branch="${{  github.ref                     }}"    \
+                     -p:Laerdal_Repository_Path="${{  github.repository              }}"    \
+                 -p:Laerdal_Github_Access_Token="${{ secrets.scl_github_access_token }}"    \
+             -p:Laerdal_Test_Results_Folderpath="$build_repository_folderpath/TestResults"
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: EnricoMi/publish-unit-test-result-action/macos@v2
