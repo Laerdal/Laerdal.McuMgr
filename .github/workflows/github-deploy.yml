@@ -2,16 +2,10 @@ name: 'Deploy Nugets'
 
 on:
 
-# currently disabled until we sort out billing issues in github
-#
-#  push:
-#    branches: [ "main", "master", "develop", "ksidirop/MAN-296-migrate-to-github-actions" ]
+  push:
+    branches: [ "main", "master", "develop" ]
 
   workflow_dispatch: # allows to run this workflow manually from the Actions tab
-
-
-env:
-  AZURE_ARTIFACTS_FEED_URL: 'https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json'
 
 
 jobs:
@@ -21,7 +15,7 @@ jobs:
 
 
   deploy: # inspired by https://stackoverflow.com/a/77663335/863651
-    runs-on: macos-14
+    runs-on: 'macos-14'
 
     needs: 'compile'
 
@@ -33,23 +27,21 @@ jobs:
           name: 'nugets'
           path: 'Artifacts/'
 
-      # note   for this to work we need to make the mcumgr repo public (open source) because as long as the repo is private it cannot have access to the secret variables
+      - name: '🚀 Publish to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
+        run: |
+          dotnet                                                                       \
+                  nuget                                                                \
+                  push                                                                 \
+                  --source "https://nuget.pkg.github.com/Laerdal-Medical/index.json"   \
+                  --api-key "${{ secrets.scl_github_access_token }}"                   \
+                  "Artifacts/**/*.nupkg"
+
       # todo   remove this once we fully transition over to the laerdal nuget server on github
       - name: '🚀 Publish to the Laerdal Private Nuget Server in Azure' # https://learn.microsoft.com/en-us/azure/devops/artifacts/quickstarts/github-actions?view=azure-devops
         run: |
           dotnet                                                           \
                   nuget                                                    \
                   push                                                     \
-                  --source "${{ env.SCL_AZURE_ARTIFACTS_FEED_URL }}"       \
-                  --api-key "${{ secrets.SCL_AZURE_ARTIFACTS_API_KEY }}"   \
-                  "Artifacts/**/*.nupkg"
-
-      # note   for this to work we need to make the mcumgr repo public (open source) because as long as the repo is private it cannot have access to the secret variables
-      - name: '🚀 Publish to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
-        run: |
-          dotnet                                                           \
-                  nuget                                                    \
-                  push                                                     \
-                  --source "${{ env.SCL_GITHUB_ARTIFACTS_FEED_URL }}"      \
-                  --api-key "${{ secrets.SCL_GITHUB_ARTIFACTS_API_KEY }}"  \
+                  --source "https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json" \
+                  --api-key "${{ secrets.scl_azure_artifacts_api_key }}"   \
                   "Artifacts/**/*.nupkg"

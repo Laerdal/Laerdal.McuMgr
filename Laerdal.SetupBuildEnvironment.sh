@@ -1,5 +1,24 @@
 #!/bin/bash
 
+declare -r NUGET_FEED_URL="$1"
+declare -r NUGET_FEED_USERNAME="$2"
+declare -r NUGET_FEED_ACCESSTOKEN="$3"
+
+if [ -z "${NUGET_FEED_URL}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_URL' which was expected to be parameter #1."
+  exit 3
+fi
+
+if [ -z "${NUGET_FEED_USERNAME}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_USERNAME' which was expected to be parameter #2."
+  exit 5
+fi
+
+if [ -z "${NUGET_FEED_ACCESSTOKEN}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_ACCESSTOKEN' which was expected to be parameter #3."
+  exit 6
+fi
+
 brew   install   --cask   objectivesharpie
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
@@ -198,13 +217,18 @@ if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
   exit 170
 fi
-dotnet nuget list source
 
-#echo
-#echo "** mtouch:"
-#/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
-#declare exitCode=$?
-#if [ $exitCode != 0 ]; then
-#  echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
-#  exit 180
-#fi
+echo
+echo "** Adding 'Laerdal Nuget Feed' as a Nuget Source:"  # keep this after workload-restoration   otherwise we will run into problems
+dotnet   nuget   add                                                                                     \
+    source      "${NUGET_FEED_URL}"                                                                      \
+    --name      "LaerdalMedical"                                                                         \
+    --username  "${NUGET_FEED_USERNAME}"                                                                 \
+    --password  "${NUGET_FEED_ACCESSTOKEN}"
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to add 'Laerdal Nuget Feed' as a nuget source."
+  exit 180
+fi
+
+dotnet nuget list source
