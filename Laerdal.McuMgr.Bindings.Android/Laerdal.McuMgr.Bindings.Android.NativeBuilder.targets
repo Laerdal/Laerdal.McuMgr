@@ -65,6 +65,8 @@
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsWindows)' == 'true' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
 
             <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-release.aar</McuMgrLaerdalWrapperAarFilePath>
+
+            <ValidateUrlParameter Condition=" '$(IsWindows)' == 'true' ">--validate-url</ValidateUrlParameter>
         </PropertyGroup>
 
         <Error Condition=" '$(AndroidSdkPath)' == ''  " Text="** [ERROR] Failed to deduce the AndroidSdkPath for this platform!"/>
@@ -74,10 +76,10 @@
         <Delete Files="$(CoreAarLibrary)"/>
 
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                                  "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6  --validate-url   "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                       " Condition=" '$(IsUnix)' == 'true' "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all         "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                                           "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6  $(ValidateUrlParameter)   "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsUnix)' == 'true' "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all                  "/>
 
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
     </Target>
