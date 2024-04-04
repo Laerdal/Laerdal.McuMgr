@@ -45,12 +45,13 @@ jobs:
           "$build_repository_folderpath/Laerdal.Scripts/Laerdal.SetupBuildEnvironment.sh"              \
                 "https://nuget.pkg.github.com/Laerdal/index.json"                                      \
                 "${{ secrets.scl_github_nuget_feed_username }}"                                        \
-                "${{ secrets.scl_github_access_token        }}"
+                "${{ secrets.scl_github_access_token        }}"                                        \
+                "$build_repository_folderpath/Artifacts"
 
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: bash
         run: |
-          cd               "$build_repository_folderpath"                                   \
+          cd               "$build_repository_folderpath/Laerdal.Scripts"                   \
                      &&                                                                     \
           dotnet                                                                            \
              msbuild                                                                        \

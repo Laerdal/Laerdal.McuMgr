@@ -74,23 +74,23 @@ jobs:
         persistCredentials: True
 
       - task: Bash@3
-        displayName: 'Setup Build Environment for "Laerdal.Helpers"'
+        displayName: '🛠 Setup Build Environment'
         inputs:
           targetType: filePath
           filePath: 'Laerdal.Scripts/Laerdal.SetupBuildEnvironment.sh'
-          arguments: ' "https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json"   "$(Laerdal.NugetFeed.Username)"   "$(Laerdal.NugetFeed.AccessToken)" '
+          arguments: ' "https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json"   "$(Laerdal.NugetFeed.Username)"   "$(Laerdal.NugetFeed.AccessToken)"  "$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       # notice that explicitly disabling parallelization via m:1 below is vital because if parallelization is enabled the ios and android
       # builds will fail with cryptic errors due to multiple target-frameworks are involved coupled with the custom build logic for native libs
       #
       # also noticed that we intentionally skip the maccatalyst build on azure because under net8 we need macos14 to be available on azure but
-      # its not available just yet in 2024 Q1 :(
+      # it is not available just yet in 2024 Q1 :(
       - task: DotNetCoreCLI@2
         displayName: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         inputs:
           command: 'custom'
           custom: 'msbuild'
-          arguments: 'Laerdal.McuMgr.Builder.targets    -m:1  -p:ShouldSkipMacCatalyst="true"  -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"  -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
+          arguments: 'Laerdal.Scripts/Laerdal.McuMgr.Builder.targets    -m:1  -p:ShouldSkipMacCatalyst="true"  -p:Laerdal_Gradle_Path="/usr/local/opt/gradle@7/bin/gradle"  -p:Laerdal_Test_Results_Folderpath="$(Laerdal_Test_Results_Folderpath)"     -p:Laerdal_Github_Access_Token="$(Github.ComponentsTeam.AccessToken)"   -p:Laerdal_Repository_Path="$(Repository.Path)"     -p:Laerdal_Source_Branch="$(Build.SourceBranch)"    -p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/Artifacts/" '
 
       - task: PublishTestResults@2
         displayName: '📡 Publish Test Results'

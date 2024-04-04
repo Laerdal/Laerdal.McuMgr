@@ -5,11 +5,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{2459FC0F
 		LICENSE = LICENSE
 		.gitignore = .gitignore
 		azure-pipelines.yml = azure-pipelines.yml
-		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.CreateNewReleaseInGithub.sh
-		Laerdal.McuMgr.Builder.targets = Laerdal.McuMgr.Builder.targets
-		Laerdal.Version.sh = Laerdal.Version.sh
+		Laerdal.CreateNewReleaseInGithub.sh = Laerdal.Scripts\Laerdal.CreateNewReleaseInGithub.sh
+		Laerdal.McuMgr.Builder.targets = Laerdal.Scripts\Laerdal.McuMgr.Builder.targets
+		Laerdal.Version.sh = Laerdal.Scripts\Laerdal.Version.sh
 		global.json = global.json
-		Laerdal.SetupBuildEnvironment.sh = Laerdal.SetupBuildEnvironment.sh
+		Laerdal.SetupBuildEnvironment.sh = Laerdal.Scripts\Laerdal.SetupBuildEnvironment.sh
 		.github\workflows\github-compile.yml = .github\workflows\github-compile.yml
 		.github\workflows\github-deploy.yml = .github\workflows\github-deploy.yml
 	EndProjectSection
