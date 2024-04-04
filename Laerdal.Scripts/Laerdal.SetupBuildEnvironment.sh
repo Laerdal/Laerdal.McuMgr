@@ -219,12 +219,15 @@ if [ $exitCode != 0 ]; then
 fi
 
 echo
-echo "** Adding 'Laerdal Nuget Feed' as a Nuget Source:"  # keep this after workload-restoration   otherwise we will run into problems
-dotnet   nuget   add                                                                                     \
-    source      "${NUGET_FEED_URL}"                                                                      \
-    --name      "LaerdalMedical"                                                                         \
-    --username  "${NUGET_FEED_USERNAME}"                                                                 \
-    --password  "${NUGET_FEED_ACCESSTOKEN}"
+echo "** Adding 'Laerdal Nuget Feed' as a Nuget Source:"
+# keep this after workload-restoration   otherwise we will run into problems    note that the 'store-password-in-clear-text'
+# is necessary for azure pipelines   once we move fully over to github actions we can remove this parameter completely
+dotnet   nuget   add                                     \
+    source      "${NUGET_FEED_URL}"                      \
+    --name      "LaerdalMedical"                         \
+    --username  "${NUGET_FEED_USERNAME}"                 \
+    --password  "${NUGET_FEED_ACCESSTOKEN}"              \
+    --store-password-in-clear-text
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to add 'Laerdal Nuget Feed' as a nuget source."
