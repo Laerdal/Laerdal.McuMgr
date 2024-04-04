@@ -50,7 +50,7 @@ jobs:
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: bash
         run: |
-          cd               "$build_repository_folderpath"                                   \
+          cd               "$build_repository_folderpath/Laerdal.Scripts"                   \
                      &&                                                                     \
           dotnet                                                                            \
              msbuild                                                                        \
