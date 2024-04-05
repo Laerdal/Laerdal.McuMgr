@@ -1,5 +1,31 @@
 #!/bin/bash
 
+declare -r NUGET_FEED_URL="$1"
+declare -r NUGET_FEED_USERNAME="$2"
+declare -r NUGET_FEED_ACCESSTOKEN="$3"
+
+declare -r ARTIFACTS_FOLDER_PATH="$4"
+
+if [ -z "${NUGET_FEED_URL}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_URL' which was expected to be parameter #1."
+  exit 3
+fi
+
+if [ -z "${NUGET_FEED_USERNAME}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_USERNAME' which was expected to be parameter #2."
+  exit 5
+fi
+
+if [ -z "${NUGET_FEED_ACCESSTOKEN}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_ACCESSTOKEN' which was expected to be parameter #3."
+  exit 6
+fi
+
+if [ -z "${ARTIFACTS_FOLDER_PATH}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'ARTIFACTS_FOLDER_PATH' which was expected to be parameter #4."
+  exit 7
+fi
+
 brew   install   --cask   objectivesharpie
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
@@ -108,7 +134,7 @@ echo "** XCode Installations:"
 
 ls  -ld  /Applications/Xcode* || exit 90
 
-sudo   xcode-select   -s   /Applications/Xcode_14.3.app/Contents/Developer  # todo  experiment with /Applications/Xcode_15.2.app and see if it works
+sudo   xcode-select   -s   /Applications/Xcode_15.2.app/Contents/Developer  # todo  experiment with /Applications/Xcode_15.2.app and see if it works
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
@@ -188,23 +214,29 @@ if [ $exitCode != 0 ]; then
   exit 170
 fi
 
-declare -r CurrentDirectory="$( dirname "$( readlink -f "${BASH_SOURCE[0]:-"$(command -v -- "$0")"}" )" )"
-
 echo
-echo "** Adding 'Artifacts' Folder as a Nuget Source:"
-mkdir -p "${CurrentDirectory}/Artifacts"   &&   dotnet   nuget   add   source   "${CurrentDirectory}/Artifacts"   --name "LocalArtifacts"
+echo "** Adding 'Artifacts' Folder as a Nuget Source (dotnet):"
+mkdir -p "${ARTIFACTS_FOLDER_PATH}"   &&   dotnet   nuget   add   source   "${ARTIFACTS_FOLDER_PATH}"   --name "LocalArtifacts"
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to add 'Artifacts' folder as a nuget source."
   exit 170
 fi
-dotnet nuget list source
 
-#echo
-#echo "** mtouch:"
-#/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin/mtouch  --version
-#declare exitCode=$?
-#if [ $exitCode != 0 ]; then
-#  echo "##vso[task.logissue type=error]Failed to find 'mtouch'."
-#  exit 180
-#fi
+echo
+echo "** Adding 'Laerdal Nuget Feed' as a Nuget Source:"
+# keep this after workload-restoration   otherwise we will run into problems    note that the 'store-password-in-clear-text'
+# is necessary for azure pipelines   once we move fully over to github actions we can remove this parameter completely
+dotnet   nuget   add                                     \
+    source      "${NUGET_FEED_URL}"                      \
+    --name      "LaerdalMedical"                         \
+    --username  "${NUGET_FEED_USERNAME}"                 \
+    --password  "${NUGET_FEED_ACCESSTOKEN}"              \
+    --store-password-in-clear-text
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to add 'Laerdal Nuget Feed' as a nuget source."
+  exit 180
+fi
+
+dotnet nuget list source
