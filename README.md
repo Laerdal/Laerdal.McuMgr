@@ -72,10 +72,9 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack                       | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0)                                                   |
-|-----------------------------|---------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|
-| Xamarin ("Classic" .Net4.8) | ✅ Min 5.0 / Recommended 10.0+ / Max 13.0 <br/> (api-levels: 20 / 29 / 33) | ✅ 10.0+ <br/> (sdk: iphoneos16.2) | ❌ <br /> (completely unsupported)               | ❌ <br/> (apps will compile and launch but will throw not-implemented-exceptions) |    
-| DotNet 6+                   | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 11.0+ <br/> (sdk: iphoneos16.2) | ✅ 13.1+ <br/> (MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+| Stack     | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0)                                                   |
+|-----------|---------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|   
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 11.0+ <br/> (sdk: iphoneos16.2) | ✅ 13.1+ <br/> (MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
@@ -93,7 +92,7 @@ to the device.**
 
 ## 🚀 Using the Nugets in your Projects
 
-Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
+Add the following Nuget packages.
 
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
@@ -754,11 +753,7 @@ maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
-#### 6) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
-
-     Note: You can grab the appropriate Mono release for MacOS from https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.182.macos10.xamarin.universal.pkg
-
-If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
+#### 6) Set MSBuild version to ver.17
 
 #### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
