@@ -67,7 +67,7 @@
     <Target Name="DeduceVersion" DependsOnTargets="PrintConfiguration">
 
         <PropertyGroup>
-            <Laerdal_Version_Major Condition=" '$(Laerdal_Version_Major)' == '' ">1</Laerdal_Version_Major>
+            <Laerdal_Version_Major Condition=" '$(Laerdal_Version_Major)' == '' ">2</Laerdal_Version_Major>
 
             <Laerdal_Version_Script_Filepath Condition="   '$(Laerdal_Version_Script_Filepath)'  == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.Version.sh`))</Laerdal_Version_Script_Filepath>
             <Laerdal_Version_Details_Filepath Condition="  '$(Laerdal_Version_Details_Filepath)' == '' ">$([System.IO.Path]::Combine($(PackageOutputPath), `version.txt`))</Laerdal_Version_Details_Filepath>
