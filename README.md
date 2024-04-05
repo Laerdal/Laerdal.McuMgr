@@ -7,28 +7,28 @@
 
       Laerdal.McuMgr Nugets:
   
-  [![Laerdal.McuMgr package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/b382f36b-e768-40a9-8bb9-e905b85ff610/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr?preferRelease=true)
+  [![Laerdal.McuMgr package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)
 
       Laerdal.McuMgr.Bindings.iOS Nugets:
 
-  [![Laerdal.McuMgr.Bindings.iOS package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.iOS?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.iOS package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)
 
       Laerdal.McuMgr.Bindings.Android Nugets:
 
-  [![Laerdal.McuMgr.Bindings.Android package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.Android?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.Android package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)
 
       Laerdal.McuMgr.Bindings.NetStandard Nugets (WIP!):
 
-  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.NetStandard?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)
 
 - Release Build Status (main branch):
 
-  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
+  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 
 - Beta Build Status (develop branch):
 
-  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
+  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 # Forward Licensing Disclaimer
 
@@ -658,7 +658,7 @@ Not supported yet.
 ## 🏗 IDE Setup / Generating Builds on Local-dev
 
 
-    Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
+    Note#1 There's an github-actions.yml file which you can use as a template to integrate the build in your github workflows. With said .yml the generated nugets will work on both Android and iOS.
 _
 
     Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK17 installed - have a look at the .yml file to see how you
@@ -749,7 +749,7 @@ maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 
 #### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
 
-#### 5) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
+#### 5) (optional) If you want to develop locally without pulling nugets from the feed make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
