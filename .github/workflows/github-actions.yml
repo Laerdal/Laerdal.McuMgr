@@ -2,7 +2,7 @@
 # https://docs.github.com/en/actions/migrating-to-github-actions/automated-migrations/migrating-from-azure-devops-with-github-actions-importer#environment-variable-mapping
 #
 
-name: 'Build, Pack & Deploy Nugets'
+name: '🏗 📦 Build, Pack & Deploy Nugets'
 
 env:
   BUILD_REPOSITORY_FOLDERPATH: ${{     github.workspace                      }}
@@ -38,9 +38,10 @@ jobs:
     steps:
 
       - name: '🔽 Checkout'
-        uses: 'actions/checkout@v3'
-        # with:
-        #   fetch-depth: 1
+        uses: 'actions/checkout@v4'
+        with:
+          fetch-tags: true # https://github.com/actions/checkout/issues/1471#issuecomment-1771231294
+          fetch-depth: 0
 
       - name: '🛠 Setup Build Environment'
         shell: 'bash'
