@@ -7,28 +7,28 @@
 
       Laerdal.McuMgr Nugets:
   
-  [![Laerdal.McuMgr package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/b382f36b-e768-40a9-8bb9-e905b85ff610/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr?preferRelease=true)
+  [![Laerdal.McuMgr package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)
 
       Laerdal.McuMgr.Bindings.iOS Nugets:
 
-  [![Laerdal.McuMgr.Bindings.iOS package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.iOS?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.iOS package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)
 
       Laerdal.McuMgr.Bindings.Android Nugets:
 
-  [![Laerdal.McuMgr.Bindings.Android package in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.Android?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.Android package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)
 
       Laerdal.McuMgr.Bindings.NetStandard Nugets (WIP!):
 
-  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) in LaerdalNuGet feed in Azure Artifacts](https://feeds.dev.azure.com/LaerdalMedical/_apis/public/Packaging/Feeds/LaerdalNuGet/Packages/7c0a4133-335f-4699-bec4-b0828d93df5f/Badge)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_artifacts/feed/LaerdalNuGet/NuGet/Laerdal.McuMgr.Bindings.NetStandard?preferRelease=true)
+  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)
 
 - Release Build Status (main branch):
 
-  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=main)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=main)
+  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 
 - Beta Build Status (develop branch):
 
-  [![Build Status](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_apis/build/status%2FLaerdal.McuMgr?branchName=develop)](https://dev.azure.com/LaerdalMedical/Laerdal%20Nuget%20Platform/_build/latest?definitionId=241&branchName=develop)
+  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 # Forward Licensing Disclaimer
 
@@ -72,10 +72,9 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack                       | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0)                                                   |
-|-----------------------------|---------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|
-| Xamarin ("Classic" .Net4.8) | ✅ Min 5.0 / Recommended 10.0+ / Max 13.0 <br/> (api-levels: 20 / 29 / 33) | ✅ 10.0+ <br/> (sdk: iphoneos16.2) | ❌ <br /> (completely unsupported)               | ❌ <br/> (apps will compile and launch but will throw not-implemented-exceptions) |    
-| DotNet 6+                   | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 11.0+ <br/> (sdk: iphoneos16.2) | ✅ 13.1+ <br/> (MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+| Stack     | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0)                                                   |
+|-----------|---------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|   
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 11.0+ <br/> (sdk: iphoneos16.2) | ✅ 13.1+ <br/> (MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
@@ -93,7 +92,7 @@ to the device.**
 
 ## 🚀 Using the Nugets in your Projects
 
-Add the following Nuget packages. If you're dealing in Xamarin then you'll have to add these Nugets to your projects in your Xamarin solution (not just the Core/Forms/Shared ones):
+Add the following Nuget packages.
 
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
@@ -659,7 +658,7 @@ Not supported yet.
 ## 🏗 IDE Setup / Generating Builds on Local-dev
 
 
-    Note#1 There's an azure-pipelines.yml file which you can use as a template to integrate the build in your azure pipelines. With said .yml the generated nugets will work on both Android and iOS.
+    Note#1 There's an github-actions.yml file which you can use as a template to integrate the build in your github workflows. With said .yml the generated nugets will work on both Android and iOS.
 _
 
     Note#2 To build full-blown nugets that work both on iOS and Android you must use MacOS as your build-machine with XCode 14.3+ and JDK17 installed - have a look at the .yml file to see how you
@@ -750,15 +749,11 @@ maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 
 #### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
 
-#### 5) (optional) If you want to develop locally without pulling nugets from Azure make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
+#### 5) (optional) If you want to develop locally without pulling nugets from the feed make sure you add to your nuget sources the local filesystem-path to the folder 'Artifacts'
 
 Same goes for the testbed-ui app. If you want to build it locally you'll have to add to nuget sources the local file-system path 'Artifacts'.
 
-#### 6) On Mac set the MSBuild version to Mono's 15.0 in Rider's settings (/Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll - MSBuild 17.0+ won't build on Mac)
-
-     Note: You can grab the appropriate Mono release for MacOS from https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.182.macos10.xamarin.universal.pkg
-
-If you are on Windows you can use the MSBuild ver.17 provided by Visual Studio (C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin)
+#### 6) Set MSBuild version to ver.17
 
 #### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
 
@@ -780,14 +775,14 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 # on macos *sh
 dotnet                                              \
          msbuild                                    \
-         Laerdal.McuMgr.Builder.targets             \
+         Laerdal.Builder.targets             \
          '"/m:1"'                                   \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
 # on windows powershell
 & dotnet                                            ^
           msbuild                                   ^
-          Laerdal.McuMgr.Builder.targets            ^
+          Laerdal.Builder.targets            ^
           '"/m:1"'                                  ^
           '"/p:Laerdal_Version_Full=1.0.x.0"'
 
