@@ -775,14 +775,14 @@ You'll find the resulting nugets in the folder `Artifacts/`.
 # on macos *sh
 dotnet                                              \
          msbuild                                    \
-         Laerdal.McuMgr.Builder.targets             \
+         Laerdal.Builder.targets             \
          '"/m:1"'                                   \
          '"/p:Laerdal_Version_Full=1.0.x.0"'
 
 # on windows powershell
 & dotnet                                            ^
           msbuild                                   ^
-          Laerdal.McuMgr.Builder.targets            ^
+          Laerdal.Builder.targets            ^
           '"/m:1"'                                  ^
           '"/p:Laerdal_Version_Full=1.0.x.0"'
 
