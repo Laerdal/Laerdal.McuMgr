@@ -14,7 +14,7 @@
         <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                          ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
-        <!-- <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(ShouldSkipMacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks> -->
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(ShouldSkipMacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
 
         <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
         <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true' ">true</IsNet8IOS>
