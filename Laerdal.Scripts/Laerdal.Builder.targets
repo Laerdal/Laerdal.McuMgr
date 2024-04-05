@@ -267,7 +267,7 @@
 
     <!-- GITHUB RELEASE -->
     <Target Name="CreateGithubReleaseWithTag"
-            Condition=" '$(TF_BUILD)' != ''  AND  '$(Laerdal_Should_Tag_And_Release)' == 'True' "
+            Condition=" '$(Laerdal_Should_Tag_And_Release)' == 'True' "
             AfterTargets="RunTests">
 
         <Error Condition=" '$(Laerdal_Version_Base)'        == '' " Text="'Laerdal_Version_Base' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Base=...'" />
