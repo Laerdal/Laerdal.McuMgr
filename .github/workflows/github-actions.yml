@@ -87,7 +87,7 @@ jobs:
 
       - name: '🚀 Publish to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
         shell: 'bash'
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/ksidirop/MAN-296-migrate-to-github-actions'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                          \
                     &&                                                                  \
@@ -98,20 +98,4 @@ jobs:
                   push                                                                  \
                   --source   "https://nuget.pkg.github.com/Laerdal/index.json"          \
                   --api-key  "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                         \
-                  *nupkg
-
-      # todo    remove this once we fully transition over to the laerdal nuget server on github
-      - name: '🚀 Publish to the Laerdal Nuget Server in Azure' # https://learn.microsoft.com/en-us/azure/devops/artifacts/quickstarts/github-actions?view=azure-devops
-        shell: 'bash'
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/ksidirop/MAN-296-migrate-to-github-actions'
-        run: |
-          cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                         \
-                    &&                                                                 \
-          ls .                                                                         \
-                    &&                                                                 \
-          dotnet                                                                       \
-                  nuget                                                                \
-                  push                                                                 \
-                  --source   "https://pkgs.dev.azure.com/LaerdalMedical/_packaging/LaerdalNuGet/nuget/v3/index.json" \
-                  --api-key  "${{env.SCL_AZURE_ARTIFACTS_API_KEY}}"                    \
                   *nupkg
