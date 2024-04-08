@@ -81,10 +81,10 @@ jobs:
             TestResults/**/TEST-*.trx
 
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
-        uses: 'actions/upload-artifact@v3'
+        uses: 'actions/upload-artifact@v4'
         with:
-          name: 'nugets'
-          path: 'Artifacts/**/*.nupkg'
+          name: 'Artifacts'
+          path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'
 
       - name: '🚀 Publish to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
         shell: 'bash'
