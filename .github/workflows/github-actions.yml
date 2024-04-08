@@ -84,7 +84,7 @@ jobs:
         uses: 'actions/upload-artifact@v4'
         with:
           name: 'nugets'
-          path: 'Artifacts/**/*.nupkg'
+          path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'
 
       - name: '🚀 Publish to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
         shell: 'bash'
