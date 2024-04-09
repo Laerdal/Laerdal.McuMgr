@@ -10,7 +10,7 @@ env:
   LAERDAL_SOURCE_BRANCH: ${{           github.ref                            }}
   LAERDAL_REPOSITORY_PATH: ${{         github.repository                     }}
 
-  SCL_GITHUB_ACCESS_TOKEN: ${{        secrets.SCL_GITHUB_ACCESS_TOKEN        }}
+  SCL_GITHUB_ACCESS_TOKEN: ${{        secrets.GITHUB_TOKEN                   }}
   SCL_AZURE_ARTIFACTS_API_KEY: ${{    secrets.SCL_AZURE_ARTIFACTS_API_KEY    }}
   SCL_GITHUB_NUGET_FEED_USERNAME: ${{ secrets.SCL_GITHUB_NUGET_FEED_USERNAME }}
 

@@ -21,14 +21,15 @@
 
   [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)
 
+
 - Release Build Status (main branch):
 
   [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
-
 - Beta Build Status (develop branch):
 
   [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
+
 
 # Forward Licensing Disclaimer
 
