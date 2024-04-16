@@ -14,6 +14,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <br/><br/>
         /// In case you pass a data-stream into this method then the data-stream will be read immediately into a byte array (from its current position)
         /// but the data-stream will not be disposed of unless the option 'autodisposeStreams' is set explicitly to true.
+        /// <br/><br/>
+        /// Allowed types for TData are 'Stream', 'Func&lt;Stream&gt;', 'Func&lt;Task&lt;Stream&gt;&gt;', 'Func&lt;ValueTask&lt;Stream&gt;&gt;', 'byte[]' and 'IEnumerable&lt;byte&gt;'.
         /// </remarks>
         /// <param name="remoteFilePathsAndTheirData">The files to upload.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
@@ -36,6 +38,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <br/><br/>
         /// In the case you pass a data-stream into this method then the data-stream will be read immediately into a byte array (from its current position)
         /// but the data-stream will not be disposed of unless the option 'autodisposeStreams' is set explicitly to true.
+        /// <br/><br/>
+        /// Allowed types for TData are 'Stream', 'Func&lt;Stream&gt;', 'Func&lt;Task&lt;Stream&gt;&gt;', 'Func&lt;ValueTask&lt;Stream&gt;&gt;', 'byte[]' and 'IEnumerable&lt;byte&gt;'.
         /// </remarks>
         /// <param name="localData">The local data to upload.</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
