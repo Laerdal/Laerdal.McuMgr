@@ -27,14 +27,14 @@ public class IOSDeviceResetter: NSObject {
             response, error in
 
             if (error != nil) {
-                self.fatalErrorOccurredAdvertisement("Reset failed '\(error?.localizedDescription ?? "<unexpected error occurred>")'")
+                self.fatalErrorOccurredAdvertisement("Reset failed: '\(error?.localizedDescription ?? "<unexpected error occurred>")'")
 
                 self.setState(EIOSDeviceResetterState.failed)
                 return
             }
 
-            if (response != nil && !response!.isSuccess()) { // check for an error return code
-                self.fatalErrorOccurredAdvertisement("Reset failed (error-code '\(response!.returnCode.localizedDescription)')")
+            if (response?.getError() != nil) { // check for an error return code
+                self.fatalErrorOccurredAdvertisement("Reset failed: '\(response?.getError()?.errorDescription ?? "N/A")'")
 
                 self.setState(EIOSDeviceResetterState.failed)
                 return
