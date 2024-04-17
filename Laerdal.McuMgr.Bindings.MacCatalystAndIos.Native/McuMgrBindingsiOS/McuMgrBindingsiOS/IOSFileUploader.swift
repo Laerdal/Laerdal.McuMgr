@@ -98,6 +98,8 @@ public class IOSFileUploader: NSObject {
         //      return EIOSFileUploaderVerdict.FAILED__INVALID_DATA
         // }
 
+        disposeFilesystemManager() //vital hack    normally we shouldnt need this    but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
+
         ensureTransportIsInitializedExactlyOnce() //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
