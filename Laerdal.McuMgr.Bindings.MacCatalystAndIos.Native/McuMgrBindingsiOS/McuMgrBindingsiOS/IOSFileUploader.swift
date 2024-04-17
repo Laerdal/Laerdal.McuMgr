@@ -95,18 +95,11 @@ public class IOSFileUploader: NSObject {
         }
 
         // if data == nil { // data being nil is not ok but in swift Data can never be nil anyway   btw data.length==0 is perfectly ok because we might want to create empty files
-        //      setState(EIOSFileUploaderState.ERROR)
-        //      fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided data is nil")
-        //
         //      return EIOSFileUploaderVerdict.FAILED__INVALID_DATA
         // }
 
         ensureTransportIsInitializedExactlyOnce() //order
-
-        let verdict = ensureFilesystemManagerIsInitializedExactlyOnce() //order
-        if verdict != EIOSFileUploadingInitializationVerdict.success {
-            return verdict
-        }
+        ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         resetUploadState() //order
 
@@ -165,22 +158,20 @@ public class IOSFileUploader: NSObject {
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
     }
 
-    private func ensureFilesystemManagerIsInitializedExactlyOnce() -> EIOSFileUploadingInitializationVerdict {
+    private func ensureFilesystemManagerIsInitializedExactlyOnce() {
         if _fileSystemManager != nil { //already initialized
-            return EIOSFileUploadingInitializationVerdict.success
+            return
         }
 
         _fileSystemManager = FileSystemManager(transporter: _transporter) //00
         _fileSystemManager.logDelegate = self //00
-
-        return EIOSFileUploadingInitializationVerdict.success
 
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileUploader: McuMgrLogDelegate
     }
 
     private func ensureTransportIsInitializedExactlyOnce() {
         if _transporter != nil {
-            return;
+            return
         }
 
         _transporter = McuMgrBleTransport(_cbPeripheral)
@@ -188,12 +179,12 @@ public class IOSFileUploader: NSObject {
 
     private func disposeTransport() {
         _transporter?.close()
-        _transporter = nil;
+        _transporter = nil
     }
 
     private func disposeFilesystemManager() {
         //_fileSystemManager?.cancelTransfer()  dont
-        _fileSystemManager = nil;
+        _fileSystemManager = nil
     }
 
     private func IsCold() -> Bool {
@@ -216,7 +207,7 @@ public class IOSFileUploader: NSObject {
         )
     }
 
-    // unfortunately I couldn't figure out a way to deduce the error code from the error itself so I had to resort to string sniffing   ugly but it works
+    // unfortunately I couldnt figure out a way to deduce the error code from the error itself so I had to resort to string sniffing   ugly but it works
     private func deduceErrorCode(_ errorMessage: String) -> (Int, String?) {
         let (matchesArray, possibleError) = matches(for: " [(]\\d+[)][.]?$", in: errorMessage) // "UNKNOWN (1)."
         if possibleError != nil {

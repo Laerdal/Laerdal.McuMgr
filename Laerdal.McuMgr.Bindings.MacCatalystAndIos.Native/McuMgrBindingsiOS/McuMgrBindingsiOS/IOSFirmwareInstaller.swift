@@ -61,7 +61,7 @@ public class IOSFirmwareInstaller: NSObject {
                     "Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
-            );
+            )
         }
 
         _manager = FirmwareUpgradeManager(transporter: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
@@ -73,8 +73,8 @@ public class IOSFirmwareInstaller: NSObject {
         )
 
         do {
-            _manager.mode = try translateFirmwareInstallationMode(mode) //0
-
+            firmwareUpgradeConfiguration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
+            
             if (pipelineDepth >= 0) {
                 firmwareUpgradeConfiguration.pipelineDepth = pipelineDepth
             }
@@ -84,29 +84,47 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            emitFatalError(.invalidSettings, ex.localizedDescription);
+            emitFatalError(.invalidSettings, ex.localizedDescription)
 
-            return .failedInvalidSettings;
+            return .failedInvalidSettings
         }
 
         do {
             setState(.idle)
 
-            try _manager.start(data: imageData, using: firmwareUpgradeConfiguration);
+            try _manager.start(
+                hash: try McuMgrImage(data: imageData).hash, //2
+                data: imageData,
+                using: firmwareUpgradeConfiguration
+            )
 
         } catch let ex {
-            emitFatalError(.deploymentFailed, ex.localizedDescription);
+            emitFatalError(.deploymentFailed, ex.localizedDescription)
 
-            return .failedDeploymentError;
+            return .failedDeploymentError
         }
 
-        return .success;
+        return .success
 
         //0 set the installation mode
         //
         //1 rF52840 due to how the flash memory works requires ~20 sec to erase images
         //
-        //3 set the selected memory alignment  in the app this defaults to 4 to match nordic devices but can be modified in the ui
+        //2 the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+    }
+    
+    private func calculateHashBytesOfData(_ data: Data) -> Data {
+        var hasher = Hasher()
+        hasher.combine(data)
+
+        let hashNumeric = hasher.finalize()
+        
+        let hashData = withUnsafeBytes(of: hashNumeric.littleEndian) { Data($0) } //00
+
+        return hashData
+        
+        //00   notice that we have to be explicit in terms of endianess to avoid nasty surprises when transmitting bytes over the air
+        //     https://stackoverflow.com/a/28681106/863651
     }
 
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {

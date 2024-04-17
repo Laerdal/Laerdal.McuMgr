@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -455,7 +455,7 @@
 			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git";
 			requirement = {
 				kind = exactVersion;
-				version = 1.3.1;
+				version = 1.6.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
