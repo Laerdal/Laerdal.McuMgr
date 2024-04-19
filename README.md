@@ -746,7 +746,7 @@ wasm-tools-net6            7.0.11/7.0.100         SDK 7.0.400
 maccatalyst                16.4.7107/7.0.100      VS 17.7.34202.233
 ```
 
-#### 3) Make sure that Java17 is installed on your machine along with Gradle and Maven.
+#### 3) Make sure that Java17 is installed on your machine along with Gradle 7.6 (Gradle 8.x or above will NOT work!)
 
 #### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
 
