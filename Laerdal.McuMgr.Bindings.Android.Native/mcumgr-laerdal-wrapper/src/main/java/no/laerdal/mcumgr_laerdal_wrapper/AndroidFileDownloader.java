@@ -37,6 +37,8 @@ public class AndroidFileDownloader
                 && _currentState != EAndroidFileDownloaderState.COMPLETE
                 && _currentState != EAndroidFileDownloaderState.CANCELLED)
         {
+            logMessageAdvertisement("Cannot start a new download while another one is still in progress (state=" + _currentState.toString() + ")", "FileDownloader", "ERROR", remoteFilePath);
+
             return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
         }
 
@@ -285,8 +287,8 @@ public class AndroidFileDownloader
         {
             //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
 
-            downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
+            downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
 
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
