@@ -1,6 +1,13 @@
-﻿namespace Laerdal.McuMgr.FileUploader.Contracts.Native
+﻿using System;
+
+namespace Laerdal.McuMgr.FileUploader.Contracts.Native
 {
-    internal interface INativeFileUploaderProxy : INativeFileUploaderQueryableProxy, INativeFileUploaderCommandableProxy, INativeFileUploaderCallbacksProxy
+    internal interface INativeFileUploaderProxy :
+        INativeFileUploaderQueryableProxy,
+        INativeFileUploaderCommandableProxy,
+        INativeFileUploaderCallbacksProxy,
+        INativeFileUploaderCleanupProxy,
+        IDisposable
     {
     }
 }

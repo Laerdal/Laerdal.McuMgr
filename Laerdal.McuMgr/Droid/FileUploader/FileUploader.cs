@@ -58,7 +58,12 @@ namespace Laerdal.McuMgr.FileUploader
             {
                 _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
-
+            
+            public void CleanupResourcesOfLastUpload()
+            {
+                //nothing to do in android
+            }
+            
             #region commands
 
             public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)

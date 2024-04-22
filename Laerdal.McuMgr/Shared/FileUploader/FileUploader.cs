@@ -49,6 +49,7 @@ namespace Laerdal.McuMgr.FileUploader
         
         public void Cancel() => _nativeFileUploaderProxy?.Cancel();
         public void Disconnect() => _nativeFileUploaderProxy?.Disconnect();
+        public void CleanupResourcesOfLastUpload() => _nativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
         
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
@@ -265,6 +266,8 @@ namespace Laerdal.McuMgr.FileUploader
                     Cancelled -= UploadAsyncOnCancelled;
                     StateChanged -= UploadAsyncOnStateChanged;
                     FatalErrorOccurred -= UploadAsyncOnFatalErrorOccurred;
+                    
+                    CleanupResourcesOfLastUpload(); //vital
                 }
 
                 void UploadAsyncOnCancelled(object sender, CancelledEventArgs ea)
@@ -435,5 +438,7 @@ namespace Laerdal.McuMgr.FileUploader
                     progressPercentage: progressPercentage
                 ));
         }
+
+        public void Dispose() => _nativeFileUploaderProxy?.Dispose();
     }
 }

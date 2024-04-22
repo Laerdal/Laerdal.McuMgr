@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FileUploader
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileUploaderProxy : IOSListenerForFileUploader, INativeFileUploaderProxy
         {
-            private readonly IOSFileUploader _nativeFileUploader;
+            private IOSFileUploader _nativeFileUploader;
             private readonly INativeFileUploaderCallbacksProxy _nativeFileUploaderCallbacksProxy;
             
             internal IOSNativeFileUploaderProxy(CBPeripheral bluetoothDevice, INativeFileUploaderCallbacksProxy nativeFileUploaderCallbacksProxy)
@@ -51,9 +51,38 @@ namespace Laerdal.McuMgr.FileUploader
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
             public void Cancel() => _nativeFileUploader?.Cancel();
-            
             public void Disconnect() => _nativeFileUploader?.Disconnect();
-            
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            private bool _disposedValue; // protected implementation of dispose pattern
+            private void Dispose(bool disposing)
+            {
+                if (_disposedValue)
+                    return;
+
+                if (disposing)
+                {                   
+                    _nativeFileUploader?.Dispose();
+                    _nativeFileUploader = null;
+
+                    CleanupResourcesOfLastUpload(); // shouldnt be necessary   but just in case
+                }
+
+                _disposedValue = true;
+            }
+
+            public void CleanupResourcesOfLastUpload() //this 
+            {
+                _nsDataOfCurrentlyActiveUpload?.Dispose();
+                _nsDataOfCurrentlyActiveUpload = null;
+            }
+
+            private NSData _nsDataOfCurrentlyActiveUpload;
             public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
                 var nsData = NSData.FromArray(data);
@@ -65,9 +94,11 @@ namespace Laerdal.McuMgr.FileUploader
                 if (verdict != EFileUploaderVerdict.Success)
                 {
                     nsData.Dispose();
+                    return verdict;
                 }
-
-                return verdict;
+                
+                _nsDataOfCurrentlyActiveUpload = nsData;
+                return EFileUploaderVerdict.Success;
             }
             
             public bool TrySetContext(object context)
