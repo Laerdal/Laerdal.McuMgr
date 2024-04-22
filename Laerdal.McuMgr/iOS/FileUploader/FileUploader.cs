@@ -56,8 +56,16 @@ namespace Laerdal.McuMgr.FileUploader
             
             public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
-                var nsData = NSData.FromArray(data); //todo   should nsdata be tracked in a private variable and then cleaned up properly?
-                var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(remoteFilePath, nsData));
+                var nsData = NSData.FromArray(data);
+
+                var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(
+                    data: nsData,
+                    remoteFilePath: remoteFilePath
+                ));
+                if (verdict != EFileUploaderVerdict.Success)
+                {
+                    nsData.Dispose();
+                }
 
                 return verdict;
             }
