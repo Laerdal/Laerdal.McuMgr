@@ -59,6 +59,39 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy ?? throw new ArgumentNullException(nameof(firmwareInstallerCallbacksProxy));
             }
             
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {                   
+                    CleanupInfrastructure();
+                }
+
+                _alreadyDisposed = true;
+
+                base.Dispose(disposing);
+            }
+            
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+            
             public void CleanupResourcesOfLastInstallation()
             {
                 //nothing to do here for android   only ios needs this

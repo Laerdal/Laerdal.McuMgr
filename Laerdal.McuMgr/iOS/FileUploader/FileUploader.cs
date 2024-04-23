@@ -71,13 +71,22 @@ namespace Laerdal.McuMgr.FileUploader
                 }
 
                 _alreadyDisposed = true;
-                
+
                 base.Dispose(disposing);
             }
             
             private void CleanupInfrastructure()
             {
-                _nativeFileUploader?.Dispose();
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                _nativeFileUploader?.Dispose(); //order
                 _nativeFileUploader = null;
             }
 

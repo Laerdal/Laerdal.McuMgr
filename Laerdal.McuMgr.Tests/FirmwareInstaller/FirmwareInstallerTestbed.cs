@@ -78,6 +78,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             public void CleanupResourcesOfLastInstallation()
             {
             }
+
+            public void Dispose()
+            {
+            }
         }
     }
 }

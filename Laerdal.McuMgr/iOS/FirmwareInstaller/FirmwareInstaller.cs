@@ -72,6 +72,15 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
             private void CleanupInfrastructure()
             {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 _nativeFirmwareInstaller?.Dispose();
                 _nativeFirmwareInstaller = null;
             }

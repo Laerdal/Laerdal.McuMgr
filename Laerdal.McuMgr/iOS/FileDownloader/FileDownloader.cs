@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FileDownloader
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileDownloaderProxy : IOSListenerForFileDownloader, INativeFileDownloaderProxy
         {
-            private readonly IOSFileDownloader _nativeFileDownloader;
+            private IOSFileDownloader _nativeFileDownloader;
             private readonly INativeFileDownloaderCallbacksProxy _nativeFileDownloaderCallbacksProxy;
 
             internal IOSNativeFileDownloaderProxy(CBPeripheral bluetoothDevice, INativeFileDownloaderCallbacksProxy nativeFileDownloaderCallbacksProxy)
@@ -45,6 +45,41 @@ namespace Laerdal.McuMgr.FileDownloader
                 _nativeFileDownloaderCallbacksProxy = nativeFileDownloaderCallbacksProxy; //composition-over-inheritance
             }
             
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {
+                    CleanupInfrastructure();
+                }
+
+                _alreadyDisposed = true;
+                
+                base.Dispose(disposing);
+            }
+
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                _nativeFileDownloader?.Dispose();
+                _nativeFileDownloader = null;
+            }
 
             #region commands
             
