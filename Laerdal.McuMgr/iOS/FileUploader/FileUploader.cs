@@ -66,9 +66,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                 if (disposing)
                 {                   
-                    _nativeFileUploader?.Dispose();
-                    _nativeFileUploader = null;
-
+                    CleanupInfrastructure();
                     CleanupResourcesOfLastUpload(); // shouldnt be necessary   but just in case
                 }
 
@@ -76,31 +74,37 @@ namespace Laerdal.McuMgr.FileUploader
                 
                 base.Dispose(disposing);
             }
+            
+            private void CleanupInfrastructure()
+            {
+                _nativeFileUploader?.Dispose();
+                _nativeFileUploader = null;
+            }
 
             public void CleanupResourcesOfLastUpload() //00
             {
-                _nsDataOfCurrentlyActiveUpload?.Dispose();
-                _nsDataOfCurrentlyActiveUpload = null;
+                _nsDataOfFileInCurrentlyActiveUpload?.Dispose();
+                _nsDataOfFileInCurrentlyActiveUpload = null;
                 
                 //00 the method needs to be public so that it can be called manually when someone uses BeginUpload() instead of UploadAsync()!
             }
 
-            private NSData _nsDataOfCurrentlyActiveUpload;
+            private NSData _nsDataOfFileInCurrentlyActiveUpload;
             public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
-                var nsData = NSData.FromArray(data);
+                var nsDataOfFileToUpload = NSData.FromArray(data);
 
                 var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(
-                    data: nsData,
+                    data: nsDataOfFileToUpload,
                     remoteFilePath: remoteFilePath
                 ));
                 if (verdict != EFileUploaderVerdict.Success)
                 {
-                    nsData.Dispose();
+                    nsDataOfFileToUpload.Dispose();
                     return verdict;
                 }
                 
-                _nsDataOfCurrentlyActiveUpload = nsData;
+                _nsDataOfFileInCurrentlyActiveUpload = nsDataOfFileToUpload;
                 return EFileUploaderVerdict.Success;
             }
             

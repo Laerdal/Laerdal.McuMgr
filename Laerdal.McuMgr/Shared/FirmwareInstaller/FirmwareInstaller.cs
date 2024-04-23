@@ -29,7 +29,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             _nativeFirmwareInstallerProxy = nativeFirmwareInstallerProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareInstallerProxy));
             _nativeFirmwareInstallerProxy.FirmwareInstaller = this; //vital
         }
-
+        
         public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
@@ -61,6 +61,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
         public void Cancel() => _nativeFirmwareInstallerProxy?.Cancel();
         public void Disconnect() => _nativeFirmwareInstallerProxy?.Disconnect();
+        public void CleanupResourcesOfLastUpload() => _nativeFirmwareInstallerProxy?.CleanupResourcesOfLastInstallation();
 
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
@@ -229,6 +230,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     Cancelled -= FirmwareInstallationAsyncOnCancelled;
                     StateChanged -= FirmwareInstallationAsyncOnStateChanged;
                     FatalErrorOccurred -= FirmwareInstallationAsyncOnFatalErrorOccurred;
+
+                    CleanupResourcesOfLastUpload();
                 }
 
                 return;
