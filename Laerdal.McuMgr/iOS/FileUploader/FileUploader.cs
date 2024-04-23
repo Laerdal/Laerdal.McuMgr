@@ -71,7 +71,7 @@ namespace Laerdal.McuMgr.FileUploader
                 }
 
                 _alreadyDisposed = true;
-                
+
                 base.Dispose(disposing);
             }
             

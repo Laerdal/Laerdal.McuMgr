@@ -57,7 +57,39 @@ namespace Laerdal.McuMgr.FileDownloader
                 _fileDownloaderCallbacksProxy = fileDownloaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileDownloaderCallbacksProxy));
             }
             
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {                   
+                    CleanupInfrastructure();
+                }
+
+                _alreadyDisposed = true;
+
+                base.Dispose(disposing);
+            }
             
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
             #region commands 
 
             public new EFileDownloaderVerdict BeginDownload(string remoteFilePath)
@@ -66,7 +98,6 @@ namespace Laerdal.McuMgr.FileDownloader
             }
             
             #endregion commands
-            
 
 
             #region android callbacks -> csharp event emitters

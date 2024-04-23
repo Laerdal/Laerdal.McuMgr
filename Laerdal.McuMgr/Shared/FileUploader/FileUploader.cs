@@ -31,6 +31,13 @@ namespace Laerdal.McuMgr.FileUploader
             _nativeFileUploaderProxy.FileUploader = this; //vital
         }
         
+        public void Dispose()
+        {
+            _nativeFileUploaderProxy?.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
+        
         public bool TrySetContext(object context) => _nativeFileUploaderProxy?.TrySetContext(context) ?? false;
         public bool TrySetBluetoothDevice(object bluetoothDevice) => _nativeFileUploaderProxy?.TrySetContext(bluetoothDevice) ?? false;
         public bool TryInvalidateCachedTransport() => _nativeFileUploaderProxy?.TryInvalidateCachedTransport() ?? false;
@@ -438,7 +445,5 @@ namespace Laerdal.McuMgr.FileUploader
                     progressPercentage: progressPercentage
                 ));
         }
-
-        public void Dispose() => _nativeFileUploaderProxy?.Dispose();
     }
 }

@@ -29,6 +29,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             _nativeFirmwareInstallerProxy = nativeFirmwareInstallerProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareInstallerProxy));
             _nativeFirmwareInstallerProxy.FirmwareInstaller = this; //vital
         }
+
+        public void Dispose()
+        {
+            _nativeFirmwareInstallerProxy?.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
         
         public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
