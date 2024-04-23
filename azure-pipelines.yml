@@ -12,7 +12,8 @@ trigger:
 
 pool:
   name: 'Azure Pipelines'
-  vmImage: 'macOS-13'
+  vmImage: 'macOS-13' # to future maintainers   if you ever want to switch back to azure be warned that you will need to first make sure that macos14 is available on azure   if macos14
+  #                     to future maintainers   is not available on azure you will run into trouble making the build work for the latest versions of ios sdks (17+) and maccatalyst sdks 
 
 variables:
   - group: shared-variables  # needed for the github access token which is used to create new releases in github
