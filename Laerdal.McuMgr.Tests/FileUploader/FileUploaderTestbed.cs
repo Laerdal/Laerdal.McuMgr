@@ -74,6 +74,14 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();
             public bool TryInvalidateCachedTransport() => throw new NotImplementedException();
+            
+            public void Dispose()
+            {
+            }
+
+            public void CleanupResourcesOfLastUpload()
+            {
+            }
         }
     }
 }

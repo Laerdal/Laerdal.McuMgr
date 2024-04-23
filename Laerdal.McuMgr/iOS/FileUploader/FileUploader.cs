@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FileUploader
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileUploaderProxy : IOSListenerForFileUploader, INativeFileUploaderProxy
         {
-            private readonly IOSFileUploader _nativeFileUploader;
+            private IOSFileUploader _nativeFileUploader;
             private readonly INativeFileUploaderCallbacksProxy _nativeFileUploaderCallbacksProxy;
             
             internal IOSNativeFileUploaderProxy(CBPeripheral bluetoothDevice, INativeFileUploaderCallbacksProxy nativeFileUploaderCallbacksProxy)
@@ -51,15 +51,61 @@ namespace Laerdal.McuMgr.FileUploader
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
             public void Cancel() => _nativeFileUploader?.Cancel();
-            
             public void Disconnect() => _nativeFileUploader?.Disconnect();
+
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {                   
+                    CleanupInfrastructure();
+                    CleanupResourcesOfLastUpload(); // shouldnt be necessary   but just in case
+                }
+
+                _alreadyDisposed = true;
+                
+                base.Dispose(disposing);
+            }
             
+            private void CleanupInfrastructure()
+            {
+                _nativeFileUploader?.Dispose();
+                _nativeFileUploader = null;
+            }
+
+            public void CleanupResourcesOfLastUpload() //00
+            {
+                _nsDataOfFileInCurrentlyActiveUpload?.Dispose();
+                _nsDataOfFileInCurrentlyActiveUpload = null;
+                
+                //00 the method needs to be public so that it can be called manually when someone uses BeginUpload() instead of UploadAsync()!
+            }
+
+            private NSData _nsDataOfFileInCurrentlyActiveUpload;
             public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
             {
-                var nsData = NSData.FromArray(data); //todo   should nsdata be tracked in a private variable and then cleaned up properly?
-                var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(remoteFilePath, nsData));
+                var nsDataOfFileToUpload = NSData.FromArray(data);
 
-                return verdict;
+                var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(
+                    data: nsDataOfFileToUpload,
+                    remoteFilePath: remoteFilePath
+                ));
+                if (verdict != EFileUploaderVerdict.Success)
+                {
+                    nsDataOfFileToUpload.Dispose();
+                    return verdict;
+                }
+                
+                _nsDataOfFileInCurrentlyActiveUpload = nsDataOfFileToUpload;
+                return EFileUploaderVerdict.Success;
             }
             
             public bool TrySetContext(object context)

@@ -12,6 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "LaerdalMcuMgrWrapperAndSampleApp"
+rootProject.name = "LaerdalMcuMgrWrapper"
 include ':app'
 include ':mcumgr-laerdal-wrapper'

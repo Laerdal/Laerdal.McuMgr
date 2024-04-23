@@ -58,6 +58,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             {
                 _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy ?? throw new ArgumentNullException(nameof(firmwareInstallerCallbacksProxy));
             }
+            
+            public void CleanupResourcesOfLastInstallation()
+            {
+                //nothing to do here for android   only ios needs this
+            }
+            
+            #region commands
 
             public EFirmwareInstallationVerdict BeginInstallation(
                 byte[] data,
@@ -83,6 +90,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                 return TranslateFirmwareInstallationVerdict(nativeVerdict);
             }
+            
+            #endregion
+            
+            #region callbacks -> events
 
             public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
             {
@@ -164,6 +175,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     progressPercentage: progressPercentage
                 );
             }
+            
+            #endregion
 
             static private EAndroidFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
             {
