@@ -53,17 +53,16 @@ namespace Laerdal.McuMgr.FileUploader
             public void Cancel() => _nativeFileUploader?.Cancel();
             public void Disconnect() => _nativeFileUploader?.Disconnect();
 
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
 
-            private bool _disposedValue; // protected implementation of dispose pattern
-            private void Dispose(bool disposing)
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
             {
-                if (_disposedValue)
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
                     return;
+                }
 
                 if (disposing)
                 {                   
@@ -73,13 +72,17 @@ namespace Laerdal.McuMgr.FileUploader
                     CleanupResourcesOfLastUpload(); // shouldnt be necessary   but just in case
                 }
 
-                _disposedValue = true;
+                _alreadyDisposed = true;
+                
+                base.Dispose(disposing);
             }
 
-            public void CleanupResourcesOfLastUpload() //this 
+            public void CleanupResourcesOfLastUpload() //00
             {
                 _nsDataOfCurrentlyActiveUpload?.Dispose();
                 _nsDataOfCurrentlyActiveUpload = null;
+                
+                //00 the method needs to be public so that it can be called manually when someone uses BeginUpload() instead of UploadAsync()!
             }
 
             private NSData _nsDataOfCurrentlyActiveUpload;
