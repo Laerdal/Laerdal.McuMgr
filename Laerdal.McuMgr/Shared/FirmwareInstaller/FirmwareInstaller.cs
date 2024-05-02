@@ -334,22 +334,30 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
         private void OnStateChanged(StateChangedEventArgs ea)
         {
-            _stateChanged?.Invoke(this, ea);
-
-            switch (ea)
+            try
             {
-                case { NewState: EFirmwareInstallationState.Idle }:
-                    _fileUploadProgressEventsCount = 0; //its vital to reset the counter here to account for retries
-                    break;
+                switch (ea)
+                {
+                    case { NewState: EFirmwareInstallationState.Idle }:
+                        _fileUploadProgressEventsCount = 0; //its vital to reset the counter here to account for retries
+                        break;
 
-                case { NewState: EFirmwareInstallationState.Testing } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
-                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new(ECachedFirmwareType.CachedButInactive));
-                    break;
+                    case { NewState: EFirmwareInstallationState.Testing } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
+                        OnIdenticalFirmwareCachedOnTargetDeviceDetected(new(ECachedFirmwareType.CachedButInactive));
+                        break;
 
-                case { NewState: EFirmwareInstallationState.Complete } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
-                    OnIdenticalFirmwareCachedOnTargetDeviceDetected(new(ECachedFirmwareType.CachedAndActive));
-                    break;
+                    case { NewState: EFirmwareInstallationState.Complete } when _fileUploadProgressEventsCount <= 1: //works both on ios and android
+                        OnIdenticalFirmwareCachedOnTargetDeviceDetected(new(ECachedFirmwareType.CachedAndActive));
+                        break;
+                }
             }
+            finally
+            {
+                _stateChanged?.Invoke(this, ea); //00 must be dead last
+            }
+
+            //00  if we raise the state-changed event before the switch statement then the calling environment will unwire the event handlers of
+            //    the identical-firmware-cached-on-target-device-detected event before it gets fired and the event will be ignored altogether
         }
 
         private int _fileUploadProgressEventsCount;
