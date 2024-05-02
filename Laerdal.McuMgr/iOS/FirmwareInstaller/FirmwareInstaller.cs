@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         // ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFirmwareInstallerProxy : IOSListenerForFirmwareInstaller, INativeFirmwareInstallerProxy
         {
-            private readonly IOSFirmwareInstaller _nativeFirmwareInstaller;
+            private IOSFirmwareInstaller _nativeFirmwareInstaller;
             private readonly INativeFirmwareInstallerCallbacksProxy _nativeFirmwareInstallerCallbacksProxy;
 
             public string Nickname { get; set; }
@@ -47,7 +47,51 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 _nativeFirmwareInstallerCallbacksProxy = nativeFirmwareInstallerCallbacksProxy; //composition-over-inheritance
             }
 
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
 
+            private bool _alreadyDisposed;
+            private NSData _nsDataForFirmwareOfCurrentlyActiveInstallation;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {
+                    CleanupInfrastructure();
+                    CleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
+                }
+
+                _alreadyDisposed = true;
+                
+                base.Dispose(disposing);
+            }
+
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                _nativeFirmwareInstaller?.Dispose();
+                _nativeFirmwareInstaller = null;
+            }
+
+            public void CleanupResourcesOfLastInstallation() //00
+            {
+                _nsDataForFirmwareOfCurrentlyActiveInstallation?.Dispose();
+                _nsDataForFirmwareOfCurrentlyActiveInstallation = null;
+                
+                //00 the method needs to be public so that it can be called manually when someone uses BeginUpload() instead of UploadAsync()!
+            }
 
             #region commands
 
@@ -67,22 +111,27 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 int? byteAlignment = null
             )
             {
-                //todo   nsdata might have to be tracked in a private variable and then cleaned up properly   we suspect that it could
-                //todo   potentially be getting disposed ahead of time taking down with it the underlying native byte array on the ios side
-                //todo
-                //todo   https://stackoverflow.com/questions/77461311/should-i-keep-the-c-sharp-reference-to-an-nsdata-object-around-until-i-know-for
-                var nsData = NSData.FromArray(data);
-
-                var verdict = _nativeFirmwareInstaller.BeginInstallation(
+                var nsDataOfFirmware = NSData.FromArray(data);
+                
+                var verdict = TranslateFirmwareInstallationVerdict(_nativeFirmwareInstaller.BeginInstallation(
                     mode: TranslateFirmwareInstallationMode(mode),
-                    imageData: nsData,
+                    imageData: nsDataOfFirmware,
                     eraseSettings: eraseSettings ?? false,
                     pipelineDepth: pipelineDepth ?? -1,
                     byteAlignment: byteAlignment ?? -1,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
-                );
+                ));
 
-                return TranslateFirmwareInstallationVerdict(verdict);
+                if (verdict != EFirmwareInstallationVerdict.Success)
+                {
+                    nsDataOfFirmware.Dispose();
+                }
+                else
+                {
+                    _nsDataForFirmwareOfCurrentlyActiveInstallation = nsDataOfFirmware;
+                }
+
+                return verdict;
             }
 
             #endregion commands

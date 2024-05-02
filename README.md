@@ -90,6 +90,7 @@ to the device.**
 
 - **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
 
+- **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
 
 ## 🚀 Using the Nugets in your Projects
 

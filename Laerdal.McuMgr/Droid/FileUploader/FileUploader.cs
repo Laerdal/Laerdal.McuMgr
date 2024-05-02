@@ -58,7 +58,45 @@ namespace Laerdal.McuMgr.FileUploader
             {
                 _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
+            
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
 
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {                   
+                    CleanupInfrastructure();
+                }
+
+                _alreadyDisposed = true;
+
+                base.Dispose(disposing);
+            }
+            
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+            
+            public void CleanupResourcesOfLastUpload()
+            {
+                //nothing to do in android
+            }
+            
             #region commands
 
             public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)

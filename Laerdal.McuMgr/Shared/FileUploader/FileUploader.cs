@@ -31,6 +31,13 @@ namespace Laerdal.McuMgr.FileUploader
             _nativeFileUploaderProxy.FileUploader = this; //vital
         }
         
+        public void Dispose()
+        {
+            _nativeFileUploaderProxy?.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
+        
         public bool TrySetContext(object context) => _nativeFileUploaderProxy?.TrySetContext(context) ?? false;
         public bool TrySetBluetoothDevice(object bluetoothDevice) => _nativeFileUploaderProxy?.TrySetContext(bluetoothDevice) ?? false;
         public bool TryInvalidateCachedTransport() => _nativeFileUploaderProxy?.TryInvalidateCachedTransport() ?? false;
@@ -49,6 +56,7 @@ namespace Laerdal.McuMgr.FileUploader
         
         public void Cancel() => _nativeFileUploaderProxy?.Cancel();
         public void Disconnect() => _nativeFileUploaderProxy?.Disconnect();
+        public void CleanupResourcesOfLastUpload() => _nativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
         
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
@@ -265,6 +273,8 @@ namespace Laerdal.McuMgr.FileUploader
                     Cancelled -= UploadAsyncOnCancelled;
                     StateChanged -= UploadAsyncOnStateChanged;
                     FatalErrorOccurred -= UploadAsyncOnFatalErrorOccurred;
+                    
+                    CleanupResourcesOfLastUpload(); //vital
                 }
 
                 void UploadAsyncOnCancelled(object sender, CancelledEventArgs ea)

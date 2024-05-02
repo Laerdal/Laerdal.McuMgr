@@ -58,6 +58,46 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             {
                 _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy ?? throw new ArgumentNullException(nameof(firmwareInstallerCallbacksProxy));
             }
+            
+            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {                   
+                    CleanupInfrastructure();
+                }
+
+                _alreadyDisposed = true;
+
+                base.Dispose(disposing);
+            }
+            
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+            
+            public void CleanupResourcesOfLastInstallation()
+            {
+                //nothing to do here for android   only ios needs this
+            }
+            
+            #region commands
 
             public EFirmwareInstallationVerdict BeginInstallation(
                 byte[] data,
@@ -83,6 +123,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                 return TranslateFirmwareInstallationVerdict(nativeVerdict);
             }
+            
+            #endregion
+            
+            #region callbacks -> events
 
             public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
             {
@@ -164,6 +208,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     progressPercentage: progressPercentage
                 );
             }
+            
+            #endregion
 
             static private EAndroidFirmwareInstallationMode TranslateFirmwareInstallationMode(EFirmwareInstallationMode mode) => mode switch
             {

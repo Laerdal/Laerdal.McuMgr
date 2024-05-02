@@ -66,6 +66,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event
+            
+            public void Dispose()
+            {
+            }
         }
     }
 }
