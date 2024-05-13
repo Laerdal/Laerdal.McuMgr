@@ -2,7 +2,7 @@
 
 <!-- to test stuff out on your localdev try these                                                                                                                           -->
 <!--                                                                                                                                                                        -->
-<!--   - to simply calculate the proper version and build use:                                                                                                              -->
+<!--   - to build with an explicit version specified in the cli:                                                                                                            -->
 <!--                                                                                                                                                                        -->
 <!--        # on macos                                                                                                                                                      -->
 <!--        dotnet    msbuild                                    \                                                                                                          -->
