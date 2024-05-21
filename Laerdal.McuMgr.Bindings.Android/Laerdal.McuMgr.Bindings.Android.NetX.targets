@@ -5,17 +5,9 @@
     <PropertyGroup>
         <LangVersion>10.0</LangVersion>
 
-        <!-- net6 supports android12 and it corresponds to android-api levels 31.0 and 32.0 -->
-        <!-- <TargetPlatformVersion>21.0</TargetPlatformVersion>                                                                                   -->
-        <!-- <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net6.0))' == 'true' ">21</SupportedOSPlatformVersion> -->
-
-        <!-- net7 supports android13 and it corresponds to android-api level 33.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net7.0))' == 'true' ">33</SupportedOSPlatformVersion>
-
         <!-- net8 supports android13 and it corresponds to android-api level 34.0 -->
-        <!-- <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34.0</TargetPlatformVersion>    -->
-        <!-- <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34</SupportedOSPlatformVersion> -->
+        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34</SupportedOSPlatformVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -44,7 +36,8 @@
         <TransformFile Include="Transforms/*.xml"/>
 
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-        
+        <!--  <AndroidLibrary Include="$(DependenciesAarLibrary)" Bind="false" />   -->
+
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
         <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
@@ -68,7 +61,7 @@
 
         <Error Text="No transform files found on disk! This looks fishy ... erroring out ..."
                Condition=" @(TransformFile->Count()) == 0 "/>
-        
+
         <ItemGroup>
             <MissingTransformFiles Include="@(TransformFile)" Condition="    ! Exists(%(FullPath)) " />
             <MissingAndroidLibraries Include="@(AndroidLibrary)" Condition=" ! Exists(%(FullPath)) " />
