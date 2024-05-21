@@ -59,18 +59,16 @@
         <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                                     " />
         <Message Importance="high" Text="****                                                                                    " />
 
-        <Error Text="No transform files found on disk! This looks fishy ... erroring out ..."
-               Condition=" @(TransformFile->Count()) == 0 "/>
+        <Error Condition=" @(TransformFile->Count()) == 0     " Text="No transform files found on disk! This looks fishy ... erroring out ..."/>
+        <Error Condition=" !Exists($(CoreAarLibrary))         " Text="The core .aar library wasn't found on path '$(CoreAarLibrary)'! This looks fishy ... erroring out ..."/>
+        <!-- <Error Condition=" !Exists($(DependenciesAarLibrary)) " Text="The dependencies .aar library wasn't found on path '$(DependenciesAarLibrary)'! This looks fishy ... erroring out ..."/> -->
 
         <ItemGroup>
             <MissingTransformFiles Include="@(TransformFile)" Condition="    ! Exists(%(FullPath)) " />
             <MissingAndroidLibraries Include="@(AndroidLibrary)" Condition=" ! Exists(%(FullPath)) " />
         </ItemGroup>
 
-        <Error Text="@(MissingTransformFiles->Count()) file(s) specified by the property 'TransformFile' were not found on disk: $(MissingTransformFiles)"
-               Condition=" @(MissingTransformFiles->Count()) != 0 "/>
-
-        <Error Text="@(MissingAndroidLibraries->Count()) file(s) specified by the property 'AndroidLibrary' were not found on disk: $(MissingAndroidLibraries)"
-               Condition=" @(MissingAndroidLibraries->Count()) != 0 "/>
+        <Error Condition=" @(MissingTransformFiles->Count())   != 0 " Text="@(MissingTransformFiles->Count()) file(s) specified by the property 'TransformFile' were not found on disk: $(MissingTransformFiles)" />
+        <Error Condition=" @(MissingAndroidLibraries->Count()) != 0 " Text="@(MissingAndroidLibraries->Count()) file(s) specified by the property 'AndroidLibrary' were not found on disk: $(MissingAndroidLibraries)"/>
     </Target>
 </Project>
