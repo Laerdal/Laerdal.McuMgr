@@ -82,7 +82,7 @@
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
     </Target>
 
-    <!-- android    download the jar and aar dependencies from maven                                                                                -->
+    <!-- android    download the jar and aar dependencies from maven -->
     <Target Name="TackleJarDependencies" BeforeTargets="PrepareForBuild" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
 
         <!-- 1. jars go here - notice the :jar postfix    to pick the right versions have a look at the folder Laerdal.McuMgr.Bindings.Android.Native/lib which contains all .jar files listed below -->
