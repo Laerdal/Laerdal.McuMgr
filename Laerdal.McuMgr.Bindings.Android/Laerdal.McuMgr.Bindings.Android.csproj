@@ -80,7 +80,6 @@
         <AndroidLibsDependenciesFolder>$(AndroidLibsFolder)/Dependencies</AndroidLibsDependenciesFolder>
 
         <CoreAarLibrary>$(AndroidLibsFolder)/mcumgr-laerdal-wrapper.aar</CoreAarLibrary>
-        <!-- <DependenciesAarLibrary>mcumgr-laerdal-wrapper-dependencies.aar</DependenciesAarLibrary> -->
     </PropertyGroup>
 
     <ItemGroup>
@@ -101,8 +100,9 @@
         <Message Importance="high" Text="BuildingProject:  '$(BuildingProject)'  "/>
         <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
-        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
+        <Message Importance="high" Text="IsNet8:             '$(IsNet8)'             "/>
+        <Message Importance="high" Text="IsNetX:             '$(IsNetX)'             "/>
+        <Message Importance="high" Text="AndroidApplication: '$(AndroidApplication)' "/>
 
         <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
     </Target>

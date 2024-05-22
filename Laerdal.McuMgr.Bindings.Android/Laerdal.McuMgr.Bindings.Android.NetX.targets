@@ -17,6 +17,7 @@
         <TransformFile Remove="**"/>
         <AndroidLibrary Remove="**"/>
         <AndroidAarLibrary Remove="**"/>
+        <AndroidJavaLibrary Remove="**"/>
 
         <!-- and now we set everything properly ourselves ala net6+   salient points:                                  -->
         <!--                                                                                                           -->
@@ -36,16 +37,17 @@
         <TransformFile Include="Transforms/*.xml"/>
 
         <AndroidLibrary Include="$(CoreAarLibrary)" Bind="true" />
-        <!--  <AndroidLibrary Include="$(DependenciesAarLibrary)" Bind="false" />   -->
-
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.3.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.9.2.jar" Bind="false" />
-        <AndroidLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.9.2.jar" Bind="false" />
+        
+        <!-- note that we use <AndroidJavaLibrary> instead of <AndroidLibrary Bind=false> because net8 for some weird reason generates  -->
+        <!-- poisoned nugets if we use the later approach   this wasnt an issue in net7    https://github.com/dotnet/maui/issues/21102  -->
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/slf4j-api.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-core.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.3.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-1.9.2.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-1.9.2.jar" />
     </ItemGroup>
 
     <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">
@@ -58,17 +60,23 @@
         <Message Importance="high" Text="****                                                                                    " />
         <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                                     " />
         <Message Importance="high" Text="****                                                                                    " />
+        
+        <Message Importance="High" Text="**** Android Java-libraries to embed for NetX-Android (@(AndroidJavaLibrary->Count()) in total): " />
+        <Message Importance="high" Text="****                                                                                             " />
+        <Message Importance="high" Text="****   '%(AndroidJavaLibrary.Identity)'                                                          " />
+        <Message Importance="high" Text="****                                                                                             " />
 
         <Error Condition=" @(TransformFile->Count()) == 0     " Text="No transform files found on disk! This looks fishy ... erroring out ..."/>
         <Error Condition=" !Exists($(CoreAarLibrary))         " Text="The core .aar library wasn't found on path '$(CoreAarLibrary)'! This looks fishy ... erroring out ..."/>
-        <!-- <Error Condition=" !Exists($(DependenciesAarLibrary)) " Text="The dependencies .aar library wasn't found on path '$(DependenciesAarLibrary)'! This looks fishy ... erroring out ..."/> -->
-
+        
         <ItemGroup>
-            <MissingTransformFiles Include="@(TransformFile)" Condition="    ! Exists(%(FullPath)) " />
-            <MissingAndroidLibraries Include="@(AndroidLibrary)" Condition=" ! Exists(%(FullPath)) " />
+            <MissingTransformFiles Include="@(TransformFile)" Condition="            ! Exists(%(FullPath)) " />
+            <MissingAndroidLibraries Include="@(AndroidLibrary)" Condition="         ! Exists(%(FullPath)) " />
+            <MissingAndroidJavaLibraries Include="@(AndroidJavaLibrary)" Condition=" ! Exists(%(FullPath)) " />
         </ItemGroup>
 
-        <Error Condition=" @(MissingTransformFiles->Count())   != 0 " Text="@(MissingTransformFiles->Count()) file(s) specified by the property 'TransformFile' were not found on disk: $(MissingTransformFiles)" />
-        <Error Condition=" @(MissingAndroidLibraries->Count()) != 0 " Text="@(MissingAndroidLibraries->Count()) file(s) specified by the property 'AndroidLibrary' were not found on disk: $(MissingAndroidLibraries)"/>
+        <Error Condition=" @(MissingTransformFiles->Count())       != 0 " Text="@(MissingTransformFiles->Count()) file(s) specified by the property 'TransformFile' were not found on disk: $(MissingTransformFiles)" />
+        <Error Condition=" @(MissingAndroidLibraries->Count())     != 0 " Text="@(MissingAndroidLibraries->Count()) file(s) specified by the property 'AndroidLibrary' were not found on disk: $(MissingAndroidLibraries)"/>
+        <Error Condition=" @(MissingAndroidJavaLibraries->Count()) != 0 " Text="@(MissingAndroidJavaLibraries->Count()) file(s) specified by the property 'AndroidJavaLibrary' were not found on disk: $(MissingAndroidJavaLibraries)"/>
     </Target>
 </Project>
