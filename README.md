@@ -813,6 +813,11 @@ the aspects being affected.
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
 
+## Resources
+
+- [Nordic nRF Connect Device Manager](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager)
+- [Nordic Infocenter](https://infocenter.nordicsemi.com/index.jsp?topic=%2Fstruct_welcome%2Fstruct%2Fwelcome.html)
+
 ## Credits & Acknowledgements
 
 Special thanks goes to:
