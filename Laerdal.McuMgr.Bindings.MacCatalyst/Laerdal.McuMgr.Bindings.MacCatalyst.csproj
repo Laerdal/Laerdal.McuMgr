@@ -24,21 +24,26 @@
 
         <TargetPlatformVersion>13.1</TargetPlatformVersion>
 
-        <DebugType>full</DebugType>
-        <Optimized>false</Optimized>
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
         <LangVersion>10.0</LangVersion>
-        <DebugSymbols>true</DebugSymbols>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-
-        <!-- see : https://github.com/xamarin/xamarin-macios/pull/12694 -->
-        <NoBindingEmbedding>false</NoBindingEmbedding>
 
         <NoWarn>$(NoWarn);CS0114;NETSDK1202</NoWarn>
 
         <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DebugType>full</DebugType>
+        <Optimized>false</Optimized>
+        <DebugSymbols>true</DebugSymbols>
+        <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <NoBindingEmbedding>true</NoBindingEmbedding>
+
+        <!-- 1. under net8 we need Optimized=false to be set otherwise release builds cause the resulting apps to crash right upon getting launched in the iphone! -->
     </PropertyGroup>
 
     <PropertyGroup>

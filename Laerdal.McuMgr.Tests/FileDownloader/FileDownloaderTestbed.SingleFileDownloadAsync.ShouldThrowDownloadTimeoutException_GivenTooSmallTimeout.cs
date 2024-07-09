@@ -58,10 +58,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
+
                     StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Downloading);
 
                     await Task.Delay(1_000);
-                    StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Complete);
+
+                    StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Complete); // order
+                    DownloadCompletedAdvertisement(remoteFilePath, new byte[]{}); //                                                                             order
                 });
 
                 return verdict;

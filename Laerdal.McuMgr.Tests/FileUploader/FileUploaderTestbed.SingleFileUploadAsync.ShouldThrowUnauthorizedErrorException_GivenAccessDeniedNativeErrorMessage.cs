@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
@@ -49,9 +48,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileUploaderGroupReturnCode.Unset);
-
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                               order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileUploaderGroupReturnCode.Unset); // order
                 });
 
                 return verdict;

@@ -2,7 +2,6 @@
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {

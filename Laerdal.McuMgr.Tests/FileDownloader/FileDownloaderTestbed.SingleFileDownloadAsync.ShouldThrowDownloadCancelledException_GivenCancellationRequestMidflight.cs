@@ -115,9 +115,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData);
-
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //   order
+                    DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

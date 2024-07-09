@@ -2,7 +2,6 @@
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
-using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {

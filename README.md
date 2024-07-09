@@ -47,16 +47,13 @@ iOS and Android respectively to interact with [nRF5x series of BLE chips](https:
 
 From the respective 'Readme' files of these projects:
 
-<< nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview),
-a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html),
-[Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.
+<< nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview), a management subsystem
+supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.
 
-**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, NordicDFU,
-serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
+**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
 
-McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests
-from compatible devices. The SMP Transport definition for Bluetooth Low Energy, which this library implements,
-[can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
+McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests from compatible devices.
+The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
 
 The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport. >>
 
@@ -815,6 +812,11 @@ the aspects being affected.
 
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
+
+## Resources
+
+- [Nordic nRF Connect Device Manager](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager)
+- [Nordic Infocenter](https://infocenter.nordicsemi.com/index.jsp?topic=%2Fstruct_welcome%2Fstruct%2Fwelcome.html)
 
 ## Credits & Acknowledgements
 

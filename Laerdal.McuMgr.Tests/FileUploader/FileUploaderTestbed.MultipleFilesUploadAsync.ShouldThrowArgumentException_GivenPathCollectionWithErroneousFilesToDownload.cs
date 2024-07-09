@@ -59,8 +59,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
                     
                     await Task.Delay(20);
-                    FileUploadedAdvertisement(remoteFilePath);
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                    FileUploadedAdvertisement(remoteFilePath);
                 });
 
                 return verdict;

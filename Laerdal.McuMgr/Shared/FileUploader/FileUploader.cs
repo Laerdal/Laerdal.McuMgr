@@ -213,9 +213,10 @@ namespace Laerdal.McuMgr.FileUploader
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
                 {
-                    Cancelled += UploadAsyncOnCancelled;
-                    StateChanged += UploadAsyncOnStateChanged;
-                    FatalErrorOccurred += UploadAsyncOnFatalErrorOccurred;
+                    Cancelled += FileUploader_Cancelled_;
+                    FileUploaded += FileUploader_FileUploaded_;
+                    StateChanged += FileUploader_StateChanged_;
+                    FatalErrorOccurred += FileUploader_FatalErrorOccurred_;
 
                     var verdict = BeginUpload(remoteFilePath, dataArray); //00 dont use task.run here for now
                     if (verdict != EFileUploaderVerdict.Success)
@@ -270,25 +271,31 @@ namespace Laerdal.McuMgr.FileUploader
                 }
                 finally
                 {
-                    Cancelled -= UploadAsyncOnCancelled;
-                    StateChanged -= UploadAsyncOnStateChanged;
-                    FatalErrorOccurred -= UploadAsyncOnFatalErrorOccurred;
+                    Cancelled -= FileUploader_Cancelled_;
+                    FileUploaded -= FileUploader_FileUploaded_;
+                    StateChanged -= FileUploader_StateChanged_;
+                    FatalErrorOccurred -= FileUploader_FatalErrorOccurred_;
                     
                     CleanupResourcesOfLastUpload(); //vital
                 }
 
-                void UploadAsyncOnCancelled(object sender, CancelledEventArgs ea)
+                void FileUploader_Cancelled_(object _, CancelledEventArgs ea_)
                 {
                     taskCompletionSource.TrySetException(new UploadCancelledException());
                 }
+                
+                void FileUploader_FileUploaded_(object _, FileUploadedEventArgs ea_)
+                {
+                    taskCompletionSource.TrySetResult(true);
+                }
 
                 // ReSharper disable AccessToModifiedClosure
-                void UploadAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+                void FileUploader_StateChanged_(object _, StateChangedEventArgs ea_)
                 {
-                    switch (ea.NewState)
+                    switch (ea_.NewState)
                     {
                         case EFileUploaderState.Complete:
-                            taskCompletionSource.TrySetResult(true);
+                            //taskCompletionSource.TrySetResult(true); //dont   we want to wait for the FileUploaded event
                             return;
 
                         case EFileUploaderState.Cancelling: //20
@@ -320,7 +327,7 @@ namespace Laerdal.McuMgr.FileUploader
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
-                void UploadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
+                void FileUploader_FatalErrorOccurred_(object sender, FatalErrorOccurredEventArgs ea)
                 {
                     var isAboutUnauthorized = ea.ErrorCode == EMcuMgrErrorCode.AccessDenied;
                     if (isAboutUnauthorized)

@@ -8,12 +8,20 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
-declare SDK_VERSION="" # xcodebuild -showsdks
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
+declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
+
+if [ "$XCODEBUILD_TARGET_SDK" == "iphoneos" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # ios
+  XCODEBUILD_TARGET_SDK_VERSION="17.2"
+
+elif [ "$XCODEBUILD_TARGET_SDK" == "macosx" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # maccatalyst
+  XCODEBUILD_TARGET_SDK_VERSION="14.2"
+fi
+
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
 declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
-declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
+declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$XCODEBUILD_TARGET_SDK_VERSION"
 
 declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
 
@@ -38,6 +46,8 @@ function print_macos_sdks() {
   echo "** xcode version : '$( "xcodebuild"   -version )'"
   echo "** xcode sdks    :" 
   xcodebuild -showsdks
+  echo "** xcode sdks visible to sharpie   :" 
+  sharpie   xcode  -sdks
 
   echo
   echo "** SWIFT_BUILD_PATH            : '$SWIFT_BUILD_PATH'            "
@@ -51,9 +61,9 @@ function print_macos_sdks() {
   echo "** OUTPUT_FOLDER_NAME                : '$OUTPUT_FOLDER_NAME'                "
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '$OUTPUT_SHARPIE_HEADER_FILES_PATH'  "
   echo
-  echo "** SDK_VERSION                                : '${SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** SUPPORTS_MACCATALYST                       : '$SUPPORTS_MACCATALYST'                       "
   echo "** XCODEBUILD_TARGET_SDK                      : '$XCODEBUILD_TARGET_SDK'                      "
+  echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'  "
   echo
 }
@@ -168,6 +178,7 @@ function create_fat_binaries() {
   fi
 
   echo "**** (FatBinaries 5/8) Generating binding api definition and structs"
+  set -x
   sharpie \
     bind \
     -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY" \
@@ -177,6 +188,7 @@ function create_fat_binaries() {
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h" \
     -clang -arch arm64 # vital   needed for mac-catalyst
   local exitCode=$?
+  set +x
 
   if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to generate binding api definitions and structs"

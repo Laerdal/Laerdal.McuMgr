@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 { "  /Some/File/Path.bin  ", new byte[] { 1 } }, //intentionally included multiple times to test that we handle case sensitivity correctly
                 { "\t/some/file/that/succeeds/after/a/couple/of/attempts.bin       ", new byte[] { 0 } },
                 { "  /some/file/that/succeeds/after/a/couple/of/attempts.bin       ", new byte[] { 1 } }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
-                
+
                 { "  /some/file/to/a/folder/that/doesnt/exist.bin                  ", new byte[] { 0 } },
                 { "\n some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", new byte[] { 0 } },
                 { "\r/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", new byte[] { 1 } }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
@@ -54,7 +54,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 "/some/file/to/a/folder/that/doesnt/exist.bin",
                 "/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin"
             });
-            
+
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileUploader.FileUploaded))
                 .Should()
@@ -63,7 +63,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileUploader.FatalErrorOccurred))
                 .Should().Be(8);
-            
+
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
@@ -86,27 +86,30 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    
+
                     await Task.Delay(20);
-                    
+
                     var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
                     if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "UNKNOWN (1)", EMcuMgrErrorCode.Unknown, EFileUploaderGroupReturnCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Busy, EFileUploaderGroupReturnCode.Unset);
-                    }  
+                    }
                     else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin".ToUpperInvariant()))
                     {
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah", EMcuMgrErrorCode.NotSupported, EFileUploaderGroupReturnCode.Unset);
                     }
                     else
                     {
-                        FileUploadedAdvertisement(remoteFilePath);
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); //order
+                        FileUploadedAdvertisement(remoteFilePath); //order
                     }
                 });
 
