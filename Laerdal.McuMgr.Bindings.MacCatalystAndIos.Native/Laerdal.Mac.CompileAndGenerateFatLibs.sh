@@ -38,6 +38,8 @@ function print_macos_sdks() {
   echo "** xcode version : '$( "xcodebuild"   -version )'"
   echo "** xcode sdks    :" 
   xcodebuild -showsdks
+  echo "** xcode sdks visible to sharpie   :" 
+  sharpie   xcode  -sdks
 
   echo
   echo "** SWIFT_BUILD_PATH            : '$SWIFT_BUILD_PATH'            "
@@ -168,6 +170,7 @@ function create_fat_binaries() {
   fi
 
   echo "**** (FatBinaries 5/8) Generating binding api definition and structs"
+  set -x
   sharpie \
     bind \
     -sdk "$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY" \
@@ -177,6 +180,7 @@ function create_fat_binaries() {
     "$SWIFT_OUTPUT_PATH/$SWIFT_PROJECT_NAME.framework/Headers/$SWIFT_PROJECT_NAME-Swift.h" \
     -clang -arch arm64 # vital   needed for mac-catalyst
   local exitCode=$?
+  set +x
 
   if [ $exitCode -ne 0 ]; then
     echo "** [FAILED] Failed to generate binding api definitions and structs"
