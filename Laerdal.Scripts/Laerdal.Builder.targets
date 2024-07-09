@@ -187,7 +187,6 @@
         <PropertyGroup>
             <!-- in ci we have to specify the path to gradle explicitly so as to ensure we are using gradle 7.6 for smooth compilation of the android java-libs  -->
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)GradlePath=$(Laerdal_Gradle_Path);</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings/;</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Configuration=$(Configuration);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)PackageOutputPath=$(PackageOutputPath);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);</_Laerdal_Build_Parameters>
@@ -206,20 +205,14 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Clean"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="Build"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
         
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
-
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
-
-        <PropertyGroup>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Laerdal_McuMgr_Bindings_Package_Version=$(Laerdal_Version_Assembly);</_Laerdal_Build_Parameters>
-        </PropertyGroup>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" />
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild" />
     </Target>
 
     <!-- TESTS -->
