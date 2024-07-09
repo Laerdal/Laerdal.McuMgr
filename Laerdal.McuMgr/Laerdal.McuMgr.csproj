@@ -14,7 +14,7 @@
         <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                          ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(ShouldSkipMacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
 
         <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
         <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true' ">true</IsNet8IOS>
@@ -105,7 +105,7 @@
         <Message Importance="High" Text="TargetFramework:       '$(TargetFramework)'       "/>
         <Message Importance="High" Text="DefineConstants:       '$(DefineConstants)'       "/>
         <Message Importance="high" Text="MSBuildNodeCount:      '$(MSBuildNodeCount)'      "/>
-        <Message Importance="high" Text="ShouldSkipMacCatalyst: '$(ShouldSkipMacCatalyst)' "/>
+        <Message Importance="high" Text="Should_Skip_MacCatalyst: '$(Should_Skip_MacCatalyst)' "/>
 
         <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
@@ -157,7 +157,7 @@
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1039.0"/>
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(ShouldSkipMacCatalyst)' != 'true' ">
+    <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1039.0"/>
     </ItemGroup>
 

@@ -37,7 +37,7 @@
         
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `TestResults`))</Laerdal_Test_Results_Folderpath>
 
-        <ShouldSkipMacCatalyst Condition=" '$(ShouldSkipMacCatalyst)' == '' ">false</ShouldSkipMacCatalyst>
+        <Should_Skip_MacCatalyst Condition=" '$(Should_Skip_MacCatalyst)' == '' ">false</Should_Skip_MacCatalyst>
         
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
@@ -190,14 +190,14 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings/;</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Configuration=$(Configuration);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)PackageOutputPath=$(PackageOutputPath);</_Laerdal_Build_Parameters>
-            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)ShouldSkipMacCatalyst=$(ShouldSkipMacCatalyst);</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);</_Laerdal_Build_Parameters>
             <!--<_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False;</_Laerdal_Build_Parameters>-->
         </PropertyGroup>
 
         <!-- its absolute vital to call these targets first explicitly and separately from the main build otherwise the   -->
         <!-- resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols        -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(ShouldSkipMacCatalyst)' != 'true' "/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
@@ -211,7 +211,7 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild"/>
 
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" Condition=" '$(ShouldSkipMacCatalyst)' != 'true' "/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <PropertyGroup>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;</_Laerdal_Build_Parameters>
@@ -229,7 +229,7 @@
 
         <MSBuild Targets="Restore"
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_Tests)"
-                 Properties="Configuration=$(Configuration);ShouldSkipMacCatalyst=$(ShouldSkipMacCatalyst);"/>
+                 Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);"/>
 
         <PropertyGroup>
             <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>

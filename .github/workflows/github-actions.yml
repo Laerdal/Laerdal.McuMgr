@@ -63,7 +63,7 @@ jobs:
              msbuild                                                                                \
              "Laerdal.Builder.targets"                                                              \
              -m:1                                                                                   \
-             -p:ShouldSkipMacCatalyst="false"                                                       \
+             -p:Should_Skip_MacCatalyst="false"                                                       \
                                                                                                     \
                            -p:PackageOutputPath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"    \
                          -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"             \
