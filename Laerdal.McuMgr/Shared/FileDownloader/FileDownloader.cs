@@ -193,10 +193,10 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 try
                 {
-                    Cancelled += DownloadAsyncOnCancelled;
-                    StateChanged += DownloadAsyncOnStateChanged;
-                    DownloadCompleted += DownloadAsyncOnDownloadCompleted;
-                    FatalErrorOccurred += DownloadAsyncOnFatalErrorOccurred;
+                    Cancelled += FileDownloader_Cancelled_;
+                    StateChanged += FileDownloader_StateChanged_;
+                    DownloadCompleted += FileDownloader_DownloadCompleted_;
+                    FatalErrorOccurred += FileDownloader_FatalErrorOccurred_;
 
                     var verdict = BeginDownload(remoteFilePath); //00 dont use task.run here for now
                     if (verdict != EFileDownloaderVerdict.Success)
@@ -253,20 +253,20 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 finally
                 {
-                    Cancelled -= DownloadAsyncOnCancelled;
-                    StateChanged -= DownloadAsyncOnStateChanged;
-                    DownloadCompleted -= DownloadAsyncOnDownloadCompleted;
-                    FatalErrorOccurred -= DownloadAsyncOnFatalErrorOccurred;
+                    Cancelled -= FileDownloader_Cancelled_;
+                    StateChanged -= FileDownloader_StateChanged_;
+                    DownloadCompleted -= FileDownloader_DownloadCompleted_;
+                    FatalErrorOccurred -= FileDownloader_FatalErrorOccurred_;
                 }
 
-                void DownloadAsyncOnCancelled(object sender, CancelledEventArgs ea)
+                void FileDownloader_Cancelled_(object sender_, CancelledEventArgs ea_)
                 {
                     taskCompletionSource.TrySetException(new DownloadCancelledException());
                 }
 
-                void DownloadAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+                void FileDownloader_StateChanged_(object sender_, StateChangedEventArgs ea_)
                 {
-                    if (ea.NewState != EFileDownloaderState.Cancelling || isCancellationRequested)
+                    if (ea_.NewState != EFileDownloaderState.Cancelling || isCancellationRequested)
                         return;
 
                     isCancellationRequested = true;
@@ -294,24 +294,24 @@ namespace Laerdal.McuMgr.FileDownloader
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
-                void DownloadAsyncOnDownloadCompleted(object sender, DownloadCompletedEventArgs ea)
+                void FileDownloader_DownloadCompleted_(object sender_, DownloadCompletedEventArgs ea_)
                 {
-                    taskCompletionSource.TrySetResult(ea.Data);
+                    taskCompletionSource.TrySetResult(ea_.Data);
                 }
 
-                void DownloadAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
+                void FileDownloader_FatalErrorOccurred_(object sender_, FatalErrorOccurredEventArgs ea_)
                 {
-                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    var isAboutUnauthorized = ea_.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
                     if (isAboutUnauthorized)
                     {
                         taskCompletionSource.TrySetException(new UnauthorizedException(
                             resource: remoteFilePath,
-                            nativeErrorMessage: ea.ErrorMessage
+                            nativeErrorMessage: ea_.ErrorMessage
                         ));
                         return;
                     }
                     
-                    var isAboutRemoteFileNotFound = ea.ErrorMessage
+                    var isAboutRemoteFileNotFound = ea_.ErrorMessage
                         ?.ToUpperInvariant()
                         .Replace("NO_ENTRY (5)", "NO ENTRY (5)") //normalize the error for android so that it will be the same as in ios
                         .Contains("NO ENTRY (5)") ?? false;
@@ -321,7 +321,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         return;
                     }
 
-                    taskCompletionSource.TrySetException(new DownloadErroredOutException(ea.ErrorMessage)); //generic
+                    taskCompletionSource.TrySetException(new DownloadErroredOutException(ea_.ErrorMessage)); //generic
                 }
             }
 
