@@ -37,6 +37,10 @@
         
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `TestResults`))</Laerdal_Test_Results_Folderpath>
 
+        <!-- https://docs.gitlab.com/ee/ci/variables/predefined_variables.html                                                                             -->
+        <!-- https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables                                             -->
+        <!-- https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml&WT.mc_id=DT-MVP-5003978#system-variables -->
+        <Is_CI_Build Condition=" '$(Is_CI_Build)' == ''  and  ( '$(TF_BUILD)' == 'true'  or  '$(GITHUB_ACTIONS)' == 'true'  or  '$(GITLAB_CI)' == 'true' ) ">true</Is_CI_Build>
         <Should_Skip_MacCatalyst Condition=" '$(Should_Skip_MacCatalyst)' == '' ">false</Should_Skip_MacCatalyst>
         
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
@@ -205,14 +209,14 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Clean"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
         
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild" />
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild" />
     </Target>
 
     <!-- TESTS -->
