@@ -112,9 +112,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    FileUploadedAdvertisement(remoteFilePath);
-
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                    FileUploadedAdvertisement(remoteFilePath);
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

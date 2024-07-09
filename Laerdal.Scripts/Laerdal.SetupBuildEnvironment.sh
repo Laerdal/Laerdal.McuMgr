@@ -134,13 +134,32 @@ echo "** XCode Installations:"
 
 ls  -ld  /Applications/Xcode* || exit 90
 
-sudo   xcode-select   -s   /Applications/Xcode_15.2.app/Contents/Developer  # todo  experiment with /Applications/Xcode_15.2.app and see if it works
+sudo   xcode-select   -s   /Applications/Xcode_15.2.app/Contents/Developer
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
-  exit 95
+  exit 90
 fi
 echo
+
+echo
+echo "** XCode SDKs:"
+xcodebuild -showsdks
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to list XCode SDKs."
+  exit 93
+fi
+
+echo
+echo "** XCode SDKs from Sharpie's point of view:"
+sharpie xcode -sdks
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to list XCode SDKs from Sharpie's point of view."
+  exit 95
+fi
+
 
 echo "** Java Version:"
 java               -version

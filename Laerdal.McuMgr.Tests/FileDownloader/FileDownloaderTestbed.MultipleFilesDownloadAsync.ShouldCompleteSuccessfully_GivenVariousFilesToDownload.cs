@@ -96,23 +96,26 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "foobar");
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "NO ENTRY (5)");
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong");
                     }
                     else
                     {
                         _expectedResults.TryGetValue(remoteFilePath, out var expectedFileContent);
                     
-                        DownloadCompletedAdvertisement(remoteFilePath, expectedFileContent);
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
+                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //  order
+                        DownloadCompletedAdvertisement(remoteFilePath, expectedFileContent); //                                         order
                     }
                 });
 
