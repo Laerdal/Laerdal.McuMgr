@@ -98,14 +98,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(20);
                     if (_tryCount < _maxNumberOfTriesForSuccess)
                     {
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Corrupt, EFileUploaderGroupReturnCode.Unset);
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                     order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Corrupt, EFileUploaderGroupReturnCode.Unset); // order
                         return;
                     }
                     
-                    FileUploadedAdvertisement(remoteFilePath);
-
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
+                    FileUploadedAdvertisement(remoteFilePath); //                                                            order
                 });
 
                 return verdict;

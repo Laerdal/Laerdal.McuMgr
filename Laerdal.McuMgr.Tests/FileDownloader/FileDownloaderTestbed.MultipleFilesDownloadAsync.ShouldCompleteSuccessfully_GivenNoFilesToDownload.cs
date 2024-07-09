@@ -51,8 +51,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
                     
                     await Task.Delay(20);
-                    DownloadCompletedAdvertisement(remoteFilePath, new byte[] { });
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
+                    DownloadCompletedAdvertisement(remoteFilePath, new byte[] { }); //                                             order
                 });
 
                 return verdict;
