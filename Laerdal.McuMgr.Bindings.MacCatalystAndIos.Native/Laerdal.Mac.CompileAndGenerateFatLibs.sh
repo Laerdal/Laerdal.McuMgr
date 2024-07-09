@@ -9,7 +9,7 @@
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
-declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK}" # xcodebuild -showsdks
+declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
 
 if [ "$XCODEBUILD_TARGET_SDK" == "iphoneos" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # ios
   XCODEBUILD_TARGET_SDK_VERSION="17.2"
