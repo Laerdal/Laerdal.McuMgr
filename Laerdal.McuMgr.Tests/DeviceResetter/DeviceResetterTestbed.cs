@@ -2,7 +2,6 @@
 using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
-using GenericNativeDeviceResetterCallbacksProxy_ = Laerdal.McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.DeviceResetter
 {

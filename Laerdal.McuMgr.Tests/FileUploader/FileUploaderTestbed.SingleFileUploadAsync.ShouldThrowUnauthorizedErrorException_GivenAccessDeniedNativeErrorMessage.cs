@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
