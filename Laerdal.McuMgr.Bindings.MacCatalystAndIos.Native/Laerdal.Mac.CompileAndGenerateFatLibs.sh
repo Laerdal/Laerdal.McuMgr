@@ -8,12 +8,13 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
-declare SDK_VERSION="" # xcodebuild -showsdks
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
+declare XCODEBUILD_TARGET_SDK_VERSION="" # xcodebuild -showsdks
+
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
 declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
-declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
+declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$XCODEBUILD_TARGET_SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
 
 declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
 
@@ -53,9 +54,9 @@ function print_macos_sdks() {
   echo "** OUTPUT_FOLDER_NAME                : '$OUTPUT_FOLDER_NAME'                "
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '$OUTPUT_SHARPIE_HEADER_FILES_PATH'  "
   echo
-  echo "** SDK_VERSION                                : '${SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** SUPPORTS_MACCATALYST                       : '$SUPPORTS_MACCATALYST'                       "
   echo "** XCODEBUILD_TARGET_SDK                      : '$XCODEBUILD_TARGET_SDK'                      "
+  echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'  "
   echo
 }
