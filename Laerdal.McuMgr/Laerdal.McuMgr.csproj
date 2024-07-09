@@ -13,7 +13,7 @@
 
         <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                          ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
 
         <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
@@ -97,15 +97,15 @@
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:                    '$(OS)'                    "/>
-        <Message Importance="High" Text="Platform:              '$(Platform)'              "/>
-        <Message Importance="High" Text="PackageId:             '$(PackageId)'             "/>
-        <Message Importance="High" Text="Configuration:         '$(Configuration)'         "/>
-        <Message Importance="High" Text="PackageVersion:        '$(PackageVersion)'        "/>
-        <Message Importance="High" Text="TargetFramework:       '$(TargetFramework)'       "/>
-        <Message Importance="High" Text="DefineConstants:       '$(DefineConstants)'       "/>
-        <Message Importance="high" Text="MSBuildNodeCount:      '$(MSBuildNodeCount)'      "/>
-        <Message Importance="high" Text="Should_Skip_MacCatalyst: '$(Should_Skip_MacCatalyst)' "/>
+        <Message Importance="High" Text="OS:                         '$(OS)'                      "/>
+        <Message Importance="High" Text="Platform:                   '$(Platform)'                "/>
+        <Message Importance="High" Text="PackageId:                  '$(PackageId)'               "/>
+        <Message Importance="High" Text="Configuration:              '$(Configuration)'           "/>
+        <Message Importance="High" Text="PackageVersion:             '$(PackageVersion)'          "/>
+        <Message Importance="High" Text="TargetFramework:            '$(TargetFramework)'         "/>
+        <Message Importance="High" Text="DefineConstants:            '$(DefineConstants)'         "/>
+        <Message Importance="high" Text="MSBuildNodeCount:           '$(MSBuildNodeCount)'        "/>
+        <Message Importance="high" Text="Should_Skip_MacCatalyst:    '$(Should_Skip_MacCatalyst)' "/>
 
         <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
