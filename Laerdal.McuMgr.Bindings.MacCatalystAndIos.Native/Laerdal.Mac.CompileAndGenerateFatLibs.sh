@@ -9,12 +9,19 @@
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
-declare XCODEBUILD_TARGET_SDK_VERSION="" # xcodebuild -showsdks
+declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK}" # xcodebuild -showsdks
+
+if [ "$XCODEBUILD_TARGET_SDK" == "iphoneos" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # ios
+  XCODEBUILD_TARGET_SDK_VERSION="17.2"
+
+elif [ "$XCODEBUILD_TARGET_SDK" == "macosx" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # maccatalyst
+  XCODEBUILD_TARGET_SDK_VERSION="14.2"
+fi
 
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
 declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
-declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$XCODEBUILD_TARGET_SDK_VERSION" #  if the version is the empty string then the latest version of the sdk will be used which is fine
+declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="$XCODEBUILD_TARGET_SDK$XCODEBUILD_TARGET_SDK_VERSION"
 
 declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
 

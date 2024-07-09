@@ -159,7 +159,7 @@
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)' XCODEBUILD_TARGET_SDK='iphoneos' XCODEBUILD_TARGET_SDK_VERSION='17.2' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)' XCODEBUILD_TARGET_SDK='iphoneos'  ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
 
         <!-- warning   its absolutely vital to remove any softlink files as they are causing -->
         <!-- warning   codesign to fail when using the resulting nuget in maui apps   go figure ... -->
