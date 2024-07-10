@@ -33,6 +33,9 @@
 
         <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
+
+        <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>
+        <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.2.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -158,7 +161,18 @@
         
         <!-- 1. build and generate the fat libs from the proxy swift project                                                -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)' XCODEBUILD_TARGET_SDK='macosx' SUPPORTS_MACCATALYST='YES' ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
+
+        <PropertyGroup>
+            <!-- in ci we have to specify the path to gradle explicitly so as to ensure we are using gradle 7.6 for smooth compilation of the android java-libs  -->
+            <_CliCommand>$(_Cli)  XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)'     </_CliCommand>
+            <_CliCommand>$(_Cli)  XCODEBUILD_TARGET_SDK='iphoneos'                                              </_CliCommand>
+            <_CliCommand>$(_Cli)  XCODEBUILD_TARGET_SDK_VERSION='$(Laerdal_Bindings_MacCatalyst___Sdk_Version)' </_CliCommand>
+            <_CliCommand>$(_Cli)  SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                        </_CliCommand>
+            <_CliCommand>$(_Cli)  ./Laerdal.Mac.CompileAndGenerateFatLibs.sh                                    </_CliCommand>
+            <!-- <_CliCommand>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False;</_CliCommand> -->
+        </PropertyGroup>
+        
+        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" $(_CliCommand) "/>
 
         <!-- warning   its absolutely vital to remove any softlink files as they are causing -->
         <!-- warning   codesign to fail when using the resulting nuget in maui apps   go figure ... -->

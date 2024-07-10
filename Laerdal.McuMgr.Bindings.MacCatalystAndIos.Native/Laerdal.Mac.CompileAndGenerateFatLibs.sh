@@ -8,6 +8,8 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
+declare XCODE_IDE_DEV_PATH="${XCODE_IDE_DEV_PATH:-/Applications/Xcode_15.2.app/Contents/Developer}"
+
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
 
@@ -38,8 +40,8 @@ else
   OUTPUT_FOLDER_POSTFIX="$XCODEBUILD_TARGET_SDK"
 fi
 
-declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$OUTPUT_FOLDER_POSTFIX" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version from the folder name 
-declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
+declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$OUTPUT_FOLDER_POSTFIX" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version 
+declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
 function print_macos_sdks() {
   echo "** xcode path    : '$( "xcode-select" -p       )'"
@@ -66,6 +68,18 @@ function print_macos_sdks() {
   echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'  "
   echo
+}
+
+function set_system_wide_default_xcode_ide() {
+  echo "** Set Xcode IDE path to '$XCODE_IDE_DEV_PATH'"
+
+  sudo xcode-select -s "$XCODE_IDE_DEV_PATH"
+  local exitCode=$?
+
+  if [ $exitCode -ne 0 ]; then
+    echo "** [FAILED] Failed to set xcode-select to '$XCODE_IDE_DEV_PATH'"
+    exit 1
+  fi
 }
 
 function build() {
@@ -326,6 +340,7 @@ function create_fat_binaries() {
 
 function main() {
   print_macos_sdks
+  set_system_wide_default_xcode_ide
   build
   create_fat_binaries
 

@@ -14,6 +14,11 @@ env:
   SCL_AZURE_ARTIFACTS_API_KEY: ${{    secrets.SCL_AZURE_ARTIFACTS_API_KEY    }}
   SCL_GITHUB_NUGET_FEED_USERNAME: ${{ secrets.SCL_GITHUB_NUGET_FEED_USERNAME }}
 
+  BINDINGS_IOS___SDK_VERSION: "17.2"
+  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.2.app/Contents/Developer"
+
+  BINDINGS_MACCATALYST___SDK_VERSION: "14.2"
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.2.app/Contents/Developer"
 
 on:
   workflow_call: #     so that other workflows can trigger this
@@ -57,20 +62,26 @@ jobs:
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: 'bash'
         run: |
-          cd                  "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts"                \
-                     &&                                                                             \
-          dotnet                                                                                    \
-             msbuild                                                                                \
-             "Laerdal.Builder.targets"                                                              \
-             -m:1                                                                                   \
-             -p:Should_Skip_MacCatalyst="false"                                                     \
-                                                                                                    \
-                           -p:PackageOutputPath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"    \
-                         -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"             \
-                       -p:Laerdal_Source_Branch="${{env.LAERDAL_SOURCE_BRANCH}}"                    \
-                     -p:Laerdal_Repository_Path="${{env.LAERDAL_REPOSITORY_PATH}}"                  \
-                 -p:Laerdal_Github_Access_Token="${{env.SCL_GITHUB_ACCESS_TOKEN}}"                  \
-             -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"
+          cd                  "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts"                            \
+                     &&                                                                                         \
+          dotnet                                                                                                \
+             msbuild                                                                                            \
+             "Laerdal.Builder.targets"                                                                          \
+             -m:1                                                                                               \
+             -p:Should_Skip_MacCatalyst="false"                                                                 \
+                                                                                                                \
+                                       -p:PackageOutputPath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"    \
+                                     -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"             \
+                                   -p:Laerdal_Source_Branch="${{env.LAERDAL_SOURCE_BRANCH}}"                    \
+                                 -p:Laerdal_Repository_Path="${{env.LAERDAL_REPOSITORY_PATH}}"                  \
+                             -p:Laerdal_Github_Access_Token="${{env.SCL_GITHUB_ACCESS_TOKEN}}"                  \
+                         -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"  \
+                                                                                                                \
+                      -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"               \
+                    -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"             \
+                                                                                                                \
+              -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"       \
+            -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'

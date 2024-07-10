@@ -29,6 +29,7 @@
 
     <PropertyGroup>
         <Newline>%0A</Newline>
+
         <Configuration Condition="      '$(Configuration)'      == '' ">Release</Configuration>
         <ShouldRunTestSuite Condition=" '$(ShouldRunTestSuite)' == '' ">true</ShouldRunTestSuite>
 
@@ -42,7 +43,17 @@
         <!-- https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml&WT.mc_id=DT-MVP-5003978#system-variables -->
         <Is_CI_Build Condition=" '$(Is_CI_Build)' == ''  and  ( '$(TF_BUILD)' == 'true'  or  '$(GITHUB_ACTIONS)' == 'true'  or  '$(GITLAB_CI)' == 'true' ) ">true</Is_CI_Build>
         <Should_Skip_MacCatalyst Condition=" '$(Should_Skip_MacCatalyst)' == '' ">false</Should_Skip_MacCatalyst>
-        
+
+        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                        -->
+        <!--                                                                                                                                                                        -->
+        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.2</Laerdal_Bindings_iOS___Sdk_Version>          -->
+        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path Condition="    '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'    == '' ">/Applications/Xcode_15.2.app/Contents/Developer</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path>   -->
+
+        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                         -->
+        <!--                                                                                                                                                                                         -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>         -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.2.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
+
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Repository_Path Condition="         '$(Laerdal_Repository_Path)'        == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository_Path>
@@ -193,6 +204,7 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)GradlePath=$(Laerdal_Gradle_Path);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Configuration=$(Configuration);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)PackageOutputPath=$(PackageOutputPath);</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)ContinuousIntegrationBuild=$(Is_CI_Build);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);</_Laerdal_Build_Parameters>
             <!--<_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False;</_Laerdal_Build_Parameters>-->
         </PropertyGroup>
@@ -209,14 +221,15 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Clean"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
         
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
+
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);ContinuousIntegrationBuild=$(Is_CI_Build);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild" />
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild" />
     </Target>
 
     <!-- TESTS -->
