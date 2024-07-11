@@ -34,8 +34,9 @@
         <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
-        <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>
-        <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.2.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>
+        <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                                                 -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.5</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.4.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
     </PropertyGroup>
 
     <PropertyGroup>
@@ -68,10 +69,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1039.0</Version>
-        <FileVersion>1.0.1039.0</FileVersion>
-        <PackageVersion>1.0.1039.0</PackageVersion>
-        <AssemblyVersion>1.0.1039.0</AssemblyVersion>
+        <Version>1.0.810.0</Version>
+        <FileVersion>1.0.810.0</FileVersion>
+        <PackageVersion>1.0.810.0</PackageVersion>
+        <AssemblyVersion>1.0.810.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -163,13 +164,11 @@
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
 
         <PropertyGroup>
-            <!-- in ci we have to specify the path to gradle explicitly so as to ensure we are using gradle 7.6 for smooth compilation of the android java-libs  -->
-            <_CliCommand>$(_Cli)  XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)'     </_CliCommand>
-            <_CliCommand>$(_Cli)  XCODEBUILD_TARGET_SDK='iphoneos'                                              </_CliCommand>
-            <_CliCommand>$(_Cli)  XCODEBUILD_TARGET_SDK_VERSION='$(Laerdal_Bindings_MacCatalyst___Sdk_Version)' </_CliCommand>
-            <_CliCommand>$(_Cli)  SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                        </_CliCommand>
-            <_CliCommand>$(_Cli)  ./Laerdal.Mac.CompileAndGenerateFatLibs.sh                                    </_CliCommand>
-            <!-- <_CliCommand>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False;</_CliCommand> -->
+            <_CliCommand>$(_CliCommand)  XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)'     </_CliCommand>
+            <_CliCommand>$(_CliCommand)  XCODEBUILD_TARGET_SDK='iphoneos'                                              </_CliCommand>
+            <_CliCommand>$(_CliCommand)  XCODEBUILD_TARGET_SDK_VERSION='$(Laerdal_Bindings_MacCatalyst___Sdk_Version)' </_CliCommand>
+            <_CliCommand>$(_CliCommand)  SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                        </_CliCommand>
+            <_CliCommand>$(_CliCommand)  ./Laerdal.Mac.CompileAndGenerateFatLibs.sh                                    </_CliCommand>
         </PropertyGroup>
         
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" $(_CliCommand) "/>
