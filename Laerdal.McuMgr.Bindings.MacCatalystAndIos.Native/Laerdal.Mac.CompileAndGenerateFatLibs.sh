@@ -43,7 +43,7 @@ fi
 declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$OUTPUT_FOLDER_POSTFIX" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version 
 declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
-function print_macos_sdks() {
+function print_setup() {
   echo "** xcode path    : '$( "xcode-select" --print-path  )'"
   echo "** xcode version : '$( "xcodebuild"   -version      )'"
   echo "** xcode sdks    :" 
@@ -64,6 +64,9 @@ function print_macos_sdks() {
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '$OUTPUT_SHARPIE_HEADER_FILES_PATH'  "
   echo
   echo "** SUPPORTS_MACCATALYST                       : '$SUPPORTS_MACCATALYST'                       "
+  echo
+  echo "** XCODE_IDE_DEV_PATH                         : '$XCODE_IDE_DEV_PATH'                         "
+  echo
   echo "** XCODEBUILD_TARGET_SDK                      : '$XCODEBUILD_TARGET_SDK'                      "
   echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '$XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY'  "
@@ -343,7 +346,7 @@ function create_fat_binaries() {
 
 function main() {
   set_system_wide_default_xcode_ide # order
-  print_macos_sdks #                  order
+  print_setup #                  order
   build #                             order
   create_fat_binaries #               order
 
