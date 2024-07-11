@@ -14,11 +14,11 @@ env:
   SCL_AZURE_ARTIFACTS_API_KEY: ${{    secrets.SCL_AZURE_ARTIFACTS_API_KEY    }}
   SCL_GITHUB_NUGET_FEED_USERNAME: ${{ secrets.SCL_GITHUB_NUGET_FEED_USERNAME }}
 
-  BINDINGS_IOS___SDK_VERSION: "17.2"
-  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.2.app/Contents/Developer"
+  BINDINGS_IOS___SDK_VERSION: "17.5"
+  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer"
 
-  BINDINGS_MACCATALYST___SDK_VERSION: "14.2"
-  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.2.app/Contents/Developer"
+  BINDINGS_MACCATALYST___SDK_VERSION: "14.5"
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer"
 
 on:
   workflow_call: #     so that other workflows can trigger this

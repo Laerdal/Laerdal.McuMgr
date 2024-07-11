@@ -35,7 +35,7 @@
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Artifacts/`))</PackageOutputPath>
-        
+
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `TestResults`))</Laerdal_Test_Results_Folderpath>
 
         <!-- https://docs.gitlab.com/ee/ci/variables/predefined_variables.html                                                                             -->
@@ -44,15 +44,15 @@
         <Is_CI_Build Condition=" '$(Is_CI_Build)' == ''  and  ( '$(TF_BUILD)' == 'true'  or  '$(GITHUB_ACTIONS)' == 'true'  or  '$(GITLAB_CI)' == 'true' ) ">true</Is_CI_Build>
         <Should_Skip_MacCatalyst Condition=" '$(Should_Skip_MacCatalyst)' == '' ">false</Should_Skip_MacCatalyst>
 
-        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                        -->
-        <!--                                                                                                                                                                        -->
-        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.2</Laerdal_Bindings_iOS___Sdk_Version>          -->
-        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path Condition="    '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'    == '' ">/Applications/Xcode_15.2.app/Contents/Developer</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path>   -->
+        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                            -->
+        <!--                                                                                                                                                                                                            -->
+        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.2</Laerdal_Bindings_iOS___Sdk_Version>                                              -->
+        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path Condition="    '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'    == '' ">/Applications/Xcode.app/Contents/Developer</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path> -->
 
-        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                         -->
-        <!--                                                                                                                                                                                         -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>         -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.2.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
+        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                                               -->
+        <!--                                                                                                                                                                                                                               -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
 
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
@@ -69,11 +69,11 @@
     </PropertyGroup>
 
     <Target Name="PrintConfiguration">
-        <Message Importance="High" Text="** Configuration                 ='$(Configuration)'"/>
-        <Message Importance="High" Text="** PackageOutputPath             ='$(PackageOutputPath)'"/>
+        <Message Importance="High" Text="** Configuration            = '$(Configuration)'"/>
+        <Message Importance="High" Text="** PackageOutputPath        = '$(PackageOutputPath)'"/>
 
-        <Message Importance="High" Text="** Laerdal_Source_Branch         ='$(Laerdal_Source_Branch)'"/>
-        <Message Importance="High" Text="** Laerdal_Repository_Path       ='$(Laerdal_Repository_Path)'"/>
+        <Message Importance="High" Text="** Laerdal_Source_Branch    = '$(Laerdal_Source_Branch)'"/>
+        <Message Importance="High" Text="** Laerdal_Repository_Path  = '$(Laerdal_Repository_Path)'"/>
         <!-- <Message Importance="High" Text="** Laerdal_Github_Access_Token   ='$(Laerdal_Github_Access_Token)'"/> dont -->
     </Target>
 
@@ -89,9 +89,9 @@
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o               '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major          '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --master-branch  '$(Laerdal_Master_Branch_Name)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --master-branch '$(Laerdal_Master_Branch_Name)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --develop-branch '$(Laerdal_Develop_Branch_Name)'</_Laerdal_Version_Script_Parameters>
         </PropertyGroup>
 
@@ -147,27 +147,27 @@
     </Target>
 
     <Target Name="_updatePackageVersionsInCsprojFile">
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;Version&gt;.*?&lt;/Version&gt;" ReplacementText="&lt;Version&gt;$(Version)&lt;/Version&gt;" />
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;FileVersion&gt;.*?&lt;/FileVersion&gt;" ReplacementText="&lt;FileVersion&gt;$(Version)&lt;/FileVersion&gt;" />
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;PackageVersion&gt;.*?&lt;/PackageVersion&gt;" ReplacementText="&lt;PackageVersion&gt;$(Version)&lt;/PackageVersion&gt;" />
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;AssemblyVersion&gt;.*?&lt;/AssemblyVersion&gt;" ReplacementText="&lt;AssemblyVersion&gt;$(Version)&lt;/AssemblyVersion&gt;" />
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;Version&gt;.*?&lt;/Version&gt;" ReplacementText="&lt;Version&gt;$(Version)&lt;/Version&gt;"/>
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;FileVersion&gt;.*?&lt;/FileVersion&gt;" ReplacementText="&lt;FileVersion&gt;$(Version)&lt;/FileVersion&gt;"/>
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;PackageVersion&gt;.*?&lt;/PackageVersion&gt;" ReplacementText="&lt;PackageVersion&gt;$(Version)&lt;/PackageVersion&gt;"/>
+        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;AssemblyVersion&gt;.*?&lt;/AssemblyVersion&gt;" ReplacementText="&lt;AssemblyVersion&gt;$(Version)&lt;/AssemblyVersion&gt;"/>
 
         <!-- this affects only laerdal.mcumgr.csproj -->
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;" />
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.Android&quot; Version=&quot;$(Version)&quot;"/>
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;" />
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.iOS&quot; Version=&quot;$(Version)&quot;"/>
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;$(Version)&quot;" />
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.MacCatalyst&quot; Version=&quot;$(Version)&quot;"/>
 
         <_replaceRegexInFile InputFile="$(ProjectFile)"
                              Regex="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;.*?&quot;"
-                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;$(Version)&quot;" />
+                             ReplacementText="&lt;PackageReference Include=&quot;Laerdal.McuMgr.Bindings.NetStandard&quot; Version=&quot;$(Version)&quot;"/>
     </Target>
 
     <UsingTask
@@ -175,9 +175,9 @@
             TaskFactory="RoslynCodeTaskFactory"
             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
         <ParameterGroup>
-            <Regex ParameterType="System.String" Required="true" />
-            <InputFile ParameterType="System.String" Required="true" />
-            <ReplacementText ParameterType="System.String" Required="true" />
+            <Regex ParameterType="System.String" Required="true"/>
+            <InputFile ParameterType="System.String" Required="true"/>
+            <ReplacementText ParameterType="System.String" Required="true"/>
         </ParameterGroup>
         <Task>
             <Code Type="Fragment" Language="cs">
@@ -222,14 +222,14 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
-        
+
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
 
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild" />
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild"/>
     </Target>
 
     <!-- TESTS -->
@@ -242,10 +242,10 @@
                  Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);"/>
 
         <PropertyGroup>
-            <TestParameters>$(TestParameters) test                'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
-            <TestParameters>$(TestParameters) --logger            'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
-            <TestParameters>$(TestParameters) --verbosity         '4'</TestParameters>
-            <TestParameters>$(TestParameters) --configuration     '$(Configuration)'</TestParameters>
+            <TestParameters>$(TestParameters) test 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
+            <TestParameters>$(TestParameters) --logger 'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
+            <TestParameters>$(TestParameters) --verbosity '4'</TestParameters>
+            <TestParameters>$(TestParameters) --configuration '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
         </PropertyGroup>
 
@@ -279,19 +279,19 @@
             Condition=" '$(Laerdal_Should_Tag_And_Release)' == 'True' "
             AfterTargets="RunTests">
 
-        <Error Condition=" '$(Laerdal_Version_Base)'        == '' " Text="'Laerdal_Version_Base' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Base=...'" />
-        <Error Condition=" '$(Laerdal_Source_Branch)'       == '' " Text="'Laerdal_Source_Branch' has to be set. Please call this script again with the argument '/p:Laerdal_Source_Branch=...'" />
-        <Error Condition=" '$(Laerdal_Repository_Path)'     == '' " Text="'Laerdal_Repository_Path' has to be set. Please call this script again with the argument '/p:Laerdal_Repository_Path=...'" />
-        <Error Condition=" '$(Laerdal_Github_Access_Token)' == '' " Text="'Laerdal_Github_Access_Token' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Access_Token=...'" />
+        <Error Condition=" '$(Laerdal_Version_Base)'        == '' " Text="'Laerdal_Version_Base' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Base=...'"/>
+        <Error Condition=" '$(Laerdal_Source_Branch)'       == '' " Text="'Laerdal_Source_Branch' has to be set. Please call this script again with the argument '/p:Laerdal_Source_Branch=...'"/>
+        <Error Condition=" '$(Laerdal_Repository_Path)'     == '' " Text="'Laerdal_Repository_Path' has to be set. Please call this script again with the argument '/p:Laerdal_Repository_Path=...'"/>
+        <Error Condition=" '$(Laerdal_Github_Access_Token)' == '' " Text="'Laerdal_Github_Access_Token' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Access_Token=...'"/>
 
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
 
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --log                                               </_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch       '$(Laerdal_Source_Branch)'       </_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version      '$(Laerdal_Version_Base)'        </_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token     '$(Laerdal_Github_Access_Token)' </_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository-path  '$(Laerdal_Repository_Path)'     </_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --log</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token '$(Laerdal_Github_Access_Token)'</_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository-path '$(Laerdal_Repository_Path)'</_Laerdal_Create_Github_Release_Script_Parameters>
         </PropertyGroup>
 
         <Message Importance="High" Text="   bash    '$(Laerdal_Create_Github_Release_Script_Filepath)'    $(_Laerdal_Create_Github_Release_Script_Parameters) "/>

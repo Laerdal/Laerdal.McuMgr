@@ -134,7 +134,7 @@ echo "** XCode Installations:"
 
 ls  -ld  /Applications/Xcode* || exit 90
 
-#sudo   xcode-select   -s   /Applications/Xcode_15.2.app/Contents/Developer
+#sudo   xcode-select   -s   /Applications/Xcode.app/Contents/Developer
 #declare exitCode=$?
 #if [ $exitCode != 0 ]; then
 #  echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
