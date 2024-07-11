@@ -13,10 +13,10 @@ declare XCODE_IDE_DEV_PATH="${XCODE_IDE_DEV_PATH:-}"
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
 
-if [ "$XCODEBUILD_TARGET_SDK" == "iphoneos" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # ios
+if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
   XCODEBUILD_TARGET_SDK_VERSION="17.5" # requires xcode 15.4
 
-elif [ "$XCODEBUILD_TARGET_SDK" == "macosx" ] && [ -z "$XCODEBUILD_TARGET_SDK_VERSION" ]; then # maccatalyst
+elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # maccatalyst
   XCODEBUILD_TARGET_SDK_VERSION="14.5" # requires xcode 15.4
 fi
 
@@ -34,14 +34,14 @@ declare SWIFT_PROJECT_PATH="./$SWIFT_PROJECT_NAME/$SWIFT_PROJECT_NAME.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
 
 declare OUTPUT_FOLDER_POSTFIX=""
-if [ "$XCODEBUILD_TARGET_SDK" == "macosx" ]; then
-  OUTPUT_FOLDER_POSTFIX="maccatalyst" # special case for mac catalyst
+if [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ]; then
+  OUTPUT_FOLDER_POSTFIX="" # special case for mac catalyst
 else
-  OUTPUT_FOLDER_POSTFIX="$XCODEBUILD_TARGET_SDK"
+  OUTPUT_FOLDER_POSTFIX="-${XCODEBUILD_TARGET_SDK}"
 fi
 
-declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$OUTPUT_FOLDER_POSTFIX" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version 
-declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
+declare OUTPUT_FOLDER_NAME="${SWIFT_BUILD_CONFIGURATION}${OUTPUT_FOLDER_POSTFIX}" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version 
+declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  #    from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
 function print_setup() {
   echo "** xcode path    : '$( "xcode-select" --print-path  )'"
