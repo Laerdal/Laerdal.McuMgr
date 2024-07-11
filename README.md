@@ -99,7 +99,7 @@ Add the following Nuget packages.
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
        Laerdal.McuMgr.Bindings.Android             (only add this to those projects of yours that target Android)
-       Laerdal.McuMgr.Bindings.MacCatalyst (WIP!)  (only add this to those projects of yours that target MacCatalyst aka MacDesktop+iPad)
+       Laerdal.McuMgr.Bindings.MacCatalyst         (only add this to those projects of yours that target MacCatalyst aka MacDesktop+iPad)
        Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
