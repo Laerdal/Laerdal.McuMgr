@@ -44,8 +44,8 @@ declare OUTPUT_FOLDER_NAME="$SWIFT_BUILD_CONFIGURATION-$OUTPUT_FOLDER_POSTFIX" #
 declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  # from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
 function print_macos_sdks() {
-  echo "** xcode path    : '$( "xcode-select" -p       )'"
-  echo "** xcode version : '$( "xcodebuild"   -version )'"
+  echo "** xcode path    : '$( "xcode-select" --print-path  )'"
+  echo "** xcode version : '$( "xcodebuild"   -version      )'"
   echo "** xcode sdks    :" 
   xcodebuild -showsdks
   echo "** xcode sdks visible to sharpie   :" 
@@ -71,19 +71,22 @@ function print_macos_sdks() {
 }
 
 function set_system_wide_default_xcode_ide() {
-  echo "** Set Xcode IDE path to '$XCODE_IDE_DEV_PATH'"
+  echo "** Setting Xcode IDE path to '$XCODE_IDE_DEV_PATH'"
 
-  sudo xcode-select -s "$XCODE_IDE_DEV_PATH"
-  local exitCode=$?
+  declare -r currentXcodeDevPath=$( "xcode-select" --print-path)
+  if [ "${currentXcodeDevPath}" != "$XCODE_IDE_DEV_PATH" ]; then
+    sudo xcode-select --switch "$XCODE_IDE_DEV_PATH"
+    local exitCode=$?
 
-  if [ $exitCode -ne 0 ]; then
-    echo "** [FAILED] Failed to set xcode-select to '$XCODE_IDE_DEV_PATH'"
-    exit 1
+    if [ $exitCode -ne 0 ]; then
+      echo "** [FAILED] Failed to set xcode-select to '$XCODE_IDE_DEV_PATH'"
+      exit 1
+    fi
   fi
 }
 
 function build() {
-  echo "** Build $OUTPUT_FOLDER_NAME framework for device"
+  echo "** Building '$OUTPUT_FOLDER_NAME' framework for device ..."
 
   echo "**** (Build 1/3) Cleanup any possible traces of previous builds"
 
@@ -339,10 +342,10 @@ function create_fat_binaries() {
 }
 
 function main() {
-  print_macos_sdks
-  set_system_wide_default_xcode_ide
-  build
-  create_fat_binaries
+  set_system_wide_default_xcode_ide # order
+  print_macos_sdks #                  order
+  build #                             order
+  create_fat_binaries #               order
 
   echo "** Done!"
 }

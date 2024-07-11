@@ -754,7 +754,7 @@ Same goes for the testbed-ui app. If you want to build it locally you'll have to
 
 #### 6) Set MSBuild version to ver.17
 
-#### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select --switch /Applications/Xcode_XYZ.app/Contents/Developer').
 
 #### 8) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
