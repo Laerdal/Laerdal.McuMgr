@@ -70,9 +70,9 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack     | Android                                                                   | iOS                               | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0)                                                   |
-|-----------|---------------------------------------------------------------------------|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|   
-| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 11.0+ <br/> (sdk: iphoneos16.2) | ✅ 13.1+ <br/> (MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+| Stack     | Android                                                                   | iOS                                                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
+|-----------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 17.0+ ( requires iPhoneXR or better ) <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
@@ -88,6 +88,9 @@ to the device.**
 - **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
 
 - **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
+  
+- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 15.4 and iPhoneOS SDK 17.5.**
+    The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better. 
 
 ## 🚀 Using the Nugets in your Projects
 
@@ -96,7 +99,7 @@ Add the following Nuget packages.
        Laerdal.McuMgr
        Laerdal.McuMgr.Bindings.iOS                 (only add this to those projects of yours that target iOS)
        Laerdal.McuMgr.Bindings.Android             (only add this to those projects of yours that target Android)
-       Laerdal.McuMgr.Bindings.MacCatalyst (WIP!)  (only add this to those projects of yours that target MacCatalyst aka MacDesktop+iPad)
+       Laerdal.McuMgr.Bindings.MacCatalyst         (only add this to those projects of yours that target MacCatalyst aka MacDesktop+iPad)
        Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
@@ -673,11 +676,11 @@ To build the nugets from source follow these instructions:
 #### 1) Checkout
 
 ```bash
-git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    mcumgr.mst
+git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    mcumgr.mst
 
 # or for develop
 
-git   clone   git@github.com:Laerdal-Medical/scl-mcumgr.git    --branch develop      mcumgr.dev
+git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch develop      mcumgr.dev
 ```
 
 #### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
@@ -754,7 +757,7 @@ Same goes for the testbed-ui app. If you want to build it locally you'll have to
 
 #### 6) Set MSBuild version to ver.17
 
-#### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select -s /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 7) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select --switch /Applications/Xcode_XYZ.app/Contents/Developer').
 
 #### 8) On Windows you have to also make sure you have enabled in the OS (registry) 'Long Path Support' otherwise the build will fail due to extremely long paths.
 
@@ -817,6 +820,7 @@ the aspects being affected.
 
 - [Nordic nRF Connect Device Manager](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager)
 - [Nordic Infocenter](https://infocenter.nordicsemi.com/index.jsp?topic=%2Fstruct_welcome%2Fstruct%2Fwelcome.html)
+- [iPhone models and supported iOS versions](https://iosref.com/ios)
 
 ## Credits & Acknowledgements
 
