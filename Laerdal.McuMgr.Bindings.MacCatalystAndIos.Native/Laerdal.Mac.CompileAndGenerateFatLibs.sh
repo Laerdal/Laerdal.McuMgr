@@ -74,11 +74,9 @@ function print_setup() {
 }
 
 function set_system_wide_default_xcode_ide() {
-  if [ "${XCODE_IDE_DEV_PATH}" != "" ]; then
-    declare -r currentXcodeDevPath=$( "xcode-select" --print-path )
-    if [ "${currentXcodeDevPath}" != "${XCODE_IDE_DEV_PATH}" ]; then
-      echo "** Setting Xcode IDE path to '${XCODE_IDE_DEV_PATH}' - remember to manually revert it back to '${currentXcodeDevPath}' after the build is done!"
-      
+  declare -r currentXcodeDevPath=$( "xcode-select" --print-path )
+  if [ "${XCODE_IDE_DEV_PATH}" != "" ] && [ "${currentXcodeDevPath}" != "${XCODE_IDE_DEV_PATH}" ]; then
+      echo "** Setting Xcode IDE path to '${XCODE_IDE_DEV_PATH}' - remember to manually revert it back to '${currentXcodeDevPath}' after the build is done!"      
       sudo xcode-select --switch "${XCODE_IDE_DEV_PATH}"
       local exitCode=$?
 
@@ -86,7 +84,6 @@ function set_system_wide_default_xcode_ide() {
         echo "** [FAILED] Failed to set xcode-select to '${XCODE_IDE_DEV_PATH}'"
         exit 1
       fi
-    fi
   fi
 }
 
