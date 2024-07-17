@@ -9,9 +9,11 @@ env:
 
   LAERDAL_SOURCE_BRANCH: ${{           github.ref                            }}
   LAERDAL_REPOSITORY_PATH: ${{         github.repository                     }}
-
-  SCL_GITHUB_ACCESS_TOKEN: ${{        secrets.GITHUB_TOKEN                   }}
-  SCL_AZURE_ARTIFACTS_API_KEY: ${{    secrets.SCL_AZURE_ARTIFACTS_API_KEY    }}
+  
+  # note that we prefer to use our own token here instead of GITHUB_TOKEN    that is because if we
+  # ever need access to other nuget repos of Laerdal they will be inaccessible to the GITHUB_TOKEN
+  SCL_GITHUB_ACCESS_TOKEN: ${{        secrets.SCL_GITHUB_ACCESS_TOKEN        }}
+  SCL_NUGET_ORG_FEED_API_KEY: ${{     secrets.NUGET_ORG_FEED_API_KEY         }}
   SCL_GITHUB_NUGET_FEED_USERNAME: ${{ secrets.SCL_GITHUB_NUGET_FEED_USERNAME }}
 
   BINDINGS_IOS___SDK_VERSION: "17.5"
@@ -78,7 +80,7 @@ jobs:
                          -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"  \
                                                                                                                 \
                       -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"               \
-                    -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"             \
+                    -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"   \
                                                                                                                 \
               -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"       \
             -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"
@@ -111,3 +113,18 @@ jobs:
                   --source   "https://nuget.pkg.github.com/Laerdal/index.json"          \
                   --api-key  "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                         \
                   *nupkg
+
+      - name: '🚀 Publish to the Nuget.org'
+        shell: 'bash'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                                    \
+                    &&                                                                            \
+          ls .                                                                                    \
+                    &&                                                                            \
+          dotnet                                                                                  \
+                  nuget                                                                           \
+                  push                                                                            \
+                  --source   "https://api.nuget.org/v3/index.json"                                \
+                  --api-key  "${{env.SCL_NUGET_ORG_FEED_API_KEY}}"                                \
+                  *.nupkg
