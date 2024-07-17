@@ -667,7 +667,7 @@ _
 _
 
     Note#3 If you build on Windows the build system will work but the generated nugets *will only work on Android with MAUI apps* but they will error out on iOS considering that the 'iOS part'
-           of the build gets skipped in Windows.
+           of the build gets **skipped** in Windows quite simply because in Windows we cannot use tools like 'sharpie' and the 'iPhoneOS' SDK that comes with XCode.
 
 To build the nugets from source follow these instructions:
 
