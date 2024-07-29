@@ -40,7 +40,7 @@
 
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Artifacts/`))</PackageOutputPath>
-
+        
         <PackageOutputPath>$([System.IO.Path]::GetFullPath( '$(PackageOutputPath)' ))</PackageOutputPath>
 
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `TestResults`))</Laerdal_Test_Results_Folderpath>
@@ -308,6 +308,25 @@
               EchoOff="true"
               ConsoleToMSBuild="true"
               WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)"/>
+    </Target>
+
+    <!-- GENERATE SBOM -->
+    <Target Name="GenerateSBOM" AfterTargets="CreateGithubReleaseWithTag">
+
+        <PropertyGroup>
+            <!-- using double-quotes instead of single-quotes is vital for the command to work as intended -->
+            <_Laerdal_Command___Generate_SBOM>   dotnet-CycloneDX   --json   --exclude-dev   --output &quot;$(PackageOutputPath)&quot;   </_Laerdal_Command___Generate_SBOM>
+        </PropertyGroup>
+
+        <Message Importance="High" Text="** Generating SBOMs:"/>
+
+        <!-- we intentionally avoided using WorkingDirectory="$(Laerdal_Script_FolderPath)" because our global.json settings enforce net8 but cyclonedx runs on net6 and net7 -->
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.json&quot;               &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.ios.json&quot;           &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.android.json&quot;       &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.maccatalyst.json&quot;   &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.netstandard.json&quot;   &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  " ConsoleToMSBuild="true" />
+
     </Target>
 
 </Project>
