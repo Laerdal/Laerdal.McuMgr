@@ -33,15 +33,23 @@
         <Configuration Condition="      '$(Configuration)'      == '' ">Release</Configuration>
         <ShouldRunTestSuite Condition=" '$(ShouldRunTestSuite)' == '' ">true</ShouldRunTestSuite>
 
-        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
-        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Artifacts/`))</PackageOutputPath>
+        <Laerdal_Script_FolderPath>$(MSBuildThisFileDirectory)</Laerdal_Script_FolderPath>
 
-        <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `TestResults`))</Laerdal_Test_Results_Folderpath>
+        <Laerdal_RootDirectory_Folderpath>$([System.IO.Path]::Combine(     '$(Laerdal_Script_FolderPath)', '..'  ))</Laerdal_RootDirectory_Folderpath>
+        <Laerdal_RootDirectory_Folderpath>$([System.IO.Path]::GetFullPath( '$(Laerdal_RootDirectory_Folderpath)' ))</Laerdal_RootDirectory_Folderpath>
+
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Artifacts/`))</PackageOutputPath>
+        
+        <PackageOutputPath>$([System.IO.Path]::GetFullPath( '$(PackageOutputPath)' ))</PackageOutputPath>
+
+        <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `TestResults`))</Laerdal_Test_Results_Folderpath>
 
         <!-- https://docs.gitlab.com/ee/ci/variables/predefined_variables.html                                                                             -->
         <!-- https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables                                             -->
         <!-- https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml&WT.mc_id=DT-MVP-5003978#system-variables -->
         <Is_CI_Build Condition=" '$(Is_CI_Build)' == ''  and  ( '$(TF_BUILD)' == 'true'  or  '$(GITHUB_ACTIONS)' == 'true'  or  '$(GITLAB_CI)' == 'true' ) ">true</Is_CI_Build>
+
         <Should_Skip_MacCatalyst Condition=" '$(Should_Skip_MacCatalyst)' == '' ">false</Should_Skip_MacCatalyst>
 
         <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                            -->
@@ -59,13 +67,13 @@
         <Laerdal_Repository_Path Condition="         '$(Laerdal_Repository_Path)'        == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository_Path>
         <Laerdal_Should_Tag_And_Release Condition="  '$(Laerdal_Should_Tag_And_Release)' == ''  AND  ( '$(Laerdal_Source_Branch)' == 'refs/heads/main'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/master'  OR  '$(Laerdal_Source_Branch)' == 'refs/heads/develop' ) ">True</Laerdal_Should_Tag_And_Release>
 
-        <Laerdal_McuMgr_ProjectFile>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Laerdal.McuMgr`, `Laerdal.McuMgr.csproj`))</Laerdal_McuMgr_ProjectFile>
-        <Laerdal_McuMgrBindings_ProjectFile_iOS>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Laerdal.McuMgr.Bindings.iOS`, `Laerdal.McuMgr.Bindings.iOS.csproj`))</Laerdal_McuMgrBindings_ProjectFile_iOS>
-        <Laerdal_McuMgrBindings_ProjectFile_Android>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Laerdal.McuMgr.Bindings.Android`, `Laerdal.McuMgr.Bindings.Android.csproj`))</Laerdal_McuMgrBindings_ProjectFile_Android>
-        <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Laerdal.McuMgr.Bindings.MacCatalyst`, `Laerdal.McuMgr.Bindings.MacCatalyst.csproj`))</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
-        <Laerdal_McuMgrBindings_ProjectFile_NetStandard>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Laerdal.McuMgr.Bindings.NetStandard`, `Laerdal.McuMgr.Bindings.NetStandard.csproj`))</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
+        <Laerdal_McuMgr_ProjectFile>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr`, `Laerdal.McuMgr.csproj`))</Laerdal_McuMgr_ProjectFile>
+        <Laerdal_McuMgrBindings_ProjectFile_iOS>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr.Bindings.iOS`, `Laerdal.McuMgr.Bindings.iOS.csproj`))</Laerdal_McuMgrBindings_ProjectFile_iOS>
+        <Laerdal_McuMgrBindings_ProjectFile_Android>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr.Bindings.Android`, `Laerdal.McuMgr.Bindings.Android.csproj`))</Laerdal_McuMgrBindings_ProjectFile_Android>
+        <Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr.Bindings.MacCatalyst`, `Laerdal.McuMgr.Bindings.MacCatalyst.csproj`))</Laerdal_McuMgrBindings_ProjectFile_MacCatalyst>
+        <Laerdal_McuMgrBindings_ProjectFile_NetStandard>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr.Bindings.NetStandard`, `Laerdal.McuMgr.Bindings.NetStandard.csproj`))</Laerdal_McuMgrBindings_ProjectFile_NetStandard>
 
-        <Laerdal_McuMgrBindings_ProjectFile_Tests>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..`, `Laerdal.McuMgr.Tests`, `Laerdal.McuMgr.Tests.csproj`))</Laerdal_McuMgrBindings_ProjectFile_Tests>
+        <Laerdal_McuMgrBindings_ProjectFile_Tests>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr.Tests`, `Laerdal.McuMgr.Tests.csproj`))</Laerdal_McuMgrBindings_ProjectFile_Tests>
     </PropertyGroup>
 
     <Target Name="PrintConfiguration">
@@ -83,7 +91,7 @@
         <PropertyGroup>
             <Laerdal_Version_Major Condition=" '$(Laerdal_Version_Major)' == '' ">2</Laerdal_Version_Major>
 
-            <Laerdal_Version_Script_Filepath Condition="   '$(Laerdal_Version_Script_Filepath)'  == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.Version.sh`))</Laerdal_Version_Script_Filepath>
+            <Laerdal_Version_Script_Filepath Condition="   '$(Laerdal_Version_Script_Filepath)'  == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.Version.sh`))</Laerdal_Version_Script_Filepath>
             <Laerdal_Version_Details_Filepath Condition="  '$(Laerdal_Version_Details_Filepath)' == '' ">$([System.IO.Path]::Combine($(PackageOutputPath), `version.txt`))</Laerdal_Version_Details_Filepath>
 
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
@@ -102,7 +110,7 @@
               EchoOff="true"
               Command=" bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters) "
               ConsoleToMSBuild="true"
-              WorkingDirectory="$(MSBuildThisFileDirectory)/..">
+              WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)">
             <Output TaskParameter="ConsoleOutput" PropertyName="Laerdal_Version_Full"/>
         </Exec>
 
@@ -221,15 +229,15 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Clean"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
 
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
 
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(MSBuildThisFileDirectory)/../Laerdal.McuMgr/;" Targets="Restore;Rebuild"/>
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)" Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;" Targets="Restore;Rebuild"/>
     </Target>
 
     <!-- TESTS -->
@@ -251,7 +259,7 @@
 
         <Exec Command=" bash -c &quot;    dotnet   $(TestParameters)    &quot; "
               ConsoleToMSBuild="true"
-              WorkingDirectory="$(MSBuildThisFileDirectory)/.."/>
+              WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)"/>
 
         <ItemGroup>
             <TestReportFiles Include="$(Laerdal_Test_Results_Folderpath)\**\*.*;"/>
@@ -285,7 +293,7 @@
         <Error Condition=" '$(Laerdal_Github_Access_Token)' == '' " Text="'Laerdal_Github_Access_Token' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Access_Token=...'"/>
 
         <PropertyGroup>
-            <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
+            <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
 
             <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --log</_Laerdal_Create_Github_Release_Script_Parameters>
             <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
@@ -299,7 +307,26 @@
         <Exec Command="   bash    '$(Laerdal_Create_Github_Release_Script_Filepath)'   $(_Laerdal_Create_Github_Release_Script_Parameters) "
               EchoOff="true"
               ConsoleToMSBuild="true"
-              WorkingDirectory="$(MSBuildThisFileDirectory)/.."/>
+              WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)"/>
+    </Target>
+
+    <!-- GENERATE SBOM -->
+    <Target Name="GenerateSBOM" AfterTargets="PrintConfiguration">
+
+        <PropertyGroup>
+            <!-- using double-quotes instead of single-quotes is vital for the command to work as intended -->
+            <_Laerdal_Command___Generate_SBOM>   dotnet-CycloneDX   --json   --exclude-dev   --output &quot;$(PackageOutputPath)&quot;   </_Laerdal_Command___Generate_SBOM>
+        </PropertyGroup>
+
+        <Message Importance="High" Text="** Generating SBOMs:"/>
+
+        <!-- we intentionally avoided using WorkingDirectory="$(Laerdal_Script_FolderPath)" because our global.json settings enforce net8 but cyclonedx runs on net6 and net7 -->
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.json&quot;               &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.ios.json&quot;           &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.android.json&quot;       &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.maccatalyst.json&quot;   &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  " ConsoleToMSBuild="true" />
+        <Exec Command=" $(_Laerdal_Command___Generate_SBOM)   --filename &quot;mcumgr.netstandard.json&quot;   &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  " ConsoleToMSBuild="true" />
+
     </Target>
 
 </Project>

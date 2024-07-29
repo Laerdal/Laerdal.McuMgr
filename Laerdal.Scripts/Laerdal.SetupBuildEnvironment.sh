@@ -225,6 +225,26 @@ if [ $exitCode != 0 ]; then
 fi
 
 echo
+echo "** Installing CycloneDX as a dotnet tool:"
+dotnet   tool       \
+         install    \
+             --global   CycloneDX
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Something went wrong with the CycloneDX tool for dotnet."
+  exit 165
+fi
+
+echo
+echo "** CycloneDX:"
+which    dotnet-CycloneDX   &&   dotnet-CycloneDX   --version
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Something's wrong with 'dotnet-CycloneDX'."
+  exit 166
+fi
+
+echo
 echo "** Nuget:"
 which  nuget  &&  nuget  help
 declare exitCode=$?
