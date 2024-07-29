@@ -311,7 +311,7 @@
     </Target>
 
     <!-- GENERATE SBOM -->
-    <Target Name="GenerateSBOM" AfterTargets="PrintConfiguration">
+    <Target Name="GenerateSBOM" AfterTargets="CreateGithubReleaseWithTag">
 
         <PropertyGroup>
             <!-- using double-quotes instead of single-quotes is vital for the command to work as intended -->
