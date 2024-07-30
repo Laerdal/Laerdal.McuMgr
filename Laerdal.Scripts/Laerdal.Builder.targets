@@ -313,17 +313,26 @@
     <!-- GENERATE SBOM -->
     <Target Name="GenerateSBOM" AfterTargets="CreateGithubReleaseWithTag">
 
+        <Error Condition=" '$(PackageOutputPath)'    == '' " Text="'PackageOutputPath' has to be set. Please call this script again with the argument '/p:PackageOutputPath=...'"/>
+        <Error Condition=" '$(Laerdal_Version_Full)' == '' " Text="'Laerdal_Version_Full' has to be set. Please call this script again with the argument '/p:Laerdal_Version_Full=...'"/>
+
+        <Error Condition=" '$(Laerdal_McuMgr_ProjectFile)'                     == '' " Text="'Laerdal_McuMgr_ProjectFile' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgr_ProjectFile=...'"/>
+        <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_iOS)'         == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_iOS' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_iOS=...'"/>
+        <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_Android)'     == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_Android' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_Android=...'"/>
+        <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)' == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_MacCatalyst' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_MacCatalyst=...'"/>
+        <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)' == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_NetStandard' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_NetStandard=...'"/>
+
         <PropertyGroup>
             <!-- using double-quotes instead of single-quotes is vital for the command to work as intended -->
             <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   dotnet-CycloneDX</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --json</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --exclude-dev</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --include-project-references</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)       --json</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)       --exclude-dev</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)       --include-project-references</_Laerdal_Command___Generate_SBOM>
 
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --output        &quot;$(PackageOutputPath)&quot;</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --set-version   &quot;$(Laerdal_Version_Full)&quot;</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)       --output        &quot;$(PackageOutputPath)&quot;</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)       --set-version   &quot;$(Laerdal_Version_Full)&quot;</_Laerdal_Command___Generate_SBOM>
         </PropertyGroup>
-        
+
         <Message Importance="High" Text="** Generating SBOMs:"/>
 
         <!-- we intentionally avoided using WorkingDirectory="$(Laerdal_Script_FolderPath)" because our global.json settings enforce net8 but cyclonedx runs on net6 and net7 -->
