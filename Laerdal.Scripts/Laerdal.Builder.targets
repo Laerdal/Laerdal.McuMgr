@@ -315,9 +315,15 @@
 
         <PropertyGroup>
             <!-- using double-quotes instead of single-quotes is vital for the command to work as intended -->
-            <_Laerdal_Command___Generate_SBOM>   dotnet-CycloneDX   --json   --exclude-dev   --output &quot;$(PackageOutputPath)&quot;   </_Laerdal_Command___Generate_SBOM>
-        </PropertyGroup>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   dotnet-CycloneDX</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --json</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --exclude-dev</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --include-project-references</_Laerdal_Command___Generate_SBOM>
 
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --output        &quot;$(PackageOutputPath)&quot;</_Laerdal_Command___Generate_SBOM>
+            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM)   --set-version   &quot;$(Laerdal_Version_Full)&quot;</_Laerdal_Command___Generate_SBOM>
+        </PropertyGroup>
+        
         <Message Importance="High" Text="** Generating SBOMs:"/>
 
         <!-- we intentionally avoided using WorkingDirectory="$(Laerdal_Script_FolderPath)" because our global.json settings enforce net8 but cyclonedx runs on net6 and net7 -->
