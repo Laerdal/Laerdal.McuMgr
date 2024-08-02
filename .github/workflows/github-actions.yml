@@ -93,7 +93,9 @@ jobs:
                           -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"              \
                                                                                                                                  \
                          -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"             \
-                  -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"
+                  -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"      \
+                   &&                                                                                                            \
+          rm   "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
