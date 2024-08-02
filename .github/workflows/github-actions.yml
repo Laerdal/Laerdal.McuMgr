@@ -17,6 +17,7 @@ env:
   SCL_GITHUB_NUGET_FEED_USERNAME: ${{             secrets.SCL_GITHUB_NUGET_FEED_USERNAME             }}
 
   SCL_DEPENDENCY_TRACKER_API_KEY: ${{             secrets.SCL_DEPENDENCY_TRACKER_API_KEY             }}
+  SCL_DEPENDENCY_TRACKER_SERVER_URL: ${{          secrets.SCL_DEPENDENCY_TRACKER_SERVER_URL          }}
   SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY: ${{ secrets.SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY }}
 
   BINDINGS_IOS___SDK_VERSION: "17.5"
@@ -85,6 +86,7 @@ jobs:
                                     -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"        \
                                                                                                                                  \
                                  -p:Laerdal_Dependency_Tracker_Api_Key="${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"                 \
+                              -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"              \
                 -p:Laerdal_Dependency_Tracker_Private_Signing_Key_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"   \
                                                                                                                                  \
                                  -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"                     \
@@ -136,60 +138,3 @@ jobs:
                   --source   "https://api.nuget.org/v3/index.json"                                \
                   --api-key  "${{env.SCL_NUGET_ORG_FEED_API_KEY}}"                                \
                   *.nupkg
-
-#      disabled because these actions face a problem with our dependency-track server
-#
-#      - name: '⬆️ Upload BOM to Dependency-Track'
-#        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-#        uses: 'DependencyTrack/gh-upload-sbom@v3.0.0'
-#        with:
-#          apiKey: "${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"
-#          autoCreate: true
-#          projectName: 'scl-mcumgr'
-#          bomFilename: 'Artifacts/mcumgr.xml'
-#          serverHostname: 'dep-tracker.laerdal.com'
-#          projectVersion:  "${{env.LAERDAL_SOURCE_BRANCH}}"
-#
-#      - name: '⬆️ Upload BOM to Dependency-Track'
-#        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-#        uses: 'DependencyTrack/gh-upload-sbom@v3.0.0'
-#        with:
-#          apiKey: "${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"
-#          autoCreate: true
-#          projectName: 'scl-mcumgr'
-#          bomFilename: 'Artifacts/mcumgr.ios.xml'
-#          serverHostname: 'dep-tracker.laerdal.com'
-#          projectVersion:  "${{env.LAERDAL_SOURCE_BRANCH}}"
-#
-#      - name: '⬆️ Upload BOM to Dependency-Track'
-#        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-#        uses: 'DependencyTrack/gh-upload-sbom@v3.0.0'
-#        with:
-#          apiKey: "${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"
-#          autoCreate: true
-#          projectName: 'scl-mcumgr'
-#          bomFilename: 'Artifacts/mcumgr.android.xml'
-#          serverHostname: 'dep-tracker.laerdal.com'
-#          projectVersion:  "${{env.LAERDAL_SOURCE_BRANCH}}"
-#
-#      - name: '⬆️ Upload BOM to Dependency-Track'
-#        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-#        uses: 'DependencyTrack/gh-upload-sbom@v3.0.0'
-#        with:
-#          apiKey: "${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"
-#          autoCreate: true
-#          projectName: 'scl-mcumgr'
-#          bomFilename: 'Artifacts/mcumgr.maccatalyst.xml'
-#          serverHostname: 'dep-tracker.laerdal.com'
-#          projectVersion:  "${{env.LAERDAL_SOURCE_BRANCH}}"
-#
-#      - name: '⬆️ Upload BOM to Dependency-Track'
-#        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-#        uses: 'DependencyTrack/gh-upload-sbom@v3.0.0'
-#        with:
-#          apiKey: "${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"
-#          autoCreate: true
-#          projectName: 'scl-mcumgr'
-#          bomFilename: 'Artifacts/mcumgr.netstandard.xml'
-#          serverHostname: 'dep-tracker.laerdal.com'
-#          projectVersion:  "${{env.LAERDAL_SOURCE_BRANCH}}"

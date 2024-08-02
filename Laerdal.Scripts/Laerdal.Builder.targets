@@ -42,7 +42,8 @@
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Artifacts/`))</PackageOutputPath>
         <PackageOutputPath>$([System.IO.Path]::GetFullPath( '$(PackageOutputPath)' ))</PackageOutputPath>
 
-        <Laerdal_CycloneCLI_Path Condition=" '$(Laerdal_CycloneCLI_Path)' == '' ">$([System.IO.Path]::Combine( $(Laerdal_Script_FolderPath), 'cyclonedx'))</Laerdal_CycloneCLI_Path>
+        <Laerdal_CycloneCLI_Path Condition="               '$(Laerdal_CycloneCLI_Path)'               == '' ">$([System.IO.Path]::Combine( $(Laerdal_Script_FolderPath), 'cyclonedx'))</Laerdal_CycloneCLI_Path>
+        <Laerdal_Dependency_Tracker_Server_Url Condition=" '$(Laerdal_Dependency_Tracker_Server_Url)' == '' ">https://dep-tracker.laerdal.com/api/api/v1/bom</Laerdal_Dependency_Tracker_Server_Url>
 
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `TestResults`))</Laerdal_Test_Results_Folderpath>
 
@@ -311,9 +312,10 @@
               WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)"/>
     </Target>
 
-    <!-- SBOM Condition=" '$(Laerdal_Should_Tag_And_Release)' == 'True' " -->
+    <!-- SBOM -->
     <Target Name="GenerateSBOM"
-            AfterTargets="CreateGithubReleaseWithTag">
+            Condition=" '$(Laerdal_Should_Tag_And_Release)' == 'True' "
+            AfterTargets="DeduceVersion">
 
         <Error Condition=" '$(PackageOutputPath)'                                   == '' " Text="'PackageOutputPath' has to be set. Please call this script again with the argument '/p:PackageOutputPath=...'"/>
 
@@ -354,22 +356,23 @@
         <Exec Command=" &quot;$(Laerdal_CycloneCLI_Path)&quot;   sign   bom    &quot;$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.maccatalyst.xml' ))&quot;  --key-file    &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_Path)&quot;  " ConsoleToMSBuild="true"/>
         <Exec Command=" &quot;$(Laerdal_CycloneCLI_Path)&quot;   sign   bom    &quot;$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.netstandard.xml' ))&quot;  --key-file    &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_Path)&quot;  " ConsoleToMSBuild="true"/>
 
-        <!-- https://docs.dependencytrack.org/usage/cicd/#large-payloads    even though this works the results dont show up in the cloud   no idea why                              -->
-        <!-- <Message Importance="High" Text="** Uploading SBOMs:"/>                                                                                                                -->
-        <!-- <PropertyGroup>                                                                                                                                                        -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) curl &quot;https://dep-tracker.laerdal.com/api/v1/bom&quot;</_Laerdal_Command___Upload_SBOM>     -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) -X &quot;POST&quot;</_Laerdal_Command___Upload_SBOM>                                             -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) -H &quot;Content-Type: multipart/form-data&quot;</_Laerdal_Command___Upload_SBOM>                -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) -H &quot;X-API-Key: $(Laerdal_Dependency_Tracker_Api_Key)&quot;</_Laerdal_Command___Upload_SBOM> -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) -F &quot;autoCreate=true&quot;</_Laerdal_Command___Upload_SBOM>                                  -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) -F &quot;projectName=scl-mcumgr&quot;</_Laerdal_Command___Upload_SBOM>                           -->
-        <!--     <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) -F &quot;projectVersion=$(Laerdal_Version_Full)&quot;</_Laerdal_Command___Upload_SBOM>           -->
-        <!-- </PropertyGroup>                                                                                                                                                       -->
-        <!-- <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   -d  &quot;@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.xml'             ))&quot;   -F &quot;projectName=scl-mcumgr&quot;                                                                                                            " ConsoleToMSBuild="true" /> -->
-        <!-- <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   -d  &quot;@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.ios.xml'         ))&quot;   -F &quot;projectName=scl-mcumgr-ios&quot;          -F  &quot;parentName=scl-mcumgr&quot;  -F  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true" /> -->
-        <!-- <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   -d  &quot;@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.android.xml'     ))&quot;   -F &quot;projectName=scl-mcumgr-android&quot;      -F  &quot;parentName=scl-mcumgr&quot;  -F  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true" /> -->
-        <!-- <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   -d  &quot;@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.maccatalyst.xml' ))&quot;   -F &quot;projectName=scl-mcumgr-maccatalyst&quot;  -F  &quot;parentName=scl-mcumgr&quot;  -F  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true" /> -->
-        <!-- <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   -d  &quot;@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.netstandard.xml' ))&quot;   -F &quot;projectName=scl-mcumgr-netstandard&quot;  -F  &quot;parentName=scl-mcumgr&quot;  -F  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true" /> -->
+        <!-- https://docs.dependencytrack.org/usage/cicd/#large-payloads   notice that we are forced to target                -->
+        <!-- /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server  -->
+        <Message Importance="High" Text="** Uploading SBOMs:"/>
+        <PropertyGroup>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) curl &quot;$(Laerdal_Dependency_Tracker_Server_Url)&quot;</_Laerdal_Command___Upload_SBOM>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) --location</_Laerdal_Command___Upload_SBOM>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) --request &quot;POST&quot;</_Laerdal_Command___Upload_SBOM>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) --header &quot;Content-Type: multipart/form-data&quot;</_Laerdal_Command___Upload_SBOM>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) --header &quot;X-API-Key: $(Laerdal_Dependency_Tracker_Api_Key)&quot;</_Laerdal_Command___Upload_SBOM>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) --form &quot;autoCreate=true&quot;</_Laerdal_Command___Upload_SBOM>
+            <_Laerdal_Command___Upload_SBOM>$(_Laerdal_Command___Upload_SBOM) --form &quot;projectVersion=$(Laerdal_Version_Full)&quot;</_Laerdal_Command___Upload_SBOM>
+        </PropertyGroup>
+        <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   --form  &quot;bom=@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.xml'             ))&quot;   --form  &quot;classifier=CONTAINER&quot;   --form &quot;projectName=scl-mcumgr&quot;                                                                                                                      " ConsoleToMSBuild="true"/>
+        <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   --form  &quot;bom=@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.ios.xml'         ))&quot;   --form  &quot;classifier=LIBRARY&quot;     --form &quot;projectName=scl-mcumgr-ios&quot;            --form  &quot;parentName=scl-mcumgr&quot;  --form  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true"/>
+        <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   --form  &quot;bom=@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.android.xml'     ))&quot;   --form  &quot;classifier=LIBRARY&quot;     --form &quot;projectName=scl-mcumgr-android&quot;        --form  &quot;parentName=scl-mcumgr&quot;  --form  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true"/>
+        <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   --form  &quot;bom=@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.maccatalyst.xml' ))&quot;   --form  &quot;classifier=LIBRARY&quot;     --form &quot;projectName=scl-mcumgr-maccatalyst&quot;    --form  &quot;parentName=scl-mcumgr&quot;  --form  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true"/>
+        <Exec Command=" $(_Laerdal_Command___Upload_SBOM)   --form  &quot;bom=@$([System.IO.Path]::Combine( $(PackageOutputPath), 'mcumgr.netstandard.xml' ))&quot;   --form  &quot;classifier=LIBRARY&quot;     --form &quot;projectName=scl-mcumgr-netstandard&quot;    --form  &quot;parentName=scl-mcumgr&quot;  --form  &quot;parentVersion=$(Laerdal_Version_Full)&quot;  " ConsoleToMSBuild="true"/>
 
     </Target>
 
