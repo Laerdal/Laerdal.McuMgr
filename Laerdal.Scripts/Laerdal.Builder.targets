@@ -315,7 +315,7 @@
     <!-- SBOM -->
     <Target Name="GenerateSBOM"
             Condition=" '$(Laerdal_Should_Tag_And_Release)' == 'True' "
-            AfterTargets="DeduceVersion">
+            AfterTargets="CreateGithubReleaseWithTag">
 
         <Error Condition=" '$(PackageOutputPath)'                                   == '' " Text="'PackageOutputPath' has to be set. Please call this script again with the argument '/p:PackageOutputPath=...'"/>
 
