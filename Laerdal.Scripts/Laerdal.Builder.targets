@@ -42,7 +42,7 @@
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Artifacts/`))</PackageOutputPath>
         <PackageOutputPath>$([System.IO.Path]::GetFullPath( '$(PackageOutputPath)' ))</PackageOutputPath>
 
-        <Laerdal_CycloneCLI_Path Condition="               '$(Laerdal_CycloneCLI_Path)'               == '' ">$([System.IO.Path]::Combine( $(Laerdal_Script_FolderPath), 'cyclonedx'))</Laerdal_CycloneCLI_Path>
+        <Laerdal_CycloneCLI_Path Condition="               '$(Laerdal_CycloneCLI_Path)'               == '' ">cyclonedx</Laerdal_CycloneCLI_Path>
         <Laerdal_Dependency_Tracker_Server_Url Condition=" '$(Laerdal_Dependency_Tracker_Server_Url)' == '' ">https://dep-tracker.laerdal.com/api/api/v1/bom</Laerdal_Dependency_Tracker_Server_Url>
 
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `TestResults`))</Laerdal_Test_Results_Folderpath>
