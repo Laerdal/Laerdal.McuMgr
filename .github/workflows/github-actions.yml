@@ -34,6 +34,10 @@ on:
     branches:
       - '**' #        '*' matches zero or more characters but does not match the `/` character    '**' matches zero or more of any character
 
+  pull_request: # we need to build on pull requests so that we can generate and upload the sbom before merging onto main/develop branches
+    branches:
+      - '**'
+
 
 jobs:
   
@@ -68,35 +72,37 @@ jobs:
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: 'bash'
         run: |
-          cd    "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts"                                                                                                       \
-                     &&                                                                                                                                                      \
-          echo  "${{env.SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY}}"  >  "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"  \
-                     &&                                                                                                                                                      \
-          dotnet                                                                                                                                                             \
-             msbuild                                                                                                                                                         \
-             "Laerdal.Builder.targets"                                                                                                                                       \
-             -m:1                                                                                                                                                            \
-             -p:Should_Skip_MacCatalyst="false"                                                                                                                              \
-                                                                                                                                                                             \
-                                                  -p:PackageOutputPath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                                      \
-                                                -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"                                                               \
-                                              -p:Laerdal_Source_Branch="${{env.LAERDAL_SOURCE_BRANCH}}"                                                                      \
-                                            -p:Laerdal_Repository_Path="${{env.LAERDAL_REPOSITORY_PATH}}"                                                                    \
-                                        -p:Laerdal_Github_Access_Token="${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                                                    \
-                                    -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"                                                    \
-                                                                                                                                                                             \
-                                            -p:Laerdal_CycloneCLI_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/cyclonedx"                                      \
-                                 -p:Laerdal_Dependency_Tracker_Api_Key="${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"                                                             \
-                              -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"                                                          \
-                -p:Laerdal_Dependency_Tracker_Private_Signing_Key_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"     \
-                                                                                                                                                                             \
-                                 -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"                                                                 \
-                          -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"                                                          \
-                                                                                                                                                                             \
-                         -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"                                                         \
-                  -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"                                                  \
-                   &&                                                                                                                                                        \
-          rm   "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"
+          cd    "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts"                                                                                                             \
+                     &&                                                                                                                                                            \
+          echo  "${{env.SCL_DEPENDENCY_TRACKER_API_KEY}}"              >  "./dependency_tracker_api_key.ppk"                                                                       \
+                     &&                                                                                                                                                            \
+          echo  "${{env.SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY}}"  >  "./dependency_tracker_private_signing_key.ppk"                                                           \
+                     &&                                                                                                                                                            \
+          dotnet                                                                                                                                                                   \
+             msbuild                                                                                                                                                               \
+             "Laerdal.Builder.targets"                                                                                                                                             \
+             -m:1                                                                                                                                                                  \
+             -p:Should_Skip_MacCatalyst="false"                                                                                                                                    \
+                                                                                                                                                                                   \
+                                                        -p:PackageOutputPath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                                      \
+                                                      -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"                                                               \
+                                                    -p:Laerdal_Source_Branch="${{env.LAERDAL_SOURCE_BRANCH}}"                                                                      \
+                                                  -p:Laerdal_Repository_Path="${{env.LAERDAL_REPOSITORY_PATH}}"                                                                    \
+                                              -p:Laerdal_Github_Access_Token="${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                                                    \
+                                          -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"                                                    \
+                                                                                                                                                                                   \
+                                                  -p:Laerdal_CycloneCLI_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/cyclonedx"                                      \
+                                    -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"                                                          \
+                             -p:Laerdal_Dependency_Tracker_Api_Key_File_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_api_key.ppk"                 \
+                 -p:Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"     \
+                                                                                                                                                                                   \
+                                       -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"                                                                 \
+                                -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"                                                          \
+                                                                                                                                                                                   \
+                               -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"                                                         \
+                        -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"                                                  \
+                   &&                                                                                                                                                              \
+          rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
