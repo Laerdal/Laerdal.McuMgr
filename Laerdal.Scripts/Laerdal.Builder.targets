@@ -334,6 +334,8 @@
         <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)'      == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_NetStandard' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_NetStandard=...'"/>
 
         <PropertyGroup>
+            <!-- notice that we intentionally use $(Laerdal_Version_Assembly) instead of $(Laerdal_Version_Full) -->
+            <!-- because cyclonedx inherently ear-tags sboms with the former rather than the later               -->
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --project-version &quot;$(Laerdal_Version_Assembly)&quot;</_Laerdal_Sbom_Script_Parameters>            
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --output-directory-path &quot;$(PackageOutputPath)&quot;</_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --sbom-signing-key-file-path &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
