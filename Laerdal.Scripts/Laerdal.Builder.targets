@@ -334,18 +334,6 @@
         <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)'      == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_NetStandard' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_NetStandard=...'"/>
 
         <PropertyGroup>
-            <!-- 1. using double-quotes instead of single-quotes is vital for the command to work as intended                                                                         -->
-            <!-- 2. we would like to generate SBOMs in json format but unfortunately the cyclonedx cli util doesnt support signing those at the time of this writing   go figure ...  -->
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM) dotnet-CycloneDX</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM) --exclude-dev</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM) --include-project-references</_Laerdal_Command___Generate_SBOM>
-
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM) --output &quot;$(PackageOutputPath)&quot;</_Laerdal_Command___Generate_SBOM>
-            <_Laerdal_Command___Generate_SBOM>$(_Laerdal_Command___Generate_SBOM) --set-version &quot;$(Laerdal_Version_Full)&quot;</_Laerdal_Command___Generate_SBOM>
-        </PropertyGroup>
-        
-
-        <PropertyGroup>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --project-version &quot;$(Laerdal_Version_Assembly)&quot;</_Laerdal_Sbom_Script_Parameters>            
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --output-directory-path &quot;$(PackageOutputPath)&quot;</_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --sbom-signing-key-file-path &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
