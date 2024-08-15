@@ -162,7 +162,7 @@ function usage() {
 }
 
 function generate_sign_and_upload_sbom() {
-  set -x
+  # set -x
 
   # GENERATE SBOM
   dotnet-CycloneDX      "${csproj_file_path}"             \
