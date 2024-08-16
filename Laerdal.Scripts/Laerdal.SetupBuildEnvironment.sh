@@ -245,9 +245,9 @@ if [ $exitCode != 0 ]; then
 fi
 
 # we need to install the CycloneDX tool too in order to sign the artifacts
-wget  --no-verbose    https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.25.1/cyclonedx-osx-arm64   \
-      && mv      cyclonedx-osx-arm64    ./Laerdal.Scripts/cyclonedx                                              \
-      && chmod   +x                     ./Laerdal.Scripts/cyclonedx
+curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.25.1/cyclonedx-osx-arm64   \
+      && mv           cyclonedx    ./Laerdal.Scripts/cyclonedx                                                                      \
+      && chmod        +x           ./Laerdal.Scripts/cyclonedx
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
