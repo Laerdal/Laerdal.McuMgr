@@ -192,9 +192,9 @@ function generate_sign_and_upload_sbom() {
     echo "##vso[task.logissue type=error]Singing the SBOM failed!"
     exit 20
   fi
-  echo -e "\n\n"
-  tail "${bom_file_path}"
-  echo -e "\n\n"
+  # echo -e "\n\n"
+  # tail "${bom_file_path}"
+  # echo -e "\n\n"
 
 
 
@@ -208,7 +208,6 @@ function generate_sign_and_upload_sbom() {
   if [[ -n ${parent_project_version} ]]; then
       optional_parent_project_version_parameter="--form parentVersion=${parent_project_version}"
   fi
-
 
   declare -r http_response_code=$(                                                                       \
       curl   "${dependency_tracker_url}"                                                                 \
