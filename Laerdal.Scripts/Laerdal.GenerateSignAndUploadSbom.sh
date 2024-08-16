@@ -161,6 +161,39 @@ function usage() {
   echo "Usage: ${script_name}  --project-name  <name>   --project-version <version>   [--parent-project-name  <name>   --parent-project-version <version>]   --csproj-file-path <path>    --csproj-file-path <path>   --output-directory-path <path>  --output-sbom-file-name <name>   --sbom-signing-key-file-path <path>   --dependency-tracker-url <url>   --dependency-tracker-api-key-file-path <api_key>  "
 }
 
+function install_tools() {
+
+  echo
+  echo "** Installing CycloneDX as a dotnet tool:"
+  dotnet   tool       \
+           install    \
+               --global   CycloneDX
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Something went wrong with the CycloneDX tool for dotnet."
+    exit 10
+  fi
+
+  echo
+  echo "** CycloneDX:"
+  which    dotnet-CycloneDX   &&   dotnet-CycloneDX   --version
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Something's wrong with 'dotnet-CycloneDX'."
+    exit 12
+  fi
+
+  # we need to install the CycloneDX tool too in order to sign the artifacts
+  curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.26.0/cyclonedx-osx-arm64 \
+    && chmod   +x       cyclonedx
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+    exit 13
+  fi
+
+}
+
 function generate_sign_and_upload_sbom() {
   # set -x
 
@@ -177,7 +210,7 @@ function generate_sign_and_upload_sbom() {
   declare exitCode=$?
   if [ ${exitCode} != 0 ]; then
     echo "##vso[task.logissue type=error]Failed to generate the SBOM!"
-    exit 10
+    exit 20
   fi
 
 
@@ -190,11 +223,11 @@ function generate_sign_and_upload_sbom() {
   declare exitCode=$?
   if [ ${exitCode} != 0 ]; then
     echo "##vso[task.logissue type=error]Singing the SBOM failed!"
-    exit 20
+    exit 30
   fi
-  # echo -e "\n\n"
-  # tail "${bom_file_path}"
-  # echo -e "\n\n"
+  #  echo -e "\n\n"
+  #  tail "${bom_file_path}"
+  #  echo -e "\n\n"
 
 
 
@@ -235,12 +268,13 @@ function generate_sign_and_upload_sbom() {
   
   if [ ${exitCode} != 0 ]; then
     echo "##vso[task.logissue type=error]SBOM Uploading failed!"
-    exit 30
+    exit 40
   fi
 }
 
 function main() {
   parse_arguments "$@"
+  install_tools
   generate_sign_and_upload_sbom
 }
 

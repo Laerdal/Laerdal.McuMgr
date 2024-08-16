@@ -224,36 +224,6 @@ if [ $exitCode != 0 ]; then
   exit 160
 fi
 
-echo
-echo "** Installing CycloneDX as a dotnet tool:"
-dotnet   tool       \
-         install    \
-             --global   CycloneDX
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Something went wrong with the CycloneDX tool for dotnet."
-  exit 165
-fi
-
-echo
-echo "** CycloneDX:"
-which    dotnet-CycloneDX   &&   dotnet-CycloneDX   --version
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Something's wrong with 'dotnet-CycloneDX'."
-  exit 166
-fi
-
-# we need to install the CycloneDX tool too in order to sign the artifacts
-curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.26.0/cyclonedx-osx-arm64   \
-      && mv           cyclonedx    ./Laerdal.Scripts/cyclonedx                                                                      \
-      && chmod        +x           ./Laerdal.Scripts/cyclonedx
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
-  exit 167
-fi
-
 
 
 echo
