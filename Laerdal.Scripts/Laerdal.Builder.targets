@@ -38,7 +38,6 @@
         <Laerdal_RootDirectory_Folderpath>$([System.IO.Path]::Combine( '$(Laerdal_Script_FolderPath)', '..' ))</Laerdal_RootDirectory_Folderpath>
         <Laerdal_RootDirectory_Folderpath>$([System.IO.Path]::GetFullPath( '$(Laerdal_RootDirectory_Folderpath)' ))</Laerdal_RootDirectory_Folderpath>
 
-        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Artifacts/`))</PackageOutputPath>
         <PackageOutputPath>$([System.IO.Path]::GetFullPath( '$(PackageOutputPath)' ))</PackageOutputPath>
 
@@ -65,13 +64,13 @@
         <!--                                                                                                                                                                                                                               -->
         <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
         <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
-        
+
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
         <Laerdal_Repository_Path Condition="         '$(Laerdal_Repository_Path)'        == '' ">$(BUILD_REPOSITORY_NAME)</Laerdal_Repository_Path>
 
-        <Laerdal_Should_Tag_And_Release Condition="             '$(Laerdal_Should_Tag_And_Release)'           == ''  and  ( '$(Is_Core_Branch)' == 'true'                                     ) ">True</Laerdal_Should_Tag_And_Release>
-        <Laerdal_Should_Generate_and_Upload_Sbom   Condition="  '$(Laerdal_Should_Generate_and_Upload_Sbom)'  == ''  and  ( '$(Is_Core_Branch)' == 'true'  or  '$(Is_Pull_Request)' == 'true' ) ">True</Laerdal_Should_Generate_and_Upload_Sbom>
+        <Laerdal_Should_Tag_And_Release Condition="           '$(Laerdal_Should_Tag_And_Release)'           == ''  and  ( '$(Is_Core_Branch)' == 'true'                                     ) ">True</Laerdal_Should_Tag_And_Release>
+        <Laerdal_Should_Generate_and_Upload_Sbom Condition="  '$(Laerdal_Should_Generate_and_Upload_Sbom)'  == ''  and  ( '$(Is_Core_Branch)' == 'true'  or  '$(Is_Pull_Request)' == 'true' ) ">True</Laerdal_Should_Generate_and_Upload_Sbom>
 
         <Laerdal_McuMgr_ProjectFile>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr`, `Laerdal.McuMgr.csproj`))</Laerdal_McuMgr_ProjectFile>
         <Laerdal_McuMgrBindings_ProjectFile_iOS>$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Laerdal.McuMgr.Bindings.iOS`, `Laerdal.McuMgr.Bindings.iOS.csproj`))</Laerdal_McuMgrBindings_ProjectFile_iOS>
@@ -342,21 +341,21 @@
 
             <!-- notice that we intentionally use $(Laerdal_Version_Assembly) instead of $(Laerdal_Version_Full) -->
             <!-- because cyclonedx inherently ear-tags sboms with the former rather than the later               -->
-            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --project-version &quot;$(Laerdal_Version_Assembly)&quot;</_Laerdal_Sbom_Script_Parameters>            
-            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --output-directory-path &quot;$(PackageOutputPath)&quot;</_Laerdal_Sbom_Script_Parameters>
-            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --sbom-signing-key-file-path &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
+            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --project-version &quot;$(Laerdal_Version_Assembly)&quot;</_Laerdal_Sbom_Script_Parameters>
+            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --output-directory-path &quot;$(PackageOutputPath)&quot;</_Laerdal_Sbom_Script_Parameters>
+            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --sbom-signing-key-file-path &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
 
-            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --dependency-tracker-url &quot;$(Laerdal_Dependency_Tracker_Server_Url)&quot;</_Laerdal_Sbom_Script_Parameters>
-            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --dependency-tracker-api-key-file-path &quot;$(Laerdal_Dependency_Tracker_Api_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
+            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --dependency-tracker-url &quot;$(Laerdal_Dependency_Tracker_Server_Url)&quot;</_Laerdal_Sbom_Script_Parameters>
+            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --dependency-tracker-api-key-file-path &quot;$(Laerdal_Dependency_Tracker_Api_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
 
-            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters)  --csproj-classifier &quot;Library&quot;</_Laerdal_Sbom_Script_Parameters>
+            <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --csproj-classifier &quot;Library&quot;</_Laerdal_Sbom_Script_Parameters>
         </PropertyGroup>
 
         <!-- https://docs.dependencytrack.org/usage/cicd/#large-payloads   also notice that we are forced to target           -->
         <!-- /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server  -->
         <Message Importance="High" Text="** Generating, Singing and Uploading SBOMs:"/>
 
-        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;              --output-sbom-file-name &quot;sbom.laerdal.mcumgr.xml&quot;              " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
+        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;              --output-sbom-file-name &quot;sbom.laerdal.mcumgr.xml&quot;              --parent-project-name &quot;[Group::Laerdal.McuMgr]&quot;  " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
         <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_iOS_Name)&quot;          --output-sbom-file-name &quot;sbom.laerdal.mcumgr.ios.xml&quot;          --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
         <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Android_Name)&quot;      --output-sbom-file-name &quot;sbom.laerdal.mcumgr.android.xml&quot;      --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
         <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_MacCatalyst_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.maccatalyst.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>

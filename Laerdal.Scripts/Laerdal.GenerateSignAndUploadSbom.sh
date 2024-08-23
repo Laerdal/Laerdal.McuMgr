@@ -106,11 +106,11 @@ function parse_arguments() {
   # if [[ -z ${parent_project_version} ]]; then         this is optional
   #      ...
   
-  if [[ -n ${parent_project_name} && -z ${parent_project_version} ]]; then
-    echo "Specifying --parent-project-version is mandatory when --parent-project-name has been used!"
-    usage
-    exit 1    
-  fi
+  # if [[ -n ${parent_project_name} && -z ${parent_project_version} ]]; then # nah   better not to enforce this
+  #   echo "Specifying --parent-project-version is mandatory when --parent-project-name has been used!"
+  #   usage
+  #   exit 1    
+  # fi
 
   if [[ -z ${csproj_file_path} ]]; then
     echo "Specifying --csproj-file-path is mandatory!"
