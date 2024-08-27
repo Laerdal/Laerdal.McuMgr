@@ -1,26 +1,19 @@
 package no.laerdal.mcumgr_laerdal_wrapper;
 
-
 import android.util.Pair;
-
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
 
 public final class ZipPackage {
     private static final String MANIFEST = "manifest.json";
