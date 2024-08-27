@@ -91,7 +91,6 @@ jobs:
                                               -p:Laerdal_Github_Access_Token="${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                                                    \
                                           -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"                                                    \
                                                                                                                                                                                    \
-                                                  -p:Laerdal_CycloneCLI_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/cyclonedx"                                      \
                                     -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"                                                          \
                              -p:Laerdal_Dependency_Tracker_Api_Key_File_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_api_key.ppk"                 \
                  -p:Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_private_signing_key.ppk"     \
