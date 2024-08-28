@@ -20,7 +20,7 @@ public class IOSDeviceResetter: NSObject {
     public func beginReset() {
         setState(EIOSDeviceResetterState.resetting)
 
-        _manager = DefaultManager(transporter: _transporter)
+        _manager = DefaultManager(transport: _transporter)
         _manager.logDelegate = self
 
         _manager.reset {

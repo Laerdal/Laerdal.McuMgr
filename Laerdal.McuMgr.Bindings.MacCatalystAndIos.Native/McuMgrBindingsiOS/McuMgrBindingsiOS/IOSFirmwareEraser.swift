@@ -22,7 +22,7 @@ public class IOSFirmwareEraser: NSObject {
 
         setState(EIOSFirmwareEraserState.erasing)
 
-        _manager = ImageManager(transporter: _transporter)
+        _manager = ImageManager(transport: _transporter)
         _manager.logDelegate = self
 
         _manager.erase {
