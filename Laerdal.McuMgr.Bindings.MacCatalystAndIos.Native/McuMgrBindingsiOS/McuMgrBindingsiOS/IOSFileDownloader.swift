@@ -56,7 +56,7 @@ public class IOSFileDownloader: NSObject {
             return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
         }
 
-        _fileSystemManager = FileSystemManager(transporter: _transporter) // the delegate aspect is implemented in the extension below
+        _fileSystemManager = FileSystemManager(transport: _transporter) // the delegate aspect is implemented in the extension below
         _fileSystemManager.logDelegate = self
 
         setState(EIOSFileDownloaderState.idle)

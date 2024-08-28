@@ -165,7 +165,7 @@ public class IOSFileUploader: NSObject {
             return
         }
 
-        _fileSystemManager = FileSystemManager(transporter: _transporter) //00
+        _fileSystemManager = FileSystemManager(transport: _transporter) //00
         _fileSystemManager.logDelegate = self //00
 
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileUploader: McuMgrLogDelegate
