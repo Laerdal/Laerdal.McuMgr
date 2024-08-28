@@ -104,6 +104,11 @@ Add the following Nuget packages.
 
 Make sure to always get the latest versions of the above packages.
 
+       [Note] For MacCatalyst you will also need to add this to your MAUI .csproj file so as to avoid compilation issues:
+
+              <!-- https://github.com/xamarin/xamarin-macios/issues/19451#issuecomment-1811959873 -->
+              <_UseClassicLinker>false</_UseClassicLinker>
+
 ## 🤖 Android
 
 - Installing a firmware:
