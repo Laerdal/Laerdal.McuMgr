@@ -70,9 +70,9 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack     | Android                                                                   | iOS                                                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
-|-----------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
-| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 17.0+ ( requires iPhoneXR or better ) <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+| Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
+|-----------|---------------------------------------------------------------------------|------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 12.0+ <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
