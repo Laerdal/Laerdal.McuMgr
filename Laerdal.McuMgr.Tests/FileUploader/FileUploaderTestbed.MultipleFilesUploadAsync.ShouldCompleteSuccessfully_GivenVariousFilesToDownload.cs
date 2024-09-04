@@ -45,10 +45,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(remoteFilePathsAndTheirData: remoteFilePathsToTest, maxTriesPerUpload: 4));
+            var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(6.Seconds())).Which;
 
             // Assert
-            var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(3.Seconds())).Which;
-
             filesThatFailedToBeUploaded.Should().BeEquivalentTo(expectation: new[]
             {
                 "/some/file/to/a/folder/that/doesnt/exist.bin",

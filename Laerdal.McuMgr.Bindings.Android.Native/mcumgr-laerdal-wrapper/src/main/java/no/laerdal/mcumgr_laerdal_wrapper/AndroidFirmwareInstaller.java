@@ -10,9 +10,9 @@ import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
-import io.runtime.mcumgr.dfu.FirmwareUpgradeManager;
-import io.runtime.mcumgr.dfu.FirmwareUpgradeManager.State;
-import io.runtime.mcumgr.dfu.model.McuMgrImageSet;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.State;
+import io.runtime.mcumgr.dfu.mcuboot.model.ImageSet;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
@@ -81,7 +81,7 @@ public class AndroidFirmwareInstaller
             );
         }
 
-        McuMgrImageSet images = new McuMgrImageSet();
+        ImageSet images = new ImageSet();
         try
         {
             images.add(data); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
@@ -100,6 +100,7 @@ public class AndroidFirmwareInstaller
             }
         }
 
+        FirmwareUpgradeManager.Settings.Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
         try
         {
             requestHighConnectionPriority();
@@ -108,18 +109,20 @@ public class AndroidFirmwareInstaller
 
             if (estimatedSwapTimeInMilliseconds >= 0)
             {
-                _manager.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
+                settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
             }
 
             if (windowCapacity >= 0)
             {
-                _manager.setWindowUploadCapacity(windowCapacity); //2
+                settingsBuilder.setWindowCapacity(windowCapacity); //2
             }
 
             if (memoryAlignment >= 1)
             {
-                _manager.setMemoryAlignment(memoryAlignment); //3
+                settingsBuilder.setMemoryAlignment(memoryAlignment); //3
             }
+
+            settingsBuilder.setEraseAppSettings(eraseSettings);
         }
         catch (final Exception ex)
         {
@@ -132,9 +135,9 @@ public class AndroidFirmwareInstaller
         {
             setState(EAndroidFirmwareInstallationState.IDLE);
 
-            _manager.start(images, eraseSettings);
+            _manager.start(images, settingsBuilder.build());
         }
-        catch (final McuMgrException ex)
+        catch (final Exception ex)
         {
             emitFatalError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage());
 
@@ -281,9 +284,8 @@ public class AndroidFirmwareInstaller
 
     //to future maintainers    in the csharp bindings this generates a phony warning that does not make sense   something about the
     //to future maintainers    symbol FirmwareInstallCallback not being found   but the generated nuget works just fine   go figure
-    private final class FirmwareInstallCallbackProxy implements FirmwareUpgradeCallback
+    private final class FirmwareInstallCallbackProxy implements FirmwareUpgradeCallback<FirmwareUpgradeManager.State>
     {
-
         @Override
         public void onUpgradeStarted(final FirmwareUpgradeController controller)
         {
@@ -297,7 +299,7 @@ public class AndroidFirmwareInstaller
                 final FirmwareUpgradeManager.State newState
         )
         {
-            setLoggingEnabled(newState != FirmwareUpgradeManager.State.UPLOAD);
+            setLoggingEnabled(newState != State.UPLOAD);
 
             switch (newState)
             {

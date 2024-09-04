@@ -1,6 +1,6 @@
 package no.laerdal.mcumgr_laerdal_wrapper;
 
-import io.runtime.mcumgr.dfu.FirmwareUpgradeManager;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager;
 
 // must always mirror the values found in   io.runtime.mcumgr.dfu.FirmwareUpgradeManager.Mode we introduced this
 // mirror-enum because we don't want symbols of the underlying library to leak outside this thin java wrapper

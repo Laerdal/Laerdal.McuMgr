@@ -70,9 +70,9 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack     | Android                                                                   | iOS                                                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
-|-----------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
-| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 17.0+ ( requires iPhoneXR or better ) <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+| Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
+|-----------|---------------------------------------------------------------------------|------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 14.0 <br/> (api-levels: 20 / 30 / 34) | ✅ 12.0+ <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
@@ -103,6 +103,11 @@ Add the following Nuget packages.
        Laerdal.McuMgr.Bindings.NetStandard (WIP!)  (only add this to those projects of yours that target Windows/UWP)
 
 Make sure to always get the latest versions of the above packages.
+
+       [Note] For MacCatalyst you will also need to add this to your MAUI .csproj file so as to avoid compilation issues:
+
+              <!-- https://github.com/xamarin/xamarin-macios/issues/19451#issuecomment-1811959873 -->
+              <_UseClassicLinker>false</_UseClassicLinker>
 
 ## 🤖 Android
 

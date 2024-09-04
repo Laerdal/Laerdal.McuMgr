@@ -64,7 +64,7 @@ public class IOSFirmwareInstaller: NSObject {
             )
         }
 
-        _manager = FirmwareUpgradeManager(transporter: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
+        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
         _manager.logDelegate = self
 
         var firmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(
@@ -93,8 +93,12 @@ public class IOSFirmwareInstaller: NSObject {
             setState(.idle)
 
             try _manager.start(
-                hash: try McuMgrImage(data: imageData).hash, //2
-                data: imageData,
+                images: [ImageManager.Image( //2
+                        image: 0,
+                        slot: 1,
+                        hash: try McuMgrImage(data: imageData).hash,
+                        data: imageData
+                )],
                 using: firmwareUpgradeConfiguration
             )
 
