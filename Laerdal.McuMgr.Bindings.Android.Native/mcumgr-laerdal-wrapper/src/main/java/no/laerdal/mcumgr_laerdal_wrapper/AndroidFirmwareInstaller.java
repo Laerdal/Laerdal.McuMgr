@@ -11,11 +11,14 @@ import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
 import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.Settings;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.Settings.Builder;
 import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.State;
 import io.runtime.mcumgr.dfu.mcuboot.model.ImageSet;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
@@ -47,9 +50,25 @@ public class AndroidFirmwareInstaller
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
+    /**
+     * Initiates a firmware installation asynchronously. The progress is advertised through the callbacks provided by this class.
+     * Setup interceptors for them to get informed about the status of the firmware-installation.
+     *
+     * @param data the firmware bytes to install - can also be a zipped byte stream
+     * @param mode the mode of the installation - typically you want to set this to TEST_AND_CONFIRM in production environments
+     * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param eraseSettings specifies whether the previous settings should be erased on the target-device
+     * @param estimatedSwapTimeInMilliseconds specifies the amount of time to wait before probing the device to see if the firmware that got installed managed to reboot the device successfully - if negative the setting gets ignored
+     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if negative this settings gets ignored
+     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - - if negative this settings gets ignored
+     *
+     * @return a verdict indicating whether the firmware installation was started successfully or not
+     */
     public EAndroidFirmwareInstallationVerdict beginInstallation(
             @NonNull final byte[] data,
             @NonNull final EAndroidFirmwareInstallationMode mode,
+            final int initialMtuSize,
             final boolean eraseSettings,
             final int estimatedSwapTimeInMilliseconds,
             final int windowCapacity,
@@ -100,29 +119,18 @@ public class AndroidFirmwareInstaller
             }
         }
 
-        FirmwareUpgradeManager.Settings.Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
+        @NotNull Settings settings;
         try
         {
-            requestHighConnectionPriority();
+            configureConnectionSettings(initialMtuSize);
 
-            _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
-
-            if (estimatedSwapTimeInMilliseconds >= 0)
-            {
-                settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
-            }
-
-            if (windowCapacity >= 0)
-            {
-                settingsBuilder.setWindowCapacity(windowCapacity); //2
-            }
-
-            if (memoryAlignment >= 1)
-            {
-                settingsBuilder.setMemoryAlignment(memoryAlignment); //3
-            }
-
-            settingsBuilder.setEraseAppSettings(eraseSettings);
+            settings = digestFirmwareInstallationManagerSettings(
+                    mode,
+                    eraseSettings,
+                    estimatedSwapTimeInMilliseconds,
+                    windowCapacity,
+                    memoryAlignment
+            );
         }
         catch (final Exception ex)
         {
@@ -135,7 +143,7 @@ public class AndroidFirmwareInstaller
         {
             setState(EAndroidFirmwareInstallationState.IDLE);
 
-            _manager.start(images, settingsBuilder.build());
+            _manager.start(images, settings);
         }
         catch (final Exception ex)
         {
@@ -164,6 +172,32 @@ public class AndroidFirmwareInstaller
         //  to be sent again dropping the speed instead of increasing it.
         //
         //3 Set the selected memory alignment. In the app this defaults to 4 to match Nordic devices, but can be modified in the UI.
+    }
+
+    private @NotNull Settings digestFirmwareInstallationManagerSettings(@NotNull EAndroidFirmwareInstallationMode mode, boolean eraseSettings, int estimatedSwapTimeInMilliseconds, int windowCapacity, int memoryAlignment)
+    {
+        Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
+
+        _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
+
+        if (estimatedSwapTimeInMilliseconds >= 0)
+        {
+            settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
+        }
+
+        if (windowCapacity >= 0)
+        {
+            settingsBuilder.setWindowCapacity(windowCapacity); //2
+        }
+
+        if (memoryAlignment >= 1)
+        {
+            settingsBuilder.setMemoryAlignment(memoryAlignment); //3
+        }
+
+        settingsBuilder.setEraseAppSettings(eraseSettings);
+
+        return settingsBuilder.build();
     }
 
     public void disconnect() {
@@ -417,13 +451,19 @@ public class AndroidFirmwareInstaller
         }
     }
 
-    private void requestHighConnectionPriority()
+    private void configureConnectionSettings(int initialMtuSize)
     {
         final McuMgrTransport transporter = _manager.getTransporter();
         if (!(transporter instanceof McuMgrBleTransport))
             return;
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
+
+        if (initialMtuSize > 0)
+        {
+            bleTransporter.setInitialMtu(initialMtuSize);
+        }
+
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 

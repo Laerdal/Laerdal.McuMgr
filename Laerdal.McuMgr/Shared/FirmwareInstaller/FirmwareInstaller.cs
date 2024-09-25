@@ -42,10 +42,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
+            int? initialMtuSize = null, //   android only    not applicable for ios
             int? windowCapacity = null, //   android only    not applicable for ios
             int? memoryAlignment = null, //  android only    not applicable for ios
             int? pipelineDepth = null, //    ios only        not applicable for android
-            int? byteAlignment = null //     ios only        not applicable for android
+            int? byteAlignment = null
+
+            //     ios only        not applicable for android
         )
         {
             if (data == null || !data.Any())
@@ -56,12 +59,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 data: data,
                 mode: mode,
                 eraseSettings: eraseSettings ?? false,
-                pipelineDepth: pipelineDepth,
-                byteAlignment: byteAlignment,
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1,
+                initialMtuSize: initialMtuSize ?? -1,
                 windowCapacity: windowCapacity ?? -1,
                 memoryAlignment: memoryAlignment ?? -1,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
-            );
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment);
 
             return verdict;
         }
@@ -154,10 +157,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null,
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
+            int? initialMtuSize = null, //    android only
+            int? windowCapacity = null, //    android only
+            int? memoryAlignment = null, //   android only
+            int? pipelineDepth = null, //     ios only
+            int? byteAlignment = null, //     ios only
             int timeoutInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 100,
@@ -184,12 +188,15 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     var verdict = BeginInstallation( //00 dont use task.run here for now
                         data: data,
                         mode: mode,
-                        pipelineDepth: pipelineDepth,
-                        byteAlignment: byteAlignment,
                         eraseSettings: eraseSettings,
-                        windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment,
-                        estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
+                        estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
+
+                        initialMtuSize: initialMtuSize, //    android only
+                        windowCapacity: windowCapacity, //    android only
+                        memoryAlignment: memoryAlignment, //  android only
+
+                        pipelineDepth: pipelineDepth, //      ios only
+                        byteAlignment: byteAlignment //       ios only
                     );
                     if (verdict != EFirmwareInstallationVerdict.Success)
                         throw new ArgumentException(verdict.ToString());

@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -105,6 +106,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null, //not applicable in ios
                 int? windowCapacity = null, //not applicable in ios
                 int? memoryAlignment = null, //not applicable in ios
                 int? pipelineDepth = null,

@@ -104,16 +104,19 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null, // ignored in android   it only affects ios
-                int? byteAlignment = null //  ignored in android   it only affects ios
+                int? byteAlignment = null
+                //  ignored in android   it only affects ios
             )
             {
                 var nativeVerdict = base.BeginInstallation(
                     data: data,
                     mode: TranslateFirmwareInstallationMode(mode),
                     eraseSettings: eraseSettings ?? false,
+                    initialMtuSize: initialMtuSize ?? -1,
                     windowCapacity: windowCapacity ?? -1,
                     memoryAlignment: memoryAlignment ?? -1,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
