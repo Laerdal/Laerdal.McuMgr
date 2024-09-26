@@ -61,8 +61,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 .OccurredEvents
                 .Count(x =>
                 {
-                    var logEventArgs = x.Parameters.OfType<LogEmittedEventArgs>().FirstOrDefault(); //                      we need to make sure the calling environment
-                    return logEventArgs is { Level: ELogLevel.Warning } && logEventArgs.Message.Contains("[FI.IA.010]"); // is warned about falling back to failsafe settings
+                    var logEventArgs = x.Parameters.OfType<LogEmittedEventArgs>().FirstOrDefault(); //                                 we need to make sure the calling environment
+                    return logEventArgs is { Level: ELogLevel.Warning } && logEventArgs.Message.Contains("[FI.IA.GFCSICPTBU.010]"); // is warned about falling back to failsafe settings
                 })
                 .Should()
                 .Be(1);

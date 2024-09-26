@@ -4,6 +4,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Constants;
+using Laerdal.McuMgr.Common.Constants.Android;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -175,6 +177,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 : DefaultGracefulCancellationTimeoutInMs;
 
             var isCancellationRequested = false;
+            var didWarnOnceAboutUnstableConnection = false;
             var almostImmediateUploadingFailuresCount = 0;
             for (var triesCount = 1; !isCancellationRequested;)
             {
@@ -185,12 +188,18 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     StateChanged += FirmwareInstallationAsyncOnStateChanged;
                     FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
 
-                    var isConnectionUnstableForUploading = triesCount >= 2 && (triesCount == maxTriesCount || triesCount >= 3 && almostImmediateUploadingFailuresCount >= 2);
-                    if (isConnectionUnstableForUploading)
+                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
+                        triesCount_: triesCount,
+                        maxTriesCount_: maxTriesCount,
+                        almostImmediateUploadingFailuresCount_: almostImmediateUploadingFailuresCount
+                    );
+                    if (failSafeSettingsToApply != null)
                     {
-                        initialMtuSize = 23; //  when noticing persistent failures when uploading we resort
-                        windowCapacity = 1; //   to forcing the most failsafe settings we know of just in case
-                        memoryAlignment = 1; //  we manage to salvage this situation (works with samsung A8 tablets)
+                        byteAlignment = failSafeSettingsToApply.Value.byteAlignment;
+                        pipelineDepth = failSafeSettingsToApply.Value.pipelineDepth;
+                        initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
+                        windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
+                        memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
                     }
 
                     var verdict = BeginInstallation( //00 dont use task.run here for now
@@ -199,12 +208,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                         eraseSettings: eraseSettings,
                         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
 
+                        pipelineDepth: pipelineDepth, //      ios only
+                        byteAlignment: byteAlignment, //      ios only
                         initialMtuSize: initialMtuSize, //    android only
                         windowCapacity: windowCapacity, //    android only
-                        memoryAlignment: memoryAlignment, //  android only
-
-                        pipelineDepth: pipelineDepth, //      ios only
-                        byteAlignment: byteAlignment //       ios only
+                        memoryAlignment: memoryAlignment //   android only
                     );
                     if (verdict != EFirmwareInstallationVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
@@ -224,7 +232,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
                 {
-                    if (_fileUploadProgressEventsCount <= 3)
+                    if (_fileUploadProgressEventsCount <= 10)
                     {
                         almostImmediateUploadingFailuresCount++;
                     }
@@ -330,6 +338,41 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
             }
 
+            return;
+
+            
+            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
+                int triesCount_,
+                int maxTriesCount_,
+                int almostImmediateUploadingFailuresCount_
+            )
+            {
+                var isConnectionTooUnstableForUploading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && almostImmediateUploadingFailuresCount_ >= 2);
+                if (!isConnectionTooUnstableForUploading_)
+                    return null;
+
+                const int byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; // ios + maccatalyst
+                const int pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; // ios + maccatalyst
+
+                const int initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
+                const int windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
+                const int memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
+
+                if (!didWarnOnceAboutUnstableConnection)
+                {
+                    didWarnOnceAboutUnstableConnection = true;
+                    OnLogEmitted(new LogEmittedEventArgs(
+                        level: ELogLevel.Warning,
+                        message: $"[FI.IA.GFCSICPTBU.010] Installation-Attempt#{triesCount_}: Connection is too unstable for uploading the firmware to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                 $"just in case it helps (byteAlignment={byteAlignment_}, pipelineDepth={pipelineDepth_}, initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
+                        resource: "Firmware",
+                        category: "FirmwareInstaller"
+                    ));
+                }
+
+                return (byteAlignment: byteAlignment_, pipelineDepth: pipelineDepth_, initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
+            }
+            
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
             //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
