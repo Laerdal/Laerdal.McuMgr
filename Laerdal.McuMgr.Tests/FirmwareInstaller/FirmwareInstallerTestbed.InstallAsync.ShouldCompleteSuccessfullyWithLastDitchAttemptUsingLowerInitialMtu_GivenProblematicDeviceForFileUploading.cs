@@ -1,5 +1,7 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
@@ -10,7 +12,7 @@ using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareIns
 namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 {
     /// <summary>
-    /// Certain exotic devices (like Samsung A8 tablets) have buggy ble-stacks and have reliable support only for Phy1M mode and even then they have a
+    /// Certain exotic devices (like Samsung A8 Android tablets) have buggy ble-stacks and have reliable support only for Phy1M mode and even then they have a
     /// problem with establishing a ble-connection with nRF51+ chipsets of Nordic unless BeginInstallation() / UploadAsync() / DownloadAsync() are called
     /// with initialMtuValue=23 (which is the only value that works for these exotic devices).
     ///
@@ -52,6 +54,16 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             eventsMonitor
                 .OccurredEvents //there should be only one completed event
                 .Count(x => x.Parameters.OfType<StateChangedEventArgs>().FirstOrDefault() is { NewState: EFirmwareInstallationState.Complete })
+                .Should()
+                .Be(1);
+
+            eventsMonitor
+                .OccurredEvents
+                .Count(x =>
+                {
+                    var logEventArgs = x.Parameters.OfType<LogEmittedEventArgs>().FirstOrDefault(); //                      we need to make sure the calling environment
+                    return logEventArgs is { Level: ELogLevel.Warning } && logEventArgs.Message.Contains("[FI.IA.010]"); // is warned about falling back to failsafe settings
+                })
                 .Should()
                 .Be(1);
 

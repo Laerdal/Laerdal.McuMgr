@@ -46,9 +46,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             int? windowCapacity = null, //   android only    not applicable for ios
             int? memoryAlignment = null, //  android only    not applicable for ios
             int? pipelineDepth = null, //    ios only        not applicable for android
-            int? byteAlignment = null
-
-            //     ios only        not applicable for android
+            int? byteAlignment = null //     ios only        not applicable for android
         )
         {
             if (data == null || !data.Any())
@@ -59,12 +57,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 data: data,
                 mode: mode,
                 eraseSettings: eraseSettings ?? false,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1,
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
                 initialMtuSize: initialMtuSize ?? -1,
                 windowCapacity: windowCapacity ?? -1,
                 memoryAlignment: memoryAlignment ?? -1,
-                pipelineDepth: pipelineDepth,
-                byteAlignment: byteAlignment);
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
+            );
 
             return verdict;
         }
@@ -176,6 +175,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 : DefaultGracefulCancellationTimeoutInMs;
 
             var isCancellationRequested = false;
+            var almostImmediateUploadingFailuresCount = 0;
             for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
@@ -184,6 +184,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     Cancelled += FirmwareInstallationAsyncOnCancelled;
                     StateChanged += FirmwareInstallationAsyncOnStateChanged;
                     FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
+
+                    var isConnectionUnstableForUploading = triesCount >= 2 && (triesCount == maxTriesCount || triesCount >= 3 && almostImmediateUploadingFailuresCount >= 2);
+                    if (isConnectionUnstableForUploading)
+                    {
+                        initialMtuSize = 23; //  when noticing persistent failures when uploading we resort
+                        windowCapacity = 1; //   to forcing the most failsafe settings we know of just in case
+                        memoryAlignment = 1; //  we manage to salvage this situation (works with samsung A8 tablets)
+                    }
 
                     var verdict = BeginInstallation( //00 dont use task.run here for now
                         data: data,
@@ -216,6 +224,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
                 {
+                    if (_fileUploadProgressEventsCount <= 3)
+                    {
+                        almostImmediateUploadingFailuresCount++;
+                    }
+                    
                     if (++triesCount > maxTriesCount) //order
                         throw new AllFirmwareInstallationAttemptsFailedException(maxTriesCount, innerException: ex);
 
