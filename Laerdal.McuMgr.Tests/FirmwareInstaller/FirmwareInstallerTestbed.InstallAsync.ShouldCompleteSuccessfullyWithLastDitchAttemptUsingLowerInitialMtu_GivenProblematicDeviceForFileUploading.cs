@@ -1,6 +1,6 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using Laerdal.McuMgr.Common.Constants.Android;
+using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;

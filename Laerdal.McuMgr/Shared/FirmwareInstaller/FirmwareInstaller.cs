@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Constants;
-using Laerdal.McuMgr.Common.Constants.Android;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -351,12 +350,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 if (!isConnectionTooUnstableForUploading_)
                     return null;
 
-                const int byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; // ios + maccatalyst
-                const int pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; // ios + maccatalyst
-
-                const int initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
-                const int windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
-                const int memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
+                var byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; //        ios + maccatalyst
+                var pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; //        ios + maccatalyst
+                var initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
+                var windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
+                var memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
 
                 if (!didWarnOnceAboutUnstableConnection)
                 {
