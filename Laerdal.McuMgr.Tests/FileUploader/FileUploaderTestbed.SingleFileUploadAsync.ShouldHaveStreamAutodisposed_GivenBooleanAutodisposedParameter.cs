@@ -13,13 +13,27 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SSUA.SHSA.GBAP.010", true)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.020", false)]
-        public async Task SingleFileUploadAsync_ShouldAutodisposeGivenStream_GivenBooleanAutodisposedParameter(string testcaseNickname, bool shouldAutodisposeStream)
+        [InlineData("FUT.SSUA.SHSA.GBAP.010", "stream", true)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.020", "stream", false)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.030", "func_stream", true)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.040", "func_stream", false)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.050", "func_task_stream", true)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.060", "func_task_stream", false)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.070", "func_valuetask_stream", true)]
+        [InlineData("FUT.SSUA.SHSA.GBAP.080", "func_valuetask_stream", false)]
+        public async Task SingleFileUploadAsync_ShouldAutodisposeGivenStream_GivenBooleanAutodisposedParameter(string testcaseNickname, string streamType, bool shouldAutodisposeStream)
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
-            
+            var streamProvider = streamType switch
+            {
+                "stream" => (object)stream,
+                "func_stream" => object () => stream,
+                "func_task_stream" => object () => Task.FromResult<Stream>(stream),
+                "func_valuetask_stream" => object () => new ValueTask<Stream>(stream),
+                _ => throw new NotImplementedException($"Wops! Don't know how to handle stream type {streamType}! (how did this happen?)")
+            };
+
             const string remoteFilePath = "/foo/bar/ping.bin";
 
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy110(uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_());
@@ -29,7 +43,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                data: stream,
+                data: streamProvider,
                 maxTriesCount: 1,
                 remoteFilePath: remoteFilePath,
                 autodisposeStream: shouldAutodisposeStream
