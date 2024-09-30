@@ -95,6 +95,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(async () => //00 vital
                 {
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
                     await Task.Delay(100);
 
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);

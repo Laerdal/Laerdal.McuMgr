@@ -65,8 +65,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy,
                 int numberOfFirmwareUploadingEventsToEmitCount,
                 ECachedFirmwareType cachedFirmwareTypeToEmulate
-            )
-                : base(firmwareInstallerCallbacksProxy)
+            ) : base(firmwareInstallerCallbacksProxy)
             {
                 _cachedFirmwareTypeToEmulate = cachedFirmwareTypeToEmulate;
                 _numberOfFirmwareUploadingEventsToEmitCount = numberOfFirmwareUploadingEventsToEmitCount;
@@ -98,6 +97,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(function: async () => //00 vital
                 {
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
                     await Task.Delay(10);
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);

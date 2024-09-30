@@ -119,6 +119,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         return;
                     
                     await Task.Delay(100, _cancellationTokenSource.Token);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
+                    
+                    await Task.Delay(100, _cancellationTokenSource.Token);
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);
                     
                     await Task.Delay(100, _cancellationTokenSource.Token);

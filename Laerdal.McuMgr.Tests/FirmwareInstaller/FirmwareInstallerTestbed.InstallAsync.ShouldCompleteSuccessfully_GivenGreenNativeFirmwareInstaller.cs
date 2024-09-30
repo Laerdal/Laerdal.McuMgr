@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
 
-            eventsMonitor.OccurredEvents.Length.Should().Be(12);
+            eventsMonitor.OccurredEvents.Length.Should().Be(13);
 
             eventsMonitor
                 .Should()
@@ -87,6 +87,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(function: async () => //00 vital
                 {
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
                     await Task.Delay(10);
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);

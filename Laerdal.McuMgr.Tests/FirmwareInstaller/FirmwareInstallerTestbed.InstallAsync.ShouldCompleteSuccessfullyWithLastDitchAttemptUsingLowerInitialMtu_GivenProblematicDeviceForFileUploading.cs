@@ -164,9 +164,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
                         return;
                     }
-                    
-                    await Task.Delay(10);
-                    
+
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
                     await Task.Delay(10);
                     
