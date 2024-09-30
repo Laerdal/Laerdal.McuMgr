@@ -3,6 +3,7 @@ using Laerdal.McuMgr.FileUploader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
 {
+    //must be internal because there is absolutely no point for anyone outside this assembly to be able to raise these events
     internal interface IFileUploaderEventEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
