@@ -52,7 +52,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(20);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //  order
-                    DownloadCompletedAdvertisement(remoteFilePath, new byte[] { }); //                                              order
+                    DownloadCompletedAdvertisement(remoteFilePath, []); //                                              order
                 });
 
                 return verdict;

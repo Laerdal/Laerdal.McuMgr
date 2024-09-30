@@ -20,7 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(Enumerable.Empty<string>()));
+            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync([]));
 
             // Assert
             var results = (await work.Should().CompleteWithinAsync(500.Milliseconds())).Which;
@@ -52,7 +52,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     
                     await Task.Delay(20);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
-                    DownloadCompletedAdvertisement(remoteFilePath, new byte[] { }); //                                             order
+                    DownloadCompletedAdvertisement(remoteFilePath, []); //                                             order
                 });
 
                 return verdict;

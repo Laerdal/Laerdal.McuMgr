@@ -16,10 +16,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             // Arrange
             var expectedResults = new Dictionary<string, byte[]>
             {
-                { "/some/file/that/exists.bin", new byte[] { 1 } },
-                { "/Some/File/That/Exists.bin", new byte[] { 2 } },
+                { "/some/file/that/exists.bin", [1] },
+                { "/Some/File/That/Exists.bin", [2] },
                 { "/some/file/that/doesnt/exist.bin", null },
-                { "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin", new byte[] { 3 } },
+                { "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin", [3] },
                 { "/some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin", null },
             };
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy6(new GenericNativeFileDownloaderCallbacksProxy_(), expectedResults);

@@ -23,9 +23,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
         public async Task SingleStreamUploadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileUploader(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
         {
             // Arrange
-            var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+            var stream = new MemoryStream([1, 2, 3]);
             
-            var expectedRemoteFilepath = remoteFilePath.StartsWith("/")
+            var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 
