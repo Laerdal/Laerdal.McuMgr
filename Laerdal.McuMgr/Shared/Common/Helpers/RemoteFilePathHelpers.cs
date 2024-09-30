@@ -85,7 +85,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         {
             remoteFilePath = remoteFilePath?.Trim() ?? "";
             
-            remoteFilePath = remoteFilePath.StartsWith("/") //10
+            remoteFilePath = remoteFilePath.StartsWith('/') //10
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 

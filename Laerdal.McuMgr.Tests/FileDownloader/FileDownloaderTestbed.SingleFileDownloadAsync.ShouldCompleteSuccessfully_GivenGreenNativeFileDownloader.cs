@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-            var expectedRemoteFilepath = remoteFilePath.StartsWith("/")
+            var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 
