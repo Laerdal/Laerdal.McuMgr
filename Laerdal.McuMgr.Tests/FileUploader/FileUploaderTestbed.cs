@@ -28,7 +28,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 _uploaderCallbacksProxy = uploaderCallbacksProxy;
             }
 
-            public virtual EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public virtual EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null,
+                int? byteAlignment = null,
+                int? initialMtuSize = null,
+                int? windowCapacity = null,
+                int? memoryAlignment = null
+            )
             {
                 BeginUploadCalled = true;
 

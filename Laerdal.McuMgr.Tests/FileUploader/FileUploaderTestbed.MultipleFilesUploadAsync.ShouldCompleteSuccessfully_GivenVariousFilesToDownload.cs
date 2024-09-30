@@ -80,9 +80,27 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             }
 
             private int _retryCountForProblematicFile;
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
-                var verdict = base.BeginUpload(remoteFilePath, data);
+                var verdict = base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Task.Run(async () => //00 vital
                 {

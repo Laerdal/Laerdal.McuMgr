@@ -5,7 +5,6 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -15,23 +14,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FUT.SFUA.SCS.GVSTBR.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
-        [InlineData("FUT.SFUA.SCS.GVSTBR.030", "/path/to/file.bin", 2, +000)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.040", "/path/to/file.bin", 2, +100)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.050", "/path/to/file.bin", 3, -100)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.060", "/path/to/file.bin", 3, +000)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.070", "/path/to/file.bin", 3, +100)]
-        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfully_GivenVariousSleepTimesBetweenRetries(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
+        [InlineData("FUT.SFUA.SCSBFBTFS.GFBC.010", "/path/to/file.bin", 2)]
+        [InlineData("FUT.SFUA.SCSBFBTFS.GFBC.020", "/path/to/file.bin", 3)]
+        [InlineData("FUT.SFUA.SCSBFBTFS.GFBC.030", "/path/to/file.bin", 5)]
+        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettings_GivenFlakyBluetoothConnection(string testcaseNickname, string remoteFilePath, int maxTriesCount)
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
-
-            var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
-                ? remoteFilePath
-                : $"/{remoteFilePath}";
-
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy100(
+            
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy120(
                 maxTriesCount: maxTriesCount,
                 uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_()
             );
@@ -43,13 +34,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 data: stream,
                 maxTriesCount: maxTriesCount,
-                remoteFilePath: remoteFilePath,
-                sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
+                remoteFilePath: remoteFilePath
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(((maxTriesCount + 1) * 2).Seconds());
-
+            await work.Should().CompleteWithinAsync((maxTriesCount * 2).Seconds());
+            
+            mockedNativeFileUploaderProxy.BugDetected.Should().BeNull();
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
@@ -57,30 +48,32 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             eventsMonitor
                 .OccurredEvents.Where(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
                 .Should().HaveCount(maxTriesCount - 1); //one error for each try except the last one
+            
+            eventsMonitor
+                .Should().Raise(nameof(fileUploader.StateChanged))
+                .WithSender(fileUploader)
+                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileUploaderState.Uploading);
-
-            eventsMonitor
-                .Should().Raise(nameof(fileUploader.StateChanged))
-                .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileUploaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploaded))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.Resource == expectedRemoteFilepath);
+                .WithArgs<FileUploadedEventArgs>(args => args.Resource == remoteFilePath);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy100 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy120 : MockedNativeFileUploaderProxySpy
         {
             private readonly int _maxTriesCount;
-            
-            public MockedGreenNativeFileUploaderProxySpy100(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, int maxTriesCount) : base(uploaderCallbacksProxy)
+
+            public string BugDetected { get; private set; }
+
+            public MockedGreenNativeFileUploaderProxySpy120(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, int maxTriesCount) : base(uploaderCallbacksProxy)
             {
                 _maxTriesCount = maxTriesCount;
             }
@@ -112,11 +105,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 Task.Run(async () => //00 vital
                 {
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle);
                     await Task.Delay(10);
-
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    await Task.Delay(10);
 
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00);
@@ -129,7 +119,50 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10);
                     await Task.Delay(5);
-                    
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10);
+                    await Task.Delay(5);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
+
+                    if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize)
+                    {
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                        order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
+                        return;
+                    }
+
+                    if (_tryCounter == _maxTriesCount && windowCapacity != AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity)
+                    {
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to {AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity} but it's set to {windowCapacity?.ToString() ?? "(null)"} instead - something is wrong!";
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                        order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
+                        return;
+                    }
+
+                    if (_tryCounter == _maxTriesCount && memoryAlignment != AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment)
+                    {
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to {AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment} but it's set to {memoryAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                        order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
+                        return;
+                    }
+
+                    if (_tryCounter == _maxTriesCount && pipelineDepth != AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth)
+                    {
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(pipelineDepth)} set to {AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth} but it's set to {pipelineDepth?.ToString() ?? "(null)"} instead - something is wrong!";
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                        order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
+                        return;
+                    }
+
+                    if (_tryCounter == _maxTriesCount && byteAlignment != AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment)
+                    {
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(byteAlignment)} set to {AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment} but it's set to {byteAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                        order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
+                        return;
+                    }
+
                     if (_tryCounter < _maxTriesCount)
                     {
                         await Task.Delay(20);
@@ -137,10 +170,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                         FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
                         return;
                     }
-                    
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10);
-                    await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
+
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10);
                     await Task.Delay(5);
@@ -149,7 +179,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10);
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10);
-
+                    
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
                     FileUploadedAdvertisement(remoteFilePath); //                                                            order
                 });

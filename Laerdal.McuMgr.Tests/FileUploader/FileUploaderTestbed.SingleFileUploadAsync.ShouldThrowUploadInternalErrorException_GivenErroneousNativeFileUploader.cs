@@ -34,9 +34,27 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
-                base.BeginUpload(remoteFilePath, data);
+                base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Thread.Sleep(100);
 

@@ -13,30 +13,30 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SSUA.SHSA.GBAP.010", "stream", true)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.020", "stream", false)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.030", "func_stream", true)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.040", "func_stream", false)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.050", "func_task_stream", true)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.060", "func_task_stream", false)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.070", "func_valuetask_stream", true)]
-        [InlineData("FUT.SSUA.SHSA.GBAP.080", "func_valuetask_stream", false)]
-        public async Task SingleFileUploadAsync_ShouldAutodisposeGivenStream_GivenBooleanAutodisposedParameter(string testcaseNickname, string streamType, bool shouldAutodisposeStream)
+        [InlineData("FUT.SFUA.SCAGS.GBAP.010", "stream", true)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.020", "stream", false)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.030", "func_stream", true)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.040", "func_stream", false)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.050", "func_task_stream", true)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.060", "func_task_stream", false)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.070", "func_valuetask_stream", true)]
+        [InlineData("FUT.SFUA.SCAGS.GBAP.080", "func_valuetask_stream", false)]
+        public async Task SingleFileUploadAsync_ShouldConditionallyAutodisposeGivenStream_GivenBooleanAutodisposedParameter(string testcaseNickname, string streamType, bool shouldAutodisposeStream)
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
             var streamProvider = streamType switch
             {
                 "stream" => (object)stream,
-                "func_stream" => object () => stream,
-                "func_task_stream" => object () => Task.FromResult<Stream>(stream),
-                "func_valuetask_stream" => object () => new ValueTask<Stream>(stream),
+                "func_stream" => () => stream,
+                "func_task_stream" => () => Task.FromResult<Stream>(stream),
+                "func_valuetask_stream" => () => new ValueTask<Stream>(stream),
                 _ => throw new NotImplementedException($"Wops! Don't know how to handle stream type {streamType}! (how did this happen?)")
             };
 
             const string remoteFilePath = "/foo/bar/ping.bin";
 
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy110(uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_());
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy110(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
@@ -87,9 +87,27 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
-                var verdict = base.BeginUpload(remoteFilePath, data);
+                var verdict = base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Task.Run(async () => //00 vital
                 {

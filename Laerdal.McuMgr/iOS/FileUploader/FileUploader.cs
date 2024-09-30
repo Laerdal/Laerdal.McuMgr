@@ -99,13 +99,27 @@ namespace Laerdal.McuMgr.FileUploader
             }
 
             private NSData _nsDataOfFileInCurrentlyActiveUpload;
-            public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            
+            public EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+
+                int? pipelineDepth = null, //    ios only
+                int? byteAlignment = null, //    ios only
+
+                int? initialMtuSize = null, //   android only
+                int? windowCapacity = null, //   android only
+                int? memoryAlignment = null //   android only
+            )
             {
                 var nsDataOfFileToUpload = NSData.FromArray(data);
 
                 var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(
                     data: nsDataOfFileToUpload,
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth ?? -1,
+                    byteAlignment: byteAlignment ?? -1
                 ));
                 if (verdict != EFileUploaderVerdict.Success)
                 {

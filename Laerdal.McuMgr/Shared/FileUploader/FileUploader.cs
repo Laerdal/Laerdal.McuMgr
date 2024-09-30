@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
@@ -42,14 +43,34 @@ namespace Laerdal.McuMgr.FileUploader
         public bool TrySetBluetoothDevice(object bluetoothDevice) => _nativeFileUploaderProxy?.TrySetContext(bluetoothDevice) ?? false;
         public bool TryInvalidateCachedTransport() => _nativeFileUploaderProxy?.TryInvalidateCachedTransport() ?? false;
 
-        public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+        public EFileUploaderVerdict BeginUpload(
+            string remoteFilePath,
+            byte[] data,
+
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
+        )
         {
             data = data ?? throw new ArgumentNullException(nameof(data));
             
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var verdict = _nativeFileUploaderProxy.BeginUpload(remoteFilePath, data);
+            var verdict = _nativeFileUploaderProxy.BeginUpload(
+                data: data,
+                remoteFilePath: remoteFilePath,
+
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
+            );
 
             return verdict;
         }
@@ -143,7 +164,14 @@ namespace Laerdal.McuMgr.FileUploader
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true,
-            bool autodisposeStreams = false
+            bool autodisposeStreams = false,
+            
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
         ) where TData : notnull
         {
             RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
@@ -162,7 +190,14 @@ namespace Laerdal.McuMgr.FileUploader
                         maxTriesCount: maxTriesPerUpload,
                         autodisposeStream: autodisposeStreams,
                         timeoutForUploadInMs: timeoutPerUploadInMs,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+
+                        pipelineDepth: pipelineDepth,
+                        byteAlignment: byteAlignment,
+                        
+                        initialMtuSize: initialMtuSize,
+                        windowCapacity: windowCapacity,
+                        memoryAlignment: memoryAlignment
                     );
                 }
                 catch (UploadErroredOutException)
@@ -180,7 +215,7 @@ namespace Laerdal.McuMgr.FileUploader
             return filesThatFailedToBeUploaded;
 
             //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
-            //    tactic because failures are fairly common when uploading 50 files or more over to aed devices and we wanted to ensure
+            //    tactic because failures are fairly common when uploading 50 files or more over to aed devices, and we wanted to ensure
             //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
         }
         
@@ -192,7 +227,14 @@ namespace Laerdal.McuMgr.FileUploader
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
-            bool autodisposeStream = false
+            bool autodisposeStream = false,
+            
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
         ) where TData : notnull
         {
             if (data is null)
@@ -208,6 +250,8 @@ namespace Laerdal.McuMgr.FileUploader
                 : DefaultGracefulCancellationTimeoutInMs;
 
             var isCancellationRequested = false;
+            var suspiciousTransportFailuresCount = 0;
+            var didWarnOnceAboutUnstableConnection = false;
             for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
@@ -218,7 +262,33 @@ namespace Laerdal.McuMgr.FileUploader
                     StateChanged += FileUploader_StateChanged_;
                     FatalErrorOccurred += FileUploader_FatalErrorOccurred_;
 
-                    var verdict = BeginUpload(remoteFilePath, dataArray); //00 dont use task.run here for now
+                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
+                        triesCount_: triesCount,
+                        maxTriesCount_: maxTriesCount,
+                        suspiciousTransportFailuresCount_: suspiciousTransportFailuresCount,
+                        emitWarningAboutUnstableConnection_: !didWarnOnceAboutUnstableConnection
+                    );
+                    if (failSafeSettingsToApply != null)
+                    {
+                        didWarnOnceAboutUnstableConnection = true;
+                        byteAlignment = failSafeSettingsToApply.Value.byteAlignment;
+                        pipelineDepth = failSafeSettingsToApply.Value.pipelineDepth;
+                        initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
+                        windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
+                        memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
+                    }
+
+                    var verdict = BeginUpload( //00 dont use task.run here for now
+                        data: dataArray,
+                        remoteFilePath: remoteFilePath,
+                        
+                        pipelineDepth: pipelineDepth, //      ios only
+                        byteAlignment: byteAlignment, //      ios only
+
+                        initialMtuSize: initialMtuSize, //    android only
+                        windowCapacity: windowCapacity, //    android only
+                        memoryAlignment: memoryAlignment //   android only
+                    );
                     if (verdict != EFileUploaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
@@ -368,6 +438,37 @@ namespace Laerdal.McuMgr.FileUploader
 
             return;
 
+            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
+                int triesCount_,
+                int maxTriesCount_,
+                int suspiciousTransportFailuresCount_,
+                bool emitWarningAboutUnstableConnection_
+            )
+            {
+                var isConnectionTooUnstableForUploading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && suspiciousTransportFailuresCount_ >= 2);
+                if (!isConnectionTooUnstableForUploading_)
+                    return null;
+
+                var byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; //        ios + maccatalyst
+                var pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; //        ios + maccatalyst
+                var initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
+                var windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
+                var memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
+
+                if (emitWarningAboutUnstableConnection_)
+                {
+                    OnLogEmitted(new LogEmittedEventArgs(
+                        level: ELogLevel.Warning,
+                        message: $"[FU.UA.GFCSICPTBU.010] Attempt#{triesCount_}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                 $"just in case it helps (byteAlignment={byteAlignment_}, pipelineDepth={pipelineDepth_}, initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
+                        resource: "File",
+                        category: "FileUploader"
+                    ));
+                }
+
+                return (byteAlignment: byteAlignment_, pipelineDepth: pipelineDepth_, initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
+            }
+            
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
             //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
@@ -395,14 +496,22 @@ namespace Laerdal.McuMgr.FileUploader
             };
         }
 
-        void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea);
+        void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
+        void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
+        void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => OnFileUploaded(ea);
+        void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
+        void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileUploadProgressPercentageAndDataThroughputChanged(ea);
 
+        private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
+        private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
+        private void OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.Invoke(this, ea);
+        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
+        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
+        private void OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+        
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileUploaderProxy
         internal class GenericNativeFileUploaderCallbacksProxy : INativeFileUploaderCallbacksProxy
         {
