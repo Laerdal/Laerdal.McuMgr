@@ -20,7 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
         [InlineData("FUT.SSUA.SCS.GGNFD.050", "/path/to/file.bin", 3, -100)]
         [InlineData("FUT.SSUA.SCS.GGNFD.060", "/path/to/file.bin", 3, +000)]
         [InlineData("FUT.SSUA.SCS.GGNFD.070", "/path/to/file.bin", 3, +100)]
-        public async Task SingleStreamUploadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileUploader(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
+        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfully_GivenGreenStream(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);

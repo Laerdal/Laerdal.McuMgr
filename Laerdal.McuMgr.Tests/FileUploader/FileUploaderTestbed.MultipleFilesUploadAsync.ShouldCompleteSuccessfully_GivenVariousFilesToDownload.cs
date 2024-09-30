@@ -44,7 +44,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(remoteFilePathsAndTheirData: remoteFilePathsToTest, maxTriesPerUpload: 4));
+            var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(
+                maxTriesPerUpload: 4,
+                remoteFilePathsAndTheirData: remoteFilePathsToTest
+            ));
             var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(6.Seconds())).Which;
 
             // Assert
