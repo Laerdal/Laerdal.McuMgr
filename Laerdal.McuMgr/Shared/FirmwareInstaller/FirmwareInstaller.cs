@@ -57,13 +57,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
                 data: data,
                 mode: mode,
-                eraseSettings: eraseSettings ?? false,
+                eraseSettings: eraseSettings,
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
-                initialMtuSize: initialMtuSize ?? -1,
-                windowCapacity: windowCapacity ?? -1,
-                memoryAlignment: memoryAlignment ?? -1,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment,
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
             );
 
             return verdict;
