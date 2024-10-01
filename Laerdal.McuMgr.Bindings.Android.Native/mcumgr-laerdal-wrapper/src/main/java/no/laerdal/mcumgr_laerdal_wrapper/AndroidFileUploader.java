@@ -162,13 +162,23 @@ public class AndroidFileUploader
         resetUploadState(); //order
         setLoggingEnabled(false);
 
-        _uploadController = new FileUploader( //00
-                _fileSystemManager,
-                _remoteFilePathSanitized,
-                data,
-                Math.max(1, windowCapacity),
-                Math.max(1, memoryAlignment)
-        ).uploadAsync(_fileUploaderCallbackProxy);
+        try
+        {
+            _uploadController = new FileUploader( //00
+                    _fileSystemManager,
+                    _remoteFilePathSanitized,
+                    data,
+                    Math.max(1, windowCapacity),
+                    Math.max(1, memoryAlignment)
+            ).uploadAsync(_fileUploaderCallbackProxy);
+        }
+        catch (final Exception ex)
+        {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError(_remoteFilePathSanitized, "Failed to initialize the upload", ex);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
 
         return EAndroidFileUploaderVerdict.SUCCESS;
 

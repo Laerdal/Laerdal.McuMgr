@@ -18,7 +18,7 @@ public class AndroidFileDownloader
     private FsManager _fileSystemManager;
     @SuppressWarnings("FieldCanBeLocal")
     private final McuMgrBleTransport _transport;
-    private TransferController _controller;
+    private TransferController _downloadingController;
 
     private int _initialBytes;
     private long _downloadStartTimestamp;
@@ -30,7 +30,24 @@ public class AndroidFileDownloader
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public EAndroidFileDownloaderVerdict beginDownload(final String remoteFilePath)
+    /**
+     * Initiates a file download asynchronously. The progress is advertised through the callbacks provided by this class.
+     * Setup interceptors for them to get informed about the status of the firmware-installation.
+     *
+     * @param remoteFilePath the remote-file-path to the file on the remote device that you wish to download
+     * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     *
+     * @return a verdict indicating whether the file uploading was started successfully or not
+     */
+    public EAndroidFileDownloaderVerdict beginDownload(
+            final String remoteFilePath,
+            final int initialMtuSize,
+            final int windowCapacity, //todo   should we keep this or remove it?  it doesnt seem to be applicable to the file-downloader
+            final int memoryAlignment //todo   should we keep this or remove it?  it doesnt seem to be applicable to the file-downloader
+    )
     {
         if (_currentState != EAndroidFileDownloaderState.NONE  //if the download is already in progress we bail out
                 && _currentState != EAndroidFileDownloaderState.ERROR
@@ -68,7 +85,24 @@ public class AndroidFileDownloader
 
         try
         {
+            if (initialMtuSize > 0)
+            {
+                _transport.setInitialMtu(initialMtuSize);
+            }
+
             _fileSystemManager = new FsManager(_transport);
+
+            setLoggingEnabled(false);
+            requestHighConnectionPriority();
+
+            setState(EAndroidFileDownloaderState.IDLE);
+            busyStateChangedAdvertisement(true);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+
+            _initialBytes = 0;
+
+            _remoteFilePathSanitized = remoteFilePathSanitized;
+            _downloadingController = _fileSystemManager.fileDownload(remoteFilePathSanitized, new FileDownloaderCallbackProxy());
         }
         catch (final Exception ex)
         {
@@ -78,24 +112,12 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        setLoggingEnabled(false);
-        requestHighConnectionPriority();
-
-        setState(EAndroidFileDownloaderState.IDLE);
-        busyStateChangedAdvertisement(true);
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-
-        _initialBytes = 0;
-
-        _remoteFilePathSanitized = remoteFilePathSanitized;
-        _controller = _fileSystemManager.fileDownload(remoteFilePathSanitized, new FileDownloaderCallbackProxy());
-
         return EAndroidFileDownloaderVerdict.SUCCESS;
     }
 
     public void pause()
     {
-        final TransferController transferController = _controller;
+        final TransferController transferController = _downloadingController;
         if (transferController == null)
             return;
 
@@ -107,7 +129,7 @@ public class AndroidFileDownloader
 
     public void resume()
     {
-        final TransferController transferController = _controller;
+        final TransferController transferController = _downloadingController;
         if (transferController == null)
             return;
 
@@ -135,7 +157,7 @@ public class AndroidFileDownloader
     {
         setState(EAndroidFileDownloaderState.CANCELLING); //order
 
-        final TransferController transferController = _controller;
+        final TransferController transferController = _downloadingController;
         if (transferController == null)
             return;
 

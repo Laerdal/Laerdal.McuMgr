@@ -183,9 +183,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
                 {
-                    Cancelled += FirmwareInstallationAsyncOnCancelled;
-                    StateChanged += FirmwareInstallationAsyncOnStateChanged;
-                    FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
+                    Cancelled += FirmwareInstaller_Cancelled_;
+                    StateChanged += FirmwareInstaller_StateChanged_;
+                    FatalErrorOccurred += FirmwareInstaller_FatalErrorOccurred_;
 
                     var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
                         triesCount_: triesCount,
@@ -264,21 +264,21 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 finally
                 {
-                    Cancelled -= FirmwareInstallationAsyncOnCancelled;
-                    StateChanged -= FirmwareInstallationAsyncOnStateChanged;
-                    FatalErrorOccurred -= FirmwareInstallationAsyncOnFatalErrorOccurred;
+                    Cancelled -= FirmwareInstaller_Cancelled_;
+                    StateChanged -= FirmwareInstaller_StateChanged_;
+                    FatalErrorOccurred -= FirmwareInstaller_FatalErrorOccurred_;
 
                     CleanupResourcesOfLastUpload();
                 }
 
                 return;
 
-                void FirmwareInstallationAsyncOnCancelled(object sender, CancelledEventArgs ea)
+                void FirmwareInstaller_Cancelled_(object sender, CancelledEventArgs ea)
                 {
                     taskCompletionSource.TrySetException(new FirmwareInstallationCancelledException());
                 }
 
-                void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+                void FirmwareInstaller_StateChanged_(object sender, StateChangedEventArgs ea)
                 {
                     switch (ea.NewState)
                     {
@@ -315,9 +315,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
-                void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
+                void FirmwareInstaller_FatalErrorOccurred_(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)", StringComparison.InvariantCultureIgnoreCase) ?? false;
                     if (isAboutUnauthorized)
                     {
                         taskCompletionSource.TrySetException(new UnauthorizedException(ea.ErrorMessage));
@@ -426,8 +426,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private int _fileUploadProgressEventsCount;
         private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
         {
-            _fileUploadProgressEventsCount++;
-            _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+            try
+            {
+                _fileUploadProgressEventsCount++;
+            }
+            finally
+            {
+                _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);    
+            }
         }
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy

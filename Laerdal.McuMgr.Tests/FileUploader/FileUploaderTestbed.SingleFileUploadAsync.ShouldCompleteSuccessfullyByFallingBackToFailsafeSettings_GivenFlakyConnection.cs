@@ -2,6 +2,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
@@ -54,6 +55,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 .WithSender(fileUploader)
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
+            eventsMonitor
+                .OccurredEvents
+                .Where(x => x.EventName == nameof(fileUploader.LogEmitted))
+                .SelectMany(x => x.Parameters)
+                .OfType<LogEmittedEventArgs>()
+                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("GFCSICPTBU.010"))
+                .Should()
+                .Be(1);
+            
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
