@@ -22,7 +22,7 @@
 
         <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <TargetPlatformVersion>13.1</TargetPlatformVersion>
+        <TargetPlatformVersion>14.5</TargetPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
