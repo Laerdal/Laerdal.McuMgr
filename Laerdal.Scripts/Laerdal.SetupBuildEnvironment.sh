@@ -82,7 +82,10 @@ sudo    dotnet                                           \
              install                                     \
                  ios                                     \
                  android                                 \
-                 maccatalyst
+                 maccatalyst                             \
+                 maui-ios                                \
+                 maui-android                            \
+                 maui-maccatalyst
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
