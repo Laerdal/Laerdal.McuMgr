@@ -254,17 +254,20 @@
             Condition=" '$(ShouldRunTestSuite)' == 'true' "
             AfterTargets="BuildProjects">
 
-        <MSBuild Targets="Restore"
+        <MSBuild Targets="Clean;Restore"
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_Tests)"
                  Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);"/>
 
         <PropertyGroup>
-            <TestParameters>$(TestParameters) test 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
+            <TestParameters>$(TestParameters) test</TestParameters>
+            <TestParameters>$(TestParameters) 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
             <TestParameters>$(TestParameters) --logger 'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
             <TestParameters>$(TestParameters) --no-restore</TestParameters>
             <TestParameters>$(TestParameters) --verbosity '4'</TestParameters>
             <TestParameters>$(TestParameters) --configuration '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters) --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
+            <TestParameters>$(TestParameters) -m:1</TestParameters>
+            <TestParameters>$(TestParameters) -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)</TestParameters>            
         </PropertyGroup>
 
         <Exec Command=" bash -c &quot;    dotnet   $(TestParameters)    &quot; "
