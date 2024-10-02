@@ -23,9 +23,10 @@
 
         <ShouldBuildNativeLibraries Condition=" '$(IsNetXMacCatalyst)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj -->
-        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                      ">14.5</SupportedOSPlatformVersion>
+        <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj    notice that the ordering of the following evaluations is important! -->
+        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(TargetPlatformVersion)' == ''                                      ">17.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                                                             ">13.1</SupportedOSPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
@@ -72,10 +73,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1166.0</Version>
-        <FileVersion>1.0.1166.0</FileVersion>
-        <PackageVersion>1.0.1166.0</PackageVersion>
-        <AssemblyVersion>1.0.1166.0</AssemblyVersion>
+        <Version>1.0.1167.0</Version>
+        <FileVersion>1.0.1167.0</FileVersion>
+        <PackageVersion>1.0.1167.0</PackageVersion>
+        <AssemblyVersion>1.0.1167.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -169,6 +170,7 @@
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
 
         <PropertyGroup>
+            <_CliCommand>$(_CliCommand)  SUPPORTS_MACCATALYST='YES'                                                    </_CliCommand>
             <_CliCommand>$(_CliCommand)  SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                        </_CliCommand>
             <_CliCommand>$(_CliCommand)  XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)'     </_CliCommand>
             <_CliCommand>$(_CliCommand)  XCODEBUILD_TARGET_SDK='macosx'                                                </_CliCommand>
