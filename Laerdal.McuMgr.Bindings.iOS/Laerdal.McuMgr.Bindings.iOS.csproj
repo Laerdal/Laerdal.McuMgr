@@ -170,6 +170,7 @@
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh "/>
 
         <PropertyGroup>
+            <_CliCommand>$(_CliCommand)  SUPPORTS_MACCATALYST='NO'                                             </_CliCommand>
             <_CliCommand>$(_CliCommand)  SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                </_CliCommand>
             <_CliCommand>$(_CliCommand)  XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'     </_CliCommand>
             <_CliCommand>$(_CliCommand)  XCODEBUILD_TARGET_SDK='iphoneos'                                      </_CliCommand>
