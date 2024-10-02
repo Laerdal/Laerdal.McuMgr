@@ -21,8 +21,8 @@
         <ShouldBuildNativeLibraries Condition=" '$(IsNetXIos)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj -->
-        <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.5</TargetPlatformVersion>
-        <SupportedOSPlatformVersion  Condition=" '$(IsNetXIos)' == 'true'                                      ">11</SupportedOSPlatformVersion>
+        <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsNetXIos)' == 'true'                                      ">11.0</SupportedOSPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
@@ -38,7 +38,7 @@
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                               -->
-        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.5</Laerdal_Bindings_iOS___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.0</Laerdal_Bindings_iOS___Sdk_Version>                                               -->
         <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path Condition="    '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'    == '' ">/Applications/Xcode_15.4.app/Contents/Developer/</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path> -->
     </PropertyGroup>
 

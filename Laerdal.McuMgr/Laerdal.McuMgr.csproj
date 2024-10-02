@@ -36,14 +36,14 @@
 
         <!-- #1 these properties must be kept in sync between this file and laerdal.mcumgr.bindings.[android|ios|maccatalyst].csproj -->
         <!-- #2 even though this is library is pure csharp we still have to specify the target-plaform-version for each target because if we dont dont the build system throws a tantrum from oct 2024 onwards -->
-        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(Laerdal_TargetPlatformVersion_IOS)'         != '' ">$(Laerdal_TargetPlatformVersion_IOS)</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                     == '' ">17.5</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(Laerdal_TargetPlatformVersion_Android)'     != '' ">$(Laerdal_TargetPlatformVersion_Android)</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(TargetPlatformVersion)'                     == '' ">34.0</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_TargetPlatformVersion_MacCatalyst)' != '' ">$(Laerdal_TargetPlatformVersion_MacCatalyst)</TargetPlatformVersion>        
-        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                     == '' ">14.5</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)'         != '' ">$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)'     != '' ">$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">34</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>        
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
         <!-- minimum ios/android/maccatalyst os versions that we support -->
-        <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true'                                               ">11</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true'                                               ">11.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsAndroid)'     == 'true'                                               ">21</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsMacCatalyst)' == 'true'                                               ">13.1</SupportedOSPlatformVersion>
 

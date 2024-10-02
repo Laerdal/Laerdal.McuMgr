@@ -21,7 +21,7 @@
         <ShouldBuildNativeLibraries Condition=" '$(IsNetX)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <!-- net8 supports android13 and it corresponds to android-api level 34.0 -->
-        <TargetPlatformVersion Condition="      '$(IsNetX)' == 'true'   and   '$(TargetPlatformVersion)' == '' ">34.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition="      '$(IsNetX)' == 'true'   and   '$(TargetPlatformVersion)' == '' ">34</TargetPlatformVersion>
         <SupportedOSPlatformVersion Condition=" '$(IsNetX)' == 'true'                                          ">21</SupportedOSPlatformVersion>
         
         <DebugType>pdbonly</DebugType>

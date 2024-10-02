@@ -87,9 +87,9 @@
         <Message Importance="High" Text="** Laerdal_Source_Branch    = '$(Laerdal_Source_Branch)'"/>
         <Message Importance="High" Text="** Laerdal_Repository_Path  = '$(Laerdal_Repository_Path)'"/>
 
-        <Message Importance="High" Text="** Laerdal_TargetPlatformVersion_IOS          = '$(Laerdal_TargetPlatformVersion_IOS)'"/>
-        <Message Importance="High" Text="** Laerdal_TargetPlatformVersion_Android      = '$(Laerdal_TargetPlatformVersion_Android)'"/>
-        <Message Importance="High" Text="** Laerdal_TargetPlatformVersion_MacCatalyst  = '$(Laerdal_TargetPlatformVersion_MacCatalyst)'"/>
+        <Message Importance="High" Text="** Laerdal_Bindings_iOS___DotnetTargetPlatformVersion          = '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)'"/>
+        <Message Importance="High" Text="** Laerdal_Bindings_Android___DotnetTargetPlatformVersion      = '$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)'"/>
+        <Message Importance="High" Text="** Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion  = '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)'"/>
 
         <!-- <Message Importance="High" Text="** Laerdal_Github_Access_Token   ='$(Laerdal_Github_Access_Token)'"/> dont -->
     </Target>
@@ -237,24 +237,24 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)"
-                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_TargetPlatformVersion_Android);BuildingProject=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
+                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
 
         <!-- its absolute vital to call this targets first explicitly and separately from the main build otherwise the   -->
         <!-- resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols       -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
-                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_TargetPlatformVersion_IOS);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
 
         <!-- its absolute vital to call this targets first explicitly and separately from the main build otherwise the   -->
         <!-- resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols       -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
         <MSBuild Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"                 
-                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_TargetPlatformVersion_MacCatalyst);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
-                 Properties="$(_Laerdal_Build_Parameters);Laerdal_TargetPlatformVersion_Android=$(Laerdal_TargetPlatformVersion_Android);Laerdal_TargetPlatformVersion_IOS=$(Laerdal_TargetPlatformVersion_IOS);Laerdal_TargetPlatformVersion_MacCatalyst=$(Laerdal_TargetPlatformVersion_MacCatalyst);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;" Targets="Restore;Rebuild"/>
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;" Targets="Restore;Rebuild"/>
     </Target>
 
     <!-- TESTS -->
@@ -264,16 +264,18 @@
 
         <MSBuild Targets="Restore"
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_Tests)"
-                 Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);"/>
+                 Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);"/>
 
         <PropertyGroup>
             <TestParameters>$(TestParameters) test    'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
             <TestParameters>$(TestParameters)    --logger 'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
-
+            <TestParameters>$(TestParameters)    --no-restore</TestParameters>
             <TestParameters>$(TestParameters)    --verbosity '4'</TestParameters>
             <TestParameters>$(TestParameters)    --configuration '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters)    --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
-            
+            <TestParameters>$(TestParameters)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TestParameters>
+            <TestParameters>$(TestParameters)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</TestParameters>
+            <TestParameters>$(TestParameters)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TestParameters>
         </PropertyGroup>
 
         <Exec Command=" bash -c &quot;    dotnet   $(TestParameters)    &quot; "

@@ -20,13 +20,15 @@ env:
   SCL_DEPENDENCY_TRACKER_SERVER_URL: ${{          secrets.SCL_DEPENDENCY_TRACKER_SERVER_URL          }}
   SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY: ${{ secrets.SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY }}
 
+  BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34"
+
   BINDINGS_IOS___SDK_VERSION: "17.5"
   BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer"
-
-  BINDINGS_ANDROID___SDK_VERSION: "34"
+  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "17.0"
 
   BINDINGS_MACCATALYST___SDK_VERSION: "14.5"
   BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer"
+  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "17.0"
 
 on:
   workflow_call: #     so that other workflows can trigger this
@@ -94,15 +96,15 @@ jobs:
                                               -p:Laerdal_Github_Access_Token="${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                                                    \
                                           -p:Laerdal_Test_Results_Folderpath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/TestResults"                                                    \
                                                                                                                                                                                    \
-                                        -p:Laerdal_TargetPlatformVersion_IOS="${{env.BINDINGS_IOS___SDK_VERSION}}"                                                                 \
-                                    -p:Laerdal_TargetPlatformVersion_Android="${{env.BINDINGS_ANDROID___SDK_VERSION}}"                                                             \
-                                -p:Laerdal_TargetPlatformVersion_MacCatalyst="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"                                                         \
+                   -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion="${{env.BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION}}"                                          \
                                                                                                                                                                                    \
                                        -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"                                                                 \
                                 -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"                                                          \
+                       -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion="${{env.BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION}}"                                              \
                                                                                                                                                                                    \
                                -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"                                                         \
                         -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"                                                  \
+               -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion="${{env.BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION}}"                                      \
                                                                                                                                                                                    \
                                     -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"                                                          \
                              -p:Laerdal_Dependency_Tracker_Api_Key_File_Path="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/dependency_tracker_api_key.ppk"                 \

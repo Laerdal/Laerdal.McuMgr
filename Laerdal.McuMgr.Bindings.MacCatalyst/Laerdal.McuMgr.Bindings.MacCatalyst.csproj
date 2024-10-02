@@ -24,7 +24,7 @@
         <ShouldBuildNativeLibraries Condition=" '$(IsNetXMacCatalyst)' == 'true' ">true</ShouldBuildNativeLibraries>
 
         <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj -->
-        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(TargetPlatformVersion)' == '' ">14.5</TargetPlatformVersion>
+        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.0</TargetPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                      ">13.1</SupportedOSPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
@@ -38,7 +38,7 @@
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                                                 -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.5</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">17.0</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
         <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.4.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
     </PropertyGroup>
 
