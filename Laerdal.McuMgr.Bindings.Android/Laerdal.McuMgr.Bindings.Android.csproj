@@ -20,9 +20,10 @@
         <!-- keep this sort of parameterization around because it will be very difficult to reintroduce it if we add more target-frameworks in the future -->
         <ShouldBuildNativeLibraries Condition=" '$(IsNetX)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <!-- net8 supports android13 and it corresponds to android-api level 34.0 -->
-        <TargetPlatformVersion Condition="      '$(IsNetX)' == 'true'   and   '$(TargetPlatformVersion)' == '' ">34</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(IsNetX)' == 'true'                                          ">21</SupportedOSPlatformVersion>
+        <!-- net8 supports android13 and it corresponds to android-api level 34.0    notice that the ordering of the following evaluations is important! -->
+        <TargetPlatformVersion Condition="      '$(IsNetX)' == 'true'   and   '$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition="      '$(IsNetX)' == 'true'   and   '$(TargetPlatformVersion)' == ''                                  ">34</TargetPlatformVersion>
+        <SupportedOSPlatformVersion Condition=" '$(IsNetX)' == 'true'                                                                           ">21</SupportedOSPlatformVersion>
         
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
@@ -61,10 +62,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1166.0</Version>
-        <FileVersion>1.0.1166.0</FileVersion>
-        <PackageVersion>1.0.1166.0</PackageVersion>
-        <AssemblyVersion>1.0.1166.0</AssemblyVersion>
+        <Version>1.0.1167.0</Version>
+        <FileVersion>1.0.1167.0</FileVersion>
+        <PackageVersion>1.0.1167.0</PackageVersion>
+        <AssemblyVersion>1.0.1167.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>

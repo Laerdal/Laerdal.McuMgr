@@ -242,20 +242,20 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="TackleJarDependencies"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)"
-                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
 
         <!-- its absolute vital to call this targets first explicitly and separately from the main build otherwise the   -->
         <!-- resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols       -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
-                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
 
         <!-- its absolute vital to call this targets first explicitly and separately from the main build otherwise the   -->
         <!-- resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols       -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
         <MSBuild Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"                 
-                 Properties="$(_Laerdal_Build_Parameters);TargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
