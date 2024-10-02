@@ -16,7 +16,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                 var result = memoryStream.ToArray();
                 
                 if (disposeStream)
-                    stream.Dispose(); //todo   use await stream.DisposeAsync() here when we upgrade to .net 8
+                    await stream.DisposeAsync();
                 
                 return result;
             }
@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Common.Helpers
             );
 
             if (disposeStream)
-                stream.Dispose(); //todo   use await stream.DisposeAsync() here when we upgrade to .net 8
+                await stream.DisposeAsync();
 
             return tempMemoryStream.ToArray();
         }

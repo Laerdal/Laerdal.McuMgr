@@ -85,6 +85,8 @@ jobs:
              -p:Should_Skip_MacCatalyst="false"                                                                                                                                    \
                                                                                                                                                                                    \
                                                         -p:PackageOutputPath="${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                                      \
+                                                  -p:Should_Skip_MacCatalyst="true"                                                                                                \
+                                                                                                                                                                                   \
                                                       -p:Laerdal_Gradle_Path="/opt/homebrew/opt/gradle@7/bin/gradle"                                                               \
                                                     -p:Laerdal_Source_Branch="${{env.LAERDAL_SOURCE_BRANCH}}"                                                                      \
                                                   -p:Laerdal_Repository_Path="${{env.LAERDAL_REPOSITORY_PATH}}"                                                                    \

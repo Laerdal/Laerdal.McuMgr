@@ -28,7 +28,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 _downloaderCallbacksProxy = downloaderCallbacksProxy;
             }
 
-            public virtual EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public virtual EFileDownloaderVerdict BeginDownload(
+                string remoteFilePath,
+                int? initialMtuSize = null,
+                int? windowCapacity = null,
+                int? memoryAlignment = null
+            )
             {
                 BeginDownloadCalled = true;
 
