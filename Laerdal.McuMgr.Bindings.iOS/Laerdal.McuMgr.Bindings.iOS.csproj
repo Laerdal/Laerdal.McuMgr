@@ -2,15 +2,15 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsOSX>
-        <IsLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsLinux>
-        <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
+        <IsHostMachineOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsHostMachineOSX>
+        <IsHostMachineLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsHostMachineLinux>
+        <IsHostMachineWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsHostMachineWindows>
+        <IsHostMachineUnix Condition=" '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'  ">$(TargetFrameworks)net8.0-ios;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'false' ">$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true'  ">$(TargetFrameworks)net8.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'false' ">$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
 
         <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</IsIOS>
         
@@ -18,9 +18,11 @@
         <IsNetX Condition="         '$(IsNet8)'  ==  'true'                                     ">true</IsNetX>
         <IsNetXIos Condition="      '$(IsNetX)'  ==  'true'  and  '$(IsIOS)'  ==  'true'        ">true</IsNetXIos>
 
-        <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNetXIos)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <TargetPlatformVersion Condition=" '$(IsNetXIos)'   == 'true' ">11.0</TargetPlatformVersion>
+        <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj -->
+        <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsNetXIos)' == 'true'                                      ">11.0</SupportedOSPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
@@ -36,7 +38,7 @@
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                               -->
-        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.5</Laerdal_Bindings_iOS___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.0</Laerdal_Bindings_iOS___Sdk_Version>                                               -->
         <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path Condition="    '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'    == '' ">/Applications/Xcode_15.4.app/Contents/Developer/</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path> -->
     </PropertyGroup>
 
@@ -70,10 +72,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1158.0</Version>
-        <FileVersion>1.0.1158.0</FileVersion>
-        <PackageVersion>1.0.1158.0</PackageVersion>
-        <AssemblyVersion>1.0.1158.0</AssemblyVersion>
+        <Version>1.0.1166.0</Version>
+        <FileVersion>1.0.1166.0</FileVersion>
+        <PackageVersion>1.0.1166.0</PackageVersion>
+        <AssemblyVersion>1.0.1166.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
@@ -110,7 +112,7 @@
         <None Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/Laerdal.Mac.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
     
-    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
+    <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
         <!-- nothing to compile for the time being -->
         <!-- <Compile Include="iOS\*.cs"/> -->
         <!-- <Compile Include="iOS\Specific\*.cs"/> -->
@@ -138,7 +140,9 @@
         <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                   "/>
         <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
         <Message Importance="high" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
-        <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
+
+        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
+        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
         <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)' "/>
         <Message Importance="high" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
@@ -218,7 +222,7 @@
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
-    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
+    <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
 
         <!-- McuMgrBindingsiOS.framework -->
         <NativeReference Include="Frameworks/McuMgrBindingsiOS.framework">

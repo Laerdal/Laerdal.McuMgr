@@ -2,27 +2,30 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsOSX>
-        <IsLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsLinux>
-        <IsWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsWindows>
-        <IsUnix Condition=" '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
+        <IsHostMachineOSX>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)) )</IsHostMachineOSX>
+        <IsHostMachineLinux>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)) )</IsHostMachineLinux>
+        <IsHostMachineWindows>$( [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)) )</IsHostMachineWindows>
+        <IsHostMachineUnix Condition=" '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
 
         <!-- if we are building under osx then we issue a proper full blown build    notice that net8.0-maccatalyst must always be first for the   -->
         <!-- native swift-libs to be build properly so that they will be readymade when/if we add additional builds right afterwards in the future -->
-        <TargetFramework Condition=" '$(IsOSX)' == 'true' ">net8.0-maccatalyst</TargetFramework>
+        <TargetFramework Condition=" '$(IsHostMachineOSX)' == 'true' ">net8.0-maccatalyst</TargetFramework>
 
         <!-- if we are building under a non-osx platform then we issue a dummy build which spawns a dud nuget -->
         <!-- then the mcumgr projects skips its own ios build completely so that is sorted out as well        -->
-        <TargetFramework Condition=" '$(IsOSX)' == 'false' ">netstandard2.1</TargetFramework>
+        <TargetFramework Condition=" '$(IsHostMachineOSX)' == 'false' ">netstandard2.1</TargetFramework>
 
         <IsMacCatalyst Condition="  $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">true</IsMacCatalyst>
 
-        <IsNet8 Condition="         '$(TargetFramework.ToLower().StartsWith(net8))'  == 'true'  ">true</IsNet8>
-        <IsNetX Condition="         '$(IsNet8)' == 'true'                                       ">true</IsNetX>
+        <IsNet8 Condition="             '$(TargetFramework.ToLower().StartsWith(net8))'  == 'true'  ">true</IsNet8>
+        <IsNetX Condition="             '$(IsNet8)' == 'true'                                       ">true</IsNetX>
+        <IsNetXMacCatalyst Condition="  '$(IsNetX)' == 'true'  and  '$(IsMacCatalyst)'  ==  'true'  ">true</IsNetXMacCatalyst>
 
-        <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNetXMacCatalyst)' == 'true' ">true</ShouldBuildNativeLibraries>
 
-        <TargetPlatformVersion>14.5</TargetPlatformVersion>
+        <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj -->
+        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                      ">14.5</SupportedOSPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
@@ -35,7 +38,7 @@
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                                                 -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.5</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">17.0</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
         <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.4.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
     </PropertyGroup>
 
@@ -69,10 +72,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1158.0</Version>
-        <FileVersion>1.0.1158.0</FileVersion>
-        <PackageVersion>1.0.1158.0</PackageVersion>
-        <AssemblyVersion>1.0.1158.0</AssemblyVersion>
+        <Version>1.0.1166.0</Version>
+        <FileVersion>1.0.1166.0</FileVersion>
+        <PackageVersion>1.0.1166.0</PackageVersion>
+        <AssemblyVersion>1.0.1166.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>
@@ -118,27 +121,29 @@
         <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
+    <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
         <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
-        <Message Importance="High" Text="OS:                     '$(OS)'               "/>
-        <Message Importance="High" Text="Platform:               '$(Platform)'         "/>
-        <Message Importance="High" Text="PackageId:              '$(PackageId)'        "/>
-        <Message Importance="High" Text="Configuration:          '$(Configuration)'    "/>
-        <Message Importance="High" Text="PackageVersion:         '$(PackageVersion)'   "/>
-        <Message Importance="High" Text="TargetFramework:        '$(TargetFramework)'  "/>
-        <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
+        <Message Importance="High" Text="OS:                     '$(OS)'                                                     "/>
+        <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                                                 "/>
+        <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                                                 "/>
+        <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'                                          "/>
+        <Message Importance="high" Text="                                                                                    "/>
+        <Message Importance="High" Text="Platform:               '$(Platform)'                                               "/>
+        <Message Importance="High" Text="PackageId:              '$(PackageId)'                                              "/>
+        <Message Importance="High" Text="Configuration:          '$(Configuration)'                                          "/>
+        <Message Importance="High" Text="PackageVersion:         '$(PackageVersion)'                                         "/>
+        <Message Importance="High" Text="TargetFramework:        '$(TargetFramework)'                                        "/>
+        <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'                                        "/>
+        <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)'                                       "/>
+        <Message Importance="high" Text="                                                                                    "/>
+        <Message Importance="high" Text="TargetPlatformVersion:                   '$(TargetPlatformVersion)'                 "/>
+        <Message Importance="high" Text="SupportedOSPlatformVersion:              '$(SupportedOSPlatformVersion)'            "/>
 
-        <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                   "/>
-        <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
-        <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'            "/>
-        <Message Importance="high" Text="TargetPlatformVersion:  '$(TargetPlatformVersion)'    "/>
-
-        <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)' "/>
+        <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)'       "/>
         <Message Importance="high" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
     </Target>
 
@@ -217,7 +222,7 @@
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
-    <ItemGroup Condition=" '$(IsOSX)' == 'true' ">
+    <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
 
         <!-- McuMgrBindingsiOS.framework -->
         <NativeReference Include="Frameworks/McuMgrBindingsiOS.framework">

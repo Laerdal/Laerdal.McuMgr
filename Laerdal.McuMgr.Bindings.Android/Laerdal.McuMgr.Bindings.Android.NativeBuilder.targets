@@ -23,11 +23,11 @@
 			<GradlePath Condition=" '$(GradlePath)' == '' ">gradle</GradlePath>
 
             <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default -->
-            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
-            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
 
             <!-- Windows -->
-            <JavaHome Condition=" '$(IsWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2') ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2') ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
 
             <!-- last ditch effort -->
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
@@ -50,7 +50,7 @@
             <FilteredLines Include="@(FileLines)" Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '^org\.gradle\.java\.home='))"/>
         </ItemGroup>
 
-        <Exec Command="   chmod   +w   &quot;$(GradlePropertiesFilePath)&quot;   " Condition=" '$(IsUnix)' == 'true' "/>
+        <Exec Command="   chmod   +w   &quot;$(GradlePropertiesFilePath)&quot;   " Condition=" '$(IsHostMachineUnix)' == 'true' "/>
         <WriteLinesToFile
                 File="$(GradlePropertiesFilePath)"
                 Lines="@(FilteredLines);org.gradle.java.home=$(JavaHome);"
@@ -60,9 +60,9 @@
         <!--  https://stackoverflow.com/a/48155800/863651   its vital to create local.properties with the sdk.dir pointing to the android sdk home folder otherwise the build will fail -->
         <PropertyGroup>
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' ">$(ANDROID_HOME)</AndroidSdkPath>
-            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsOSX)'     == 'true' ">/Users/$(USERNAME)/Library/Android/sdk</AndroidSdkPath>
-            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsLinux)'   == 'true' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
-            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsWindows)' == 'true' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsHostMachineOSX)'     == 'true' ">/Users/$(USERNAME)/Library/Android/sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsHostMachineLinux)'   == 'true' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsHostMachineWindows)' == 'true' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
 
             <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-release.aar</McuMgrLaerdalWrapperAarFilePath>
         </PropertyGroup>
@@ -76,7 +76,7 @@
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                                           "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6                            "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsUnix)' == 'true' "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsHostMachineUnix)' == 'true' "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all                  "/>
 
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
