@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
-        <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
-        <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
-        <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
+        <IsHostMachineOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsHostMachineOSX>
+        <IsHostMachineLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsHostMachineLinux>
+        <IsHostMachineWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsHostMachineWindows>
+        <IsHostMachineUnix Condition="     '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
 
+        <LangVersion>10.0</LangVersion>
+        
         <!-- to future maintainers     we stick with net8 for now in android because as it turned out the net8 toolchain generates broken      -->
         <!-- to future maintainers     android dlls that cause missing-symbols-errors in runtime   what a freakshow net8 turned out to be man  -->
         <!--                                                                                                                                   -->
@@ -16,8 +18,12 @@
         <IsNetX Condition="               '$(IsNet8)' == 'true'                                              ">true</IsNetX>
 
         <!-- keep this sort of parameterization around because it will be very difficult to reintroduce it if we add more target-frameworks in the future -->
-        <ShouldBuildNativeLibraries Condition=" '$(IsNet8)' == 'true' ">true</ShouldBuildNativeLibraries>
+        <ShouldBuildNativeLibraries Condition=" '$(IsNetX)' == 'true' ">true</ShouldBuildNativeLibraries>
 
+        <!-- net8 supports android13 and it corresponds to android-api level 34.0 -->
+        <TargetPlatformVersion Condition="      '$(IsNetX)' == 'true'   and   '$(TargetPlatformVersion)' == '' ">34.0</TargetPlatformVersion>
+        <SupportedOSPlatformVersion Condition=" '$(IsNetX)' == 'true'                                          ">21</SupportedOSPlatformVersion>
+        
         <DebugType>pdbonly</DebugType>
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
@@ -55,10 +61,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1158.0</Version>
-        <FileVersion>1.0.1158.0</FileVersion>
-        <PackageVersion>1.0.1158.0</PackageVersion>
-        <AssemblyVersion>1.0.1158.0</AssemblyVersion>
+        <Version>1.0.1166.0</Version>
+        <FileVersion>1.0.1166.0</FileVersion>
+        <PackageVersion>1.0.1166.0</PackageVersion>
+        <AssemblyVersion>1.0.1166.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -103,6 +109,9 @@
         <Message Importance="high" Text="IsNet8:             '$(IsNet8)'             "/>
         <Message Importance="high" Text="IsNetX:             '$(IsNetX)'             "/>
         <Message Importance="high" Text="AndroidApplication: '$(AndroidApplication)' "/>
+
+        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
+        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
         <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
     </Target>

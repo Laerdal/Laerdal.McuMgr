@@ -2,10 +2,10 @@
 
     <!-- SHARED -->
     <PropertyGroup>
-        <IsOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsOSX>
-        <IsLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsLinux>
-        <IsWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsWindows>
-        <IsUnix Condition="     '$(IsOSX)' == 'true' OR '$(IsLinux)' == 'true' ">true</IsUnix>
+        <IsHostMachineOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsHostMachineOSX>
+        <IsHostMachineLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsHostMachineLinux>
+        <IsHostMachineWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsHostMachineWindows>
+        <IsHostMachineUnix Condition="     '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
 
         <!-- - note that we build against netstandard2.1 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
@@ -13,8 +13,8 @@
 
         <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
 
         <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
         <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true' ">true</IsNet8IOS>
@@ -29,8 +29,24 @@
 
         <IsIOS Condition="                 '$(IsNetXIOS)'          == 'true'                         ">true</IsIOS>
         <IsAndroid Condition="             '$(IsNetXAndroid)'      == 'true'                         ">true</IsAndroid>
-        <IsAppleStuff Condition="          '$(IsNetXMacCatalyst)'  == 'true' OR '$(IsIOS)' == 'true' ">true</IsAppleStuff>
+        <IsMacCatalyst Condition="         '$(IsNetXMacCatalyst)'  == 'true'                         ">true</IsMacCatalyst>
         
+        <!-- keep this last -->
+        <IsAppleStuff Condition="          '$(IsMacCatalyst)'      == 'true' OR '$(IsIOS)' == 'true' ">true</IsAppleStuff>
+
+        <!-- #1 these properties must be kept in sync between this file and laerdal.mcumgr.bindings.[android|ios|maccatalyst].csproj -->
+        <!-- #2 even though this is library is pure csharp we still have to specify the target-plaform-version for each target because if we dont dont the build system throws a tantrum from oct 2024 onwards -->
+        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(Laerdal_TargetPlatformVersion_IOS)'         != '' ">$(Laerdal_TargetPlatformVersion_IOS)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                     == '' ">17.5</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(Laerdal_TargetPlatformVersion_Android)'     != '' ">$(Laerdal_TargetPlatformVersion_Android)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(TargetPlatformVersion)'                     == '' ">34.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_TargetPlatformVersion_MacCatalyst)' != '' ">$(Laerdal_TargetPlatformVersion_MacCatalyst)</TargetPlatformVersion>        
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                     == '' ">14.5</TargetPlatformVersion>
+        <!-- minimum ios/android/maccatalyst os versions that we support -->
+        <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true'                                               ">11</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsAndroid)'     == 'true'                                               ">21</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsMacCatalyst)' == 'true'                                               ">13.1</SupportedOSPlatformVersion>
+
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
         <LangVersion>9</LangVersion>
@@ -55,10 +71,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1158.0</Version>
-        <FileVersion>1.0.1158.0</FileVersion>
-        <PackageVersion>1.0.1158.0</PackageVersion>
-        <AssemblyVersion>1.0.1158.0</AssemblyVersion>
+        <Version>1.0.1166.0</Version>
+        <FileVersion>1.0.1166.0</FileVersion>
+        <PackageVersion>1.0.1166.0</PackageVersion>
+        <AssemblyVersion>1.0.1166.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -107,6 +123,9 @@
         <Message Importance="high" Text="MSBuildNodeCount:           '$(MSBuildNodeCount)'        "/>
         <Message Importance="high" Text="Should_Skip_MacCatalyst:    '$(Should_Skip_MacCatalyst)' "/>
 
+        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
+        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
+
         <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
         <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
 
@@ -149,21 +168,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1158.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1166.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1158.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1166.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1158.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1166.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1158.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1166.0"/>
     </ItemGroup>
 
 </Project>
