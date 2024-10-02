@@ -51,9 +51,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null, int? windowCapacity = null, int? memoryAlignment = null)
             {
-                var verdict = base.BeginDownload(remoteFilePath);
+                var verdict = base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize,
+                    windowCapacity: windowCapacity,
+                    memoryAlignment: memoryAlignment
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -64,7 +69,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(1_000);
 
                     StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Complete); // order
-                    DownloadCompletedAdvertisement(remoteFilePath, new byte[]{}); //                                                                             order
+                    DownloadCompletedAdvertisement(remoteFilePath, []); //                                                                             order
                 });
 
                 return verdict;

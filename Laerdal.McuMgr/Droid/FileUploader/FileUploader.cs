@@ -99,11 +99,25 @@ namespace Laerdal.McuMgr.FileUploader
             
             #region commands
 
-            public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth,
+                int? byteAlignment,
+                int? initialMtuSize,
+                int? windowCapacity,
+                int? memoryAlignment
+            )
             {
-                return TranslateFileUploaderVerdict(base.BeginUpload(remoteFilePath, data));
+                return TranslateFileUploaderVerdict(base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize ?? -1,
+                    windowCapacity: windowCapacity ?? -1,
+                    memoryAlignment: memoryAlignment ?? -1
+                ));
             }
-            
+
             public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
             {
                 var androidContext = context as Context ?? throw new ArgumentException($"Expected {nameof(Context)} to be an AndroidContext but got '{context?.GetType().Name ?? "null"}' instead", nameof(context));

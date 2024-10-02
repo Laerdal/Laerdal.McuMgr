@@ -21,7 +21,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }, maxTriesCount: 1, timeoutInMs: 100));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync([1], maxTriesCount: 1, timeoutInMs: 100));
 
             // Assert
             await work.Should()
@@ -77,6 +77,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(async () => //00 vital
                 {
+                    await Task.Delay(10);
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
+                    
                     await Task.Delay(10);
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Uploading);
 

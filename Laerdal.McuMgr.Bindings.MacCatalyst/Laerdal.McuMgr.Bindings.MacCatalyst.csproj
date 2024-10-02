@@ -25,7 +25,7 @@
 
         <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj -->
         <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(TargetPlatformVersion)' == '' ">17.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                      ">13.1</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                      ">14.5</SupportedOSPlatformVersion>
 
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>

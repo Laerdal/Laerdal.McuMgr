@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 
@@ -7,8 +8,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
     public interface IFirmwareInstallerCommandable
     {
         /// <summary>
-        /// Begins the firmware upgrade process. To really know when the upgrade process has been completed you have to employ the progressPercentage methods.
+        /// Begins the firmware upgrade process. To really know when the upgrade process has been completed you have to listen to the associated events of the <see cref="IFirmwareInstallerEventEmittable"/> facade.
         /// </summary>
+        /// <remarks>
+        /// When 'maxTriesCount' is greater than or equal to 2 the connection will be monitored in terms of how stable and reliable it is during the firmware-uploading stage and if
+        /// the uploading phase fails from the third attempt onwards then in the subsequent attempts the fail-safe settings in <see cref="AndroidTidbits.FailSafeBleConnectionSettings"/>
+        /// and <see cref="AppleTidbits.FailSafeBleConnectionSettings"/> will be enforced to try to upload the firmware.
+        /// </remarks>
         /// <param name="data">The firmware bytes. If zipped then the archive must contain the .bin file and not a directory.</param>
         /// <param name="mode">The firmware upgrade mode. Best to leave this to the default value 'TestAndConfirm'.</param>
         /// <param name="eraseSettings">Specifies whether preexisting settings should be erased or not.</param>
@@ -19,7 +25,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
-        ///     confirming each packet. This value should be lower or equal to MCUMGR_BUF_COUNT
+        ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
         ///     (https://github.com/zephyrproject-rtos/zephyr/blob/bd4ddec0c8c822bbdd420bd558b62c1d1a532c16/subsys/mgmt/mcumgr/Kconfig#L550)
         ///     parameter in KConfig in NCS / Zephyr configuration and should also be supported on Mynewt devices. Mind, that in Zephyr,
         ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.

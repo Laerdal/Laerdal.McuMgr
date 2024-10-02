@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 firmwareInstaller.Cancel();
             });
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxTriesCount: 1));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync([1, 2, 3], maxTriesCount: 1));
 
             // Assert
             await work.Should()
@@ -117,6 +117,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     await Task.Delay(100, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
+                    
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
                     
                     await Task.Delay(100, _cancellationTokenSource.Token);
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);

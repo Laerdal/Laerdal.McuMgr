@@ -23,13 +23,34 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
         /// <param name="autodisposeStreams">If set to 'true' the mechanism will dispose of the data-streams after they have been read into their respective byte arrays (default is 'false').</param>
+        /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
+        ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
+        /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
+        ///     to predict offset jumps as multiple packets are sent in parallel.</param>
+        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
+        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
+        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
+        /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
+        ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
+        ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
+        ///     (https://github.com/zephyrproject-rtos/zephyr/blob/bd4ddec0c8c822bbdd420bd558b62c1d1a532c16/subsys/mgmt/mcumgr/Kconfig#L550)
+        ///     parameter in KConfig in NCS / Zephyr configuration and should also be supported on Mynewt devices. Mind, that in Zephyr,
+        ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
+        ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
+        ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
+        /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         Task<IEnumerable<string>> UploadAsync<TData>(
             IDictionary<string, TData> remoteFilePathsAndTheirData,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true,
-            bool autodisposeStreams = false
+            bool autodisposeStreams = false,
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
         );
 
         /// <summary>Uploads the given data (typically representing the contents of a file either as a stream or a raw byte array).</summary>
@@ -48,6 +69,22 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="autodisposeStream">If set to 'true' the mechanism will dispose of the data-stream after it has been read into a byte array (default is 'false').</param>
+        /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
+        ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
+        /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
+        ///     to predict offset jumps as multiple packets are sent in parallel.</param>
+        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
+        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
+        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
+        /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
+        ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
+        ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
+        ///     (https://github.com/zephyrproject-rtos/zephyr/blob/bd4ddec0c8c822bbdd420bd558b62c1d1a532c16/subsys/mgmt/mcumgr/Kconfig#L550)
+        ///     parameter in KConfig in NCS / Zephyr configuration and should also be supported on Mynewt devices. Mind, that in Zephyr,
+        ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
+        ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
+        ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
+        /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         Task UploadAsync<TData>(
             TData localData,
             string remoteFilePath,
@@ -55,15 +92,44 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
-            bool autodisposeStream = false
+            bool autodisposeStream = false,
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
         );
-        
+
         /// <summary>
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="data">The file-data.</param>
-        EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data);
+        /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
+        ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
+        /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
+        ///     to predict offset jumps as multiple packets are sent in parallel.</param>
+        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
+        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
+        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
+        /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
+        ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
+        ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
+        ///     (https://github.com/zephyrproject-rtos/zephyr/blob/bd4ddec0c8c822bbdd420bd558b62c1d1a532c16/subsys/mgmt/mcumgr/Kconfig#L550)
+        ///     parameter in KConfig in NCS / Zephyr configuration and should also be supported on Mynewt devices. Mind, that in Zephyr,
+        ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
+        ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
+        ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
+        /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
+        EFileUploaderVerdict BeginUpload(
+            string remoteFilePath,
+            byte[] data,
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
+        );
         
         /// <summary>
         /// Scraps the current transport. This is useful in case the transport is in a bad state and needs to be restarted.

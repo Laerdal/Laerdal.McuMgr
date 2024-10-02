@@ -78,7 +78,26 @@ public class AndroidFileUploader
         return true;
     }
 
-    public EAndroidFileUploaderVerdict beginUpload(final String remoteFilePath, final byte[] data)
+    /**
+     * Initiates a file upload asynchronously. The progress is advertised through the callbacks provided by this class.
+     * Setup interceptors for them to get informed about the status of the firmware-installation.
+     *
+     * @param remoteFilePath the remote-file-path to save the given data to on the remote device
+     * @param data the bytes to upload
+     * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     *
+     * @return a verdict indicating whether the file uploading was started successfully or not
+     */
+    public EAndroidFileUploaderVerdict beginUpload(
+            final String remoteFilePath,
+            final byte[] data,
+            final int initialMtuSize,
+            final int windowCapacity,
+            final int memoryAlignment
+    )
     {
         if (!IsCold()) {
             setState(EAndroidFileUploaderState.ERROR);
@@ -132,7 +151,7 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
 
-        ensureTransportIsInitializedExactlyOnce(); //order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
 
         final EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
         if (verdict != EAndroidFileUploaderVerdict.SUCCESS)
@@ -143,13 +162,23 @@ public class AndroidFileUploader
         resetUploadState(); //order
         setLoggingEnabled(false);
 
-        _uploadController = new FileUploader( //00
-                _fileSystemManager,
-                _remoteFilePathSanitized,
-                data,
-                3, // window capacity
-                4 //  memory alignment
-        ).uploadAsync(_fileUploaderCallbackProxy);
+        try
+        {
+            _uploadController = new FileUploader( //00
+                    _fileSystemManager,
+                    _remoteFilePathSanitized,
+                    data,
+                    Math.max(1, windowCapacity),
+                    Math.max(1, memoryAlignment)
+            ).uploadAsync(_fileUploaderCallbackProxy);
+        }
+        catch (final Exception ex)
+        {
+            setState(EAndroidFileUploaderState.ERROR);
+            onError(_remoteFilePathSanitized, "Failed to initialize the upload", ex);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
 
         return EAndroidFileUploaderVerdict.SUCCESS;
 
@@ -166,12 +195,17 @@ public class AndroidFileUploader
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
     }
 
-    private void ensureTransportIsInitializedExactlyOnce()
+    private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
     {
         if (_transport != null)
             return;
 
         _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+
+        if (initialMtuSize > 0)
+        {
+            _transport.setInitialMtu(initialMtuSize);
+        }
     }
 
     private void ensureFileUploaderCallbackProxyIsInitializedExactlyOnce() {

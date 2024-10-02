@@ -60,8 +60,8 @@ public class AndroidFirmwareInstaller
      *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
      * @param eraseSettings specifies whether the previous settings should be erased on the target-device
      * @param estimatedSwapTimeInMilliseconds specifies the amount of time to wait before probing the device to see if the firmware that got installed managed to reboot the device successfully - if negative the setting gets ignored
-     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if negative this settings gets ignored
-     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - - if negative this settings gets ignored
+     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      *
      * @return a verdict indicating whether the firmware installation was started successfully or not
      */
@@ -153,6 +153,33 @@ public class AndroidFirmwareInstaller
         }
 
         return EAndroidFirmwareInstallationVerdict.SUCCESS;
+    }
+
+    private @NotNull Settings digestFirmwareInstallationManagerSettings(@NotNull EAndroidFirmwareInstallationMode mode, boolean eraseSettings, int estimatedSwapTimeInMilliseconds, int windowCapacity, int memoryAlignment)
+    {
+        Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
+
+        _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
+
+        if (estimatedSwapTimeInMilliseconds >= 0)
+        {
+            settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
+        }
+
+        if (windowCapacity >= 2)
+        {
+            settingsBuilder.setWindowCapacity(windowCapacity); //2
+        }
+
+        if (memoryAlignment >= 2)
+        {
+            settingsBuilder.setMemoryAlignment(memoryAlignment); //3
+        }
+
+        settingsBuilder.setEraseAppSettings(eraseSettings);
+
+        return settingsBuilder.build();
+
 
         //0 set the installation mode
         //
@@ -172,32 +199,6 @@ public class AndroidFirmwareInstaller
         //  to be sent again dropping the speed instead of increasing it.
         //
         //3 Set the selected memory alignment. In the app this defaults to 4 to match Nordic devices, but can be modified in the UI.
-    }
-
-    private @NotNull Settings digestFirmwareInstallationManagerSettings(@NotNull EAndroidFirmwareInstallationMode mode, boolean eraseSettings, int estimatedSwapTimeInMilliseconds, int windowCapacity, int memoryAlignment)
-    {
-        Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
-
-        _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
-
-        if (estimatedSwapTimeInMilliseconds >= 0)
-        {
-            settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
-        }
-
-        if (windowCapacity >= 0)
-        {
-            settingsBuilder.setWindowCapacity(windowCapacity); //2
-        }
-
-        if (memoryAlignment >= 1)
-        {
-            settingsBuilder.setMemoryAlignment(memoryAlignment); //3
-        }
-
-        settingsBuilder.setEraseAppSettings(eraseSettings);
-
-        return settingsBuilder.build();
     }
 
     public void disconnect() {

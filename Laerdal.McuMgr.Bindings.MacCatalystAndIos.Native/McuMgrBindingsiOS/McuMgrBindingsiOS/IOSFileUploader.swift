@@ -57,7 +57,13 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func beginUpload(_ remoteFilePath: String, _ data: Data) -> EIOSFileUploadingInitializationVerdict {
+    public func beginUpload(
+            _ remoteFilePath: String,
+            _ data: Data,
+            _ pipelineDepth: Int,
+            _ byteAlignment: Int
+    ) -> EIOSFileUploadingInitializationVerdict {
+
         if !IsCold() { //if another upload is already in progress we bail out
             setState(EIOSFileUploaderState.error)
             onError("Another upload is already in progress")
@@ -66,10 +72,25 @@ public class IOSFileUploader: NSObject {
         }
 
         if _cbPeripheral == nil {
-            setState(EIOSFileUploaderState.error);
+            setState(EIOSFileUploaderState.error)
             onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings;
+        }
+
+        if (pipelineDepth >= 2 && byteAlignment <= 1) {
+            setState(EIOSFileUploaderState.error)
+            onError("When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+
+            return .failedInvalidSettings
+        }
+        
+        let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
+        if (byteAlignmentEnum == nil) {
+            setState(EIOSFileUploaderState.error)
+            onError("Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+
+            return .failedInvalidSettings
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -98,16 +119,22 @@ public class IOSFileUploader: NSObject {
         //      return EIOSFileUploaderVerdict.FAILED__INVALID_DATA
         // }
 
-        disposeFilesystemManager() //vital hack    normally we shouldnt need this    but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
+        disposeFilesystemManager() //vital hack    normally we shouldnt need this    but there seems to be a bug in the lib https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
 
         ensureTransportIsInitializedExactlyOnce() //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         resetUploadState() //order
 
+        var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
+        if (pipelineDepth >= 0) {
+            configuration.pipelineDepth = pipelineDepth
+        }
+                
         let success = _fileSystemManager.upload( //order
                 name: _remoteFilePathSanitized,
                 data: data,
+                using: configuration,
                 delegate: self
         )
         if !success {
@@ -118,6 +145,25 @@ public class IOSFileUploader: NSObject {
         }
 
         return EIOSFileUploadingInitializationVerdict.success
+    }
+    
+    private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
+        if (alignment <= 0) {
+            return .disabled;
+        }
+
+        switch alignment {
+        case 2:
+            return .twoByte
+        case 4:
+            return .fourByte
+        case 8:
+            return .eightByte
+        case 16:
+            return .sixteenByte
+        default:
+            return nil
+        }
     }
 
     @objc

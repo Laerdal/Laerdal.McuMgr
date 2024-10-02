@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -46,9 +47,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             int? windowCapacity = null, //   android only    not applicable for ios
             int? memoryAlignment = null, //  android only    not applicable for ios
             int? pipelineDepth = null, //    ios only        not applicable for android
-            int? byteAlignment = null
-
-            //     ios only        not applicable for android
+            int? byteAlignment = null //     ios only        not applicable for android
         )
         {
             if (data == null || !data.Any())
@@ -58,13 +57,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
                 data: data,
                 mode: mode,
-                eraseSettings: eraseSettings ?? false,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1,
-                initialMtuSize: initialMtuSize ?? -1,
-                windowCapacity: windowCapacity ?? -1,
-                memoryAlignment: memoryAlignment ?? -1,
+                eraseSettings: eraseSettings,
                 pipelineDepth: pipelineDepth,
-                byteAlignment: byteAlignment);
+                byteAlignment: byteAlignment,
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment,
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
+            );
 
             return verdict;
         }
@@ -176,14 +176,32 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 : DefaultGracefulCancellationTimeoutInMs;
 
             var isCancellationRequested = false;
+            var suspiciousTransportFailuresCount = 0;
+            var didWarnOnceAboutUnstableConnection = false;
             for (var triesCount = 1; !isCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
                 try
                 {
-                    Cancelled += FirmwareInstallationAsyncOnCancelled;
-                    StateChanged += FirmwareInstallationAsyncOnStateChanged;
-                    FatalErrorOccurred += FirmwareInstallationAsyncOnFatalErrorOccurred;
+                    Cancelled += FirmwareInstaller_Cancelled_;
+                    StateChanged += FirmwareInstaller_StateChanged_;
+                    FatalErrorOccurred += FirmwareInstaller_FatalErrorOccurred_;
+
+                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
+                        triesCount_: triesCount,
+                        maxTriesCount_: maxTriesCount,
+                        suspiciousTransportFailuresCount_: suspiciousTransportFailuresCount,
+                        emitWarningAboutUnstableConnection_: !didWarnOnceAboutUnstableConnection
+                    );
+                    if (failSafeSettingsToApply != null)
+                    {
+                        didWarnOnceAboutUnstableConnection = true;
+                        byteAlignment = failSafeSettingsToApply.Value.byteAlignment;
+                        pipelineDepth = failSafeSettingsToApply.Value.pipelineDepth;
+                        initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
+                        windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
+                        memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
+                    }
 
                     var verdict = BeginInstallation( //00 dont use task.run here for now
                         data: data,
@@ -191,12 +209,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                         eraseSettings: eraseSettings,
                         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
 
+                        pipelineDepth: pipelineDepth, //      ios only
+                        byteAlignment: byteAlignment, //      ios only
+
                         initialMtuSize: initialMtuSize, //    android only
                         windowCapacity: windowCapacity, //    android only
-                        memoryAlignment: memoryAlignment, //  android only
-
-                        pipelineDepth: pipelineDepth, //      ios only
-                        byteAlignment: byteAlignment //       ios only
+                        memoryAlignment: memoryAlignment //   android only
                     );
                     if (verdict != EFirmwareInstallationVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
@@ -216,6 +234,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
                 {
+                    if (_fileUploadProgressEventsCount <= 10)
+                    {
+                        suspiciousTransportFailuresCount++;
+                    }
+                    
                     if (++triesCount > maxTriesCount) //order
                         throw new AllFirmwareInstallationAttemptsFailedException(maxTriesCount, innerException: ex);
 
@@ -241,21 +264,21 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 finally
                 {
-                    Cancelled -= FirmwareInstallationAsyncOnCancelled;
-                    StateChanged -= FirmwareInstallationAsyncOnStateChanged;
-                    FatalErrorOccurred -= FirmwareInstallationAsyncOnFatalErrorOccurred;
+                    Cancelled -= FirmwareInstaller_Cancelled_;
+                    StateChanged -= FirmwareInstaller_StateChanged_;
+                    FatalErrorOccurred -= FirmwareInstaller_FatalErrorOccurred_;
 
                     CleanupResourcesOfLastUpload();
                 }
 
                 return;
 
-                void FirmwareInstallationAsyncOnCancelled(object sender, CancelledEventArgs ea)
+                void FirmwareInstaller_Cancelled_(object sender, CancelledEventArgs ea)
                 {
                     taskCompletionSource.TrySetException(new FirmwareInstallationCancelledException());
                 }
 
-                void FirmwareInstallationAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+                void FirmwareInstaller_StateChanged_(object sender, StateChangedEventArgs ea)
                 {
                     switch (ea.NewState)
                     {
@@ -292,9 +315,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
-                void FirmwareInstallationAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
+                void FirmwareInstaller_FatalErrorOccurred_(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
+                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)", StringComparison.InvariantCultureIgnoreCase) ?? false;
                     if (isAboutUnauthorized)
                     {
                         taskCompletionSource.TrySetException(new UnauthorizedException(ea.ErrorMessage));
@@ -317,6 +340,39 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
             }
 
+            return;
+
+            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
+                int triesCount_,
+                int maxTriesCount_,
+                int suspiciousTransportFailuresCount_,
+                bool emitWarningAboutUnstableConnection_
+            )
+            {
+                var isConnectionTooUnstableForUploading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && suspiciousTransportFailuresCount_ >= 2);
+                if (!isConnectionTooUnstableForUploading_)
+                    return null;
+
+                var byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; //        ios + maccatalyst
+                var pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; //        ios + maccatalyst
+                var initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
+                var windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
+                var memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
+
+                if (emitWarningAboutUnstableConnection_)
+                {
+                    OnLogEmitted(new LogEmittedEventArgs(
+                        level: ELogLevel.Warning,
+                        message: $"[FI.IA.GFCSICPTBU.010] Attempt#{triesCount_}: Connection is too unstable for uploading the firmware to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                 $"just in case it helps (byteAlignment={byteAlignment_}, pipelineDepth={pipelineDepth_}, initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
+                        resource: "Firmware",
+                        category: "FirmwareInstaller"
+                    ));
+                }
+
+                return (byteAlignment: byteAlignment_, pipelineDepth: pipelineDepth_, initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
+            }
+            
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
             //    the code considerably for little to no practical gain considering that the native call has trivial setup code and is very fast
@@ -370,8 +426,14 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private int _fileUploadProgressEventsCount;
         private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
         {
-            _fileUploadProgressEventsCount++;
-            _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);
+            try
+            {
+                _fileUploadProgressEventsCount++;
+            }
+            finally
+            {
+                _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);    
+            }
         }
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy
