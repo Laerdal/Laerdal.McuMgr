@@ -93,19 +93,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             private int _tryCounter;
             public override EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
-                int? initialMtuSize = null, //  android only
-                int? windowCapacity = null, //  android only
-                int? memoryAlignment = null //  android only
+                int? initialMtuSize = null //  android only
             )
             {
                 _tryCounter++;
 
                 var verdict = base.BeginDownload(
                     remoteFilePath: remoteFilePath,
-
-                    initialMtuSize: initialMtuSize, //   android only
-                    windowCapacity: windowCapacity, //   android only
-                    memoryAlignment: memoryAlignment //  android only
+                    initialMtuSize: initialMtuSize //   android only
                 );
 
                 Task.Run(async () => //00 vital
@@ -131,22 +126,6 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected); //                                            order
-                        return;
-                    }
-
-                    if (_tryCounter == _maxTriesCount && windowCapacity != AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity)
-                    {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to {AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity} but it's set to {windowCapacity?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected); //                                            order
-                        return;
-                    }
-
-                    if (_tryCounter == _maxTriesCount && memoryAlignment != AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment)
-                    {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to {AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment} but it's set to {memoryAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); // order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected); //                                            order
                         return;

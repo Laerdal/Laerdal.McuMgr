@@ -51,9 +51,7 @@ namespace Laerdal.McuMgr.FileDownloader
 
             var verdict = _nativeFileDownloaderProxy.BeginDownload(
                 remoteFilePath: remoteFilePath,
-                initialMtuSize: initialMtuSize,
-                windowCapacity: windowCapacity,
-                memoryAlignment: memoryAlignment
+                initialMtuSize: initialMtuSize
             );
 
             return verdict;

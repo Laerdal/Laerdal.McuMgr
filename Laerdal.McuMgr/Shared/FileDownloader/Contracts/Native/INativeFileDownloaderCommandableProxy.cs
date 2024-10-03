@@ -6,6 +6,6 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
     {
         void Cancel();
         void Disconnect();
-        EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null, int? windowCapacity = null, int? memoryAlignment = null);
+        EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null);
     }
 }

@@ -34,13 +34,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null, int? windowCapacity = null, int? memoryAlignment = null)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
                 base.BeginDownload(
                     remoteFilePath: remoteFilePath,
-                    initialMtuSize: initialMtuSize,
-                    windowCapacity: windowCapacity,
-                    memoryAlignment: memoryAlignment
+                    initialMtuSize: initialMtuSize
                 );
 
                 Thread.Sleep(100);
