@@ -94,16 +94,12 @@ namespace Laerdal.McuMgr.FileDownloader
 
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
-                int? initialMtuSize = null, //  android only
-                int? windowCapacity = null, //  android only
-                int? memoryAlignment = null //  android only
+                int? initialMtuSize = null //  android only
             )
             {
                 return TranslateFileDownloaderVerdict(base.BeginDownload(
                     remoteFilePath: remoteFilePath,
-                    initialMtuSize: initialMtuSize ?? -1,
-                    windowCapacity: windowCapacity ?? -1,  //todo  remove these if they turn out to be non-applicable to file-downloading
-                    memoryAlignment: memoryAlignment ?? -1
+                    initialMtuSize: initialMtuSize ?? -1
                 ));
             }
             

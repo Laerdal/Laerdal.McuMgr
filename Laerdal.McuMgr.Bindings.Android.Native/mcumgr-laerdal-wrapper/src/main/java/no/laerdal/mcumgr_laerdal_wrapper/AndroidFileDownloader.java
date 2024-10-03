@@ -37,16 +37,14 @@ public class AndroidFileDownloader
      * @param remoteFilePath the remote-file-path to the file on the remote device that you wish to download
      * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
      *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
-     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
-     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      *
      * @return a verdict indicating whether the file uploading was started successfully or not
      */
     public EAndroidFileDownloaderVerdict beginDownload(
             final String remoteFilePath,
-            final int initialMtuSize,
-            final int windowCapacity, //todo   should we keep this or remove it?  it doesnt seem to be applicable to the file-downloader
-            final int memoryAlignment //todo   should we keep this or remove it?  it doesnt seem to be applicable to the file-downloader
+            final int initialMtuSize
+            // final int windowCapacity, //theoretically nordic firmwares at some point will support this for downloads   but as of Q3 2024 there is no support for this
+            // final int memoryAlignment //this doesnt make sense for downloading   it only makes sense in uploading scenarios    https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/issues/188#issuecomment-2391146897
     )
     {
         if (_currentState != EAndroidFileDownloaderState.NONE  //if the download is already in progress we bail out

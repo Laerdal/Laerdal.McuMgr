@@ -30,9 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             public virtual EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
-                int? initialMtuSize = null,
-                int? windowCapacity = null,
-                int? memoryAlignment = null
+                int? initialMtuSize = null
             )
             {
                 BeginDownloadCalled = true;
