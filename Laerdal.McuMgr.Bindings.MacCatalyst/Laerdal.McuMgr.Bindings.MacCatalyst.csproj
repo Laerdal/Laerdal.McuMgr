@@ -166,7 +166,7 @@
             BeforeTargets="PrepareForBuild"
             Condition=" '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
         
-        <!-- 1. build and generate the fat libs from the proxy swift project                                                -->
+        <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
 
         <PropertyGroup>
