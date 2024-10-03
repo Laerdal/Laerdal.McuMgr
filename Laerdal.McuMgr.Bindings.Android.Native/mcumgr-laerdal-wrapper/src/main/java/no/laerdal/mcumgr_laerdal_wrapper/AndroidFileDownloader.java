@@ -81,25 +81,25 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
+        if (initialMtuSize > 0)
+        {
+            _transport.setInitialMtu(initialMtuSize);
+        }
+
+        _fileSystemManager = new FsManager(_transport);
+
+        setLoggingEnabled(false);
+        requestHighConnectionPriority();
+
+        setState(EAndroidFileDownloaderState.IDLE);
+        busyStateChangedAdvertisement(true);
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+
+        _initialBytes = 0;
+        _remoteFilePathSanitized = remoteFilePathSanitized;
+
         try
         {
-            if (initialMtuSize > 0)
-            {
-                _transport.setInitialMtu(initialMtuSize);
-            }
-
-            _fileSystemManager = new FsManager(_transport);
-
-            setLoggingEnabled(false);
-            requestHighConnectionPriority();
-
-            setState(EAndroidFileDownloaderState.IDLE);
-            busyStateChangedAdvertisement(true);
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-
-            _initialBytes = 0;
-
-            _remoteFilePathSanitized = remoteFilePathSanitized;
             _downloadingController = _fileSystemManager.fileDownload(remoteFilePathSanitized, new FileDownloaderCallbackProxy());
         }
         catch (final Exception ex)
@@ -107,7 +107,7 @@ public class AndroidFileDownloader
             setState(EAndroidFileDownloaderState.ERROR);
             fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
 
-            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+            return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
 
         return EAndroidFileDownloaderVerdict.SUCCESS;

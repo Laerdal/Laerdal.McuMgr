@@ -201,7 +201,12 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     return EFileDownloaderVerdict.FailedInvalidSettings;
                 }
-            
+
+                if (verdict == EAndroidFileDownloaderVerdict.FailedErrorUponCommencing)
+                {
+                    return EFileDownloaderVerdict.FailedErrorUponCommencing;
+                }
+
                 if (verdict == EAndroidFileDownloaderVerdict.FailedDownloadAlreadyInProgress)
                 {
                     return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;

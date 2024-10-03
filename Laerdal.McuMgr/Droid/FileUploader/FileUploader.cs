@@ -243,17 +243,22 @@ namespace Laerdal.McuMgr.FileUploader
                 {
                     return EFileUploaderVerdict.Success;
                 }
+                
+                if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
+                {
+                    return EFileUploaderVerdict.FailedInvalidData;
+                }
             
                 if (verdict == EAndroidFileUploaderVerdict.FailedInvalidSettings)
                 {
                     return EFileUploaderVerdict.FailedInvalidSettings;
                 }
 
-                if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
+                if (verdict == EAndroidFileUploaderVerdict.FailedErrorUponCommencing)
                 {
-                    return EFileUploaderVerdict.FailedInvalidData;
+                    return EFileUploaderVerdict.FailedErrorUponCommencing;
                 }
-            
+
                 if (verdict == EAndroidFileUploaderVerdict.FailedOtherUploadAlreadyInProgress)
                 {
                     return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;

@@ -69,7 +69,7 @@ public class IOSFileDownloader: NSObject {
             setState(EIOSFileDownloaderState.error)
             fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Failed to commence file-Downloading (check logs for details)")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return EIOSFileDownloadingInitializationVerdict.failedErrorUponCommencing
         }
 
         return EIOSFileDownloadingInitializationVerdict.success

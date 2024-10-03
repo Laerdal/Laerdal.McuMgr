@@ -1,7 +1,8 @@
 @objc
 public enum EIOSFileUploadingInitializationVerdict: Int {
     case success = 0
-    case failedInvalidSettings = 1
-    case failedInvalidData = 2
-    case failedOtherUploadAlreadyInProgress = 3
+    case failedInvalidData = 1
+    case failedInvalidSettings = 2
+    case failedErrorUponCommencing = 3
+    case failedOtherUploadAlreadyInProgress = 4
 }

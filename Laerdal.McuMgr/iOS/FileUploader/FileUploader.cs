@@ -239,17 +239,22 @@ namespace Laerdal.McuMgr.FileUploader
                 {
                     return EFileUploaderVerdict.Success;
                 }
+                
+                if (verdict == EIOSFileUploadingInitializationVerdict.FailedInvalidData)
+                {
+                    return EFileUploaderVerdict.FailedInvalidData;
+                }
             
                 if (verdict == EIOSFileUploadingInitializationVerdict.FailedInvalidSettings)
                 {
                     return EFileUploaderVerdict.FailedInvalidSettings;
                 }
 
-                if (verdict == EIOSFileUploadingInitializationVerdict.FailedInvalidData)
+                if (verdict == EIOSFileUploadingInitializationVerdict.FailedErrorUponCommencing)
                 {
-                    return EFileUploaderVerdict.FailedInvalidData;
+                    return EFileUploaderVerdict.FailedErrorUponCommencing;
                 }
-            
+
                 if (verdict == EIOSFileUploadingInitializationVerdict.FailedOtherUploadAlreadyInProgress)
                 {
                     return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
