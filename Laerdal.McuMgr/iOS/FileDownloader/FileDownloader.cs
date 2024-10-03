@@ -184,6 +184,11 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     return EFileDownloaderVerdict.FailedInvalidSettings;
                 }
+                
+                if (verdict == EIOSFileDownloadingInitializationVerdict.FailedErrorUponCommencing)
+                {
+                    return EFileDownloaderVerdict.FailedErrorUponCommencing;
+                }
             
                 if (verdict == EIOSFileDownloadingInitializationVerdict.FailedDownloadAlreadyInProgress)
                 {

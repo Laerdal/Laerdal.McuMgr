@@ -7,6 +7,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Enums
     {
         Success = 0,
         FailedInvalidSettings = 1,
-        FailedDownloadAlreadyInProgress = 2,
+        FailedErrorUponCommencing = 2,
+        FailedDownloadAlreadyInProgress = 3,
     }
 }
