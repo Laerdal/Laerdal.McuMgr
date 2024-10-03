@@ -35,7 +35,7 @@ declare SWIFT_PACKAGES_PATH="./packages"
 
 declare OUTPUT_FOLDER_POSTFIX=""
 if [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ]; then
-  OUTPUT_FOLDER_POSTFIX="" # special case for mac catalyst    sdk 15.2 wanted this to be "-maccatalyst" but sdk 15.4 wants it to be empty   go figure ...
+  OUTPUT_FOLDER_POSTFIX="-maccatalyst" # special case for mac catalyst
 else
   OUTPUT_FOLDER_POSTFIX="-${XCODEBUILD_TARGET_SDK}"
 fi
