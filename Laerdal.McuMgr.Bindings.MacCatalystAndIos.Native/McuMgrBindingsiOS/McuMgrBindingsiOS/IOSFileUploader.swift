@@ -59,7 +59,7 @@ public class IOSFileUploader: NSObject {
     @objc
     public func beginUpload(
             _ remoteFilePath: String,
-            _ data: Data,
+            _ data: Data?,
             _ pipelineDepth: Int,
             _ byteAlignment: Int
     ) -> EIOSFileUploadingInitializationVerdict {
@@ -115,15 +115,13 @@ public class IOSFileUploader: NSObject {
             return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
         }
 
-        // if data == nil { // data being nil is not ok but in swift Data can never be nil anyway   btw data.length==0 is perfectly ok because we might want to create empty files
-        //      return EIOSFileUploaderVerdict.FAILED__INVALID_DATA
-        // }
+        if data == nil { // data being nil is not ok    btw data.length==0 is perfectly ok because we might want to create empty files
+            return EIOSFileUploadingInitializationVerdict.failedInvalidData
+        }
 
-        disposeFilesystemManager() //vital hack    normally we shouldnt need this    but there seems to be a bug in the lib https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
-
+        disposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce() //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
-
         resetUploadState() //order
 
         var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
@@ -132,19 +130,21 @@ public class IOSFileUploader: NSObject {
         }
                 
         let success = _fileSystemManager.upload( //order
-                name: _remoteFilePathSanitized,
-                data: data,
-                using: configuration,
-                delegate: self
+            name: _remoteFilePathSanitized,
+            data: data!,
+            using: configuration,
+            delegate: self
         )
         if !success {
             setState(EIOSFileUploaderState.error)
             onError("Failed to commence file-uploading (check logs for details)")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return EIOSFileUploadingInitializationVerdict.failedErrorUponCommencing
         }
 
         return EIOSFileUploadingInitializationVerdict.success
+        
+        //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
     }
     
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
