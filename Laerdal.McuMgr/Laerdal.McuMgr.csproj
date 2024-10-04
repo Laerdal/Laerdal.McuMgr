@@ -43,9 +43,9 @@
         <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>        
         <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
         <!-- minimum ios/android/maccatalyst os versions that we support -->
-        <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true'                                               ">11.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion  Condition=" '$(IsAndroid)'     == 'true'                                               ">21</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion  Condition=" '$(IsMacCatalyst)' == 'true'                                               ">13.1</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true' ">11.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsAndroid)'     == 'true' ">21</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsMacCatalyst)' == 'true' ">13.1</SupportedOSPlatformVersion>
 
         <OutputType>Library</OutputType>
         <OutputPath>bin\</OutputPath>
@@ -71,10 +71,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1168.0</Version>
-        <FileVersion>1.0.1168.0</FileVersion>
-        <PackageVersion>1.0.1168.0</PackageVersion>
-        <AssemblyVersion>1.0.1168.0</AssemblyVersion>
+        <Version>1.0.1079.0</Version>
+        <FileVersion>1.0.1079.0</FileVersion>
+        <PackageVersion>1.0.1079.0</PackageVersion>
+        <AssemblyVersion>1.0.1079.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -168,21 +168,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1168.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1079.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1168.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1079.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1168.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1079.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1168.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1079.0"/>
     </ItemGroup>
 
 </Project>
