@@ -15,7 +15,10 @@
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
-    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild" AfterTargets="TackleJarDependencies" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
+    <Target Name="CompileMcuMgrLaerdalWrapper"
+            AfterTargets="TackleJarDependencies"
+            BeforeTargets="PrepareForBuild"
+            Condition=" '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
 			<!-- in azure we specify the gradlepath explicitly because by default macos13 uses gradle8.6          -->
@@ -83,8 +86,9 @@
     </Target>
 
     <!-- android    download the jar and aar dependencies from maven -->
-    <Target Name="TackleJarDependencies" BeforeTargets="PrepareForBuild" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
-
+    <Target Name="TackleJarDependencies"
+            BeforeTargets="CompileMcuMgrLaerdalWrapper;PrepareForBuild"
+            Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
         <!-- 1. jars go here - notice the :jar postfix    to pick the right versions have a look at the folder Laerdal.McuMgr.Bindings.Android.Native/lib which contains all .jar files listed below -->
 
         <!-- we dont really need these anymore   they cause problems with duplicate symbols -->
