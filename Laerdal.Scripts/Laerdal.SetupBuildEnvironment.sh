@@ -1,29 +1,36 @@
 #!/bin/bash
 
-declare -r NUGET_FEED_URL="$1"
-declare -r NUGET_FEED_USERNAME="$2"
-declare -r NUGET_FEED_ACCESSTOKEN="$3"
+declare -r DOTNET_TARGET_WORKLOAD_VERSION="$1"
 
-declare -r ARTIFACTS_FOLDER_PATH="$4"
+declare -r NUGET_FEED_URL="$2"
+declare -r NUGET_FEED_USERNAME="$3"
+declare -r NUGET_FEED_ACCESSTOKEN="$4"
+
+declare -r ARTIFACTS_FOLDER_PATH="$5"
+
+if [ -z "${DOTNET_TARGET_WORKLOAD_VERSION}" ]; then
+  echo "##vso[task.logissue type=error]Missing 'DOTNET_TARGET_WORKLOAD_VERSION' which was expected to be parameter #1."
+  exit 1
+fi
 
 if [ -z "${NUGET_FEED_URL}" ]; then
-  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_URL' which was expected to be parameter #1."
-  exit 3
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_URL' which was expected to be parameter #2."
+  exit 2
 fi
 
 if [ -z "${NUGET_FEED_USERNAME}" ]; then
-  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_USERNAME' which was expected to be parameter #2."
-  exit 5
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_USERNAME' which was expected to be parameter #3."
+  exit 3
 fi
 
 if [ -z "${NUGET_FEED_ACCESSTOKEN}" ]; then
-  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_ACCESSTOKEN' which was expected to be parameter #3."
-  exit 6
+  echo "##vso[task.logissue type=error]Missing 'NUGET_FEED_ACCESSTOKEN' which was expected to be parameter #4."
+  exit 4
 fi
 
 if [ -z "${ARTIFACTS_FOLDER_PATH}" ]; then
-  echo "##vso[task.logissue type=error]Missing 'ARTIFACTS_FOLDER_PATH' which was expected to be parameter #4."
-  exit 7
+  echo "##vso[task.logissue type=error]Missing 'ARTIFACTS_FOLDER_PATH' which was expected to be parameter #5."
+  exit 5
 fi
 
 brew   install   --cask   objectivesharpie
@@ -74,8 +81,8 @@ fi
 # we do our best to explicitly version-pin our workloads so as to preemptively avoid problems that
 # would be bound to crop up sooner or later by blindly auto-upgrading to bleeding-edge workloads
 # 
-# todo   unfortunately issuing a 'dotnet workload restore' on the root folder doesnt work as intended
-# todo   on the azure pipelines and we need to figure out why
+# also note that issuing a 'dotnet workload restore' doesnt work reliably and this is why resorted
+# to being so explicit about the workloads we need 
 #
 sudo    dotnet                                           \
              workload                                    \
@@ -83,9 +90,11 @@ sudo    dotnet                                           \
                  ios                                     \
                  android                                 \
                  maccatalyst                             \
+                 maui                                    \
                  maui-ios                                \
+                 maui-tizen                              \
                  maui-android                            \
-                 maui-maccatalyst
+                 maui-maccatalyst    --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
