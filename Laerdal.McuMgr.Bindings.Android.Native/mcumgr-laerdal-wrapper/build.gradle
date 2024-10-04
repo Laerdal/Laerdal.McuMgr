@@ -7,11 +7,11 @@ tasks.register('wrapper', Wrapper) {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file 
 
     defaultConfig {
         minSdk 21
-        targetSdk 33
+        targetSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file
 
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

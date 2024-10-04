@@ -690,6 +690,8 @@ git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch deve
 
 ```bash
 # cd into the root folder of the repo
+WORKLOAD_VERSION=8.0.402                                 \
+&&                                                       \
 sudo    dotnet                                           \
              workload                                    \
              install                                     \
@@ -701,12 +703,14 @@ sudo    dotnet                                           \
                  maui-tizen                              \
                  maui-android                            \
                  maui-maccatalyst                        \
+                 --version   "${WORKLOAD_VERSION}"       \
 &&                                                       \
 cd "Laerdal.McuMgr.Bindings.iOS"                         \
 &&                                                       \
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
+             --version   "${WORKLOAD_VERSION}"           \
 &&                                                       \
 cd -                                                     \
 &&                                                       \
@@ -715,6 +719,7 @@ cd "Laerdal.McuMgr.Bindings.MacCatalyst"                 \
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
+             --version   "${WORKLOAD_VERSION}"           \
 &&                                                       \
 cd -                                                     \
 &&                                                       \
@@ -723,6 +728,7 @@ cd "Laerdal.McuMgr.Bindings.Android"                     \
 sudo    dotnet                                           \
              workload                                    \
              restore                                     \
+             --version   "${WORKLOAD_VERSION}"           \
 &&                                                       \
 cd -
 
