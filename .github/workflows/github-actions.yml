@@ -22,15 +22,15 @@ env:
 
   DOTNET_TARGET_WORKLOAD_VERSION: "8.0.402" # dont upgrade this lightheartedly   the workload snapshot implicitly defines which versions of Android/iOS/MacCatalyst SDKs are supported
 
-  BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34"
+  BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34" # for the csproj file
 
-  BINDINGS_IOS___SDK_VERSION: "17.5"
-  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer"
-  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "17.0"
+  BINDINGS_IOS___SDK_VERSION: "17.5" # for xcodebuild
+  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer" # for xcodebuild
+  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "17.0" # for the csproj file
 
-  BINDINGS_MACCATALYST___SDK_VERSION: "14.5"
-  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer"
-  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "17.0"
+  BINDINGS_MACCATALYST___SDK_VERSION: "14.5" # for xcodebuild
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer" # for xcodebuild
+  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "17.0" # for the csproj file
 
 on:
   workflow_call: #     so that other workflows can trigger this
