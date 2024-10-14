@@ -151,6 +151,7 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
 
+        resetUploadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
         ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
 
         final EAndroidFileUploaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
@@ -159,7 +160,6 @@ public class AndroidFileUploader
 
         ensureFileUploaderCallbackProxyIsInitializedExactlyOnce(); //order
 
-        resetUploadState(); //order
         setLoggingEnabled(false);
 
         try
