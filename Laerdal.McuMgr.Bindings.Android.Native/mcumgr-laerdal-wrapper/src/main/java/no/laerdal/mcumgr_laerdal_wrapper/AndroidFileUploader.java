@@ -203,7 +203,7 @@ public class AndroidFileUploader
         if (_transport != null)
             return;
 
-        logMessageAdvertisement(_remoteFilePathSanitized, "[AFU.ETIIEO.010] (Re)Initializing transport: initial-mtu-size=" + initialMtuSize, "FileUploader", "TRACE");
+        logMessageAdvertisement("[AFU.ETIIEO.010] (Re)Initializing transport: initial-mtu-size=" + initialMtuSize, "FileUploader", "TRACE", _remoteFilePathSanitized);
 
         _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
 
@@ -224,7 +224,7 @@ public class AndroidFileUploader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
-        logMessageAdvertisement(_remoteFilePathSanitized, "[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileUploader", "TRACE");
+        logMessageAdvertisement("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileUploader", "TRACE", _remoteFilePathSanitized);
 
         try
         {
@@ -432,7 +432,7 @@ public class AndroidFileUploader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void logMessageAdvertisement(final String remoteFilePath, final String message, final String category, final String level)
+    public void logMessageAdvertisement(final String message, final String category, final String level, final String resource)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

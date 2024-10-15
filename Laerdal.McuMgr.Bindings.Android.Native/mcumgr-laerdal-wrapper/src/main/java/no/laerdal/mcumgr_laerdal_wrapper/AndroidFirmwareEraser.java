@@ -89,15 +89,15 @@ public class AndroidFirmwareEraser {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(String errorMessage) {
+    public void fatalErrorOccurredAdvertisement(final String errorMessage) {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void logMessageAdvertisement(String message, String category, String level) {
+    public void logMessageAdvertisement(final String message, final String category, final String level) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void busyStateChangedAdvertisement(boolean busyNotIdle) {
+    public void busyStateChangedAdvertisement(final boolean busyNotIdle) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 

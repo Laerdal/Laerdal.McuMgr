@@ -81,7 +81,7 @@ public class AndroidDeviceResetter {
     }
 
     private EAndroidDeviceResetterState _currentState = EAndroidDeviceResetterState.NONE;
-    private void setState(EAndroidDeviceResetterState newState) {
+    private void setState(final EAndroidDeviceResetterState newState) {
         final EAndroidDeviceResetterState oldState = _currentState; //order
 
         _currentState = newState; //order
@@ -99,15 +99,15 @@ public class AndroidDeviceResetter {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(String errorMessage) {
+    public void fatalErrorOccurredAdvertisement(final String errorMessage) {
         _lastFatalErrorMessage = errorMessage; //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void logMessageAdvertisement(String message, String category, String level) {
+    public void logMessageAdvertisement(final String message, final String category, final String level) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void stateChangedAdvertisement(EAndroidDeviceResetterState oldState, EAndroidDeviceResetterState currentState) {
+    public void stateChangedAdvertisement(final EAndroidDeviceResetterState oldState, final EAndroidDeviceResetterState currentState) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
