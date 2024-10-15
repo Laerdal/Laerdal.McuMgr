@@ -223,6 +223,8 @@ public class AndroidFileUploader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
+        logMessageAdvertisement(_remoteFilePathSanitized, "[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileUploader", "TRACE");
+
         try
         {
             _fileSystemManager = new FsManager(_transport); //order
