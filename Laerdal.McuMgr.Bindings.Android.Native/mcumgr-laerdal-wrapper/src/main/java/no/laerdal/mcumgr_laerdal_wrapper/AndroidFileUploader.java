@@ -42,7 +42,7 @@ public class AndroidFileUploader
 
     public boolean trySetContext(@NonNull final Context context)
     {
-        if (!IsCold())
+        if (!IsIdleOrCold())
             return false;
 
         if (!tryInvalidateCachedTransport()) //order
@@ -54,11 +54,19 @@ public class AndroidFileUploader
 
     public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
     {
-        if (!IsCold())
-            return false;
+        logMessageAdvertisement("[AFU.TSBD.000] trySetBluetoothDevice() called", "FileUploader", "TRACE", _remoteFilePathSanitized);
 
-        if (!tryInvalidateCachedTransport()) //order
+        if (!IsIdleOrCold()) {
+            logMessageAdvertisement("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "TRACE", _remoteFilePathSanitized);
             return false;
+        }
+
+        logMessageAdvertisement("[AFU.TSBD.010]", "FileUploader", "TRACE", _remoteFilePathSanitized);
+        if (!tryInvalidateCachedTransport()) //order
+        {
+            logMessageAdvertisement("[AFU.TSBD.020]", "FileUploader", "TRACE", _remoteFilePathSanitized);
+            return false;
+        }
 
         _bluetoothDevice = bluetoothDevice; //order
 
@@ -72,7 +80,7 @@ public class AndroidFileUploader
         if (_transport == null) //already scrapped
             return true;
 
-        if (!IsCold()) //if the upload is already in progress we bail out
+        if (!IsIdleOrCold()) //if the upload is already in progress we bail out
             return false;
 
         disposeFilesystemManager(); // order
@@ -361,6 +369,12 @@ public class AndroidFileUploader
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+    }
+
+    @Contract(pure = true)
+    private boolean IsIdleOrCold()
+    {
+        return _currentState == EAndroidFileUploaderState.IDLE || IsCold();
     }
 
     @Contract(pure = true)
