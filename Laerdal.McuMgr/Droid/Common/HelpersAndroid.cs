@@ -10,9 +10,9 @@ namespace Laerdal.McuMgr.Common
             "DEBUG" => ELogLevel.Debug,
             "TRACE" => ELogLevel.Verbose,
             "INFO" => ELogLevel.Info,
-            "FATAL" => ELogLevel.Error,
             "WARN" => ELogLevel.Warning,
             "ERROR" => ELogLevel.Error,
+            "FATAL" => ELogLevel.Error,
             _ => throw new ArgumentOutOfRangeException(nameof(level), level, "Unknown log-level value")
         };
     }
