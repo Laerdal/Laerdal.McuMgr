@@ -61,6 +61,9 @@ public class AndroidFileUploader
             return false;
 
         _bluetoothDevice = bluetoothDevice; //order
+
+        logMessageAdvertisement("[AFU.TSBD.010] Native Bluetooth-Device set to a new instance", "FileUploader", "TRACE", _remoteFilePathSanitized);
+
         return true;
     }
 
