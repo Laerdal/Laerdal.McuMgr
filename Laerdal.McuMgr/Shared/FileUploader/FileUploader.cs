@@ -375,7 +375,7 @@ namespace Laerdal.McuMgr.FileUploader
                     switch (ea_.NewState)
                     {
                         case EFileUploaderState.Idle:
-                            fileUploadProgressEventsCount = 0; //its vital to reset the counter here to account for retries
+                            fileUploadProgressEventsCount = 0; //it is vital to reset the counter here to account for retries
                             return;
                         
                         case EFileUploaderState.Complete:
