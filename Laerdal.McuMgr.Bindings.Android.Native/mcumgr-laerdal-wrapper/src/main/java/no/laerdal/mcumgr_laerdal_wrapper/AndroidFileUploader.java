@@ -74,6 +74,7 @@ public class AndroidFileUploader
 
         disposeFilesystemManager(); // order
         disposeTransport(); //         order
+        disposeCallbackProxy(); //     order
 
         return true;
     }
@@ -327,6 +328,11 @@ public class AndroidFileUploader
         }
 
         _fileSystemManager = null;
+    }
+
+    private void disposeCallbackProxy()
+    {
+        _fileUploaderCallbackProxy = null;
     }
 
     private void setLoggingEnabled(final boolean enabled)
