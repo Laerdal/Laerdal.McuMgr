@@ -202,6 +202,8 @@ public class AndroidFileUploader
         if (_transport != null)
             return;
 
+        logMessageAdvertisement(_remoteFilePathSanitized, "[AFU.ETIIEO.010] (Re)Initializing transport: initial-mtu-size=" + initialMtuSize, "FileUploader", "TRACE");
+
         _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
 
         if (initialMtuSize > 0)
