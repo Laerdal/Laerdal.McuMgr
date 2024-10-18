@@ -69,7 +69,6 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Assert
             await work.Should().CompleteWithinAsync(200.Seconds());
             
-            mockedNativeFileUploaderProxy.BugDetected.Should().BeNull();
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
@@ -105,8 +104,6 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
         private class MockedGreenNativeFileUploaderProxySpy140 : MockedNativeFileUploaderProxySpy
         {
-            public string BugDetected { get; private set; }
-
             public int? ObservedPipelineDepth { get; private set; }
             public int? ObservedByteAlignment { get; private set; }
 
