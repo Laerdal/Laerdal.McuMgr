@@ -91,12 +91,12 @@ namespace Laerdal.McuMgr.FileUploader
                     // ignored
                 }
             }
-            
+
             public void CleanupResourcesOfLastUpload()
             {
                 //nothing to do in android
             }
-            
+
             #region commands
 
             public EFileUploaderVerdict BeginUpload(
@@ -138,7 +138,7 @@ namespace Laerdal.McuMgr.FileUploader
             }
 
             #endregion commands
-            
+
 
 
             #region android callbacks -> csharp event emitters
@@ -149,7 +149,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                 FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileUploaderGroupReturnCode) fileUploaderGroupReturnCode);
             }
-            
+
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileUploaderGroupReturnCode fileUploaderGroupReturnCode)
             {
                 _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(

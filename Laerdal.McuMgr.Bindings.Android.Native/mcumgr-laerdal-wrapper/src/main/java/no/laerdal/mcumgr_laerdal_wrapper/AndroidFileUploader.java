@@ -401,7 +401,7 @@ public class AndroidFileUploader
     {
         if (!(exception instanceof McuMgrErrorException))
         {
-            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, 0, 0);
+            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, -1, -1);
             return;
         }
 
