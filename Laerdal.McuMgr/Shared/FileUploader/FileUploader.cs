@@ -418,36 +418,27 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void FileUploader_FatalErrorOccurred_(object sender, FatalErrorOccurredEventArgs ea)
                 {
-                    var isAboutUnauthorized = ea.ErrorCode == EMcuMgrErrorCode.AccessDenied;
-                    if (isAboutUnauthorized)
+                    taskCompletionSource.TrySetException(ea.ErrorCode switch
                     {
-                        taskCompletionSource.TrySetException(new UploadUnauthorizedException( //specific case
+                        EMcuMgrErrorCode.Unknown => new UploadErroredOutRemoteFolderNotFoundException( //specific case
                             remoteFilePath: remoteFilePath,
                             mcuMgrErrorCode: ea.ErrorCode,
                             groupReturnCode: ea.GroupReturnCode,
                             nativeErrorMessage: ea.ErrorMessage
-                        ));
-                        return;
-                    }
-                    
-                    var isAboutFolderNotExisting = ea.ErrorCode == EMcuMgrErrorCode.Unknown;
-                    if (isAboutFolderNotExisting)
-                    {
-                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException( //specific case
+                        ),
+                        EMcuMgrErrorCode.AccessDenied => new UploadUnauthorizedException( //specific case
                             remoteFilePath: remoteFilePath,
                             mcuMgrErrorCode: ea.ErrorCode,
                             groupReturnCode: ea.GroupReturnCode,
                             nativeErrorMessage: ea.ErrorMessage
-                        ));
-                        return;
-                    }
-
-                    taskCompletionSource.TrySetException(new UploadErroredOutException( //generic
-                        remoteFilePath: remoteFilePath,
-                        mcuMgrErrorCode: ea.ErrorCode,
-                        groupReturnCode: ea.GroupReturnCode,
-                        nativeErrorMessage: ea.ErrorMessage
-                    ));
+                        ),
+                        _ => new UploadErroredOutException( //generic
+                            remoteFilePath: remoteFilePath,
+                            mcuMgrErrorCode: ea.ErrorCode,
+                            groupReturnCode: ea.GroupReturnCode,
+                            nativeErrorMessage: ea.ErrorMessage
+                        )
+                    });
                 }
                 // ReSharper restore AccessToModifiedClosure
             }
