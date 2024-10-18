@@ -2,10 +2,10 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -15,80 +15,109 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FUT.SFUA.SCS.GVSTBR.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
-        [InlineData("FUT.SFUA.SCS.GVSTBR.030", "/path/to/file.bin", 2, +000)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.040", "/path/to/file.bin", 2, +100)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.050", "/path/to/file.bin", 3, -100)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.060", "/path/to/file.bin", 3, +000)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.070", "/path/to/file.bin", 3, +100)]
-        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfully_GivenVariousSleepTimesBetweenRetries(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.010", "samsung", "sm-x200", null, null, null, null, null, 1, 1, 23, 1, 1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.020", "  Samsung  ", "  SM-X200  ", null, null, null, null, null, 1, 1, 23, 1, 1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.030", "  Apple  ", "  iPhone 6  ", null, null, null, null, null, 1, 1, 23, 1, 1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.040", "  Apple  ", "  iPhone 6  ", 2, 4, null, null, null, 2, 4, null, null, null)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.050", "AcmeCorp.", "foobar", null, null, null, null, null, null, null, null, null, null)]
+        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettingsRightAway_GivenProblematicDevices(
+            string testcaseNickname,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
+            
+            int? pipelineDepth,
+            int? byteAlignment,
+            int? initialMtuSize,
+            int? windowCapacity,
+            int? memoryAlignment,
+            
+            int? expectedPipelineDepth,
+            int? expectedByteAlignment,
+            int? expectedInitialMtuSize,
+            int? expectedWindowCapacity,
+            int? expectedMemoryAlignment
+        )
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
+            var remoteFilePath = "/foo/bar/ping.bin";
 
-            var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
-                ? remoteFilePath
-                : $"/{remoteFilePath}";
-
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy100(
-                maxTriesCount: maxTriesCount,
-                uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_()
-            );
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy140(uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
+            
+            AppleTidbits.KnownProblematicDevices.Add(("apple", "iphone 6"));
 
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp.",
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
                 
                 data: stream,
-                maxTriesCount: maxTriesCount,
+                maxTriesCount: 1,
                 remoteFilePath: remoteFilePath,
-                sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
+                
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(((maxTriesCount + 1) * 2).Seconds());
-
+            await work.Should().CompleteWithinAsync(200.Seconds());
+            
+            mockedNativeFileUploaderProxy.BugDetected.Should().BeNull();
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
+            
+            mockedNativeFileUploaderProxy.ObservedPipelineDepth.Should().Be(expectedPipelineDepth);
+            mockedNativeFileUploaderProxy.ObservedByteAlignment.Should().Be(expectedByteAlignment);
+            
+            mockedNativeFileUploaderProxy.ObservedWindowCapacity.Should().Be(expectedWindowCapacity);
+            mockedNativeFileUploaderProxy.ObservedInitialMtuSize.Should().Be(expectedInitialMtuSize);
+            mockedNativeFileUploaderProxy.ObservedMemoryAlignment.Should().Be(expectedMemoryAlignment);
 
             eventsMonitor
                 .OccurredEvents.Where(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
-                .Should().HaveCount(maxTriesCount - 1); //one error for each try except the last one
+                .Should().HaveCount(0);
+            
+            eventsMonitor
+                .Should().Raise(nameof(fileUploader.StateChanged))
+                .WithSender(fileUploader)
+                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileUploaderState.Uploading);
-
-            eventsMonitor
-                .Should().Raise(nameof(fileUploader.StateChanged))
-                .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileUploaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploaded))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.Resource == expectedRemoteFilepath);
+                .WithArgs<FileUploadedEventArgs>(args => args.Resource == remoteFilePath);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy100 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy140 : MockedNativeFileUploaderProxySpy
         {
-            private readonly int _maxTriesCount;
-            
-            public MockedGreenNativeFileUploaderProxySpy100(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, int maxTriesCount) : base(uploaderCallbacksProxy)
+            public string BugDetected { get; private set; }
+
+            public int? ObservedPipelineDepth { get; private set; }
+            public int? ObservedByteAlignment { get; private set; }
+
+            public int? ObservedInitialMtuSize { get; private set; }
+            public int? ObservedWindowCapacity { get; private set; }
+            public int? ObservedMemoryAlignment { get; private set; }
+
+            public MockedGreenNativeFileUploaderProxySpy140(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
-                _maxTriesCount = maxTriesCount;
             }
 
-            private int _tryCounter;
             public override EFileUploaderVerdict BeginUpload(
                 string remoteFilePath,
                 byte[] data,
@@ -99,8 +128,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 int? memoryAlignment = null //  android only
             )
             {
-                _tryCounter++;
-
+                ObservedPipelineDepth = pipelineDepth;
+                ObservedByteAlignment = byteAlignment;
+                    
+                ObservedInitialMtuSize = initialMtuSize;
+                ObservedWindowCapacity = windowCapacity;
+                ObservedMemoryAlignment = memoryAlignment;
+                
                 var verdict = base.BeginUpload(
                     data: data,
                     remoteFilePath: remoteFilePath,
@@ -115,12 +149,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 Task.Run(async () => //00 vital
                 {
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle);
                     await Task.Delay(10);
-
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    await Task.Delay(10);
-
+                    
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00);
                     await Task.Delay(5);
@@ -132,15 +163,6 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10);
                     await Task.Delay(5);
-                    
-                    if (_tryCounter < _maxTriesCount)
-                    {
-                        await Task.Delay(20);
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                   order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Unset, EFileUploaderGroupReturnCode.Unset); // order
-                        return;
-                    }
-                    
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10);
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);

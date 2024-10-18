@@ -34,7 +34,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                 fileUploader.Cancel(reason: cancellationReason);
             });
-            var work = new Func<Task>(() => fileUploader.UploadAsync(mockedFileData, remoteFilePath));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                data: mockedFileData,
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);

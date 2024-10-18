@@ -30,6 +30,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 data: mockedFileData,
                 maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath

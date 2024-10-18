@@ -29,7 +29,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task>(async () => await fileUploader.UploadAsync(remoteFilePaths.ToDictionary(x => x, x => new byte[] { 1 })));
+            var work = new Func<Task>(async () => await fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, _ => new byte[] { 1 })
+            ));
 
             // Assert
             await work.Should().ThrowAsync<ArgumentException>().WithTimeoutInMs(500); //dont use throwexactlyasync<> here
