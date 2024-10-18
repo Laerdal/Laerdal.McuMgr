@@ -267,11 +267,6 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 catch (DownloadErroredOutException ex)
                 {
-                    if (fileDownloadProgressEventsCount <= 10)
-                    {
-                        suspiciousTransportFailuresCount++;
-                    }
-                    
                     if (ex is DownloadErroredOutRemoteFileNotFoundException) //order   no point to retry if the remote file is not there
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
@@ -282,6 +277,11 @@ namespace Laerdal.McuMgr.FileDownloader
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
                         throw new AllDownloadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
+                    }
+                    
+                    if (fileDownloadProgressEventsCount <= 10)
+                    {
+                        suspiciousTransportFailuresCount++;
                     }
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order

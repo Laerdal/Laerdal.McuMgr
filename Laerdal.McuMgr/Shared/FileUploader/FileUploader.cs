@@ -314,17 +314,17 @@ namespace Laerdal.McuMgr.FileUploader
                 }
                 catch (UploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
                 {
-                    if (fileUploadProgressEventsCount <= 10)
-                    {
-                        suspiciousTransportFailuresCount++;
-                    }
-                    
                     if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
 
                     if (++triesCount > maxTriesCount) //order
                         throw new AllUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
 
+                    if (fileUploadProgressEventsCount <= 10)
+                    {
+                        suspiciousTransportFailuresCount++;
+                    }
+                    
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {
                         await Task.Delay(sleepTimeBetweenRetriesInMs);
@@ -369,8 +369,7 @@ namespace Laerdal.McuMgr.FileUploader
                     taskCompletionSource.TrySetResult(true);
                 }
 
-                // ReSharper disable AccessToModifiedClosure
-                void FileUploader_StateChanged_(object _, StateChangedEventArgs ea_)
+                void FileUploader_StateChanged_(object _, StateChangedEventArgs ea_) // ReSharper disable AccessToModifiedClosure
                 {
                     switch (ea_.NewState)
                     {
@@ -409,7 +408,7 @@ namespace Laerdal.McuMgr.FileUploader
                     
                     //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
-                }
+                } // ReSharper restore AccessToModifiedClosure
 
                 void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object sender, FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
                 {
@@ -440,7 +439,6 @@ namespace Laerdal.McuMgr.FileUploader
                         )
                     });
                 }
-                // ReSharper restore AccessToModifiedClosure
             }
             
             if (isCancellationRequested) //vital
