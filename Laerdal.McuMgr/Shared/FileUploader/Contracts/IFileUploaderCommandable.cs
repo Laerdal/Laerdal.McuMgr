@@ -18,6 +18,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// Allowed types for TData are 'Stream', 'Func&lt;Stream&gt;', 'Func&lt;Task&lt;Stream&gt;&gt;', 'Func&lt;ValueTask&lt;Stream&gt;&gt;', 'byte[]' and 'IEnumerable&lt;byte&gt;'.
         /// </remarks>
         /// <param name="remoteFilePathsAndTheirData">The files to upload.</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
@@ -41,6 +43,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         Task<IEnumerable<string>> UploadAsync<TData>(
             IDictionary<string, TData> remoteFilePathsAndTheirData,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
@@ -64,6 +68,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// </remarks>
         /// <param name="localData">The local data to upload.</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="timeoutForUploadInMs">The amount of time to wait for the upload to complete before bailing out.</param>
         /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
@@ -88,6 +94,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         Task UploadAsync<TData>(
             TData localData,
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutForUploadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
@@ -105,6 +113,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// </summary>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="data">The file-data.</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
         ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
@@ -124,6 +134,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         EFileUploaderVerdict BeginUpload(
             string remoteFilePath,
             byte[] data,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int? initialMtuSize = null,
@@ -147,7 +159,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         bool TrySetBluetoothDevice(object bluetoothDevice);
 
         /// <summary>Cancels the file-uploading process</summary>
-        void Cancel();
+        /// <param name="reason">(optional) The reason for the cancellation</param>
+        void Cancel(string reason = "");
         
         /// <summary>Disconnects the file-uploader from the targeted device</summary>
         void Disconnect();

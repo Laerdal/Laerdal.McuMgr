@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.FileUploader
             );
         }
 
-        private sealed class AndroidFileUploaderProxy : AndroidFileUploader, INativeFileUploaderProxy 
+        private sealed class AndroidFileUploaderProxy : AndroidFileUploader, INativeFileUploaderProxy
         {
             private readonly INativeFileUploaderCallbacksProxy _fileUploaderCallbacksProxy;
             
@@ -91,12 +91,12 @@ namespace Laerdal.McuMgr.FileUploader
                     // ignored
                 }
             }
-            
+
             public void CleanupResourcesOfLastUpload()
             {
                 //nothing to do in android
             }
-            
+
             #region commands
 
             public EFileUploaderVerdict BeginUpload(
@@ -116,6 +116,11 @@ namespace Laerdal.McuMgr.FileUploader
                     windowCapacity: windowCapacity ?? -1,
                     memoryAlignment: memoryAlignment ?? -1
                 ));
+            }
+            
+            public new void Cancel(string reason = "")
+            {
+                base.Cancel(reason);
             }
 
             public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
@@ -138,7 +143,7 @@ namespace Laerdal.McuMgr.FileUploader
             }
 
             #endregion commands
-            
+
 
 
             #region android callbacks -> csharp event emitters
@@ -149,7 +154,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                 FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileUploaderGroupReturnCode) fileUploaderGroupReturnCode);
             }
-            
+
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileUploaderGroupReturnCode fileUploaderGroupReturnCode)
             {
                 _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
@@ -182,12 +187,19 @@ namespace Laerdal.McuMgr.FileUploader
                     resource: resource //essentially the remote filepath
                 );
             }
-
-            public override void CancelledAdvertisement()
+            
+            public override void CancellingAdvertisement(string reason)
             {
-                base.CancelledAdvertisement(); //just in case
+                base.CancellingAdvertisement(reason); //just in case
                 
-                _fileUploaderCallbacksProxy?.CancelledAdvertisement();
+                _fileUploaderCallbacksProxy?.CancellingAdvertisement(reason);
+            }
+
+            public override void CancelledAdvertisement(string reason)
+            {
+                base.CancelledAdvertisement(reason); //just in case
+                
+                _fileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
 
             public override void FileUploadedAdvertisement(string resource)

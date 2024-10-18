@@ -9,6 +9,7 @@ public class IOSFileUploader: NSObject {
     private var _cbPeripheral: CBPeripheral!
     private var _currentState: EIOSFileUploaderState = .none
     private var _fileSystemManager: FileSystemManager!
+    private var _cancellationReason: String = ""
     private var _lastFatalErrorMessage: String = ""
     private var _remoteFilePathSanitized: String!
 
@@ -186,7 +187,10 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func cancel() {
+    public func cancel(_ reason: String) {
+        _cancellationReason = reason
+
+        cancellingAdvertisement(reason)
         setState(.cancelling) //order
 
         _fileSystemManager?.cancelTransfer() //order
@@ -293,8 +297,13 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func cancelledAdvertisement() {
-        _listener.cancelledAdvertisement()
+    private func cancellingAdvertisement(_ reason: String) {
+        _listener.cancellingAdvertisement(reason)
+    }
+
+    //@objc   dont
+    private func cancelledAdvertisement(_ reason: String) {
+        _listener.cancelledAdvertisement(reason)
     }
 
     //@objc   dont
@@ -365,7 +374,7 @@ extension IOSFileUploader: FileUploadDelegate {
         setState(EIOSFileUploaderState.cancelled)
         busyStateChangedAdvertisement(false)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
-        cancelledAdvertisement()
+        cancelledAdvertisement(_cancellationReason)
     }
 
     public func uploadDidFinish() {

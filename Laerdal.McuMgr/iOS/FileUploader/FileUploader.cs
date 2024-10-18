@@ -50,7 +50,7 @@ namespace Laerdal.McuMgr.FileUploader
             
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
-            public void Cancel() => _nativeFileUploader?.Cancel();
+            public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
             public void Disconnect() => _nativeFileUploader?.Disconnect();
 
             // public new void Dispose() { ... }    dont   there is no need to override the base implementation
@@ -126,7 +126,7 @@ namespace Laerdal.McuMgr.FileUploader
                     nsDataOfFileToUpload.Dispose();
                     return verdict;
                 }
-                
+
                 _nsDataOfFileInCurrentlyActiveUpload = nsDataOfFileToUpload;
                 return EFileUploaderVerdict.Success;
             }
@@ -160,8 +160,11 @@ namespace Laerdal.McuMgr.FileUploader
                 set => _nativeFileUploaderCallbacksProxy!.FileUploader = value;
             }
             
-            public override void CancelledAdvertisement()
-                => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement();
+            public override void CancellingAdvertisement(string reason = "")
+                => _nativeFileUploaderCallbacksProxy?.CancellingAdvertisement(reason);
+            
+            public override void CancelledAdvertisement(string reason = "")
+                => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
                 => LogMessageAdvertisement(

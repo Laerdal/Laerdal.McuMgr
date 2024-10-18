@@ -4,7 +4,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {
     public class UploadCancelledException : Exception, IUploadException
     {
-        public UploadCancelledException() : base("Upload was cancelled")
+        public UploadCancelledException(string optionalReason = "")
+            : base($"Upload was cancelled{(string.IsNullOrWhiteSpace(optionalReason) ? "" : $": {optionalReason}")}")
         {
         }
     }

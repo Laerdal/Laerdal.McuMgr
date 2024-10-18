@@ -234,13 +234,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 }
                 catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
                 {
+                    if (++triesCount > maxTriesCount) //order
+                        throw new AllFirmwareInstallationAttemptsFailedException(maxTriesCount, innerException: ex);
+
                     if (_fileUploadProgressEventsCount <= 10)
                     {
                         suspiciousTransportFailuresCount++;
                     }
-                    
-                    if (++triesCount > maxTriesCount) //order
-                        throw new AllFirmwareInstallationAttemptsFailedException(maxTriesCount, innerException: ex);
 
                     if (sleepTimeBetweenRetriesInMs > 0) //order
                     {

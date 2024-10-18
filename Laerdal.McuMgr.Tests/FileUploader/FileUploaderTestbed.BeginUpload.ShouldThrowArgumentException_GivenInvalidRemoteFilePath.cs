@@ -25,7 +25,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<EFileUploaderVerdict>(() => fileUploader.BeginUpload(remoteFilePath, mockedFileData));
+            var work = new Func<EFileUploaderVerdict>(() => fileUploader.BeginUpload(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                data: mockedFileData,
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             work.Should().ThrowExactly<ArgumentException>();

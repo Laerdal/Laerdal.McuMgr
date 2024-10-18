@@ -16,7 +16,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             // Act
-            var work = new Func<Task>(() => fileUploader.UploadAsync(data: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin"));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
+                data: new byte[] { 1 },
+                remoteFilePath: "/path/to/file.bin"
+            ));
 
             // Assert
             (await work.Should().ThrowExactlyAsync<UploadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
