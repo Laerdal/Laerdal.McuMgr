@@ -20,6 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/file.bin";
+            const string cancellationReason = "blah blah foobar";
 
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_(), isCancellationLeadingToSoftLanding);
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
@@ -31,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
                 await Task.Delay(500);
 
-                fileUploader.Cancel();
+                fileUploader.Cancel(reason: cancellationReason);
             });
             var work = new Func<Task>(() => fileUploader.UploadAsync(mockedFileData, remoteFilePath));
 
@@ -39,6 +40,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeTrue();
+            mockedNativeFileUploaderProxy.CancellationReason.Should().Be(cancellationReason);
+
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
@@ -67,19 +70,20 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
             
-            public override void Cancel()
+            public override void Cancel(string reason = "")
             {
-                base.Cancel();
+                base.Cancel(reason);
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
+                    CancellingAdvertisement(reason); //                                                                                                order
                     StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
                         StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                        CancelledAdvertisement(); //                                                                                                       order    
+                        CancelledAdvertisement(reason); //                                                                                                 order    
                     }
                 });
                 

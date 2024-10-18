@@ -147,7 +147,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         bool TrySetBluetoothDevice(object bluetoothDevice);
 
         /// <summary>Cancels the file-uploading process</summary>
-        void Cancel();
+        /// <param name="reason">(optional) The reason for the cancellation</param>
+        void Cancel(string reason = "");
         
         /// <summary>Disconnects the file-uploader from the targeted device</summary>
         void Disconnect();

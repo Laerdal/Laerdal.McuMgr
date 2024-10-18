@@ -75,11 +75,12 @@ namespace Laerdal.McuMgr.FileUploader
             return verdict;
         }
         
-        public void Cancel() => _nativeFileUploaderProxy?.Cancel();
+        public void Cancel(string reason = "") => _nativeFileUploaderProxy?.Cancel(reason);
         public void Disconnect() => _nativeFileUploaderProxy?.Disconnect();
         public void CleanupResourcesOfLastUpload() => _nativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
         
         private event EventHandler<CancelledEventArgs> _cancelled;
+        private event EventHandler<CancellingEventArgs> _cancelling;
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<FileUploadedEventArgs> _fileUploaded;
@@ -105,6 +106,16 @@ namespace Laerdal.McuMgr.FileUploader
                 _logEmitted += value;
             }
             remove => _logEmitted -= value;
+        }
+
+        public event EventHandler<CancellingEventArgs> Cancelling
+        {
+            add
+            {
+                _cancelling -= value;
+                _cancelling += value;
+            }
+            remove => _cancelling -= value;
         }
 
         public event EventHandler<CancelledEventArgs> Cancelled
@@ -249,6 +260,7 @@ namespace Laerdal.McuMgr.FileUploader
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
 
+            var cancellationReason = "";
             var isCancellationRequested = false;
             var fileUploadProgressEventsCount = 0;
             var suspiciousTransportFailuresCount = 0;
@@ -259,6 +271,7 @@ namespace Laerdal.McuMgr.FileUploader
                 try
                 {
                     Cancelled += FileUploader_Cancelled_;
+                    Cancelling += FileUploader_Cancelling_;
                     FileUploaded += FileUploader_FileUploaded_;
                     StateChanged += FileUploader_StateChanged_;
                     FatalErrorOccurred += FileUploader_FatalErrorOccurred_;
@@ -351,6 +364,7 @@ namespace Laerdal.McuMgr.FileUploader
                 finally
                 {
                     Cancelled -= FileUploader_Cancelled_;
+                    Cancelling -= FileUploader_Cancelling_;
                     FileUploaded -= FileUploader_FileUploaded_;
                     StateChanged -= FileUploader_StateChanged_;
                     FatalErrorOccurred -= FileUploader_FatalErrorOccurred_;
@@ -361,12 +375,41 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void FileUploader_Cancelled_(object _, CancelledEventArgs ea_)
                 {
-                    taskCompletionSource.TrySetException(new UploadCancelledException());
+                    taskCompletionSource.TrySetException(new UploadCancelledException(ea_.Reason));
                 }
                 
                 void FileUploader_FileUploaded_(object _, FileUploadedEventArgs ea_)
                 {
                     taskCompletionSource.TrySetResult(true);
+                }
+
+                void FileUploader_Cancelling_(object _, CancellingEventArgs ea_)
+                {
+                    if (isCancellationRequested)
+                        return;
+
+                    cancellationReason = ea_.Reason;
+                    isCancellationRequested = true;
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary task rescheduling
+                            {
+                                await Task.Delay(gracefulCancellationTimeoutInMs);
+                            }
+
+                            OnCancelled(new CancelledEventArgs(ea_.Reason)); //00
+                        }
+                        catch // (Exception ex)
+                        {
+                            // ignored
+                        }
+                    });
+
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
+                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
                 void FileUploader_StateChanged_(object _, StateChangedEventArgs ea_) // ReSharper disable AccessToModifiedClosure
@@ -380,34 +423,7 @@ namespace Laerdal.McuMgr.FileUploader
                         case EFileUploaderState.Complete:
                             //taskCompletionSource.TrySetResult(true); //dont   we want to wait for the FileUploaded event
                             return;
-
-                        case EFileUploaderState.Cancelling: //20
-                            if (isCancellationRequested)
-                                return;
-
-                            isCancellationRequested = true;
-
-                            Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary task rescheduling
-                                    {
-                                        await Task.Delay(gracefulCancellationTimeoutInMs);                                        
-                                    }
-
-                                    OnCancelled(new CancelledEventArgs()); //00
-                                }
-                                catch // (Exception ex)
-                                {
-                                    // ignored
-                                }
-                            });
-                            return;
                     }
-                    
-                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
-                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 } // ReSharper restore AccessToModifiedClosure
 
                 void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object sender, FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
@@ -442,7 +458,7 @@ namespace Laerdal.McuMgr.FileUploader
             }
             
             if (isCancellationRequested) //vital
-                throw new UploadCancelledException(); //20
+                throw new UploadCancelledException(cancellationReason); //20
 
             return;
 
@@ -505,6 +521,7 @@ namespace Laerdal.McuMgr.FileUploader
         }
 
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea);
+        void IFileUploaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea);
         void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => OnFileUploaded(ea);
@@ -513,6 +530,7 @@ namespace Laerdal.McuMgr.FileUploader
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileUploadProgressPercentageAndDataThroughputChanged(ea);
 
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
+        private void OnCancelling(CancellingEventArgs ea) => _cancelling?.Invoke(this, ea);
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
         private void OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.Invoke(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.Invoke(this, ea);
@@ -525,8 +543,11 @@ namespace Laerdal.McuMgr.FileUploader
         {
             public IFileUploaderEventEmittable FileUploader { get; set; }
 
-            public void CancelledAdvertisement()
-                => FileUploader?.OnCancelled(new CancelledEventArgs());
+            public void CancelledAdvertisement(string reason = "")
+                => FileUploader?.OnCancelled(new CancelledEventArgs(reason));
+            
+            public void CancellingAdvertisement(string reason = "")
+                => FileUploader?.OnCancelling(new CancellingEventArgs(reason));
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => FileUploader?.OnLogEmitted(new LogEmittedEventArgs(

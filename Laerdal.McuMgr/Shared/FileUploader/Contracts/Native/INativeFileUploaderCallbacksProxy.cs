@@ -7,7 +7,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
     {
         public IFileUploaderEventEmittable FileUploader { get; set; }
 
-        void CancelledAdvertisement();
+        void CancelledAdvertisement(string reason = "");
+        void CancellingAdvertisement(string reason = "");
+
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
         void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);

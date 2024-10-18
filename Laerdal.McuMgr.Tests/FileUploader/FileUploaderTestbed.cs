@@ -14,6 +14,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public bool CancelCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
             public bool BeginUploadCalled { get; private set; }
+            public string CancellationReason { get; private set; }
 
             public string LastFatalErrorMessage => "";
 
@@ -43,9 +44,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 return EFileUploaderVerdict.Success;
             }
 
-            public virtual void Cancel()
+            public virtual void Cancel(string reason = "")
             {
                 CancelCalled = true;
+                CancellationReason = reason;
             }
 
             public virtual void Disconnect()
@@ -53,8 +55,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 DisconnectCalled = true;
             }
 
-            public void CancelledAdvertisement() 
-                => _uploaderCallbacksProxy.CancelledAdvertisement(); //raises the actual event
+            public void CancellingAdvertisement(string reason = "")
+                => _uploaderCallbacksProxy.CancellingAdvertisement(reason); //raises the actual event
+
+            public void CancelledAdvertisement(string reason = "")
+                => _uploaderCallbacksProxy.CancelledAdvertisement(reason); //raises the actual event
             
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _uploaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event

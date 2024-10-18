@@ -7,6 +7,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
     internal interface IFileUploaderEventEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
+        void OnCancelling(CancellingEventArgs ea);
         void OnLogEmitted(LogEmittedEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);
         void OnFileUploaded(FileUploadedEventArgs ea);

@@ -292,11 +292,14 @@ public class AndroidFileUploader
         mcuMgrTransporter.release();
     }
 
-    public void cancel()
+    private String _cancellationReason = "";
+    public void cancel(final String reason)
     {
-        setState(EAndroidFileUploaderState.CANCELLING); //order
+        _cancellationReason = reason;
 
-        final TransferController transferController = _uploadController;
+        cancellingAdvertisement(reason); //order
+        setState(EAndroidFileUploaderState.CANCELLING); //order
+        final TransferController transferController = _uploadController; //order
         if (transferController == null)
             return;
 
@@ -434,7 +437,12 @@ public class AndroidFileUploader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void cancelledAdvertisement()
+    public void cancellingAdvertisement(final String reason)
+    {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    public void cancelledAdvertisement(final String reason)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -501,7 +509,7 @@ public class AndroidFileUploader
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileUploaderState.CANCELLED);
-            cancelledAdvertisement();
+            cancelledAdvertisement(_cancellationReason);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
 
