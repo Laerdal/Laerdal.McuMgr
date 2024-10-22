@@ -105,7 +105,7 @@ public class AndroidFileDownloader
     )
     {
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
-            onError("", "Target-file provided is dud!", null);
+            onError("Target-file provided is dud!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -113,33 +113,33 @@ public class AndroidFileDownloader
         _remoteFilePathSanitized = remoteFilePath.trim();
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
-            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file", null);
+            onError("Provided target-path points to a directory not a file");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
-            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path", null);
+            onError("Provided target-path is not an absolute path");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (!IsCold())
         {
-            onError(_remoteFilePathSanitized, "Another download is already in progress", null);
+            onError("Another download is already in progress");
 
             return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
         }
 
         if (_context == null) {
-            onError(_remoteFilePathSanitized, "No context specified - call trySetContext() first", null);
+            onError("No context specified - call trySetContext() first");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (_bluetoothDevice == null) {
-            onError(_remoteFilePathSanitized, "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
+            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -160,7 +160,7 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            onError(_remoteFilePathSanitized, "Failed to initialize download", ex);
+            onError("Failed to initialize download", ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
@@ -262,7 +262,7 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            onError(_remoteFilePathSanitized, ex.getMessage(), ex);
+            onError(ex.getMessage(), ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -361,24 +361,25 @@ public class AndroidFileDownloader
         return _lastFatalErrorMessage;
     }
 
+    public void onError(final String errorMessage)
+    {
+        onError(errorMessage, null);
+    }
+
     //@Contract(pure = true) //dont
-    public void onError(
-            final String remoteFilePath,
-            final String errorMessage,
-            final Exception exception
-    )
+    public void onError(final String errorMessage, final Exception exception)
     {
         setState(EAndroidFileDownloaderState.ERROR);
 
         if (!(exception instanceof McuMgrErrorException))
         {
-            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage /*, -1, -1*/);
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage /*, -1, -1*/);
             return;
         }
 
         McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         fatalErrorOccurredAdvertisement(
-                remoteFilePath,
+                _remoteFilePathSanitized,
                 errorMessage
                 // ,mcuMgrErrorException.getCode().value(), //todo and mirror this in the ios world as well
                 // (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99) //todo
@@ -473,7 +474,7 @@ public class AndroidFileDownloader
         public void onDownloadFailed(@NonNull final McuMgrException exception)
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-            onError(_remoteFilePathSanitized, exception.getMessage(), exception);
+            onError(exception.getMessage(), exception);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
 
