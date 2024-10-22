@@ -109,7 +109,7 @@ public class AndroidFileUploader
     )
     {
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
-            onError("N/A", "Provided target-path is empty", null);
+            onError("Provided target-path is empty", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -117,38 +117,38 @@ public class AndroidFileUploader
         _remoteFilePathSanitized = remoteFilePath.trim();
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
-            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file", null);
+            onError("Provided target-path points to a directory not a file");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
-            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path", null);
+            onError("Provided target-path is not an absolute path");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (!IsCold()) {
-            onError(_remoteFilePathSanitized, "Another upload is already in progress", null);
+            onError("Another upload is already in progress");
 
             return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
         }
 
         if (_context == null) {
-            onError(_remoteFilePathSanitized, "No context specified - call trySetContext() first", null);
+            onError("No context specified - call trySetContext() first");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (_bluetoothDevice == null) {
-            onError(_remoteFilePathSanitized, "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
+            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (data == null) { // data being null is not ok   but data.length==0 is perfectly ok because we might want to create empty files
-            onError(_remoteFilePathSanitized, "Provided data is null", null);
+            onError("Provided data is null");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
         }
@@ -178,7 +178,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            onError(_remoteFilePathSanitized, "Failed to initialize the upload", ex);
+            onError("Failed to initialize the upload", ex);
 
             return EAndroidFileUploaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
@@ -234,7 +234,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            onError(_remoteFilePathSanitized, ex.getMessage(), ex);
+            onError("[AFU.EFMIIEO.010] Failed to initialize the native file-system-manager", ex);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -385,24 +385,25 @@ public class AndroidFileUploader
         return _lastFatalErrorMessage;
     }
 
+    private void onError(final String errorMessage)
+    {
+        onError(errorMessage, null);
+    }
+
     //@Contract(pure = true) //dont
-    public void onError(
-            final String remoteFilePath,
-            final String errorMessage,
-            final Exception exception
-    )
+    private void onError(final String errorMessage, final Exception exception)
     {
         setState(EAndroidFileUploaderState.ERROR); //keep first
 
         if (!(exception instanceof McuMgrErrorException))
         {
-            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, -1, -1); // -1 values get mapped to the 'generic' error code
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, -1, -1); // -1 values get mapped to the 'generic' error code
             return;
         }
 
         McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         fatalErrorOccurredAdvertisement(
-                remoteFilePath,
+                _remoteFilePathSanitized,
                 errorMessage,
                 mcuMgrErrorException.getCode().value(),
                 (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
@@ -495,7 +496,7 @@ public class AndroidFileUploader
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-            onError(_remoteFilePathSanitized, error.getMessage(), error);
+            onError(error.getMessage(), error);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
 
