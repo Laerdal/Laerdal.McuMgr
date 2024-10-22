@@ -10,6 +10,7 @@ import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.DownloadCallback;
 import io.runtime.mcumgr.transfer.TransferController;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
@@ -199,54 +200,60 @@ public class AndroidFileDownloader
 
     private String _lastFatalErrorMessage;
 
+    @Contract(pure = true)
     public String getLastFatalErrorMessage()
     {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String resource, final String errorMessage)
+    public void fatalErrorOccurredAdvertisement(final String resource, final String errorMessage) //this method is meant to be overridden by csharp binding libraries to intercept updates
     {
-        //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
     }
 
+    @Contract(pure = true)
     public void busyStateChangedAdvertisement(boolean busyNotIdle)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void cancelledAdvertisement()
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
+    @Contract(pure = true) //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
     public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
     {
         stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState);
     }
 
+    @Contract(pure = true)
     public void stateChangedAdvertisement(final String resource, final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void downloadCompletedAdvertisement(final String resource, final byte[] data)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
+    @Contract(pure = true) //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
     private void logMessageAdvertisement(final String message, final String category, final String level)
     {
         logMessageAdvertisement(message, category, level, _remoteFilePathSanitized);
     }
 
+    @Contract(pure = true)
     public void logMessageAdvertisement(final String message, final String category, final String level, final String resource) //wrapper method
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
