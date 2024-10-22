@@ -54,23 +54,20 @@ public class AndroidFileUploader
 
     public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
     {
-        logMessageAdvertisement("[AFU.TSBD.000] trySetBluetoothDevice() called", "FileUploader", "TRACE", _remoteFilePathSanitized);
-
         if (!IsIdleOrCold()) {
-            logMessageAdvertisement("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "TRACE", _remoteFilePathSanitized);
+            logMessageAdvertisement("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _remoteFilePathSanitized);
             return false;
         }
 
-        logMessageAdvertisement("[AFU.TSBD.010]", "FileUploader", "TRACE", _remoteFilePathSanitized);
         if (!tryInvalidateCachedTransport()) //order
         {
-            logMessageAdvertisement("[AFU.TSBD.020]", "FileUploader", "TRACE", _remoteFilePathSanitized);
+            logMessageAdvertisement("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR", _remoteFilePathSanitized);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        logMessageAdvertisement("[AFU.TSBD.010] Native Bluetooth-Device set to a new instance", "FileUploader", "TRACE", _remoteFilePathSanitized);
+        logMessageAdvertisement("[AFU.TSBD.010] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _remoteFilePathSanitized);
 
         return true;
     }
