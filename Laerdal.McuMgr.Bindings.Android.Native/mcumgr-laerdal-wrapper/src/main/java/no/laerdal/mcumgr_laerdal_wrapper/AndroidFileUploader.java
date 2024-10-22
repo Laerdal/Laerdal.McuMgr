@@ -27,7 +27,7 @@ public class AndroidFileUploader
 
     private int _initialBytes;
     private long _uploadStartTimestamp;
-    private String _remoteFilePathSanitized;
+    private String _remoteFilePathSanitized = "";
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
     public AndroidFileUploader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
