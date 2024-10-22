@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
+import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.DownloadCallback;
@@ -16,19 +17,74 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class AndroidFileDownloader
 {
+    private Context _context;
+    private BluetoothDevice _bluetoothDevice;
+
     private FsManager _fileSystemManager;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final McuMgrBleTransport _transport;
+    private McuMgrBleTransport _transport;
     private TransferController _downloadingController;
+    private FileDownloaderCallbackProxy _fileDownloaderCallbackProxy;
 
     private int _initialBytes;
     private long _downloadStartTimestamp;
     private String _remoteFilePathSanitized = "";
     private EAndroidFileDownloaderState _currentState = EAndroidFileDownloaderState.NONE;
 
+    public AndroidFileDownloader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
+    {
+    }
+
     public AndroidFileDownloader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
     {
-        _transport = new McuMgrBleTransport(context, bluetoothDevice);
+        _context = context;
+        _bluetoothDevice = bluetoothDevice;
+    }
+
+    public boolean trySetContext(@NonNull final Context context)
+    {
+        if (!IsIdleOrCold())
+            return false;
+
+        if (!tryInvalidateCachedTransport()) //order
+            return false;
+
+        _context = context;
+        return true;
+    }
+
+    public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
+    {
+        if (!IsIdleOrCold()) {
+            logMessageAdvertisement("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _remoteFilePathSanitized);
+            return false;
+        }
+
+        if (!tryInvalidateCachedTransport()) //order
+        {
+            logMessageAdvertisement("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR", _remoteFilePathSanitized);
+            return false;
+        }
+
+        _bluetoothDevice = bluetoothDevice; //order
+
+        logMessageAdvertisement("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _remoteFilePathSanitized);
+
+        return true;
+    }
+
+    public boolean tryInvalidateCachedTransport()
+    {
+        if (_transport == null) //already scrapped
+            return true;
+
+        if (!IsIdleOrCold()) //if the upload is already in progress we bail out
+            return false;
+
+        disposeFilesystemManager(); // order
+        disposeTransport(); //         order
+        disposeCallbackProxy(); //     order
+
+        return true;
     }
 
     /**
@@ -48,65 +104,63 @@ public class AndroidFileDownloader
             // final int memoryAlignment //this doesnt make sense for downloading   it only makes sense in uploading scenarios    https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/issues/188#issuecomment-2391146897
     )
     {
-        if (_currentState != EAndroidFileDownloaderState.NONE  //if the download is already in progress we bail out
-                && _currentState != EAndroidFileDownloaderState.ERROR
-                && _currentState != EAndroidFileDownloaderState.COMPLETE
-                && _currentState != EAndroidFileDownloaderState.CANCELLED)
+        if (remoteFilePath == null || remoteFilePath.isEmpty()) {
+            onError("", "Target-file provided is dud!", null);
+
+            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        _remoteFilePathSanitized = remoteFilePath.trim();
+        if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
-            logMessageAdvertisement("Cannot start a new download while another one is still in progress (state=" + _currentState.toString() + ")", "FileDownloader", "ERROR", remoteFilePath);
+            onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file", null);
+
+            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        if (!_remoteFilePathSanitized.startsWith("/"))
+        {
+            onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path", null);
+
+            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        if (!IsCold())
+        {
+            onError(_remoteFilePathSanitized, "Another download is already in progress", null);
 
             return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
         }
 
-        if (remoteFilePath == null || remoteFilePath.isEmpty()) {
-            setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement("", "Target-file provided is dud!");
+        if (_context == null) {
+            onError(_remoteFilePathSanitized, "No context specified - call trySetContext() first", null);
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        final String remoteFilePathSanitized = remoteFilePath.trim();
-        if (remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
-        {
-            setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path points to a directory not a file!");
+        if (_bluetoothDevice == null) {
+            onError(_remoteFilePathSanitized, "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        if (!remoteFilePathSanitized.startsWith("/"))
-        {
-            setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Provided target-path is not an absolute path!");
+        resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
 
-            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
-        }
+        final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
+        if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
+            return verdict;
 
-        if (initialMtuSize > 0)
-        {
-            _transport.setInitialMtu(initialMtuSize);
-        }
-
-        _fileSystemManager = new FsManager(_transport);
+        ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
 
         setLoggingEnabled(false);
-        requestHighConnectionPriority();
-
-        setState(EAndroidFileDownloaderState.IDLE);
-        busyStateChangedAdvertisement(true);
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-
-        _initialBytes = 0;
-        _remoteFilePathSanitized = remoteFilePathSanitized;
-
         try
         {
-            _downloadingController = _fileSystemManager.fileDownload(remoteFilePathSanitized, new FileDownloaderCallbackProxy());
+            _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy);
         }
         catch (final Exception ex)
         {
-            setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, ex.getMessage());
+            onError(_remoteFilePathSanitized, "Failed to initialize download", ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
@@ -163,14 +217,100 @@ public class AndroidFileDownloader
         transferController.cancel(); //order
     }
 
-    private void requestHighConnectionPriority()
+    private void resetDownloadState() {
+        _initialBytes = 0;
+        _downloadStartTimestamp = 0;
+
+        setState(EAndroidFileDownloaderState.IDLE);
+        busyStateChangedAdvertisement(true);
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+    }
+
+    private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
     {
-        final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
+        if (_transport != null)
+            return;
+
+        logMessageAdvertisement("[AFD.ETIIEO.010] (Re)Initializing transport: initial-mtu-size=" + initialMtuSize, "FileDownloader", "TRACE", _remoteFilePathSanitized);
+
+        _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+
+        if (initialMtuSize > 0)
+        {
+            _transport.setInitialMtu(initialMtuSize);
+        }
+    }
+
+    private void ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce() {
+        if (_fileDownloaderCallbackProxy != null) //already initialized
+            return;
+
+        _fileDownloaderCallbackProxy = new FileDownloaderCallbackProxy();
+    }
+
+    private EAndroidFileDownloaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce() {
+        if (_fileSystemManager != null) //already initialized
+            return EAndroidFileDownloaderVerdict.SUCCESS;
+
+        logMessageAdvertisement("[AFD.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileDownloader", "TRACE", _remoteFilePathSanitized);
+
+        try
+        {
+            _fileSystemManager = new FsManager(_transport); //order
+
+            requestHighConnectionPriority(_fileSystemManager); //order
+        }
+        catch (final Exception ex)
+        {
+            onError(_remoteFilePathSanitized, ex.getMessage(), ex);
+
+            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        return EAndroidFileDownloaderVerdict.SUCCESS;
+    }
+
+    private void requestHighConnectionPriority(FsManager fileSystemManager)
+    {
+        final McuMgrTransport mcuMgrTransporter = fileSystemManager.getTransporter();
         if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
             return;
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) mcuMgrTransporter;
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+    }
+
+    private void disposeTransport()
+    {
+        if (_transport == null)
+            return;
+
+        try {
+            _transport.disconnect();
+        } catch (Exception ex) {
+            // ignore
+        }
+
+        _transport = null;
+    }
+
+    private void disposeFilesystemManager()
+    {
+        if (_fileSystemManager == null)
+            return;
+
+        try {
+            _fileSystemManager.closeAll();
+        } catch (McuMgrException e) {
+            // ignore
+        }
+
+        _fileSystemManager = null;
+    }
+
+    private void disposeCallbackProxy()
+    {
+        _fileDownloaderCallbackProxy = null;
     }
 
     private void setLoggingEnabled(final boolean enabled)
@@ -198,6 +338,21 @@ public class AndroidFileDownloader
         //00 trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
     }
 
+    @Contract(pure = true)
+    private boolean IsIdleOrCold()
+    {
+        return _currentState == EAndroidFileDownloaderState.IDLE || IsCold();
+    }
+
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidFileDownloaderState.NONE
+                || _currentState == EAndroidFileDownloaderState.ERROR
+                || _currentState == EAndroidFileDownloaderState.COMPLETE
+                || _currentState == EAndroidFileDownloaderState.CANCELLED;
+    }
+
     private String _lastFatalErrorMessage;
 
     @Contract(pure = true)
@@ -206,6 +361,31 @@ public class AndroidFileDownloader
         return _lastFatalErrorMessage;
     }
 
+    //@Contract(pure = true) //dont
+    public void onError(
+            final String remoteFilePath,
+            final String errorMessage,
+            final Exception exception
+    )
+    {
+        setState(EAndroidFileDownloaderState.ERROR);
+
+        if (!(exception instanceof McuMgrErrorException))
+        {
+            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage /*, -1, -1*/);
+            return;
+        }
+
+        McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
+        fatalErrorOccurredAdvertisement(
+                remoteFilePath,
+                errorMessage
+                // ,mcuMgrErrorException.getCode().value(), //todo and mirror this in the ios world as well
+                // (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99) //todo
+        );
+    }
+
+    //todo   add support for mcuMgrErrorCode and fsManagerGroupReturnCode
     public void fatalErrorOccurredAdvertisement(final String resource, final String errorMessage) //this method is meant to be overridden by csharp binding libraries to intercept updates
     {
         _lastFatalErrorMessage = errorMessage;
@@ -290,13 +470,14 @@ public class AndroidFileDownloader
         }
 
         @Override
-        public void onDownloadFailed(@NonNull final McuMgrException error)
+        public void onDownloadFailed(@NonNull final McuMgrException exception)
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-            setState(EAndroidFileDownloaderState.ERROR);
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.getMessage());
+            onError(_remoteFilePathSanitized, exception.getMessage(), exception);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _downloadingController = null; //game over
         }
 
         @Override
@@ -307,6 +488,8 @@ public class AndroidFileDownloader
             cancelledAdvertisement();
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _downloadingController = null; //game over
         }
 
         @Override
@@ -319,6 +502,8 @@ public class AndroidFileDownloader
 
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
+
+            _downloadingController = null; //game over
         }
     }
 }
