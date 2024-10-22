@@ -11,6 +11,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// Begins the file-downloading process on multiple files. Files that cannot be downloaded due to errors will have a null entry in the returned dictionary. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
         /// <param name="remoteFilePaths">The remote files to download.</param>
+        /// <param name="hostDeviceManufacturer"></param>
+        /// <param name="hostDeviceModel"></param>
         /// <param name="timeoutPerDownloadInMs">The amount of time to wait for each download to complete before skipping it.</param>
         /// <param name="maxRetriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
@@ -29,6 +31,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
         Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutPerDownloadInMs = -1,
             int maxRetriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
@@ -41,6 +45,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// Begins the file-downloading process. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
         /// <param name="remoteFilePath">The remote file to download.</param>
+        /// <param name="hostDeviceManufacturer"></param>
         /// <param name="timeoutForDownloadInMs">The amount of time to wait for the operation to complete before bailing out.</param>
         /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllDownloadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
@@ -60,6 +65,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <returns>The bytes of the remote file that got fetched over.</returns>
         Task<byte[]> DownloadAsync(
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutForDownloadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
@@ -73,6 +80,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// Begins the file-downloading process. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
         /// <param name="remoteFilePath">The remote file to download.</param>
+        /// <param name="hostDeviceManufacturer"></param>
+        /// <param name="hostDeviceModel"></param>
         /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
         ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
         ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
@@ -87,6 +96,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         EFileDownloaderVerdict BeginDownload(
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null

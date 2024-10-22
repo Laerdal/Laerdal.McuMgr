@@ -33,7 +33,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                 fileDownloader.Cancel();
             });
-            var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath));
+            var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             await work.Should().ThrowExactlyAsync<DownloadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);

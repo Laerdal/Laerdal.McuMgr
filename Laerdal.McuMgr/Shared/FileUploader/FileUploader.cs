@@ -62,7 +62,7 @@ namespace Laerdal.McuMgr.FileUploader
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var connectionSettings = GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
+            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
                 hostDeviceModel_: hostDeviceModel,
                 hostDeviceManufacturer_: hostDeviceManufacturer,
 
@@ -86,52 +86,6 @@ namespace Laerdal.McuMgr.FileUploader
             );
 
             return verdict;
-
-            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment) GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
-                string hostDeviceManufacturer_,
-                string hostDeviceModel_,
-                int? pipelineDepth_,
-                int? byteAlignment_,
-                int? initialMtuSize_,
-                int? windowCapacity_,
-                int? memoryAlignment_
-            )
-            {
-                hostDeviceModel_ = (hostDeviceModel_ ?? "").Trim().ToLowerInvariant();
-                hostDeviceManufacturer_ = (hostDeviceManufacturer_ ?? "").Trim().ToLowerInvariant();
-
-                if (AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer_, hostDeviceModel_))
-                    && (pipelineDepth_ ?? 1) == 1
-                    && (byteAlignment_ ?? 1) == 1)
-                {
-                    return (
-                        byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
-                        pipelineDepth: AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth,
-                        initialMtuSize: AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize,
-                        windowCapacity: AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity,
-                        memoryAlignment: AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment
-                    );
-                }
-
-                if (AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer_, hostDeviceModel_))
-                    && initialMtuSize_ == null
-                    && (windowCapacity_ ?? 1) == 1
-                    && (memoryAlignment_ ?? 1) == 1)
-                {
-                    return (
-                        byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
-                        pipelineDepth: AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth,
-                        initialMtuSize: AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize,
-                        windowCapacity: AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity,
-                        memoryAlignment: AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment
-                    );
-                }
-
-                return (
-                    byteAlignment: byteAlignment, pipelineDepth: pipelineDepth,
-                    initialMtuSize: initialMtuSize, windowCapacity: windowCapacity, memoryAlignment: memoryAlignment
-                );
-            }
         }
         
         public void Cancel(string reason = "") => _nativeFileUploaderProxy?.Cancel(reason);
@@ -356,14 +310,13 @@ namespace Laerdal.McuMgr.FileUploader
 
                     var verdict = BeginUpload( //00 dont use task.run here for now
                         remoteFilePath: remoteFilePath,
-                        
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
                         
-                        data: dataArray, //      ios only
+                        data: dataArray, //                   ios only
                         pipelineDepth: pipelineDepth, //      ios only
 
-                        byteAlignment: byteAlignment, //    android only
+                        byteAlignment: byteAlignment, //      android only
                         initialMtuSize: initialMtuSize, //    android only
                         windowCapacity: windowCapacity,
                         memoryAlignment: memoryAlignment //   android only

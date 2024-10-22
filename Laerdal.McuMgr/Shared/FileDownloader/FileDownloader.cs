@@ -42,17 +42,26 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public EFileDownloaderVerdict BeginDownload(
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int? initialMtuSize = null,
-            int? windowCapacity = null,
+            int? windowCapacity = null, //not applicable currently   but nordic considers them for future use
             int? memoryAlignment = null
+            //not applicable currently   but nordic considers them for future use
         )
         {
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
+            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
+                initialMtuSize_: initialMtuSize,
+                hostDeviceModel_: hostDeviceModel,
+                hostDeviceManufacturer_: hostDeviceManufacturer
+            );
+            
             var verdict = _nativeFileDownloaderProxy.BeginDownload(
                 remoteFilePath: remoteFilePath,
-                initialMtuSize: initialMtuSize
+                initialMtuSize: connectionSettings.initialMtuSize
             );
 
             return verdict;
@@ -141,6 +150,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public async Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutPerDownloadInMs = -1,
             int maxRetriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
@@ -163,15 +174,16 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     var data = await DownloadAsync(
                         remoteFilePath: path,
-
-                        maxTriesCount: maxRetriesPerDownload,
+                        hostDeviceModel: hostDeviceModel,
+                        hostDeviceManufacturer: hostDeviceManufacturer,
+                        
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+                        maxTriesCount: maxRetriesPerDownload,
 
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment
-                    );
+                        memoryAlignment: memoryAlignment);
 
                     results[path] = data;
                 }
@@ -191,10 +203,12 @@ namespace Laerdal.McuMgr.FileDownloader
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task<byte[]> DownloadAsync(
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutForDownloadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs,
+            int gracefulCancellationTimeoutInMs = 2_500,
             int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
@@ -240,6 +254,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
                     var verdict = BeginDownload( //00 dont use task.run here for now
                         remoteFilePath: remoteFilePath,
+                        hostDeviceModel: hostDeviceModel,
+                        hostDeviceManufacturer: hostDeviceManufacturer,
 
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity,

@@ -48,6 +48,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 remoteFilePaths: remoteFilePathsToTest,
                 maxRetriesPerDownload: 4
             ));

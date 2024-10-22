@@ -20,7 +20,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(remoteFilePaths: null));
+            var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                remoteFilePaths: null
+            ));
 
             // Assert
             await work.Should().ThrowExactlyAsync<ArgumentNullException>().WithTimeoutInMs(500);

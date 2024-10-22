@@ -37,6 +37,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 maxTriesCount: maxTriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 remoteFilePath: remoteFilePath,
                 sleepTimeBetweenRetriesInMs: 10
