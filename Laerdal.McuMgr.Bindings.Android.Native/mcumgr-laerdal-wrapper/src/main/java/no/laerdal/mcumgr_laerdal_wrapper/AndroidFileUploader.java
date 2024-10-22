@@ -67,7 +67,7 @@ public class AndroidFileUploader
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        logMessageAdvertisement("[AFU.TSBD.010] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _remoteFilePathSanitized);
+        logMessageAdvertisement("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _remoteFilePathSanitized);
 
         return true;
     }
@@ -108,29 +108,7 @@ public class AndroidFileUploader
             final int memoryAlignment
     )
     {
-        if (!IsCold()) {
-            setState(EAndroidFileUploaderState.ERROR);
-            onError("N/A", "Another upload is already in progress", null);
-
-            return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
-        }
-
-        if (_context == null) {
-            setState(EAndroidFileUploaderState.ERROR);
-            onError("N/A", "No context specified - call trySetContext() first", null);
-
-            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
-        }
-
-        if (_bluetoothDevice == null) {
-            setState(EAndroidFileUploaderState.ERROR);
-            onError("N/A", "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
-
-            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
-        }
-
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
-            setState(EAndroidFileUploaderState.ERROR);
             onError("N/A", "Provided target-path is empty", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
@@ -139,7 +117,6 @@ public class AndroidFileUploader
         _remoteFilePathSanitized = remoteFilePath.trim();
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
-            setState(EAndroidFileUploaderState.ERROR);
             onError(_remoteFilePathSanitized, "Provided target-path points to a directory not a file", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
@@ -147,14 +124,30 @@ public class AndroidFileUploader
 
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
-            setState(EAndroidFileUploaderState.ERROR);
             onError(_remoteFilePathSanitized, "Provided target-path is not an absolute path", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
+        if (!IsCold()) {
+            onError(_remoteFilePathSanitized, "Another upload is already in progress", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
+        }
+
+        if (_context == null) {
+            onError(_remoteFilePathSanitized, "No context specified - call trySetContext() first", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
+        if (_bluetoothDevice == null) {
+            onError(_remoteFilePathSanitized, "No bluetooth-device specified - call trySetBluetoothDevice() first", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
+        }
+
         if (data == null) { // data being null is not ok   but data.length==0 is perfectly ok because we might want to create empty files
-            setState(EAndroidFileUploaderState.ERROR);
             onError(_remoteFilePathSanitized, "Provided data is null", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
@@ -185,7 +178,6 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            setState(EAndroidFileUploaderState.ERROR);
             onError(_remoteFilePathSanitized, "Failed to initialize the upload", ex);
 
             return EAndroidFileUploaderVerdict.FAILED__ERROR_UPON_COMMENCING;
@@ -242,7 +234,6 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            setState(EAndroidFileUploaderState.ERROR);
             onError(_remoteFilePathSanitized, ex.getMessage(), ex);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
@@ -401,6 +392,8 @@ public class AndroidFileUploader
             final Exception exception
     )
     {
+        setState(EAndroidFileUploaderState.ERROR); //keep first
+
         if (!(exception instanceof McuMgrErrorException))
         {
             fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, -1, -1); // -1 values get mapped to the 'generic' error code
@@ -502,7 +495,6 @@ public class AndroidFileUploader
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
-            setState(EAndroidFileUploaderState.ERROR);
             onError(_remoteFilePathSanitized, error.getMessage(), error);
             setLoggingEnabled(true);
             busyStateChangedAdvertisement(false);
