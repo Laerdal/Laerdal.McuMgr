@@ -30,7 +30,7 @@ public class AndroidFileUploader
     private String _remoteFilePathSanitized;
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
-    public AndroidFileUploader()
+    public AndroidFileUploader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
     {
     }
 
@@ -394,7 +394,7 @@ public class AndroidFileUploader
         return _lastFatalErrorMessage;
     }
 
-    @Contract(pure = true)
+    //@Contract(pure = true) //dont
     public void onError(
             final String remoteFilePath,
             final String errorMessage,
@@ -403,7 +403,7 @@ public class AndroidFileUploader
     {
         if (!(exception instanceof McuMgrErrorException))
         {
-            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, -1, -1);
+            fatalErrorOccurredAdvertisement(remoteFilePath, errorMessage, -1, -1); // -1 values get mapped to the 'generic' error code
             return;
         }
 
