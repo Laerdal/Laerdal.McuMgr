@@ -29,7 +29,7 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func trySetBluetoothDevice(_ cbPeripheral: CBPeripheral!) -> Bool {
-        if !IsCold() {
+        if !IsIdleOrCold() {
             return false
         }
 
@@ -47,7 +47,7 @@ public class IOSFileUploader: NSObject {
             return true
         }
 
-        if !IsCold() { //if the upload is already in progress we bail out
+        if !IsIdleOrCold() { //if the upload is already in progress we bail out
             return false
         }
 
@@ -237,6 +237,10 @@ public class IOSFileUploader: NSObject {
     private func disposeFilesystemManager() {
         //_fileSystemManager?.cancelTransfer()  dont
         _fileSystemManager = nil
+    }
+
+    private func IsIdleOrCold() -> Bool {
+        return _currentState == EIOSFileUploaderState.idle || IsCold();
     }
 
     private func IsCold() -> Bool {
