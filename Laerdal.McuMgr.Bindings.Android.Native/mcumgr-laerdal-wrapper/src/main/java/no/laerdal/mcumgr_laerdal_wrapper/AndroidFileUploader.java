@@ -108,6 +108,12 @@ public class AndroidFileUploader
             final int memoryAlignment
     )
     {
+        if (!IsCold()) { //keep first
+            onError("Another upload is already in progress");
+
+            return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
+        }
+
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             onError("Provided target-path is empty", null);
 
@@ -127,12 +133,6 @@ public class AndroidFileUploader
             onError("Provided target-path is not an absolute path");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
-        }
-
-        if (!IsCold()) {
-            onError("Another upload is already in progress");
-
-            return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
         }
 
         if (_context == null) {

@@ -104,6 +104,13 @@ public class AndroidFileDownloader
             // final int memoryAlignment //this doesnt make sense for downloading   it only makes sense in uploading scenarios    https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/issues/188#issuecomment-2391146897
     )
     {
+        if (!IsCold()) //keep first
+        {
+            onError("Another download is already in progress");
+
+            return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
+        }
+
         if (remoteFilePath == null || remoteFilePath.isEmpty()) {
             onError("Target-file provided is dud!");
 
@@ -123,13 +130,6 @@ public class AndroidFileDownloader
             onError("Provided target-path is not an absolute path");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
-        }
-
-        if (!IsCold())
-        {
-            onError("Another download is already in progress");
-
-            return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
         }
 
         if (_context == null) {
