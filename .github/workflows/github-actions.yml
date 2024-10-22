@@ -115,13 +115,14 @@ jobs:
                    &&                                                                                                                                                              \
           rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
-      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
-        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
-        if: always()
-        with:
-          files: |
-            TestResults/**/TEST-*.xml
-            TestResults/**/TEST-*.trx
+# todo   figure out why this is failing as of Oct 2024  ->  https://github.com/EnricoMi/publish-unit-test-result-action/issues/633
+#      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
+#        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
+#        if: always()
+#        with:
+#          files: |
+#            TestResults/**/TEST-*.xml
+#            TestResults/**/TEST-*.trx
 
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
         uses: 'actions/upload-artifact@v4'
