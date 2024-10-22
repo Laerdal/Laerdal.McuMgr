@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FileUploader.Contracts.Enums
 {
-    public enum EFileUploaderGroupReturnCode //@formatter:off
+    public enum EFileOperationGroupReturnCode //@formatter:off
     {
         Unset                  = -99,
         Ok                     = 00,

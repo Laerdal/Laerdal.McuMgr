@@ -1,5 +1,6 @@
 ﻿using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
 {
@@ -12,7 +13,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
         void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void DownloadCompletedAdvertisement(string resource, byte[] data);
-        void FatalErrorOccurredAdvertisement(string resource, string errorMessage);
+        void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode);
         void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput);
     }
 }

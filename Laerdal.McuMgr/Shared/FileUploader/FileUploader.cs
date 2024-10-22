@@ -638,7 +638,7 @@ namespace Laerdal.McuMgr.FileUploader
                 string resource,
                 string errorMessage,
                 EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+                EFileOperationGroupReturnCode fileUploaderGroupReturnCode
             ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
                 resource,
                 errorMessage,

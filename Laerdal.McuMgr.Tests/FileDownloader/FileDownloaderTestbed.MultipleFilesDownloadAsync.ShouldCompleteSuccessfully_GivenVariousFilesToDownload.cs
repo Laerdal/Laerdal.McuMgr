@@ -1,7 +1,9 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -100,18 +102,18 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "NO ENTRY (5)");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "NO ENTRY (5)", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
                     }
                     else
                     {

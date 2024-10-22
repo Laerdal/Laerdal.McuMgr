@@ -12,6 +12,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
@@ -103,16 +104,45 @@ namespace Laerdal.McuMgr.FileDownloader
                 ));
             }
             
+            public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
+            {
+                var androidContext = context as Context ?? throw new ArgumentException($"Expected {nameof(Context)} to be an AndroidContext but got '{context?.GetType().Name ?? "null"}' instead", nameof(context));
+                
+                return base.TrySetContext(androidContext);
+            }
+
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                var androidBluetoothDevice = bluetoothDevice as BluetoothDevice ?? throw new ArgumentException($"Expected {nameof(BluetoothDevice)} to be an AndroidBluetoothDevice but got '{bluetoothDevice?.GetType().Name ?? "null"}' instead", nameof(bluetoothDevice));
+                
+                return base.TrySetBluetoothDevice(androidBluetoothDevice);
+            }
+            
+            public new bool TryInvalidateCachedTransport()
+            {
+                return base.TryInvalidateCachedTransport();
+            }
+            
             #endregion commands
 
 
             #region android callbacks -> csharp event emitters
-            
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-            {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage);
 
-                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int mcuMgrErrorCode, int fileOperationGroupReturnCode)
+            {
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode); //just in case
+
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileOperationGroupReturnCode) fileOperationGroupReturnCode);
+            }
+            
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileUploaderGroupReturnCode)
+            {
+                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    resource,
+                    errorMessage,
+                    mcuMgrErrorCode,
+                    fileUploaderGroupReturnCode
+                );
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)

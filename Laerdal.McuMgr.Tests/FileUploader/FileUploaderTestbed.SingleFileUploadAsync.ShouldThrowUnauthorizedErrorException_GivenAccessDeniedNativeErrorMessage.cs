@@ -74,7 +74,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                               order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileUploaderGroupReturnCode.Unset); // order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileOperationGroupReturnCode.Unset); // order
                 });
 
                 return verdict;

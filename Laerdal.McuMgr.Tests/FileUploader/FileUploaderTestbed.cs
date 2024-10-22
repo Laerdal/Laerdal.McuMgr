@@ -77,7 +77,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 string resource,
                 string errorMessage,
                 EMcuMgrErrorCode errorCode,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+                EFileOperationGroupReturnCode fileUploaderGroupReturnCode
             ) => _uploaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, errorCode, fileUploaderGroupReturnCode); //raises the actual event
             
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)

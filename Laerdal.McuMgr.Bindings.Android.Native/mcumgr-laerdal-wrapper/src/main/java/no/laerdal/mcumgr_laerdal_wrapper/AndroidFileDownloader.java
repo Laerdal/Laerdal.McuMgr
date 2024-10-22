@@ -373,21 +373,25 @@ public class AndroidFileDownloader
 
         if (!(exception instanceof McuMgrErrorException))
         {
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage /*, -1, -1*/);
+            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, -1, -1);
             return;
         }
 
         McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         fatalErrorOccurredAdvertisement(
                 _remoteFilePathSanitized,
-                errorMessage
-                // ,mcuMgrErrorException.getCode().value(), //todo and mirror this in the ios world as well
-                // (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99) //todo
+                errorMessage,
+                mcuMgrErrorException.getCode().value(),
+                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
         );
     }
 
-    //todo   add support for mcuMgrErrorCode and fsManagerGroupReturnCode
-    public void fatalErrorOccurredAdvertisement(final String resource, final String errorMessage) //this method is meant to be overridden by csharp binding libraries to intercept updates
+    public void fatalErrorOccurredAdvertisement(
+            final String remoteFilePath,
+            final String errorMessage,
+            final int mcuMgrErrorCode, //         io.runtime.mcumgr.McuMgrErrorCode
+            final int fsManagerGroupReturnCode // io.runtime.mcumgr.managers.FsManager.ReturnCode
+    )
     {
         _lastFatalErrorMessage = errorMessage;
     }

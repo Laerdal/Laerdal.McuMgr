@@ -9,6 +9,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FileDownloader
@@ -79,6 +80,23 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 _nativeFileDownloader?.Dispose();
                 _nativeFileDownloader = null;
+            }
+            
+            public bool TrySetContext(object context)
+            {
+                return true; //nothing to do in ios   only android needs this and supports it
+            }
+
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                var iosBluetoothDevice = bluetoothDevice as CBPeripheral ?? throw new ArgumentException($"Expected {nameof(bluetoothDevice)} to be of type {nameof(CBPeripheral)}", nameof(bluetoothDevice));
+
+                return _nativeFileDownloader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
+            }
+
+            public bool TryInvalidateCachedTransport()
+            {
+                return _nativeFileDownloader?.TryInvalidateCachedTransport() ?? false;
             }
 
             #region commands
@@ -156,8 +174,19 @@ namespace Laerdal.McuMgr.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resource, data);
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(
+                string resource,
+                string errorMessage,
+                nint mcuMgrErrorCode
+            ) => FatalErrorOccurredAdvertisement(
+                resource,
+                errorMessage,
+                (EMcuMgrErrorCode)(int)mcuMgrErrorCode,
+                EFileOperationGroupReturnCode.Unset
+            );
+            
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode)
+                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode);
 
             public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
                 => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
