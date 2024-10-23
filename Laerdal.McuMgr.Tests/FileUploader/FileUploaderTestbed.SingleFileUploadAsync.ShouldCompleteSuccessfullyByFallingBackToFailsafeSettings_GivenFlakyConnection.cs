@@ -63,7 +63,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 .Where(x => x.EventName == nameof(fileUploader.LogEmitted))
                 .SelectMany(x => x.Parameters)
                 .OfType<LogEmittedEventArgs>()
-                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("GFCSICPTBU.010"))
+                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("[FU.UA.010]"))
                 .Should()
                 .Be(1);
             

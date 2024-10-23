@@ -42,9 +42,9 @@ namespace Laerdal.McuMgr.Common.Helpers
                 return (
                     byteAlignment: AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment,
                     pipelineDepth: AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth,
-                    initialMtuSize: AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize,
-                    windowCapacity: AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity,
-                    memoryAlignment: AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment
+                    initialMtuSize: null, //only applies to android
+                    windowCapacity: null, //only applies to android
+                    memoryAlignment: null //only applies to android
                 );
             }
 
@@ -52,8 +52,8 @@ namespace Laerdal.McuMgr.Common.Helpers
             if (isUsingDefaultAndroidSettings && AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
             {
                 return (
-                    byteAlignment: AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment,
-                    pipelineDepth: AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth,
+                    byteAlignment: null, //only applies to apple
+                    pipelineDepth: null, //only applies to apple
                     initialMtuSize: AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize,
                     windowCapacity: AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity,
                     memoryAlignment: AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment

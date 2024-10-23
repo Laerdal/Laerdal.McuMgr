@@ -64,7 +64,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 .Where(x => x.EventName == nameof(fileDownloader.LogEmitted))
                 .SelectMany(x => x.Parameters)
                 .OfType<LogEmittedEventArgs>()
-                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("GFCSICPTBU.010"))
+                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("[FD.DA.010]"))
                 .Should()
                 .Be(1);
             
