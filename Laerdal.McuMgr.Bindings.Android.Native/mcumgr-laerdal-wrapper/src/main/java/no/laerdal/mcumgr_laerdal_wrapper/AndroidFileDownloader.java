@@ -101,7 +101,6 @@ public class AndroidFileDownloader
             final String remoteFilePath,
             final int initialMtuSize
             // final int windowCapacity, //theoretically nordic firmwares at some point will support this for downloads   but as of Q3 2024 there is no support for this
-            // final int memoryAlignment //this doesnt make sense for downloading   it only makes sense in uploading scenarios    https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/issues/188#issuecomment-2391146897
     )
     {
         if (!IsCold()) //keep first

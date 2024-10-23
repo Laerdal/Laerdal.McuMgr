@@ -55,7 +55,8 @@ namespace Laerdal.McuMgr.FileDownloader
             var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
                 initialMtuSize: initialMtuSize,
                 hostDeviceModel: hostDeviceModel,
-                hostDeviceManufacturer: hostDeviceManufacturer
+                hostDeviceManufacturer: hostDeviceManufacturer,
+                uploadingNotDownloading: false
             );
             if (failsafeConnectionSettings != null)
             {
@@ -189,14 +190,15 @@ namespace Laerdal.McuMgr.FileDownloader
                         remoteFilePath: path,
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
-                        
-                        timeoutForDownloadInMs: timeoutPerDownloadInMs,
-                        maxTriesCount: maxRetriesPerDownload,
 
+                        maxTriesCount: maxRetriesPerDownload,
+                        timeoutForDownloadInMs: timeoutPerDownloadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment);
+                        memoryAlignment: memoryAlignment
+                    );
 
                     results[path] = data;
                 }
@@ -252,6 +254,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     FileDownloadProgressPercentageAndDataThroughputChanged += FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                     
                     var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
+                        uploadingNotDownloading: false,
                         triesCount: triesCount,
                         maxTriesCount: maxTriesCount,
                         suspiciousTransportFailuresCount: suspiciousTransportFailuresCount

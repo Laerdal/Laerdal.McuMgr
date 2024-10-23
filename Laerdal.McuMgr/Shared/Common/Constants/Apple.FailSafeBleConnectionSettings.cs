@@ -21,13 +21,19 @@ namespace Laerdal.McuMgr.Common.Constants
         /// erasing firmwares, uploading files, downloading files. These settings are enforced automagically when the ble connection turns out to be unstable and unreliable
         /// during the aforementioned operations. The settings are editable can be adjusted to fit future needs. 
         /// </summary>
-        public readonly struct BleConnectionSettings
+        public readonly struct BleConnectionFailsafeSettings
         {
-            public readonly struct FailSafes
+            public readonly struct ForUploading
             {
                 static public int PipelineDepth { get; set; } = 1;
                 static public int ByteAlignment { get; set; } = 1;    
             }
+
+            // public readonly struct ForDownloading //there are currently no apple devices that have issues with BLE connection stability when downloading
+            // {
+            //     // static public int PipelineDepth { get; set; } = null; //not applicable to downloads
+            //     // static public int ByteAlignment { get; set; } = 1; //not applicable to downloads
+            // }
         }
     }
 }

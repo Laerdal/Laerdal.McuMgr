@@ -70,7 +70,8 @@ namespace Laerdal.McuMgr.FileUploader
                 byteAlignment: byteAlignment,
                 initialMtuSize: initialMtuSize,
                 windowCapacity: windowCapacity,
-                memoryAlignment: memoryAlignment
+                memoryAlignment: memoryAlignment,
+                uploadingNotDownloading: true
             );
             if (failsafeConnectionSettings != null)
             {
@@ -309,6 +310,7 @@ namespace Laerdal.McuMgr.FileUploader
                     FileUploadProgressPercentageAndDataThroughputChanged += FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_;
 
                     var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
+                        uploadingNotDownloading: true,
                         triesCount: triesCount,
                         maxTriesCount: maxTriesCount,
                         suspiciousTransportFailuresCount: suspiciousTransportFailuresCount
