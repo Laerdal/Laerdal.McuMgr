@@ -17,9 +17,8 @@ namespace Laerdal.McuMgr.Common.Helpers
             hostDeviceModel = (hostDeviceModel ?? "").Trim().ToLowerInvariant();
             hostDeviceManufacturer = (hostDeviceManufacturer ?? "").Trim().ToLowerInvariant();
 
-            if (AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel))
-                && (pipelineDepth ?? 1) == 1
-                && (byteAlignment ?? 1) == 1)
+            var isUsingDefaultAppleSettings = (pipelineDepth ?? 1) == 1 && (byteAlignment ?? 1) == 1; 
+            if (isUsingDefaultAppleSettings && AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
             {
                 return (
                     byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
@@ -30,10 +29,10 @@ namespace Laerdal.McuMgr.Common.Helpers
                 );
             }
 
-            if (AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel))
-                && initialMtuSize == null
-                && (windowCapacity ?? 1) == 1
-                && (memoryAlignment ?? 1) == 1)
+            var isUsingDefaultAndroidSettings = initialMtuSize == null
+                                                && (windowCapacity ?? 1) == 1
+                                                && (memoryAlignment ?? 1) == 1;
+            if (isUsingDefaultAndroidSettings && AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
             {
                 return (
                     byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
