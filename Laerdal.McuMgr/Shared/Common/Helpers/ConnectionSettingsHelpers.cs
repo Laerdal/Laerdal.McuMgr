@@ -17,29 +17,27 @@ namespace Laerdal.McuMgr.Common.Helpers
             hostDeviceModel = (hostDeviceModel ?? "").Trim().ToLowerInvariant();
             hostDeviceManufacturer = (hostDeviceManufacturer ?? "").Trim().ToLowerInvariant();
 
-            var isUsingDefaultAppleSettings = (pipelineDepth ?? 1) == 1 && (byteAlignment ?? 1) == 1; 
+            var isUsingDefaultAppleSettings = pipelineDepth == null && byteAlignment == null; 
             if (isUsingDefaultAppleSettings && AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
             {
                 return (
-                    byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
-                    pipelineDepth: AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth,
-                    initialMtuSize: AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize,
-                    windowCapacity: AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity,
-                    memoryAlignment: AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment
+                    byteAlignment: AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment,
+                    pipelineDepth: AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth,
+                    initialMtuSize: AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize,
+                    windowCapacity: AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity,
+                    memoryAlignment: AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment
                 );
             }
 
-            var isUsingDefaultAndroidSettings = initialMtuSize == null
-                                                && (windowCapacity ?? 1) == 1
-                                                && (memoryAlignment ?? 1) == 1;
+            var isUsingDefaultAndroidSettings = initialMtuSize == null && windowCapacity == null && memoryAlignment == null;
             if (isUsingDefaultAndroidSettings && AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
             {
                 return (
-                    byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
-                    pipelineDepth: AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth,
-                    initialMtuSize: AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize,
-                    windowCapacity: AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity,
-                    memoryAlignment: AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment
+                    byteAlignment: AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment,
+                    pipelineDepth: AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth,
+                    initialMtuSize: AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize,
+                    windowCapacity: AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity,
+                    memoryAlignment: AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment
                 );
             }
 

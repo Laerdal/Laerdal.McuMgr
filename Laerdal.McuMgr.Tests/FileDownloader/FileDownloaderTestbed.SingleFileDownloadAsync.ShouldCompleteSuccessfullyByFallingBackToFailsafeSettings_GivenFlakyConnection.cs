@@ -127,9 +127,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(5);
                     FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
 
-                    if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize)
+                    if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //                       order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset); //   order
                         return;

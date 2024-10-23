@@ -21,10 +21,13 @@ namespace Laerdal.McuMgr.Common.Constants
         /// erasing firmwares, uploading files, downloading files. These settings are enforced automagically when the ble connection turns out to be unstable and unreliable
         /// during the aforementioned operations. The settings are editable can be adjusted to fit future needs. 
         /// </summary>
-        public readonly struct FailSafeBleConnectionSettings
+        public readonly struct BleConnectionSettings
         {
-            static public int PipelineDepth { get; set; } = 1;
-            static public int ByteAlignment { get; set; } = 1;
+            public readonly struct FailSafes
+            {
+                static public int PipelineDepth { get; set; } = 1;
+                static public int ByteAlignment { get; set; } = 1;    
+            }
         }
     }
 }

@@ -136,41 +136,41 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
 
-                    if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize)
+                    if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset); // order
                         return;
                     }
 
-                    if (_tryCounter == _maxTriesCount && windowCapacity != AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity)
+                    if (_tryCounter == _maxTriesCount && windowCapacity != AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to {AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity} but it's set to {windowCapacity?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to {AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity} but it's set to {windowCapacity?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset); // order
                         return;
                     }
 
-                    if (_tryCounter == _maxTriesCount && memoryAlignment != AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment)
+                    if (_tryCounter == _maxTriesCount && memoryAlignment != AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to {AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment} but it's set to {memoryAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to {AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment} but it's set to {memoryAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset); // order
                         return;
                     }
 
-                    if (_tryCounter == _maxTriesCount && pipelineDepth != AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth)
+                    if (_tryCounter == _maxTriesCount && pipelineDepth != AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(pipelineDepth)} set to {AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth} but it's set to {pipelineDepth?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(pipelineDepth)} set to {AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth} but it's set to {pipelineDepth?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset); // order
                         return;
                     }
 
-                    if (_tryCounter == _maxTriesCount && byteAlignment != AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment)
+                    if (_tryCounter == _maxTriesCount && byteAlignment != AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(byteAlignment)} set to {AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment} but it's set to {byteAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(byteAlignment)} set to {AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment} but it's set to {byteAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset); // order
                         return;

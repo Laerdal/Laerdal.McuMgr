@@ -12,8 +12,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// </summary>
         /// <remarks>
         /// When 'maxTriesCount' is greater than or equal to 2 the connection will be monitored in terms of how stable and reliable it is during the firmware-uploading stage and if
-        /// the uploading phase fails from the third attempt onwards then in the subsequent attempts the fail-safe settings in <see cref="AndroidTidbits.FailSafeBleConnectionSettings"/>
-        /// and <see cref="AppleTidbits.FailSafeBleConnectionSettings"/> will be enforced to try to upload the firmware.
+        /// the uploading phase fails from the third attempt onwards then in the subsequent attempts the fail-safe settings in <see cref="AndroidTidbits.BleConnectionSettings.FailSafes"/>
+        /// and <see cref="AppleTidbits.BleConnectionSettings.FailSafes"/> will be enforced to try to upload the firmware.
         /// </remarks>
         /// <param name="data">The firmware bytes. If zipped then the archive must contain the .bin file and not a directory.</param>
         /// <param name="mode">The firmware upgrade mode. Best to leave this to the default value 'TestAndConfirm'.</param>

@@ -490,11 +490,11 @@ namespace Laerdal.McuMgr.FileUploader
                 if (!isConnectionTooUnstableForUploading_)
                     return null;
 
-                var byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; //        ios + maccatalyst
-                var pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; //        ios + maccatalyst
-                var initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
-                var windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
-                var memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
+                var byteAlignment_ = AppleTidbits.BleConnectionSettings.FailSafes.ByteAlignment; //        ios + maccatalyst
+                var pipelineDepth_ = AppleTidbits.BleConnectionSettings.FailSafes.PipelineDepth; //        ios + maccatalyst
+                var initialMtuSize_ = AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
+                var windowCapacity_ = AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
+                var memoryAlignment_ = AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
 
                 if (emitWarningAboutUnstableConnection_)
                 {
