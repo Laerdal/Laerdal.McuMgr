@@ -45,8 +45,7 @@ namespace Laerdal.McuMgr.FileDownloader
             string hostDeviceManufacturer,
             string hostDeviceModel,
             int? initialMtuSize = null,
-            int? windowCapacity = null, //not applicable currently   but nordic considers these for future use
-            int? memoryAlignment = null //not applicable currently   but nordic considers these for future use
+            int? windowCapacity = null //not applicable currently   but nordic considers these for future use
         )
         {
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
@@ -196,8 +195,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
 
                         initialMtuSize: initialMtuSize,
-                        windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment
+                        windowCapacity: windowCapacity
                     );
 
                     results[path] = data;
@@ -225,8 +223,7 @@ namespace Laerdal.McuMgr.FileDownloader
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
             int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+            int? windowCapacity = null
         )
         {
             if (maxTriesCount <= 0)
@@ -263,7 +260,6 @@ namespace Laerdal.McuMgr.FileDownloader
                     {
                         initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
                         windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
-                        memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
 
                         if (!didWarnOnceAboutUnstableConnection)
                         {
@@ -271,7 +267,7 @@ namespace Laerdal.McuMgr.FileDownloader
                             OnLogEmitted(new LogEmittedEventArgs(
                                 level: ELogLevel.Warning,
                                 message: $"[FD.DA.010] Attempt#{triesCount}: Connection is too unstable for downloading assets from the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                         $"just in case it helps (initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
+                                         $"just in case it helps (initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"})",
                                 resource: "File",
                                 category: "FileDownloader"
                             ));
@@ -284,8 +280,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         hostDeviceManufacturer: hostDeviceManufacturer,
 
                         initialMtuSize: initialMtuSize,
-                        windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment
+                        windowCapacity: windowCapacity
                     );
                     if (verdict != EFileDownloaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());

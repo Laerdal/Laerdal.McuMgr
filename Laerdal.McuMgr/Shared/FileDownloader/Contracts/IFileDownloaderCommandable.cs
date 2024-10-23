@@ -46,6 +46,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// </summary>
         /// <param name="remoteFilePath">The remote file to download.</param>
         /// <param name="hostDeviceManufacturer"></param>
+        /// <param name="hostDeviceModel"></param>
         /// <param name="timeoutForDownloadInMs">The amount of time to wait for the operation to complete before bailing out.</param>
         /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllDownloadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
@@ -61,7 +62,6 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
-        /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         /// <returns>The bytes of the remote file that got fetched over.</returns>
         Task<byte[]> DownloadAsync(
             string remoteFilePath,
@@ -72,8 +72,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
             int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+            int? windowCapacity = null
         );
 
         /// <summary>
@@ -93,14 +92,12 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
-        /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         EFileDownloaderVerdict BeginDownload(
             string remoteFilePath,
             string hostDeviceManufacturer,
             string hostDeviceModel,
             int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+            int? windowCapacity = null
         );
 
         /// <summary>Cancels the file-downloading process</summary>
