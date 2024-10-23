@@ -238,18 +238,28 @@ namespace Laerdal.McuMgr.FileDownloader
                     FatalErrorOccurred += FileDownloader_FatalErrorOccurred_;
                     FileDownloadProgressPercentageAndDataThroughputChanged += FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                     
-                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                        triesCount_: triesCount,
-                        maxTriesCount_: maxTriesCount,
-                        suspiciousTransportFailuresCount_: suspiciousTransportFailuresCount,
-                        emitWarningAboutUnstableConnection_: !didWarnOnceAboutUnstableConnection
+                    var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
+                        triesCount: triesCount,
+                        maxTriesCount: maxTriesCount,
+                        suspiciousTransportFailuresCount: suspiciousTransportFailuresCount
                     );
                     if (failSafeSettingsToApply != null)
                     {
-                        didWarnOnceAboutUnstableConnection = true;
                         initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
                         windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
                         memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
+
+                        if (!didWarnOnceAboutUnstableConnection)
+                        {
+                            didWarnOnceAboutUnstableConnection = true;
+                            OnLogEmitted(new LogEmittedEventArgs(
+                                level: ELogLevel.Warning,
+                                message: $"[FD.DA.GFCSICPTBU.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                         $"just in case it helps (initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
+                                resource: "File",
+                                category: "FileDownloader"
+                            ));
+                        }
                     }
 
                     var verdict = BeginDownload( //00 dont use task.run here for now
@@ -415,35 +425,6 @@ namespace Laerdal.McuMgr.FileDownloader
                 throw new DownloadCancelledException(); //20
 
             return result;
-
-            (int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                int triesCount_,
-                int maxTriesCount_,
-                int suspiciousTransportFailuresCount_,
-                bool emitWarningAboutUnstableConnection_
-            )
-            {
-                var isConnectionTooUnstableForDownloading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && suspiciousTransportFailuresCount_ >= 2);
-                if (!isConnectionTooUnstableForDownloading_)
-                    return null;
-
-                var initialMtuSize_ = AndroidTidbits.BleConnectionSettings.FailSafes.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
-                var windowCapacity_ = AndroidTidbits.BleConnectionSettings.FailSafes.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
-                var memoryAlignment_ = AndroidTidbits.BleConnectionSettings.FailSafes.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
-
-                if (emitWarningAboutUnstableConnection_)
-                {
-                    OnLogEmitted(new LogEmittedEventArgs(
-                        level: ELogLevel.Warning,
-                        message: $"[FD.DA.GFCSICPTBU.010] Attempt#{triesCount_}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                 $"just in case it helps (initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
-                        resource: "File",
-                        category: "FileDownloader"
-                    ));
-                }
-
-                return (initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
-            }
             
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
