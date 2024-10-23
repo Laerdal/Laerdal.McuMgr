@@ -38,12 +38,12 @@ android {
 }
 
 dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.1'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'no.nordicsemi.android:mcumgr-ble:2.0.2'
-    implementation 'no.nordicsemi.android:mcumgr-core:2.0.2'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'no.nordicsemi.android:mcumgr-ble:2.2.1'
+    implementation 'no.nordicsemi.android:mcumgr-core:2.2.1'
+    implementation 'com.google.android.material:material:1.12.0'
 }
 
 // repositories {

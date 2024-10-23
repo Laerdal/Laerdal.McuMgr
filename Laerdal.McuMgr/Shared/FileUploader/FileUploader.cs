@@ -329,7 +329,7 @@ namespace Laerdal.McuMgr.FileUploader
                             OnLogEmitted(new LogEmittedEventArgs(
                                 level: ELogLevel.Warning,
                                 message: $"[FU.UA.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                         $"just in case it helps (byteAlignment={failSafeSettingsToApply.Value.byteAlignment}, pipelineDepth={failSafeSettingsToApply.Value.pipelineDepth}, initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
+                                         $"just in case it helps (byteAlignment={byteAlignment}, pipelineDepth={pipelineDepth}, initialMtuSize={initialMtuSize}, windowCapacity={windowCapacity}, memoryAlignment={memoryAlignment})",
                                 resource: "File",
                                 category: "FileUploader"
                             ));
