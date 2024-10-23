@@ -62,15 +62,15 @@ namespace Laerdal.McuMgr.FileUploader
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
-                hostDeviceModel_: hostDeviceModel,
-                hostDeviceManufacturer_: hostDeviceManufacturer,
+            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
 
-                pipelineDepth_: pipelineDepth,
-                byteAlignment_: byteAlignment,
-                initialMtuSize_: initialMtuSize,
-                windowCapacity_: windowCapacity,
-                memoryAlignment_: memoryAlignment
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
             );                
 
             var verdict = _nativeFileUploaderProxy.BeginUpload(

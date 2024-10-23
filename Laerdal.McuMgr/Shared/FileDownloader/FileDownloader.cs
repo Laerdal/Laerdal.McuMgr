@@ -53,10 +53,10 @@ namespace Laerdal.McuMgr.FileDownloader
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
-                initialMtuSize_: initialMtuSize,
-                hostDeviceModel_: hostDeviceModel,
-                hostDeviceManufacturer_: hostDeviceManufacturer
+            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                initialMtuSize: initialMtuSize,
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer
             );
             
             var verdict = _nativeFileDownloaderProxy.BeginDownload(

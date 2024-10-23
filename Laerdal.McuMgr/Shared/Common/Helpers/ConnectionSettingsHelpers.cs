@@ -4,22 +4,22 @@ namespace Laerdal.McuMgr.Common.Helpers
 {
     static internal class ConnectionSettingsHelpers
     {
-        static public (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment) GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
-            string hostDeviceManufacturer_,
-            string hostDeviceModel_,
-            int? pipelineDepth_ = null,
-            int? byteAlignment_ = null,
-            int? initialMtuSize_ = null,
-            int? windowCapacity_ = null,
-            int? memoryAlignment_ = null
+        static public (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment) GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
         )
         {
-            hostDeviceModel_ = (hostDeviceModel_ ?? "").Trim().ToLowerInvariant();
-            hostDeviceManufacturer_ = (hostDeviceManufacturer_ ?? "").Trim().ToLowerInvariant();
+            hostDeviceModel = (hostDeviceModel ?? "").Trim().ToLowerInvariant();
+            hostDeviceManufacturer = (hostDeviceManufacturer ?? "").Trim().ToLowerInvariant();
 
-            if (AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer_, hostDeviceModel_))
-                && (pipelineDepth_ ?? 1) == 1
-                && (byteAlignment_ ?? 1) == 1)
+            if (AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel))
+                && (pipelineDepth ?? 1) == 1
+                && (byteAlignment ?? 1) == 1)
             {
                 return (
                     byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
@@ -30,10 +30,10 @@ namespace Laerdal.McuMgr.Common.Helpers
                 );
             }
 
-            if (AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer_, hostDeviceModel_))
-                && initialMtuSize_ == null
-                && (windowCapacity_ ?? 1) == 1
-                && (memoryAlignment_ ?? 1) == 1)
+            if (AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel))
+                && initialMtuSize == null
+                && (windowCapacity ?? 1) == 1
+                && (memoryAlignment ?? 1) == 1)
             {
                 return (
                     byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
@@ -45,8 +45,8 @@ namespace Laerdal.McuMgr.Common.Helpers
             }
 
             return (
-                byteAlignment: byteAlignment_, pipelineDepth: pipelineDepth_,
-                initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_
+                byteAlignment: byteAlignment, pipelineDepth: pipelineDepth,
+                initialMtuSize: initialMtuSize, windowCapacity: windowCapacity, memoryAlignment: memoryAlignment
             );
         }
     }
