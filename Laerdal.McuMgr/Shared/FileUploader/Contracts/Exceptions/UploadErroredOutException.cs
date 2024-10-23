@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
         public string RemoteFilePath { get; }
         
         public EMcuMgrErrorCode McuMgrErrorCode { get; } = EMcuMgrErrorCode.Unset;
-        public EFileUploaderGroupReturnCode GroupReturnCode { get; } = EFileUploaderGroupReturnCode.Unset;
+        public EFileOperationGroupReturnCode GroupReturnCode { get; } = EFileOperationGroupReturnCode.Unset;
 
         protected UploadErroredOutException(string remoteFilePath, string errorMessage, Exception innerException = null)
             : base($"An error occurred while uploading over to '{remoteFilePath}': '{errorMessage}'", innerException)
@@ -21,7 +21,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
             string nativeErrorMessage,
             string remoteFilePath,
             EMcuMgrErrorCode mcuMgrErrorCode,
-            EFileUploaderGroupReturnCode groupReturnCode,
+            EFileOperationGroupReturnCode groupReturnCode,
             Exception innerException = null
         ) : base($"An error occurred while uploading '{remoteFilePath}': '{nativeErrorMessage}' (mcuMgrErrorCode={mcuMgrErrorCode}, groupReturnCode={groupReturnCode})", innerException)
         {

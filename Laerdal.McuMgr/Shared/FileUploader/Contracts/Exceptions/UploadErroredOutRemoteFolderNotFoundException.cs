@@ -11,7 +11,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
             string nativeErrorMessage,
             string remoteFilePath,
             EMcuMgrErrorCode mcuMgrErrorCode,
-            EFileUploaderGroupReturnCode groupReturnCode
+            EFileOperationGroupReturnCode groupReturnCode
         ) : base(
             nativeErrorMessage: nativeErrorMessage,
             remoteFilePath: remoteFilePath,

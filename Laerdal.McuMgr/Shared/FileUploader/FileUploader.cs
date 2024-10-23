@@ -62,76 +62,47 @@ namespace Laerdal.McuMgr.FileUploader
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var connectionSettings = GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
-                hostDeviceModel_: hostDeviceModel,
-                hostDeviceManufacturer_: hostDeviceManufacturer,
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
 
-                pipelineDepth_: pipelineDepth,
-                byteAlignment_: byteAlignment,
-                initialMtuSize_: initialMtuSize,
-                windowCapacity_: windowCapacity,
-                memoryAlignment_: memoryAlignment
-            );                
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment,
+                uploadingNotDownloading: true
+            );
+            if (failsafeConnectionSettings != null)
+            {
+                pipelineDepth = failsafeConnectionSettings.Value.pipelineDepth;
+                byteAlignment = failsafeConnectionSettings.Value.byteAlignment;
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FU.BU.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(pipelineDepth={pipelineDepth}, byteAlignment={byteAlignment}, initialMtuSize={initialMtuSize}, windowCapacity={windowCapacity}, memoryAlignment={memoryAlignment})",
+                    resource: "File",
+                    category: "FileDownloader"
+                ));
+            }
 
             var verdict = _nativeFileUploaderProxy.BeginUpload(
                 data: data,
                 remoteFilePath: remoteFilePath,
 
-                pipelineDepth: connectionSettings.pipelineDepth,
-                byteAlignment: connectionSettings.byteAlignment,
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
 
-                initialMtuSize: connectionSettings.initialMtuSize,
-                windowCapacity: connectionSettings.windowCapacity,
-                memoryAlignment: connectionSettings.memoryAlignment
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
             );
 
             return verdict;
-
-            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment) GetFailSafeConnectionSettingsIfHostDeviceIsProblematic_(
-                string hostDeviceManufacturer_,
-                string hostDeviceModel_,
-                int? pipelineDepth_,
-                int? byteAlignment_,
-                int? initialMtuSize_,
-                int? windowCapacity_,
-                int? memoryAlignment_
-            )
-            {
-                hostDeviceModel_ = (hostDeviceModel_ ?? "").Trim().ToLowerInvariant();
-                hostDeviceManufacturer_ = (hostDeviceManufacturer_ ?? "").Trim().ToLowerInvariant();
-
-                if (AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer_, hostDeviceModel_))
-                    && (pipelineDepth_ ?? 1) == 1
-                    && (byteAlignment_ ?? 1) == 1)
-                {
-                    return (
-                        byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
-                        pipelineDepth: AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth,
-                        initialMtuSize: AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize,
-                        windowCapacity: AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity,
-                        memoryAlignment: AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment
-                    );
-                }
-
-                if (AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer_, hostDeviceModel_))
-                    && initialMtuSize_ == null
-                    && (windowCapacity_ ?? 1) == 1
-                    && (memoryAlignment_ ?? 1) == 1)
-                {
-                    return (
-                        byteAlignment: AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment,
-                        pipelineDepth: AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth,
-                        initialMtuSize: AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize,
-                        windowCapacity: AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity,
-                        memoryAlignment: AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment
-                    );
-                }
-
-                return (
-                    byteAlignment: byteAlignment, pipelineDepth: pipelineDepth,
-                    initialMtuSize: initialMtuSize, windowCapacity: windowCapacity, memoryAlignment: memoryAlignment
-                );
-            }
         }
         
         public void Cancel(string reason = "") => _nativeFileUploaderProxy?.Cancel(reason);
@@ -338,32 +309,42 @@ namespace Laerdal.McuMgr.FileUploader
                     FatalErrorOccurred += FileUploader_FatalErrorOccurred_;
                     FileUploadProgressPercentageAndDataThroughputChanged += FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_;
 
-                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                        triesCount_: triesCount,
-                        maxTriesCount_: maxTriesCount,
-                        suspiciousTransportFailuresCount_: suspiciousTransportFailuresCount,
-                        emitWarningAboutUnstableConnection_: !didWarnOnceAboutUnstableConnection
+                    var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
+                        uploadingNotDownloading: true,
+                        triesCount: triesCount,
+                        maxTriesCount: maxTriesCount,
+                        suspiciousTransportFailuresCount: suspiciousTransportFailuresCount
                     );
                     if (failSafeSettingsToApply != null)
                     {
-                        didWarnOnceAboutUnstableConnection = true;
                         byteAlignment = failSafeSettingsToApply.Value.byteAlignment;
                         pipelineDepth = failSafeSettingsToApply.Value.pipelineDepth;
                         initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
                         windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
                         memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
+                        
+                        if (!didWarnOnceAboutUnstableConnection)
+                        {
+                            didWarnOnceAboutUnstableConnection = true;
+                            OnLogEmitted(new LogEmittedEventArgs(
+                                level: ELogLevel.Warning,
+                                message: $"[FU.UA.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                         $"just in case it helps (byteAlignment={failSafeSettingsToApply.Value.byteAlignment}, pipelineDepth={failSafeSettingsToApply.Value.pipelineDepth}, initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
+                                resource: "File",
+                                category: "FileUploader"
+                            ));
+                        }
                     }
 
                     var verdict = BeginUpload( //00 dont use task.run here for now
                         remoteFilePath: remoteFilePath,
-                        
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
                         
-                        data: dataArray, //      ios only
+                        data: dataArray, //                   ios only
                         pipelineDepth: pipelineDepth, //      ios only
 
-                        byteAlignment: byteAlignment, //    android only
+                        byteAlignment: byteAlignment, //      android only
                         initialMtuSize: initialMtuSize, //    android only
                         windowCapacity: windowCapacity,
                         memoryAlignment: memoryAlignment //   android only
@@ -525,37 +506,6 @@ namespace Laerdal.McuMgr.FileUploader
                 throw new UploadCancelledException(cancellationReason); //20
 
             return;
-
-            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                int triesCount_,
-                int maxTriesCount_,
-                int suspiciousTransportFailuresCount_,
-                bool emitWarningAboutUnstableConnection_
-            )
-            {
-                var isConnectionTooUnstableForUploading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && suspiciousTransportFailuresCount_ >= 2);
-                if (!isConnectionTooUnstableForUploading_)
-                    return null;
-
-                var byteAlignment_ = AppleTidbits.FailSafeBleConnectionSettings.ByteAlignment; //        ios + maccatalyst
-                var pipelineDepth_ = AppleTidbits.FailSafeBleConnectionSettings.PipelineDepth; //        ios + maccatalyst
-                var initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
-                var windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
-                var memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
-
-                if (emitWarningAboutUnstableConnection_)
-                {
-                    OnLogEmitted(new LogEmittedEventArgs(
-                        level: ELogLevel.Warning,
-                        message: $"[FU.UA.GFCSICPTBU.010] Attempt#{triesCount_}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                 $"just in case it helps (byteAlignment={byteAlignment_}, pipelineDepth={pipelineDepth_}, initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
-                        resource: "File",
-                        category: "FileUploader"
-                    ));
-                }
-
-                return (byteAlignment: byteAlignment_, pipelineDepth: pipelineDepth_, initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
-            }
             
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
@@ -638,7 +588,7 @@ namespace Laerdal.McuMgr.FileUploader
                 string resource,
                 string errorMessage,
                 EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+                EFileOperationGroupReturnCode fileUploaderGroupReturnCode
             ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
                 resource,
                 errorMessage,

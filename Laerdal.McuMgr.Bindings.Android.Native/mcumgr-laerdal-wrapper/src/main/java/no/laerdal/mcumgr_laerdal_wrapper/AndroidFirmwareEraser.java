@@ -10,6 +10,7 @@ import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
 import io.runtime.mcumgr.response.img.McuMgrImageResponse;
 import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
+import org.jetbrains.annotations.Contract;
 
 @SuppressWarnings("unused")
 public class AndroidFirmwareEraser {
@@ -79,12 +80,14 @@ public class AndroidFirmwareEraser {
         stateChangedAdvertisement(oldState, newState); //order
     }
 
+    @Contract(pure = true)
     public void stateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState currentState) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     private String _lastFatalErrorMessage;
 
+    @Contract(pure = true)
     public String getLastFatalErrorMessage() {
         return _lastFatalErrorMessage;
     }
@@ -93,10 +96,12 @@ public class AndroidFirmwareEraser {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void logMessageAdvertisement(final String message, final String category, final String level) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void busyStateChangedAdvertisement(final boolean busyNotIdle) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

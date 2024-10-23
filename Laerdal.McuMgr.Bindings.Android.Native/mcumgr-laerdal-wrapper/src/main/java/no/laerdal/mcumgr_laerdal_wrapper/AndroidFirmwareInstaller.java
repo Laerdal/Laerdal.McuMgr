@@ -18,6 +18,7 @@ import io.runtime.mcumgr.dfu.mcuboot.model.ImageSet;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
@@ -237,6 +238,7 @@ public class AndroidFirmwareInstaller
 
     private String _lastFatalErrorMessage;
 
+    @Contract(pure = true)
     public String getLastFatalErrorMessage()
     {
         return _lastFatalErrorMessage;
@@ -258,26 +260,31 @@ public class AndroidFirmwareInstaller
         _lastFatalErrorMessage = errorMessage;
     }
 
+    @Contract(pure = true)
     public void logMessageAdvertisement(final String message, final String category, final String level)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void cancelledAdvertisement()
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void busyStateChangedAdvertisement(final boolean busyNotIdle)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void stateChangedAdvertisement(final EAndroidFirmwareInstallationState oldState, final EAndroidFirmwareInstallationState currentState)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates

@@ -209,13 +209,13 @@ namespace Laerdal.McuMgr.FileUploader
                 resource,
                 errorMessage,
                 (EMcuMgrErrorCode)(int)mcuMgrErrorCode,
-                EFileUploaderGroupReturnCode.Unset
+                EFileOperationGroupReturnCode.Unset
             );
             public void FatalErrorOccurredAdvertisement( //conformance to the interface
                 string resource,
                 string errorMessage, // ReSharper disable once MethodOverloadWithOptionalParameter
                 EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+                EFileOperationGroupReturnCode fileUploaderGroupReturnCode
             ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
                 resource,
                 errorMessage,

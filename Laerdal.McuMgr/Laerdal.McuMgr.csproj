@@ -71,10 +71,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1079.0</Version>
-        <FileVersion>1.0.1079.0</FileVersion>
-        <PackageVersion>1.0.1079.0</PackageVersion>
-        <AssemblyVersion>1.0.1079.0</AssemblyVersion>
+        <Version>1.0.1177.0</Version>
+        <FileVersion>1.0.1177.0</FileVersion>
+        <PackageVersion>1.0.1177.0</PackageVersion>
+        <AssemblyVersion>1.0.1177.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -113,29 +113,29 @@
     </ItemGroup>
 
     <Target Name="PrintBuildInfo" BeforeTargets="CoreCompile">
-        <Message Importance="High" Text="OS:                         '$(OS)'                      "/>
-        <Message Importance="High" Text="Platform:                   '$(Platform)'                "/>
-        <Message Importance="High" Text="PackageId:                  '$(PackageId)'               "/>
-        <Message Importance="High" Text="Configuration:              '$(Configuration)'           "/>
-        <Message Importance="High" Text="PackageVersion:             '$(PackageVersion)'          "/>
-        <Message Importance="High" Text="TargetFramework:            '$(TargetFramework)'         "/>
-        <Message Importance="High" Text="DefineConstants:            '$(DefineConstants)'         "/>
-        <Message Importance="high" Text="MSBuildNodeCount:           '$(MSBuildNodeCount)'        "/>
-        <Message Importance="high" Text="Should_Skip_MacCatalyst:    '$(Should_Skip_MacCatalyst)' "/>
+        <Message Importance="High" Text="OS:                            '$(OS)'                         "/>
+        <Message Importance="High" Text="Platform:                      '$(Platform)'                   "/>
+        <Message Importance="High" Text="PackageId:                     '$(PackageId)'                  "/>
+        <Message Importance="High" Text="Configuration:                 '$(Configuration)'              "/>
+        <Message Importance="High" Text="PackageVersion:                '$(PackageVersion)'             "/>
+        <Message Importance="High" Text="TargetFramework:               '$(TargetFramework)'            "/>
+        <Message Importance="High" Text="DefineConstants:               '$(DefineConstants)'            "/>
+        <Message Importance="high" Text="MSBuildNodeCount:              '$(MSBuildNodeCount)'           "/>
+        <Message Importance="high" Text="Should_Skip_MacCatalyst:       '$(Should_Skip_MacCatalyst)'    "/>
 
-        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
-        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
+        <Message Importance="high" Text="TargetPlatformVersion:         '$(TargetPlatformVersion)'      "/>
+        <Message Importance="high" Text="SupportedOSPlatformVersion:    '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
-        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
+        <Message Importance="high" Text="IsNet8:                        '$(IsNet8)'                     "/>
+        <Message Importance="high" Text="IsNetX:                        '$(IsNetX)'                     "/>
 
-        <Message Importance="high" Text="IsNet8MacCatalyst: '$(IsNet8MacCatalyst)' "/>
-        <Message Importance="high" Text="IsNetXAndroid:     '$(IsNetXAndroid)'     "/>
-        <Message Importance="high" Text="IsNetXMacCatalyst: '$(IsNetXMacCatalyst)' "/>
+        <Message Importance="high" Text="IsNetXAndroid:                 '$(IsNetXAndroid)'              "/>
+        <Message Importance="high" Text="IsNet8MacCatalyst:             '$(IsNet8MacCatalyst)'          "/>
+        <Message Importance="high" Text="IsNetXMacCatalyst:             '$(IsNetXMacCatalyst)'          "/>
 
-        <Message Importance="high" Text="IsIOS:             '$(IsIOS)' "/>
-        <Message Importance="high" Text="IsAndroid:         '$(IsAndroid)' "/>
-        <Message Importance="high" Text="IsAppleStuff:      '$(IsAppleStuff)' "/>
+        <Message Importance="high" Text="IsIOS:                         '$(IsIOS)'                      "/>
+        <Message Importance="high" Text="IsAndroid:                     '$(IsAndroid)'                  "/>
+        <Message Importance="high" Text="IsAppleStuff:                  '$(IsAppleStuff)'               "/>
     </Target>
 
     <!-- SHARED -->
@@ -150,7 +150,6 @@
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <Compile Include="Droid\*.cs"/>
         <Compile Include="Droid\**\*.cs"/>
     </ItemGroup>
 
@@ -168,21 +167,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1079.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1177.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1079.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1177.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1079.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1177.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1079.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1177.0"/>
     </ItemGroup>
 
 </Project>

@@ -15,9 +15,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.010", "samsung", "sm-x200", null, null, null, null, null, 1, 1, 23, 1, 1)]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.020", "  Samsung  ", "  SM-X200  ", null, null, null, null, null, 1, 1, 23, 1, 1)]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.030", "  Apple  ", "  iPhone 6  ", null, null, null, null, null, 1, 1, 23, 1, 1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.010", "samsung", "sm-x200", null, null, null, null, null, null, null, 23, 1, 1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.020", "  Samsung  ", "  SM-X200  ", null, null, null, null, null, null, null, 23, 1, 1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.030", "  Apple  ", "  iPhone 6  ", null, null, null, null, null, 1, 1, null, null, null)]
         [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.040", "  Apple  ", "  iPhone 6  ", 2, 4, null, null, null, 2, 4, null, null, null)]
         [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.050", "AcmeCorp.", "foobar", null, null, null, null, null, null, null, null, null, null)]
         public async Task SingleFileUploadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettingsRightAway_GivenProblematicDevices(

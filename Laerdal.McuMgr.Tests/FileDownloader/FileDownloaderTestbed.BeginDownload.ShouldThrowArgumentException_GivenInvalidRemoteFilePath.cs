@@ -25,7 +25,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
+            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             work.Should().ThrowExactly<ArgumentException>();

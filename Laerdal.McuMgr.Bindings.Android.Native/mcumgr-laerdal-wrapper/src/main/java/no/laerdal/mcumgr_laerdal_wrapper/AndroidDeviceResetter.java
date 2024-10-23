@@ -9,6 +9,7 @@ import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
 import io.runtime.mcumgr.response.dflt.McuMgrOsResponse;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
@@ -65,7 +66,7 @@ public class AndroidDeviceResetter {
         });
     }
 
-    public void disconnect() { //noinspection ConstantValue
+    public void disconnect() {
         if (_manager == null)
             return;
 
@@ -95,18 +96,21 @@ public class AndroidDeviceResetter {
 
     private String _lastFatalErrorMessage;
 
+    @Contract(pure = true)
     public String getLastFatalErrorMessage() {
         return _lastFatalErrorMessage;
     }
 
     public void fatalErrorOccurredAdvertisement(final String errorMessage) {
-        _lastFatalErrorMessage = errorMessage; //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+        _lastFatalErrorMessage = errorMessage;
     }
 
+    @Contract(pure = true)
     public void logMessageAdvertisement(final String message, final String category, final String level) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void stateChangedAdvertisement(final EAndroidDeviceResetterState oldState, final EAndroidDeviceResetterState currentState) {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

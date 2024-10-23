@@ -15,6 +15,7 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
@@ -41,14 +42,37 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public EFileDownloaderVerdict BeginDownload(
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+            int? windowCapacity = null, //not applicable currently   but nordic considers these for future use
+            int? memoryAlignment = null //not applicable currently   but nordic considers these for future use
         )
         {
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                initialMtuSize: initialMtuSize,
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
+                uploadingNotDownloading: false
+            );
+            if (failsafeConnectionSettings != null)
+            {
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                // windowCapacity = connectionSettings.Value.windowCapacity;
+                // memoryAlignment = connectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FD.BD.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(initialMtuSize={initialMtuSize})",
+                    resource: "File",
+                    category: "FileDownloader"
+                ));
+            }
+            
             var verdict = _nativeFileDownloaderProxy.BeginDownload(
                 remoteFilePath: remoteFilePath,
                 initialMtuSize: initialMtuSize
@@ -140,6 +164,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public async Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutPerDownloadInMs = -1,
             int maxRetriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
@@ -162,6 +188,8 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     var data = await DownloadAsync(
                         remoteFilePath: path,
+                        hostDeviceModel: hostDeviceModel,
+                        hostDeviceManufacturer: hostDeviceManufacturer,
 
                         maxTriesCount: maxRetriesPerDownload,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
@@ -190,10 +218,12 @@ namespace Laerdal.McuMgr.FileDownloader
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task<byte[]> DownloadAsync(
             string remoteFilePath,
+            string hostDeviceManufacturer,
+            string hostDeviceModel,
             int timeoutForDownloadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs,
+            int gracefulCancellationTimeoutInMs = 2_500,
             int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
@@ -223,22 +253,35 @@ namespace Laerdal.McuMgr.FileDownloader
                     FatalErrorOccurred += FileDownloader_FatalErrorOccurred_;
                     FileDownloadProgressPercentageAndDataThroughputChanged += FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                     
-                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                        triesCount_: triesCount,
-                        maxTriesCount_: maxTriesCount,
-                        suspiciousTransportFailuresCount_: suspiciousTransportFailuresCount,
-                        emitWarningAboutUnstableConnection_: !didWarnOnceAboutUnstableConnection
+                    var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
+                        uploadingNotDownloading: false,
+                        triesCount: triesCount,
+                        maxTriesCount: maxTriesCount,
+                        suspiciousTransportFailuresCount: suspiciousTransportFailuresCount
                     );
                     if (failSafeSettingsToApply != null)
                     {
-                        didWarnOnceAboutUnstableConnection = true;
                         initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
                         windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
                         memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
+
+                        if (!didWarnOnceAboutUnstableConnection)
+                        {
+                            didWarnOnceAboutUnstableConnection = true;
+                            OnLogEmitted(new LogEmittedEventArgs(
+                                level: ELogLevel.Warning,
+                                message: $"[FD.DA.010] Attempt#{triesCount}: Connection is too unstable for downloading assets from the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                         $"just in case it helps (initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
+                                resource: "File",
+                                category: "FileDownloader"
+                            ));
+                        }
                     }
 
                     var verdict = BeginDownload( //00 dont use task.run here for now
                         remoteFilePath: remoteFilePath,
+                        hostDeviceModel: hostDeviceModel,
+                        hostDeviceManufacturer: hostDeviceManufacturer,
 
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity,
@@ -398,35 +441,6 @@ namespace Laerdal.McuMgr.FileDownloader
                 throw new DownloadCancelledException(); //20
 
             return result;
-
-            (int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                int triesCount_,
-                int maxTriesCount_,
-                int suspiciousTransportFailuresCount_,
-                bool emitWarningAboutUnstableConnection_
-            )
-            {
-                var isConnectionTooUnstableForDownloading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && suspiciousTransportFailuresCount_ >= 2);
-                if (!isConnectionTooUnstableForDownloading_)
-                    return null;
-
-                var initialMtuSize_ = AndroidTidbits.FailSafeBleConnectionSettings.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
-                var windowCapacity_ = AndroidTidbits.FailSafeBleConnectionSettings.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
-                var memoryAlignment_ = AndroidTidbits.FailSafeBleConnectionSettings.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
-
-                if (emitWarningAboutUnstableConnection_)
-                {
-                    OnLogEmitted(new LogEmittedEventArgs(
-                        level: ELogLevel.Warning,
-                        message: $"[FD.DA.GFCSICPTBU.010] Attempt#{triesCount_}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                 $"just in case it helps (initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
-                        resource: "File",
-                        category: "FileDownloader"
-                    ));
-                }
-
-                return (initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
-            }
             
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
             //    taskcompletionsource right after    but if we went down this path we would also have to account for exceptions thus complicating
@@ -487,8 +501,8 @@ namespace Laerdal.McuMgr.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
                 => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage));
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode));
 
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(

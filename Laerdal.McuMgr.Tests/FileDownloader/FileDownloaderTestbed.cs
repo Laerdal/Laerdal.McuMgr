@@ -2,6 +2,7 @@
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {
@@ -62,13 +63,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
                 => _downloaderCallbacksProxy.DownloadCompletedAdvertisement(resource, data); //raises the actual event
-
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage); //raises the actual event
+            
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode) 
+                => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode); //raises the actual event
             
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event
             
+            public bool TrySetContext(object context) => throw new NotImplementedException();
+            public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();
+            public bool TryInvalidateCachedTransport() => throw new NotImplementedException();
+
             public void Dispose()
             {
             }
