@@ -126,16 +126,16 @@
         <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
         <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="IsNet8:           '$(IsNet8)'           "/>
-        <Message Importance="high" Text="IsNetX:           '$(IsNetX)'           "/>
+        <Message Importance="high" Text="IsNet8:            '$(IsNet8)'            "/>
+        <Message Importance="high" Text="IsNetX:            '$(IsNetX)'            "/>
 
         <Message Importance="high" Text="IsNet8MacCatalyst: '$(IsNet8MacCatalyst)' "/>
         <Message Importance="high" Text="IsNetXAndroid:     '$(IsNetXAndroid)'     "/>
         <Message Importance="high" Text="IsNetXMacCatalyst: '$(IsNetXMacCatalyst)' "/>
 
-        <Message Importance="high" Text="IsIOS:             '$(IsIOS)' "/>
-        <Message Importance="high" Text="IsAndroid:         '$(IsAndroid)' "/>
-        <Message Importance="high" Text="IsAppleStuff:      '$(IsAppleStuff)' "/>
+        <Message Importance="high" Text="IsIOS:             '$(IsIOS)'             "/>
+        <Message Importance="high" Text="IsAndroid:         '$(IsAndroid)'         "/>
+        <Message Importance="high" Text="IsAppleStuff:      '$(IsAppleStuff)'      "/>
     </Target>
 
     <!-- SHARED -->
@@ -150,7 +150,6 @@
         <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
     </PropertyGroup>
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <Compile Include="Droid\*.cs"/>
         <Compile Include="Droid\**\*.cs"/>
     </ItemGroup>
 
