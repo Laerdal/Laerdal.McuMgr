@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Common.Helpers
             return (byteAlignment: byteAlignment, pipelineDepth: pipelineDepth, initialMtuSize: initialMtuSize, windowCapacity: windowCapacity, memoryAlignment: memoryAlignment);
         }
         
-        static public (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment) GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+        static public (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
             string hostDeviceManufacturer,
             string hostDeviceModel,
             int? pipelineDepth = null,
@@ -60,10 +60,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                 );
             }
 
-            return (
-                byteAlignment: byteAlignment, pipelineDepth: pipelineDepth,
-                initialMtuSize: initialMtuSize, windowCapacity: windowCapacity, memoryAlignment: memoryAlignment
-            );
+            return null;
         }
     }
 }

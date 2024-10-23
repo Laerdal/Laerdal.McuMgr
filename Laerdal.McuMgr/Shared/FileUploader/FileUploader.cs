@@ -62,7 +62,7 @@ namespace Laerdal.McuMgr.FileUploader
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer,
 
@@ -71,18 +71,34 @@ namespace Laerdal.McuMgr.FileUploader
                 initialMtuSize: initialMtuSize,
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment
-            );                
+            );
+            if (failsafeConnectionSettings != null)
+            {
+                pipelineDepth = failsafeConnectionSettings.Value.pipelineDepth;
+                byteAlignment = failsafeConnectionSettings.Value.byteAlignment;
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FU.BU.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(pipelineDepth={pipelineDepth}, byteAlignment={byteAlignment}, initialMtuSize={initialMtuSize}, windowCapacity={windowCapacity}, memoryAlignment={memoryAlignment})",
+                    resource: "File",
+                    category: "FileDownloader"
+                ));
+            }
 
             var verdict = _nativeFileUploaderProxy.BeginUpload(
                 data: data,
                 remoteFilePath: remoteFilePath,
 
-                pipelineDepth: connectionSettings.pipelineDepth,
-                byteAlignment: connectionSettings.byteAlignment,
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
 
-                initialMtuSize: connectionSettings.initialMtuSize,
-                windowCapacity: connectionSettings.windowCapacity,
-                memoryAlignment: connectionSettings.memoryAlignment
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
             );
 
             return verdict;
@@ -310,7 +326,7 @@ namespace Laerdal.McuMgr.FileUploader
                             didWarnOnceAboutUnstableConnection = true;
                             OnLogEmitted(new LogEmittedEventArgs(
                                 level: ELogLevel.Warning,
-                                message: $"[FU.UA.GFCSICPTBU.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                message: $"[FU.UA.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
                                          $"just in case it helps (byteAlignment={failSafeSettingsToApply.Value.byteAlignment}, pipelineDepth={failSafeSettingsToApply.Value.pipelineDepth}, initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
                                 resource: "File",
                                 category: "FileUploader"

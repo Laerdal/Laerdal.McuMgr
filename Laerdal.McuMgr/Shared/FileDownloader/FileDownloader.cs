@@ -45,23 +45,36 @@ namespace Laerdal.McuMgr.FileDownloader
             string hostDeviceManufacturer,
             string hostDeviceModel,
             int? initialMtuSize = null,
-            int? windowCapacity = null, //not applicable currently   but nordic considers them for future use
-            int? memoryAlignment = null
-            //not applicable currently   but nordic considers them for future use
+            int? windowCapacity = null, //not applicable currently   but nordic considers these for future use
+            int? memoryAlignment = null //not applicable currently   but nordic considers these for future use
         )
         {
             RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
             remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
 
-            var connectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
                 initialMtuSize: initialMtuSize,
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer
             );
+            if (failsafeConnectionSettings != null)
+            {
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                // windowCapacity = connectionSettings.Value.windowCapacity;
+                // memoryAlignment = connectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FD.BD.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(initialMtuSize={initialMtuSize})",
+                    resource: "File",
+                    category: "FileDownloader"
+                ));
+            }
             
             var verdict = _nativeFileDownloaderProxy.BeginDownload(
                 remoteFilePath: remoteFilePath,
-                initialMtuSize: connectionSettings.initialMtuSize
+                initialMtuSize: initialMtuSize
             );
 
             return verdict;
@@ -254,7 +267,7 @@ namespace Laerdal.McuMgr.FileDownloader
                             didWarnOnceAboutUnstableConnection = true;
                             OnLogEmitted(new LogEmittedEventArgs(
                                 level: ELogLevel.Warning,
-                                message: $"[FD.DA.GFCSICPTBU.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                message: $"[FD.DA.010] Attempt#{triesCount}: Connection is too unstable for downloading assets from the target device. Subsequent tries will use failsafe parameters on the connection " +
                                          $"just in case it helps (initialMtuSize={failSafeSettingsToApply.Value.initialMtuSize}, windowCapacity={failSafeSettingsToApply.Value.windowCapacity}, memoryAlignment={failSafeSettingsToApply.Value.memoryAlignment})",
                                 resource: "File",
                                 category: "FileDownloader"
