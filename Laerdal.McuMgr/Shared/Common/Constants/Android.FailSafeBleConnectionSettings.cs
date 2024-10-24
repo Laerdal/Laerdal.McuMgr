@@ -7,35 +7,35 @@ namespace Laerdal.McuMgr.Common.Constants
     {
         /// <summary>List of known problematic android-devices that have issues with BLE connection stability and have to use fail-safe ble settings to work.</summary><br/><br/>
         /// Inspired by <a href="https://github.com/polarofficial/polar-ble-sdk/blob/master/sources/Android/android-communications/library/src/main/java/com/polar/androidcommunications/common/ble/PhoneUtils.kt"/>
-        static public HashSet<(string Manufacturer, string DeviceModel)> KnownProblematicDevices { get; } = new (string Manufacturer, string DeviceModel)[]
+        static public HashSet<(string DeviceModel, string Manufacturer)> KnownProblematicDevices { get; } = new (string DeviceModel, string Manufacturer)[]
             {
-                ("Motorola", "moto g20"),
-                ("Motorola", "moto e20"),
-                ("Motorola", "moto e30"),
-                ("Motorola", "moto e32"),
-                ("Motorola", "moto e40"),
+                ("moto g20", "Motorola"),
+                ("moto e20", "Motorola"),
+                ("moto e30", "Motorola"),
+                ("moto e32", "Motorola"),
+                ("moto e40", "Motorola"),
 
-                ("Nokia", "Nokia G21"),
-                ("Nokia", "Nokia G11"),
-                ("Nokia", "Nokia T20"),
+                ("Nokia G21", "Nokia"),
+                ("Nokia G11", "Nokia"),
+                ("Nokia T20", "Nokia"),
 
-                ("Realme", "RMX3261"), //C21Y
-                ("Realme", "RMX3262"), //C21Y
-                ("Realme", "RMX3265"), //C25Y
-                ("Realme", "RMX3269"), //C25Y
-                ("Realme", "RMP2105"), //Pad Mini
-                ("Realme", "RMP2106"), //Pad Mini
+                ("RMX3261", "Realme"), //C21Y
+                ("RMX3262", "Realme"), //C21Y
+                ("RMX3265", "Realme"), //C25Y
+                ("RMX3269", "Realme"), //C25Y
+                ("RMP2105", "Realme"), //Pad Mini
+                ("RMP2106", "Realme"), //Pad Mini
 
-                ("Infinix", "Infinix X675"), //Hot 11 2022
+                ("Infinix X675", "Infinix"), //Hot 11 2022
 
-                ("HTC", "Wildfire E2 plus"),
+                ("Wildfire E2 plus", "HTC"),
 
-                ("Micromax", "IN_2b"),
-                ("Micromax", "IN_2c"),
+                ("IN_2b", "Micromax"),
+                ("IN_2c", "Micromax"),
 
-                ("Samsung", "SM-X200"), //Galaxy Tab A8
+                ("SM-X200", "Samsung"), //Galaxy Tab A8
             }
-            .Select(x => (x.Manufacturer.Trim().ToLowerInvariant(), x.DeviceModel.Trim().ToLowerInvariant())) //vital
+            .Select(x => (DeviceModel: x.DeviceModel.Trim().ToLowerInvariant(), Manufacturer: x.Manufacturer.Trim().ToLowerInvariant())) //vital
             .ToHashSet();
         
         /// <summary>

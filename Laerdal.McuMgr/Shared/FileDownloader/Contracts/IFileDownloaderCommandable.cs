@@ -31,8 +31,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
         Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int timeoutPerDownloadInMs = -1,
             int maxRetriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
@@ -65,8 +65,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <returns>The bytes of the remote file that got fetched over.</returns>
         Task<byte[]> DownloadAsync(
             string remoteFilePath,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int timeoutForDownloadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
@@ -94,8 +94,8 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         EFileDownloaderVerdict BeginDownload(
             string remoteFilePath,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int? initialMtuSize = null,
             int? windowCapacity = null
         );

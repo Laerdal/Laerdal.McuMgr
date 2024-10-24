@@ -40,6 +40,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         
         public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
@@ -53,6 +55,35 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             if (data == null || !data.Any())
                 throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
 
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                uploadingNotDownloading: true,
+
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
+
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
+            );
+            if (failsafeConnectionSettings != null)
+            {
+                pipelineDepth = failsafeConnectionSettings.Value.pipelineDepth;
+                byteAlignment = failsafeConnectionSettings.Value.byteAlignment;
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FI.BI.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(pipelineDepth={pipelineDepth?.ToString() ?? "null"}, byteAlignment={byteAlignment?.ToString() ?? "null"}, initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"}, memoryAlignment={memoryAlignment?.ToString() ?? "null"})",
+                    resource: "File",
+                    category: "FileDownloader"
+                ));
+            }
+            
             _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
             var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
                 data: data,
@@ -154,6 +185,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task InstallAsync(
             byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
@@ -216,10 +249,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                     var verdict = BeginInstallation( //00 dont use task.run here for now
                         data: data,
+                        hostDeviceModel: hostDeviceModel,
+                        hostDeviceManufacturer: hostDeviceManufacturer,
+
                         mode: mode,
                         eraseSettings: eraseSettings,
                         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
-
+                        
                         pipelineDepth: pipelineDepth, //      ios only
                         byteAlignment: byteAlignment, //      ios only
 

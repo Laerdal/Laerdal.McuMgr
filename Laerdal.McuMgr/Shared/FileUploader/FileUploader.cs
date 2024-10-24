@@ -47,8 +47,8 @@ namespace Laerdal.McuMgr.FileUploader
             string remoteFilePath,
             byte[] data,
 
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             
             int? pipelineDepth = null,
             int? byteAlignment = null,
@@ -84,7 +84,7 @@ namespace Laerdal.McuMgr.FileUploader
                 OnLogEmitted(new LogEmittedEventArgs(
                     level: ELogLevel.Warning,
                     message: $"[FU.BU.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
-                             $"(pipelineDepth={pipelineDepth}, byteAlignment={byteAlignment}, initialMtuSize={initialMtuSize}, windowCapacity={windowCapacity}, memoryAlignment={memoryAlignment})",
+                             $"(pipelineDepth={pipelineDepth ?.ToString() ?? "null"}, byteAlignment={byteAlignment?.ToString() ?? "null"}, initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"}, memoryAlignment={memoryAlignment?.ToString() ?? "null"})",
                     resource: "File",
                     category: "FileDownloader"
                 ));
@@ -201,8 +201,8 @@ namespace Laerdal.McuMgr.FileUploader
 
         public async Task<IEnumerable<string>> UploadAsync<TData>(
             IDictionary<string, TData> remoteFilePathsAndTheirData,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
@@ -266,8 +266,8 @@ namespace Laerdal.McuMgr.FileUploader
         public async Task UploadAsync<TData>(
             TData data,
             string remoteFilePath,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int timeoutForUploadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,

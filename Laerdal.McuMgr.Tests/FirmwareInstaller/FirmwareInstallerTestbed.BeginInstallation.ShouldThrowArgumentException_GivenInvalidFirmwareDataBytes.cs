@@ -21,7 +21,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<EFirmwareInstallationVerdict>(() => firmwareInstaller.BeginInstallation(mockedFileData));
+            var work = new Func<EFirmwareInstallationVerdict>(() => firmwareInstaller.BeginInstallation(
+                data: mockedFileData,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            ));
 
             // Assert
             work.Should().Throw<ArgumentException>();

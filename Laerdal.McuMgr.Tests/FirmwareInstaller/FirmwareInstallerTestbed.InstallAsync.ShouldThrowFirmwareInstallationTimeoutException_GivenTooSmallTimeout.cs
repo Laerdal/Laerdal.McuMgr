@@ -21,7 +21,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync([1], maxTriesCount: 1, timeoutInMs: 100));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
+                data: [1],
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                timeoutInMs: 100,
+                maxTriesCount: 1
+            ));
 
             // Assert
             await work.Should()

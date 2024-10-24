@@ -43,8 +43,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         Task<IEnumerable<string>> UploadAsync<TData>(
             IDictionary<string, TData> remoteFilePathsAndTheirData,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
@@ -94,8 +94,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         Task UploadAsync<TData>(
             TData localData,
             string remoteFilePath,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int timeoutForUploadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
@@ -134,8 +134,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         EFileUploaderVerdict BeginUpload(
             string remoteFilePath,
             byte[] data,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int? initialMtuSize = null,

@@ -35,7 +35,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync([1, 2, 3], maxTriesCount: maxTriesCount));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
+                data: [1, 2, 3],
+                maxTriesCount: maxTriesCount,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            ));
 
             // Assert
             await work.Should().CompleteWithinAsync(4.Seconds());
@@ -63,7 +68,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 .Where(x => x.EventName == nameof(firmwareInstaller.LogEmitted))
                 .SelectMany(x => x.Parameters)
                 .OfType<LogEmittedEventArgs>()
-                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("GFCSICPTBU.010"))
+                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("[FI.IA.010]"))
                 .Should()
                 .Be(1);
 
