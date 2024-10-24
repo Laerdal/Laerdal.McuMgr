@@ -40,6 +40,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         
         public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
@@ -53,6 +55,35 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             if (data == null || !data.Any())
                 throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
 
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                uploadingNotDownloading: true,
+
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
+
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                initialMtuSize: initialMtuSize,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
+            );
+            if (failsafeConnectionSettings != null)
+            {
+                pipelineDepth = failsafeConnectionSettings.Value.pipelineDepth;
+                byteAlignment = failsafeConnectionSettings.Value.byteAlignment;
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FI.BI.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(pipelineDepth={pipelineDepth?.ToString() ?? "null"}, byteAlignment={byteAlignment?.ToString() ?? "null"}, initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"}, memoryAlignment={memoryAlignment?.ToString() ?? "null"})",
+                    resource: "File",
+                    category: "FileDownloader"
+                ));
+            }
+            
             _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
             var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
                 data: data,
@@ -154,6 +185,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task InstallAsync(
             byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
@@ -187,28 +220,42 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     StateChanged += FirmwareInstaller_StateChanged_;
                     FatalErrorOccurred += FirmwareInstaller_FatalErrorOccurred_;
 
-                    var failSafeSettingsToApply = GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                        triesCount_: triesCount,
-                        maxTriesCount_: maxTriesCount,
-                        suspiciousTransportFailuresCount_: suspiciousTransportFailuresCount,
-                        emitWarningAboutUnstableConnection_: !didWarnOnceAboutUnstableConnection
+                    var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
+                        uploadingNotDownloading: true,
+                        triesCount: triesCount,
+                        maxTriesCount: maxTriesCount,
+                        suspiciousTransportFailuresCount: suspiciousTransportFailuresCount
                     );
                     if (failSafeSettingsToApply != null)
                     {
-                        didWarnOnceAboutUnstableConnection = true;
                         byteAlignment = failSafeSettingsToApply.Value.byteAlignment;
                         pipelineDepth = failSafeSettingsToApply.Value.pipelineDepth;
                         initialMtuSize = failSafeSettingsToApply.Value.initialMtuSize;
                         windowCapacity = failSafeSettingsToApply.Value.windowCapacity;
                         memoryAlignment = failSafeSettingsToApply.Value.memoryAlignment;
+
+                        if (!didWarnOnceAboutUnstableConnection)
+                        {
+                            didWarnOnceAboutUnstableConnection = true;
+                            OnLogEmitted(new LogEmittedEventArgs(
+                                level: ELogLevel.Warning,
+                                message: $"[FI.IA.010] Attempt#{triesCount}: Connection is too unstable for uploading the firmware to the target device. Subsequent tries will use failsafe parameters on the connection " +
+                                         $"just in case it helps (byteAlignment={byteAlignment}, pipelineDepth={pipelineDepth}, initialMtuSize={initialMtuSize}, windowCapacity={windowCapacity}, memoryAlignment={memoryAlignment})",
+                                resource: "Firmware",
+                                category: "FirmwareInstaller"
+                            ));    
+                        }
                     }
 
                     var verdict = BeginInstallation( //00 dont use task.run here for now
                         data: data,
+                        hostDeviceModel: hostDeviceModel,
+                        hostDeviceManufacturer: hostDeviceManufacturer,
+
                         mode: mode,
                         eraseSettings: eraseSettings,
                         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
-
+                        
                         pipelineDepth: pipelineDepth, //      ios only
                         byteAlignment: byteAlignment, //      ios only
 
@@ -338,39 +385,6 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
                     taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException($"{ea.ErrorMessage} (state={ea.State})")); //generic errors fall through here
                 }
-            }
-
-            return;
-
-            (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable_(
-                int triesCount_,
-                int maxTriesCount_,
-                int suspiciousTransportFailuresCount_,
-                bool emitWarningAboutUnstableConnection_
-            )
-            {
-                var isConnectionTooUnstableForUploading_ = triesCount_ >= 2 && (triesCount_ == maxTriesCount_ || triesCount_ >= 3 && suspiciousTransportFailuresCount_ >= 2);
-                if (!isConnectionTooUnstableForUploading_)
-                    return null;
-
-                var byteAlignment_ = AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment; //        ios + maccatalyst
-                var pipelineDepth_ = AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth; //        ios + maccatalyst
-                var initialMtuSize_ = AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize; //    android    when noticing persistent failures when uploading we resort
-                var windowCapacity_ = AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity; //    android    to forcing the most failsafe settings we know of just in case
-                var memoryAlignment_ = AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.MemoryAlignment; //  android    we manage to salvage this situation (works with SamsungA8 android tablets)
-
-                if (emitWarningAboutUnstableConnection_)
-                {
-                    OnLogEmitted(new LogEmittedEventArgs(
-                        level: ELogLevel.Warning,
-                        message: $"[FI.IA.GFCSICPTBU.010] Attempt#{triesCount_}: Connection is too unstable for uploading the firmware to the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                 $"just in case it helps (byteAlignment={byteAlignment_}, pipelineDepth={pipelineDepth_}, initialMtuSize={initialMtuSize_}, windowCapacity={windowCapacity_}, memoryAlignment={memoryAlignment_})",
-                        resource: "Firmware",
-                        category: "FirmwareInstaller"
-                    ));
-                }
-
-                return (byteAlignment: byteAlignment_, pipelineDepth: pipelineDepth_, initialMtuSize: initialMtuSize_, windowCapacity: windowCapacity_, memoryAlignment: memoryAlignment_);
             }
             
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the

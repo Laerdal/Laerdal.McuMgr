@@ -16,6 +16,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// and <see cref="AppleTidbits.BleConnectionFailsafeSettings.ForUploading"/> will be enforced to try to upload the firmware.
         /// </remarks>
         /// <param name="data">The firmware bytes. If zipped then the archive must contain the .bin file and not a directory.</param>
+        /// <param name="hostDeviceModel">The model of the host-device.</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="mode">The firmware upgrade mode. Best to leave this to the default value 'TestAndConfirm'.</param>
         /// <param name="eraseSettings">Specifies whether preexisting settings should be erased or not.</param>
         /// <param name="estimatedSwapTimeInMilliseconds">In rF52840, due to how the flash memory works, requires ~20 sec to erase images.
@@ -42,6 +44,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         Task InstallAsync(
             byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
@@ -60,6 +64,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// Begins the firmware upgrade process. To really know when the upgrade process has been completed you have to employ the progressPercentage methods.
         /// </summary>
         /// <param name="data">The firmware bytes. If zipped then the archive must contain the .bin file and not a directory.</param>
+        /// <param name="hostDeviceModel">The model of the host-device.</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device.</param>
         /// <param name="mode">The firmware upgrade mode. Best to leave this to the default value 'TestAndConfirm'.</param>
         /// <param name="eraseSettings">Specifies whether preexisting settings should be erased or not.</param>
         /// <param name="estimatedSwapTimeInMilliseconds">In rF52840, due to how the flash memory works, requires ~20 sec to erase images.
@@ -82,6 +88,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
         EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,

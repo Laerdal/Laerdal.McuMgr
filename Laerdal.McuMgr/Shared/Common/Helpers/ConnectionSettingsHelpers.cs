@@ -37,8 +37,8 @@ namespace Laerdal.McuMgr.Common.Helpers
         
         static public (int? byteAlignment, int? pipelineDepth, int? initialMtuSize, int? windowCapacity, int? memoryAlignment)? GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
             bool uploadingNotDownloading,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int? initialMtuSize = null,
@@ -50,17 +50,17 @@ namespace Laerdal.McuMgr.Common.Helpers
             hostDeviceManufacturer = (hostDeviceManufacturer ?? "").Trim().ToLowerInvariant();
 
             var isUsingDefaultAppleSettings = pipelineDepth == null && byteAlignment == null; 
-            if (isUsingDefaultAppleSettings && AppleTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
+            if (isUsingDefaultAppleSettings && AppleTidbits.KnownProblematicDevices.Contains((DeviceModel: hostDeviceModel, Manufacturer: hostDeviceManufacturer)))
             {
                 return uploadingNotDownloading
-                    ? (
+                    ? ( //uploading
                         byteAlignment: AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment,
                         pipelineDepth: AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth,
                         initialMtuSize: null, //only applies to android
                         windowCapacity: null, //only applies to android
                         memoryAlignment: null //only applies to android
                     )
-                    : (
+                    : ( //downloading
                         byteAlignment: null, //placeholder value   currently there are no known apple devices that have issues with BLE connection stability
                         pipelineDepth: null, //placeholder value   currently there are no known apple devices that have issues with BLE connection stability
                         initialMtuSize: null, //only applies to android
@@ -70,17 +70,17 @@ namespace Laerdal.McuMgr.Common.Helpers
             }
 
             var isUsingDefaultAndroidSettings = initialMtuSize == null && windowCapacity == null && memoryAlignment == null;
-            if (isUsingDefaultAndroidSettings && AndroidTidbits.KnownProblematicDevices.Contains((hostDeviceManufacturer, hostDeviceModel)))
+            if (isUsingDefaultAndroidSettings && AndroidTidbits.KnownProblematicDevices.Contains((DeviceModel: hostDeviceModel, Manufacturer: hostDeviceManufacturer)))
             {
                 return uploadingNotDownloading
-                    ? (
+                    ? ( //uploading
                         byteAlignment: null, //only applies to apple
                         pipelineDepth: null, //only applies to apple
                         initialMtuSize: AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize,
                         windowCapacity: AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity,
                         memoryAlignment: AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.MemoryAlignment
                     )
-                    : (
+                    : ( //downloading
                         byteAlignment: null, //only applies to apple
                         pipelineDepth: null, //only applies to apple
                         initialMtuSize: AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize,

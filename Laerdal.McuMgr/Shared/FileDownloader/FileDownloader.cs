@@ -42,8 +42,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public EFileDownloaderVerdict BeginDownload(
             string remoteFilePath,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int? initialMtuSize = null,
             int? windowCapacity = null //not applicable currently   but nordic considers these for future use
         )
@@ -163,8 +163,8 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public async Task<IDictionary<string, byte[]>> DownloadAsync(
             IEnumerable<string> remoteFilePaths,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int timeoutPerDownloadInMs = -1,
             int maxRetriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
@@ -216,8 +216,8 @@ namespace Laerdal.McuMgr.FileDownloader
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task<byte[]> DownloadAsync(
             string remoteFilePath,
-            string hostDeviceManufacturer,
             string hostDeviceModel,
+            string hostDeviceManufacturer,
             int timeoutForDownloadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,

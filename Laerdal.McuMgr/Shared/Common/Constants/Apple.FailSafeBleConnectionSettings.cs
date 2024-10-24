@@ -9,11 +9,11 @@ namespace Laerdal.McuMgr.Common.Constants
         // ReSharper disable once CollectionNeverUpdated.Global
         /// <summary>List of known problematic android-devices that have issues with BLE connection stability and have to use fail-safe ble settings to work.</summary><br/><br/>
         /// Inspired by <a href="https://github.com/polarofficial/polar-ble-sdk/blob/master/sources/Android/android-communications/library/src/main/java/com/polar/androidcommunications/common/ble/PhoneUtils.kt"/>
-        static public HashSet<(string Manufacturer, string DeviceModel)> KnownProblematicDevices { get; } = new (string Manufacturer, string DeviceModel)[]
+        static public HashSet<(string DeviceModel, string Manufacturer)> KnownProblematicDevices { get; } = new (string DeviceModel, string Manufacturer)[]
             {
-                // ("Apple", "XYZ"), // just a placeholder - no apple devices are known to have issues with BLE connection stability at the time of this writing
+                // ("iPhone6", "Apple"), // just a placeholder - no apple devices are known to have issues with BLE connection stability at the time of this writing
             }
-            .Select(x => (x.Manufacturer.Trim().ToLowerInvariant(), x.DeviceModel.Trim().ToLowerInvariant()))
+            .Select(x => (DeviceModel: x.DeviceModel.Trim().ToLowerInvariant(), Manufacturer: x.Manufacturer.Trim().ToLowerInvariant()))
             .ToHashSet();
         
         /// <summary>

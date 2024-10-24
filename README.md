@@ -39,7 +39,8 @@ Read the LICENSE file before you begin.
 
 The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|Android|NetStandard' (note: NetStandard is still WIP).
 The goal is to have 'Laerdal.McuMgr' provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for
-iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/):
+iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/) **as long as they run on
+firmware that has been built using 'nRFConnect SDK' or the 'Zephyr SDK'** (devices running on firmware built with the 'nRF5 SDK' however are inherently incompatible!):
 
 - [IOS-nRF-Connect-Device-Manager](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)
 
@@ -50,7 +51,8 @@ From the respective 'Readme' files of these projects:
 << nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview), a management subsystem
 supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.
 
-**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
+**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, 
+NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
 
 McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests from compatible devices.
 The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
@@ -66,6 +68,10 @@ The following types of operations are supported on devices running on Nordic's n
 - Uploading one or more files over to the device
 
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
+
+      Note: In theaory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the custom firmware being installed in the sense
+      that if the firmware uses more than half of the flash-bank-memory then only a single flask-bank will be available (no backup flash bank). Same if the firmware-devs explicitly
+      disable the 'dual flask-bank' feature programmatically!
 
 
 ## ✅ Nuget Platform-Support Matrix
