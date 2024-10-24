@@ -69,6 +69,10 @@ The following types of operations are supported on devices running on Nordic's n
 
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
+      Note: In theaory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the custom firmware being installed in the sense
+      that if the firmware uses more than half of the flash-bank-memory then only a single flask-bank will be available (no backup flash bank). Same if the firmware-devs explicitly
+      disable the 'dual flask-bank' feature programmatically!
+
 
 ## ✅ Nuget Platform-Support Matrix
 
