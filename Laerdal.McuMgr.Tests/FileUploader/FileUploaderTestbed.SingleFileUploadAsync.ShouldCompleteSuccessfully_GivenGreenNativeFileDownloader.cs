@@ -123,7 +123,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     if (_tryCount < _maxNumberOfTriesForSuccess)
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Corrupt, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Corrupt, EFileOperationGroupErrorCode.Unset);
                         return;
                     }
                     

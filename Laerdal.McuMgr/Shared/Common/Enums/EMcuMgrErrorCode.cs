@@ -1,6 +1,7 @@
 namespace Laerdal.McuMgr.Common.Enums
 {
-    public enum EMcuMgrErrorCode // must mirror io.runtime.mcumgr.McuMgrErrorCode  @formatter:off
+    // must mirror  mcumgr-core/src/main/java/io/runtime/mcumgr/exception/McuMgrErrorException.java
+    public enum EMcuMgrErrorCode // @formatter:off
     {
         Unset                 = -99, //this is our own to mark that we haven't received any error code from the device
         Generic               =  -1, //in case the underlying native code receives an exception other than io.runtime.mcumgr.exception.McuMgrErrorException

@@ -152,16 +152,16 @@ namespace Laerdal.McuMgr.FileUploader
             {
                 base.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileUploaderGroupReturnCode); //just in case
 
-                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileOperationGroupReturnCode) fileUploaderGroupReturnCode);
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileOperationGroupErrorCode) fileUploaderGroupReturnCode);
             }
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileUploaderGroupReturnCode)
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileUploaderGroupErrorCode)
             {
                 _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
                     resource,
                     errorMessage,
                     mcuMgrErrorCode,
-                    fileUploaderGroupReturnCode
+                    fileUploaderGroupErrorCode
                 );
             }
             

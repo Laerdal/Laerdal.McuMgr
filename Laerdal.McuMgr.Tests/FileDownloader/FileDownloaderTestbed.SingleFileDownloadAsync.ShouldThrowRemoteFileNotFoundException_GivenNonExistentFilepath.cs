@@ -105,8 +105,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //                                               order    simulates how the native code behaves
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.NoEntry, EFileOperationGroupReturnCode.Unset); //    order    simulates how the csharp wrapper behaves
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //                                            order    simulates how the native code behaves
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.NotFound); //    order    simulates how the csharp wrapper behaves
                 });
 
                 return verdict;

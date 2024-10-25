@@ -103,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Unknown, EFileOperationGroupErrorCode.Unset);
                 });
 
                 return verdict;

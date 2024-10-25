@@ -23,6 +23,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 { "/some/file/that/doesnt/exist.bin", null },
                 { "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin", [3] },
                 { "/some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin", null },
+                { "/some/file/path/pointing/to/a/Directory", null },
+                { "/some/file/path/pointing/to/a/directory", null },
             };
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy6(new GenericNativeFileDownloaderCallbacksProxy_(), expectedResults);
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
@@ -42,6 +44,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 "/some/file/that/exist/and/completes/after/a/couple/of/attempts.bin", //intentionally included multiple times to test whether the mechanism will attempt to download the file only once
                 "/some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin",
                 "/some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin", //intentionally included multiple times to test whether the mechanism will attempt to download the file only once
+                "some/file/path/pointing/to/a/Directory",
+                "/some/file/path/pointing/to/a/directory",
             };
 
             using var eventsMonitor = fileDownloader.Monitor();
@@ -56,7 +60,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             ));
 
             // Assert
-            var results = (await work.Should().CompleteWithinAsync(5.Seconds())).Which;
+            var results = (await work.Should().CompleteWithinAsync(20.Seconds())).Which;
 
             results.Should().BeEquivalentTo(expectedResults);
 
@@ -68,7 +72,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileDownloader.FatalErrorOccurred))
                 .Should()
-                .Be(8);
+                .Be(10);
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -105,18 +109,23 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EMcuMgrErrorCode.Unknown, EFileOperationGroupErrorCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "NO ENTRY (5)", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "IN VALUE (3)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.NotFound);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Unknown, EFileOperationGroupErrorCode.Unset);
+                    }
+                    else if (remoteFilePathUppercase.Contains("some/file/path/pointing/to/a/directory".ToUpperInvariant()))
+                    {
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "BLAH BLAH (4)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.IsDirectory);
                     }
                     else
                     {

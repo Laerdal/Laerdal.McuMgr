@@ -1,6 +1,8 @@
-namespace Laerdal.McuMgr.FileUploader.Contracts.Enums
+namespace Laerdal.McuMgr.Common.Enums
 {
-    public enum EFileOperationGroupReturnCode //@formatter:off
+    // values greater than zero must mirror the ones found in
+    // mcumgr-core/src/main/java/io/runtime/mcumgr/managers/FsManager.java -> enum ReturnCode
+    public enum EFileOperationGroupErrorCode //@formatter:off
     {
         Unset                  = -99,
         Ok                     = 00,

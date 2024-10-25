@@ -12,14 +12,14 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
         public string Resource { get; }
         public string ErrorMessage { get; }
         public EMcuMgrErrorCode McuMgrErrorCode { get; }
-        public EFileOperationGroupReturnCode FileOperationGroupReturnCode { get; }
+        public EFileOperationGroupErrorCode FileOperationGroupErrorCode { get; }
 
-        public FatalErrorOccurredEventArgs(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode)
+        public FatalErrorOccurredEventArgs(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileOperationGroupErrorCode)
         {
             Resource = resource;
             ErrorMessage = errorMessage;
             McuMgrErrorCode = mcuMgrErrorCode;
-            FileOperationGroupReturnCode = fileOperationGroupReturnCode;
+            FileOperationGroupErrorCode = fileOperationGroupErrorCode;
         }
     }
 }

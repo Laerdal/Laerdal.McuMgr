@@ -9,14 +9,14 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
         public string RemoteFilePath { get; }
         
         public EMcuMgrErrorCode McuMgrErrorCode { get; }
-        public EFileOperationGroupReturnCode GroupReturnCode { get; }
+        public EFileOperationGroupErrorCode FileOperationGroupErrorCode { get; }
 
-        public UploadUnauthorizedException(string nativeErrorMessage, string remoteFilePath, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode groupReturnCode)
-            : base(remoteFilePath, $"{nativeErrorMessage} (McuMgrErrorCode={mcuMgrErrorCode}, GroupReturnCode={groupReturnCode})")
+        public UploadUnauthorizedException(string nativeErrorMessage, string remoteFilePath, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileOperationGroupErrorCode)
+            : base(remoteFilePath, $"{nativeErrorMessage} (McuMgrErrorCode={mcuMgrErrorCode}, GroupReturnCode={fileOperationGroupErrorCode})")
         {
             RemoteFilePath = remoteFilePath;
             McuMgrErrorCode = mcuMgrErrorCode;
-            GroupReturnCode = groupReturnCode;
+            FileOperationGroupErrorCode = fileOperationGroupErrorCode;
         }
     }
 }

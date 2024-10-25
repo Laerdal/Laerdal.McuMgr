@@ -116,18 +116,18 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "UNKNOWN (1)", EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "UNKNOWN (1)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.Unknown);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah", EMcuMgrErrorCode.Generic, EFileOperationGroupReturnCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah", EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset);
                     }
                     else
                     {

@@ -5,7 +5,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
-import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.FileUploader;
@@ -391,22 +390,17 @@ public class AndroidFileUploader
     }
 
     //@Contract(pure = true) //dont
-    private void onError(final String errorMessage, final Exception exception)
+    public void onError(final String errorMessage, final Exception exception)
     {
-        setState(EAndroidFileUploaderState.ERROR); //keep first
+        setState(EAndroidFileUploaderState.ERROR);
 
-        if (!(exception instanceof McuMgrErrorException))
-        {
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, -1, -1); // -1 values get mapped to the 'generic' error code
-            return;
-        }
+        McuMgrExceptionHelpers.ErrorCodes result = McuMgrExceptionHelpers.DeduceErrorCodesFromException(exception);
 
-        McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         fatalErrorOccurredAdvertisement(
                 _remoteFilePathSanitized,
                 errorMessage,
-                mcuMgrErrorException.getCode().value(),
-                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
+                result.errorCode,
+                result.errorGroupCode
         );
     }
 

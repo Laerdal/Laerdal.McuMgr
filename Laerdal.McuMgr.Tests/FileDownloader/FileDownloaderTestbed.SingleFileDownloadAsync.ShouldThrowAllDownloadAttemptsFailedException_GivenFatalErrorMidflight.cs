@@ -92,7 +92,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(2_000);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.BadState, EFileOperationGroupReturnCode.Unset);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.BadState, EFileOperationGroupErrorCode.Unset);
                 });
 
                 return verdict;

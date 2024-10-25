@@ -64,7 +64,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
                 => _downloaderCallbacksProxy.DownloadCompletedAdvertisement(resource, data); //raises the actual event
             
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode) 
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileOperationGroupReturnCode) 
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode); //raises the actual event
             
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)

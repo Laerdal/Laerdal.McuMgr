@@ -471,34 +471,41 @@ namespace Laerdal.McuMgr.FileUploader
                     }
                 } // ReSharper restore AccessToModifiedClosure
 
-                void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object sender, FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
+                void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object _, FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea_)
                 {
                     fileUploadProgressEventsCount++;
                 }
 
-                void FileUploader_FatalErrorOccurred_(object sender, FatalErrorOccurredEventArgs ea)
+                void FileUploader_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
                 {
-                    taskCompletionSource.TrySetException(ea.ErrorCode switch
+                    if (ea_.ErrorCode == EMcuMgrErrorCode.AccessDenied)
                     {
-                        EMcuMgrErrorCode.Unknown => new UploadErroredOutRemoteFolderNotFoundException( //specific case
+                        taskCompletionSource.TrySetException(new UploadUnauthorizedException(
                             remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea.ErrorCode,
-                            groupReturnCode: ea.GroupReturnCode,
-                            nativeErrorMessage: ea.ErrorMessage
-                        ),
-                        EMcuMgrErrorCode.AccessDenied => new UploadUnauthorizedException( //specific case
+                            mcuMgrErrorCode: ea_.ErrorCode,
+                            nativeErrorMessage: ea_.ErrorMessage,
+                            fileOperationGroupErrorCode: ea_.FileOperationGroupErrorCode
+                        ));
+                        return;
+                    }
+
+                    if (ea_.FileOperationGroupErrorCode == EFileOperationGroupErrorCode.Unknown)
+                    {
+                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(
                             remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea.ErrorCode,
-                            groupReturnCode: ea.GroupReturnCode,
-                            nativeErrorMessage: ea.ErrorMessage
-                        ),
-                        _ => new UploadErroredOutException( //generic
-                            remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea.ErrorCode,
-                            groupReturnCode: ea.GroupReturnCode,
-                            nativeErrorMessage: ea.ErrorMessage
-                        )
-                    });
+                            mcuMgrErrorCode: ea_.ErrorCode,
+                            nativeErrorMessage: ea_.ErrorMessage,
+                            fileOperationGroupErrorCode: ea_.FileOperationGroupErrorCode
+                        ));
+                        return;
+                    }
+
+                    taskCompletionSource.TrySetException(new UploadErroredOutException(
+                        remoteFilePath: remoteFilePath,
+                        mcuMgrErrorCode: ea_.ErrorCode,
+                        nativeErrorMessage: ea_.ErrorMessage,
+                        fileOperationGroupErrorCode: ea_.FileOperationGroupErrorCode
+                    ));
                 }
             }
             
@@ -588,12 +595,12 @@ namespace Laerdal.McuMgr.FileUploader
                 string resource,
                 string errorMessage,
                 EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileOperationGroupReturnCode fileUploaderGroupReturnCode
+                EFileOperationGroupErrorCode fileUploaderGroupErrorCode
             ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
                 resource,
                 errorMessage,
                 mcuMgrErrorCode,
-                fileUploaderGroupReturnCode
+                fileUploaderGroupErrorCode
             ));
 
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(

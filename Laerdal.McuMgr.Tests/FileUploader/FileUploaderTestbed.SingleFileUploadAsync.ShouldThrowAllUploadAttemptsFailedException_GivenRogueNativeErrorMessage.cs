@@ -116,7 +116,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                                 order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Corrupt, EFileOperationGroupReturnCode.Unset); // order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Corrupt, EFileOperationGroupErrorCode.Unset); // order
                 });
 
                 return verdict;

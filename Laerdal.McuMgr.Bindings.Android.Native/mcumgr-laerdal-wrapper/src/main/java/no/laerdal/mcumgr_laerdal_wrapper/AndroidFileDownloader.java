@@ -5,7 +5,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
-import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.DownloadCallback;
@@ -370,18 +369,13 @@ public class AndroidFileDownloader
     {
         setState(EAndroidFileDownloaderState.ERROR);
 
-        if (!(exception instanceof McuMgrErrorException))
-        {
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, -1, -1);
-            return;
-        }
+        McuMgrExceptionHelpers.ErrorCodes result = McuMgrExceptionHelpers.DeduceErrorCodesFromException(exception);
 
-        McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         fatalErrorOccurredAdvertisement(
                 _remoteFilePathSanitized,
                 errorMessage,
-                mcuMgrErrorException.getCode().value(),
-                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
+                result.errorCode,
+                result.errorGroupCode
         );
     }
 
@@ -407,7 +401,7 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    @Contract(pure = true) //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
+    @Contract(pure = true) //wrapper utility method so that we will not have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
     public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
     {
         stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState);
@@ -431,7 +425,7 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    @Contract(pure = true) //wrapper utility method so that we wont have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
+    @Contract(pure = true) //wrapper utility method so that we will not have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
     private void logMessageAdvertisement(final String message, final String category, final String level)
     {
         logMessageAdvertisement(message, category, level, _remoteFilePathSanitized);

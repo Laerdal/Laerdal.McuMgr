@@ -13,14 +13,14 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Events
         public string RemoteFilePath { get; }
 
         public EMcuMgrErrorCode ErrorCode { get; }
-        public EFileOperationGroupReturnCode GroupReturnCode { get; }
+        public EFileOperationGroupErrorCode FileOperationGroupErrorCode { get; }
 
-        public FatalErrorOccurredEventArgs(string remoteFilePath, string errorMessage, EMcuMgrErrorCode errorCode, EFileOperationGroupReturnCode groupReturnCode)
+        public FatalErrorOccurredEventArgs(string remoteFilePath, string errorMessage, EMcuMgrErrorCode errorCode, EFileOperationGroupErrorCode fileOperationGroupErrorCode)
         {
             ErrorCode = errorCode;
             ErrorMessage = errorMessage;
             RemoteFilePath = remoteFilePath;
-            GroupReturnCode = groupReturnCode;
+            FileOperationGroupErrorCode = fileOperationGroupErrorCode;
         }
     }
 }

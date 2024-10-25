@@ -305,7 +305,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 catch (DownloadErroredOutException ex)
                 {
-                    if (ex is DownloadErroredOutRemoteFileNotFoundException) //order   no point to retry if the remote file is not there
+                    if (ex is DownloadErroredOutRemoteFileNotFoundException or DownloadErroredOutRemotePathPointsToDirectoryException) //order   no point to retry if the filepath is problematic
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
                         throw;
@@ -408,27 +408,25 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void FileDownloader_FatalErrorOccurred_(object sender_, FatalErrorOccurredEventArgs ea_)
                 {
-                    var isAboutUnauthorized = ea_.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)", StringComparison.InvariantCultureIgnoreCase) ?? false;
-                    if (isAboutUnauthorized)
+                    if (ea_ is { McuMgrErrorCode: EMcuMgrErrorCode.AccessDenied }) // unauthorized
                     {
-                        taskCompletionSource.TrySetException(new UnauthorizedException(
-                            resource: remoteFilePath,
-                            nativeErrorMessage: ea_.ErrorMessage
-                        ));
+                        taskCompletionSource.TrySetException(new UnauthorizedException(resource: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage));
                         return;
                     }
                     
-                    var isAboutRemoteFileNotFound = ea_.ErrorMessage
-                        ?.ToUpperInvariant()
-                        .Replace("NO_ENTRY (5)", "NO ENTRY (5)") //normalize the error for android so that it will be the same as in ios
-                        .Contains("NO ENTRY (5)") ?? false;
-                    if (isAboutRemoteFileNotFound)
+                    if (ea_ is { FileOperationGroupErrorCode: EFileOperationGroupErrorCode.NotFound}) // remote file not found
                     {
-                        taskCompletionSource.TrySetException(new DownloadErroredOutRemoteFileNotFoundException(remoteFilePath)); //specific case
+                        taskCompletionSource.TrySetException(new DownloadErroredOutRemoteFileNotFoundException(remoteFilePath));
                         return;
                     }
-
-                    taskCompletionSource.TrySetException(new DownloadErroredOutException(ea_.ErrorMessage)); //generic
+                    
+                    if (ea_ is { FileOperationGroupErrorCode: EFileOperationGroupErrorCode.IsDirectory}) // remote filepath points to a directory
+                    {
+                        taskCompletionSource.TrySetException(new DownloadErroredOutRemotePathPointsToDirectoryException(remoteFilePath));
+                        return;
+                    }
+                    
+                    taskCompletionSource.TrySetException(new DownloadErroredOutException(remoteFilePath));
                 }
             }
 
@@ -496,8 +494,8 @@ namespace Laerdal.McuMgr.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
                 => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode)
-                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode));
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileOperationGroupErrorCode)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupErrorCode));
 
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
