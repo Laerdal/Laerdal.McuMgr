@@ -18,7 +18,7 @@ public class IOSDeviceResetter: NSObject {
 
     @objc
     public func beginReset() {
-        setState(EIOSDeviceResetterState.resetting)
+        setState(.resetting)
 
         _manager = DefaultManager(transport: _transporter)
         _manager.logDelegate = self
@@ -29,18 +29,18 @@ public class IOSDeviceResetter: NSObject {
             if (error != nil) {
                 self.fatalErrorOccurredAdvertisement("Reset failed: '\(error?.localizedDescription ?? "<unexpected error occurred>")'")
 
-                self.setState(EIOSDeviceResetterState.failed)
+                self.setState(.failed)
                 return
             }
 
             if (response?.getError() != nil) { // check for an error return code
                 self.fatalErrorOccurredAdvertisement("Reset failed: '\(response?.getError()?.errorDescription ?? "N/A")'")
 
-                self.setState(EIOSDeviceResetterState.failed)
+                self.setState(.failed)
                 return
             }
 
-            self.setState(EIOSDeviceResetterState.complete)
+            self.setState(.complete)
         }
     }
 

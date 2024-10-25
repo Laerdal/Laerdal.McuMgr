@@ -62,26 +62,26 @@ public class IOSFileDownloader: NSObject {
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("Another download is already in progress")
 
-            return EIOSFileDownloadingInitializationVerdict.failedDownloadAlreadyInProgress
+            return .failedDownloadAlreadyInProgress
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
             onError("Target-file provided is dud!")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
             onError("Target-file points to a directory instead of a file")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
             onError("Target-path is not absolute!")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         resetUploadState() //order
@@ -93,10 +93,10 @@ public class IOSFileDownloader: NSObject {
         if !success {
             onError("Failed to commence file-Downloading (check logs for details)")
 
-            return EIOSFileDownloadingInitializationVerdict.failedErrorUponCommencing
+            return .failedErrorUponCommencing
         }
 
-        return EIOSFileDownloadingInitializationVerdict.success
+        return .success
     }
 
     @objc
@@ -131,21 +131,21 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func isIdleOrCold() -> Bool {
-        return _currentState == EIOSFileDownloaderState.idle || isCold();
+        return _currentState == .idle || isCold();
     }
 
     private func isCold() -> Bool {
-        return _currentState == EIOSFileDownloaderState.none
-                || _currentState == EIOSFileDownloaderState.error
-                || _currentState == EIOSFileDownloaderState.complete
-                || _currentState == EIOSFileDownloaderState.cancelled
+        return _currentState == .none
+                || _currentState == .error
+                || _currentState == .complete
+                || _currentState == .cancelled
     }
 
     private func resetUploadState() {
         _lastBytesSend = -1
         _lastBytesSendTimestamp = nil
 
-        setState(EIOSFileDownloaderState.idle)
+        setState(.idle)
         busyStateChangedAdvertisement(true)
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
     }
@@ -181,7 +181,7 @@ public class IOSFileDownloader: NSObject {
 
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
-        setState(EIOSFileDownloaderState.error) //keep first
+        setState(.error) //keep first
 
         _lastFatalErrorMessage = errorMessage
 
@@ -275,7 +275,7 @@ public class IOSFileDownloader: NSObject {
 
         stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == EIOSFileDownloaderState.downloading && newState == EIOSFileDownloaderState.complete) //00
+        if (oldState == .downloading && newState == .complete) //00
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
@@ -286,7 +286,7 @@ public class IOSFileDownloader: NSObject {
 
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(EIOSFileDownloaderState.downloading)
+        setState(.downloading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let DownloadProgressPercentage = (bytesSent * 100) / fileSize
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, throughputKilobytesPerSecond)
@@ -299,14 +299,14 @@ extension IOSFileDownloader: FileDownloadDelegate {
     }
 
     public func downloadDidCancel() {
-        setState(EIOSFileDownloaderState.cancelled)
+        setState(.cancelled)
         busyStateChangedAdvertisement(false)
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 
     public func download(of name: String, didFinish data: Data) {
-        setState(EIOSFileDownloaderState.complete)
+        setState(.complete)
         downloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
         busyStateChangedAdvertisement(false)
     }

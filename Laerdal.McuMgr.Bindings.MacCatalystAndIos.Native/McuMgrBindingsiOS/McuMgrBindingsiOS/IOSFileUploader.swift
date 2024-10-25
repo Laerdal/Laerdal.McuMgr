@@ -68,38 +68,38 @@ public class IOSFileUploader: NSObject {
         if !isCold() { //keep first   if another upload is already in progress we bail out
             onError("Another upload is already in progress")
 
-            return EIOSFileUploadingInitializationVerdict.failedOtherUploadAlreadyInProgress
+            return .failedOtherUploadAlreadyInProgress
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
             onError("Target-file provided is dud")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
             onError("Target-file points to a directory instead of a file")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
             onError("Target-path is not absolute!")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if data == nil { // data being nil is not ok    btw data.length==0 is perfectly ok because we might want to create empty files
             onError("The data provided are nil")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidData
+            return .failedInvalidData
         }
 
         if _cbPeripheral == nil {
             onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings;
+            return .failedInvalidSettings;
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
@@ -134,10 +134,10 @@ public class IOSFileUploader: NSObject {
         if !success {
             onError("Failed to commence file-uploading (check logs for details)")
 
-            return EIOSFileUploadingInitializationVerdict.failedErrorUponCommencing
+            return .failedErrorUponCommencing
         }
 
-        return EIOSFileUploadingInitializationVerdict.success
+        return .success
         
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
     }
@@ -199,7 +199,7 @@ public class IOSFileUploader: NSObject {
         _lastBytesSend = 0
         _lastBytesSendTimestamp = nil
 
-        setState(EIOSFileUploaderState.idle)
+        setState(.idle)
         busyStateChangedAdvertisement(true)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
     }
@@ -234,19 +234,19 @@ public class IOSFileUploader: NSObject {
     }
 
     private func isIdleOrCold() -> Bool {
-        return _currentState == EIOSFileUploaderState.idle || isCold();
+        return _currentState == .idle || isCold();
     }
 
     private func isCold() -> Bool {
-        return _currentState == EIOSFileUploaderState.none
-                || _currentState == EIOSFileUploaderState.error
-                || _currentState == EIOSFileUploaderState.complete
-                || _currentState == EIOSFileUploaderState.cancelled
+        return _currentState == .none
+                || _currentState == .error
+                || _currentState == .complete
+                || _currentState == .cancelled
     }
 
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
-        setState(EIOSFileUploaderState.error) //keep first
+        setState(.error) //keep first
 
         _lastFatalErrorMessage = errorMessage
 
@@ -346,7 +346,7 @@ public class IOSFileUploader: NSObject {
 
         stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == EIOSFileUploaderState.uploading && newState == EIOSFileUploaderState.complete) //00
+        if (oldState == .uploading && newState == .complete) //00
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
@@ -358,7 +358,7 @@ public class IOSFileUploader: NSObject {
 extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(EIOSFileUploaderState.uploading)
+        setState(.uploading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let uploadProgressPercentage = (bytesSent * 100) / fileSize
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond)
@@ -370,14 +370,14 @@ extension IOSFileUploader: FileUploadDelegate {
     }
 
     public func uploadDidCancel() {
-        setState(EIOSFileUploaderState.cancelled)
+        setState(.cancelled)
         busyStateChangedAdvertisement(false)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement(_cancellationReason)
     }
 
     public func uploadDidFinish() {
-        setState(EIOSFileUploaderState.complete)
+        setState(.complete)
         fileUploadedAdvertisement()
         busyStateChangedAdvertisement(false)
     }
