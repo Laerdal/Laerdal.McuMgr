@@ -116,7 +116,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "UNKNOWN (1)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.Unknown);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "FOOBAR (3)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.NotFound);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)

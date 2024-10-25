@@ -248,6 +248,12 @@ public class IOSFileUploader: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         setState(.error) //keep first
 
+        // todo  use this technique instead of string sniffing
+        // here mcuMgrError is of type McuMgrError which can be either case returnCode or case groupCode }
+        // if let mcuMgrError = error as? McuMgrError { //todo   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/198
+        //     mcuMgrError.
+        // }
+
         _lastFatalErrorMessage = errorMessage
 
         let (errorCode, _) = deduceErrorCode(errorMessage)

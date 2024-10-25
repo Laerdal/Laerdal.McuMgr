@@ -478,7 +478,7 @@ namespace Laerdal.McuMgr.FileUploader
 
                 void FileUploader_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
                 {
-                    if (ea_.ErrorCode == EMcuMgrErrorCode.AccessDenied)
+                    if (ea_.ErrorCode == EMcuMgrErrorCode.AccessDenied) //todo   ios is broken and needs to be fixed
                     {
                         taskCompletionSource.TrySetException(new UploadUnauthorizedException(
                             remoteFilePath: remoteFilePath,
@@ -489,7 +489,7 @@ namespace Laerdal.McuMgr.FileUploader
                         return;
                     }
 
-                    if (ea_.FileOperationGroupErrorCode == EFileOperationGroupErrorCode.Unknown)
+                    if (ea_.FileOperationGroupErrorCode == EFileOperationGroupErrorCode.NotFound)
                     {
                         taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(
                             remoteFilePath: remoteFilePath,

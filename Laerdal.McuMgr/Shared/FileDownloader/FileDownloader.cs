@@ -408,7 +408,7 @@ namespace Laerdal.McuMgr.FileDownloader
 
                 void FileDownloader_FatalErrorOccurred_(object sender_, FatalErrorOccurredEventArgs ea_)
                 {
-                    if (ea_ is { McuMgrErrorCode: EMcuMgrErrorCode.AccessDenied }) // unauthorized
+                    if (ea_ is { McuMgrErrorCode: EMcuMgrErrorCode.AccessDenied }) // unauthorized   todo   ios passes wrong values here and needs to be fixed
                     {
                         taskCompletionSource.TrySetException(new UnauthorizedException(resource: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage));
                         return;

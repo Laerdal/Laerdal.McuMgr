@@ -15,9 +15,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFUA.STRFNFE.GNEF.010", EFileOperationGroupErrorCode.Unknown, "UNKNOWN (1)", 1)] //android + ios
-        [InlineData("FDT.SFUA.STRFNFE.GNEF.020", EFileOperationGroupErrorCode.Unknown, "UNKNOWN (1)", 2)] //android + ios
-        [InlineData("FDT.SFUA.STRFNFE.GNEF.030", EFileOperationGroupErrorCode.Unknown, "UNKNOWN (1)", 3)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.010", EFileOperationGroupErrorCode.NotFound, "UNKNOWN (1)", 1)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.020", EFileOperationGroupErrorCode.NotFound, "UNKNOWN (1)", 2)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.030", EFileOperationGroupErrorCode.NotFound, "UNKNOWN (1)", 3)] //android + ios
         public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(
             string testcaseNickname,
             EFileOperationGroupErrorCode fileOperationGroupErrorCode,
