@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     {
                         BugDetected = $"[BUG DETECTED] The very first try should not be with {nameof(initialMtuSize)} set to the fail-safe value of {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize} right off the bat - something is wrong!";
                         StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                         return;
                     }
                     
@@ -141,7 +141,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     {
                         BugDetected = $"[BUG DETECTED] The very first try should not be with {nameof(windowCapacity)} set to the fail-safe value of {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity} right off the bat - something is wrong!";
                         StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                         return;
                     }
                     
@@ -149,7 +149,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     {
                         BugDetected = $"[BUG DETECTED] The very first try should not be with {nameof(memoryAlignment)} set to the fail-safe value of {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.MemoryAlignment} right off the bat - something is wrong!";
                         StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                         return;
                     }
                     
@@ -157,7 +157,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     {
                         BugDetected = $"[BUG DETECTED] The very first try should not be with {nameof(pipelineDepth)} set to the fail-safe value of {AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth} right off the bat - something is wrong!";
                         StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                         return;
                     }
                     
@@ -165,7 +165,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     {
                         BugDetected = $"[BUG DETECTED] The very first try should not be with {nameof(byteAlignment)} set to the fail-safe value of {AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment} right off the bat - something is wrong!";
                         StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                        FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                         return;
                     }
 
@@ -186,7 +186,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         {
                             BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
                             StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                             return;
                         }
 
@@ -194,7 +194,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         {
                             BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity} but it's set to {windowCapacity?.ToString() ?? "(null)"} instead - something is wrong!";
                             StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                             return;
                         }
                         
@@ -202,7 +202,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         {
                             BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.MemoryAlignment} but it's set to {memoryAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
                             StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                             return;
                         }
                         
@@ -210,7 +210,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         {
                             BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(pipelineDepth)} set to {AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth} but it's set to {pipelineDepth?.ToString() ?? "(null)"} instead - something is wrong!";
                             StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                             return;
                         }
                         
@@ -218,14 +218,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                         {
                             BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(byteAlignment)} set to {AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment} but it's set to {byteAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
                             StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected);
+                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                             return;
                         }
                         
                         if (_tryCounter < _maxTriesCount)
                         {
                             StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Error);
-                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, "error while uploading firmware blah blah"); //  order
+                            FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, "error while uploading firmware blah blah", EGlobalErrorCode.Generic); //  order
                             return;
                         }
 

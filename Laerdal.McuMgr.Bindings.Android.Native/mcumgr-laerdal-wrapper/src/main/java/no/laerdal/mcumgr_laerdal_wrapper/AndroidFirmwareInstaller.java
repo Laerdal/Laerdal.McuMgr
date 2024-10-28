@@ -114,7 +114,7 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage());
+                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage(), ex);
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }
@@ -135,7 +135,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage());
+            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage(), ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -148,7 +148,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage());
+            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage(), ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
         }
@@ -244,19 +244,23 @@ public class AndroidFirmwareInstaller
         return _lastFatalErrorMessage;
     }
 
-    public void emitFatalError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    public void onError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, Exception ex)
     {
-        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00
-
-        setState(EAndroidFirmwareInstallationState.ERROR); //                                    order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage); //  order
+        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
+        setState(EAndroidFirmwareInstallationState.ERROR); //                         order
+        fatalErrorOccurredAdvertisement( //                                           order
+                currentStateSnapshot,
+                fatalErrorType,
+                errorMessage,
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
+        );
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
-    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    //this method is meant to be overridden by csharp binding libraries to intercept updates
+    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final int globalErrorCode)
     {
-        //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
     }
 
@@ -396,7 +400,7 @@ public class AndroidFirmwareInstaller
                 fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
             }
 
-            emitFatalError(fatalErrorType, ex.getMessage());
+            onError(fatalErrorType, ex.getMessage(), ex);
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
             busyStateChangedAdvertisement(false);

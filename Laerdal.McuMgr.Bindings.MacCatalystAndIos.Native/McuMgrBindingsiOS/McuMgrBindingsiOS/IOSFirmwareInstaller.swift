@@ -181,20 +181,24 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter?.close()
     }
 
-    private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {
-        let currentStateSnapshot = _currentState //00
-
-        setState(.error) //                                                                      order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage) //   order
+    private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ error: Error? = nil) {
+        let currentStateSnapshot = _currentState //00  order
+        setState(.error) //                            order
+        fatalErrorOccurredAdvertisement( //            order
+            currentStateSnapshot,
+            fatalErrorType,
+            errorMessage,
+            McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+        )
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
     //@objc   dont
 
-    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ globalErrorCode: Int) {
         _lastFatalErrorMessage = errorMessage
-        _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage)
+        _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage, globalErrorCode)
     }
 
     //@objc   dont
@@ -301,12 +305,6 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        logMessageAdvertisement(
-                "** upgradeDidFail: state=\(state), error-message=\(error.localizedDescription), error-type=\(type(of: error))",
-                "firmware-installer",
-                iOSMcuManagerLibrary.McuMgrLogLevel.debug.name
-        )
-
         var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
         if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
             fatalErrorType = .firmwareUploadingErroredOut
@@ -315,7 +313,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             fatalErrorType = .firmwareImageSwapTimeout
         }
 
-        emitFatalError(fatalErrorType, error.localizedDescription)
+        emitFatalError(fatalErrorType, error.localizedDescription, error)
         busyStateChangedAdvertisement(false)
     }
 

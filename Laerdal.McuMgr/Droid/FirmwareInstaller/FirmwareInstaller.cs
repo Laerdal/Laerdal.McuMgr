@@ -131,23 +131,25 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             
             #region callbacks -> events
 
-            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage);
+                base.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage, globalErrorCode);
 
                 FatalErrorOccurredAdvertisement(
                     state: TranslateEAndroidFirmwareInstallationState(state),
                     errorMessage: errorMessage,
-                    fatalErrorType: TranslateEAndroidFirmwareInstallerFatalErrorType(fatalErrorType)
+                    fatalErrorType: TranslateEAndroidFirmwareInstallerFatalErrorType(fatalErrorType),
+                    globalErrorCode: (EGlobalErrorCode) globalErrorCode
                 );
             }
 
-            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage) //just to conform to the interface
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode) //just to conform to the interface
             {
                 _firmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(
                     state: state,
                     errorMessage: errorMessage,
-                    fatalErrorType: fatalErrorType
+                    fatalErrorType: fatalErrorType,
+                    globalErrorCode: globalErrorCode
                 );
             }
             

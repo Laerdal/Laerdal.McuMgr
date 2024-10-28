@@ -69,8 +69,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _firmwareInstallerCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
             
-            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
-                => _firmwareInstallerCallbacksProxy.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage); //raises the actual event
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _firmwareInstallerCallbacksProxy.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage, globalErrorCode); //raises the actual event
             
             public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => _firmwareInstallerCallbacksProxy.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event
