@@ -91,6 +91,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
             }
 
+
             #region commands
 
             public EFileDownloaderVerdict BeginDownload(
@@ -128,20 +129,19 @@ namespace Laerdal.McuMgr.FileDownloader
 
             #region android callbacks -> csharp event emitters
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int mcuMgrErrorCode, int fileOperationGroupReturnCode)
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode); //just in case
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //just in case
 
-                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileOperationGroupErrorCode) fileOperationGroupReturnCode);
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EGlobalErrorCode) globalErrorCode);
             }
             
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileUploaderGroupErrorCode)
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
             {
                 _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
                     resource,
                     errorMessage,
-                    mcuMgrErrorCode,
-                    fileUploaderGroupErrorCode
+                    globalErrorCode
                 );
             }
             

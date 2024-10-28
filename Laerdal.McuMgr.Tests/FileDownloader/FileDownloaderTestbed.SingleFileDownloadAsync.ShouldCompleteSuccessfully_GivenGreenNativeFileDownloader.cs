@@ -107,7 +107,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (_tryCount < _maxNumberOfTriesForSuccess)
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Unknown, EFileOperationGroupErrorCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_Corrupt);
                         return;
                     }
                     

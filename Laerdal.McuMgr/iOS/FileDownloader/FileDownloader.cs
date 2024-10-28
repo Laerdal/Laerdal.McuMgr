@@ -177,16 +177,15 @@ namespace Laerdal.McuMgr.FileDownloader
             public override void FatalErrorOccurredAdvertisement(
                 string resource,
                 string errorMessage,
-                nint mcuMgrErrorCode
+                nint globalErrorCode
             ) => FatalErrorOccurredAdvertisement(
                 resource,
                 errorMessage,
-                (EMcuMgrErrorCode)(int)mcuMgrErrorCode,
-                EFileOperationGroupErrorCode.Unset
+                (EGlobalErrorCode)(int)globalErrorCode
             );
-            
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileOperationGroupReturnCode)
-                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode);
+
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
 
             public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
                 => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(

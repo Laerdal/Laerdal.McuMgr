@@ -109,28 +109,28 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EMcuMgrErrorCode.Unknown, EFileOperationGroupErrorCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EGlobalErrorCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "IN VALUE (3)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.NotFound);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "IN VALUE (3)", EGlobalErrorCode.SubSystemFilesystem_NotFound);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EMcuMgrErrorCode.Unknown, EFileOperationGroupErrorCode.Unset);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_Corrupt);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/path/pointing/to/a/directory".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "BLAH BLAH (4)", EMcuMgrErrorCode.Ok, EFileOperationGroupErrorCode.IsDirectory);
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "BLAH BLAH (4)", EGlobalErrorCode.SubSystemFilesystem_IsDirectory);
                     }
                     else
                     {
                         _expectedResults.TryGetValue(remoteFilePath, out var expectedFileContent);
-                    
+
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //  order
                         DownloadCompletedAdvertisement(remoteFilePath, expectedFileContent); //                                         order
                     }

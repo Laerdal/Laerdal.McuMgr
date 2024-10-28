@@ -139,48 +139,48 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset); // order
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //             order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && windowCapacity != AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity} but it's set to {windowCapacity?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset); // order
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //             order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && memoryAlignment != AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.MemoryAlignment)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.MemoryAlignment} but it's set to {memoryAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset); // order
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && pipelineDepth != AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(pipelineDepth)} set to {AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth} but it's set to {pipelineDepth?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset); // order
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && byteAlignment != AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(byteAlignment)} set to {AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment} but it's set to {byteAlignment?.ToString() ?? "(null)"} instead - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                           order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset); // order
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
                         return;
                     }
 
                     if (_tryCounter < _maxTriesCount)
                     {
                         await Task.Delay(20);
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                      order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EMcuMgrErrorCode.Generic, EFileOperationGroupErrorCode.Unset); // order
+                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); // order
                         return;
                     }
 

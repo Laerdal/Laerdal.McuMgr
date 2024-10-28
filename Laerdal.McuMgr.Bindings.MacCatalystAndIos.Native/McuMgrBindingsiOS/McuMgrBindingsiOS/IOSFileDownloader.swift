@@ -183,55 +183,13 @@ public class IOSFileDownloader: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         setState(.error) //keep first
 
-        // todo  use this technique instead of string sniffing
-        // here mcuMgrError is of type McuMgrError which can be either case returnCode or case groupCode }
-        // if let mcuMgrError = error as? McuMgrError { //todo   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/198
-        //     mcuMgrError.
-        // }
-
         _lastFatalErrorMessage = errorMessage
-
-        let (errorCode, _) = deduceErrorCode(errorMessage)
 
         _listener.fatalErrorOccurredAdvertisement(
                 _remoteFilePathSanitized,
                 errorMessage,
-                errorCode
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
         )
-    }
-
-    // unfortunately I couldnt figure out a way to deduce the error code from the error itself so I had to resort to string sniffing   ugly but it works
-    private func deduceErrorCode(_ errorMessage: String) -> (Int, String?) {
-        let (matchesArray, possibleError) = matches(for: " [(]\\d+[)][.]?$", in: errorMessage) // "UNKNOWN (1)."
-        if possibleError != nil {
-            return (-99, possibleError)
-        }
-
-        let errorCode = matchesArray.isEmpty
-                ? -99
-                : (Int(matchesArray[0].trimmingCharacters(in: .whitespaces).trimmingCharacters(in: ["(", ")", "."]).trimmingCharacters(in: .whitespaces)) ?? 0)
-
-        return (errorCode, possibleError)
-    }
-
-    private func matches(for regex: String, in text: String) -> ([String], String?) { //00
-        do {
-            let regex = try NSRegularExpression(pattern: regex)
-            let results = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
-
-            return (
-                    results.map {
-                        String(text[Range($0.range, in: text)!])
-                    },
-                    nil
-            )
-        } catch let error {
-            print("invalid regex: \(error.localizedDescription)")
-
-            return ([], error.localizedDescription)
-        }
-
-        //00  https://stackoverflow.com/a/27880748/863651
     }
 
     //@objc   dont

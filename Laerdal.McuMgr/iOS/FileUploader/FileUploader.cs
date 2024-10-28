@@ -160,10 +160,10 @@ namespace Laerdal.McuMgr.FileUploader
                 set => _nativeFileUploaderCallbacksProxy!.FileUploader = value;
             }
             
-            public override void CancellingAdvertisement(string reason = "")
+            public override void CancellingAdvertisement(string reason)
                 => _nativeFileUploaderCallbacksProxy?.CancellingAdvertisement(reason);
             
-            public override void CancelledAdvertisement(string reason = "")
+            public override void CancelledAdvertisement(string reason)
                 => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
@@ -204,23 +204,20 @@ namespace Laerdal.McuMgr.FileUploader
             public override void FatalErrorOccurredAdvertisement(
                 string resource,
                 string errorMessage,
-                nint mcuMgrErrorCode
+                nint globalErrorCode
             ) => FatalErrorOccurredAdvertisement(
                 resource,
                 errorMessage,
-                (EMcuMgrErrorCode)(int)mcuMgrErrorCode,
-                EFileOperationGroupErrorCode.Unset
+                (EGlobalErrorCode)(int)globalErrorCode
             );
             public void FatalErrorOccurredAdvertisement( //conformance to the interface
                 string resource,
-                string errorMessage, // ReSharper disable once MethodOverloadWithOptionalParameter
-                EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileOperationGroupErrorCode fileUploaderGroupReturnCode
+                string errorMessage,
+                EGlobalErrorCode globalErrorCode
             ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
                 resource,
                 errorMessage,
-                mcuMgrErrorCode,
-                fileUploaderGroupReturnCode
+                globalErrorCode
             );
 
             public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)

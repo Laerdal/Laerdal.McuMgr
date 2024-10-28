@@ -471,41 +471,19 @@ namespace Laerdal.McuMgr.FileUploader
                     }
                 } // ReSharper restore AccessToModifiedClosure
 
-                void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object _, FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea_)
+                void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object _, FileUploadProgressPercentageAndDataThroughputChangedEventArgs __)
                 {
                     fileUploadProgressEventsCount++;
                 }
 
                 void FileUploader_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
                 {
-                    if (ea_.ErrorCode == EMcuMgrErrorCode.AccessDenied) //todo   ios is broken and needs to be fixed
+                    taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                     {
-                        taskCompletionSource.TrySetException(new UploadUnauthorizedException(
-                            remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea_.ErrorCode,
-                            nativeErrorMessage: ea_.ErrorMessage,
-                            fileOperationGroupErrorCode: ea_.FileOperationGroupErrorCode
-                        ));
-                        return;
-                    }
-
-                    if (ea_.FileOperationGroupErrorCode == EFileOperationGroupErrorCode.NotFound)
-                    {
-                        taskCompletionSource.TrySetException(new UploadErroredOutRemoteFolderNotFoundException(
-                            remoteFilePath: remoteFilePath,
-                            mcuMgrErrorCode: ea_.ErrorCode,
-                            nativeErrorMessage: ea_.ErrorMessage,
-                            fileOperationGroupErrorCode: ea_.FileOperationGroupErrorCode
-                        ));
-                        return;
-                    }
-
-                    taskCompletionSource.TrySetException(new UploadErroredOutException(
-                        remoteFilePath: remoteFilePath,
-                        mcuMgrErrorCode: ea_.ErrorCode,
-                        nativeErrorMessage: ea_.ErrorMessage,
-                        fileOperationGroupErrorCode: ea_.FileOperationGroupErrorCode
-                    ));
+                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new UploadErroredOutRemoteFolderNotFoundException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage),
+                        EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UploadUnauthorizedException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage),
+                        _ => new UploadErroredOutException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage)
+                    });
                 }
             }
             
@@ -594,13 +572,11 @@ namespace Laerdal.McuMgr.FileUploader
             public void FatalErrorOccurredAdvertisement(
                 string resource,
                 string errorMessage,
-                EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileOperationGroupErrorCode fileUploaderGroupErrorCode
+                EGlobalErrorCode globalErrorCode
             ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
                 resource,
                 errorMessage,
-                mcuMgrErrorCode,
-                fileUploaderGroupErrorCode
+                globalErrorCode
             ));
 
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(

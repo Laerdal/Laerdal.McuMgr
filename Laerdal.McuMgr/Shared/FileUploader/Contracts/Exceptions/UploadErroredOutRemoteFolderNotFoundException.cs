@@ -10,13 +10,11 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
         public UploadErroredOutRemoteFolderNotFoundException(
             string nativeErrorMessage,
             string remoteFilePath,
-            EMcuMgrErrorCode mcuMgrErrorCode,
-            EFileOperationGroupErrorCode fileOperationGroupErrorCode
+            EGlobalErrorCode globalErrorCode
         ) : base(
-            nativeErrorMessage: nativeErrorMessage,
             remoteFilePath: remoteFilePath,
-            mcuMgrErrorCode: mcuMgrErrorCode,
-            fileOperationGroupErrorCode: fileOperationGroupErrorCode
+            globalErrorCode: globalErrorCode,
+            nativeErrorMessage: nativeErrorMessage
         )
         {
         }

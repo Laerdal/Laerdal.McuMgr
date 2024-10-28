@@ -394,21 +394,17 @@ public class AndroidFileUploader
     {
         setState(EAndroidFileUploaderState.ERROR);
 
-        McuMgrExceptionHelpers.ErrorCodes result = McuMgrExceptionHelpers.DeduceErrorCodesFromException(exception);
-
         fatalErrorOccurredAdvertisement(
                 _remoteFilePathSanitized,
                 errorMessage,
-                result.errorCode,
-                result.errorGroupCode
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
         );
     }
 
     public void fatalErrorOccurredAdvertisement(
             final String remoteFilePath,
             final String errorMessage,
-            final int mcuMgrErrorCode, //         io.runtime.mcumgr.McuMgrErrorCode
-            final int fsManagerGroupReturnCode // io.runtime.mcumgr.managers.FsManager.ReturnCode
+            final int globalErrorCode // have a look at EGlobalErrorCode.cs in csharp
     )
     {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates

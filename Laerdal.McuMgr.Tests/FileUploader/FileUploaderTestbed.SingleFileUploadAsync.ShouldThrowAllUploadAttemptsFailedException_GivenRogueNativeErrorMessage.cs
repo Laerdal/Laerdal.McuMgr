@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy13(
                 uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_(),
-                nativeErrorMessageForFileNotFound: nativeRogueErrorMessage
+                nativeRogueErrorMessage: nativeRogueErrorMessage
             );
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
@@ -78,11 +78,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
         private class MockedErroneousNativeFileUploaderProxySpy13 : MockedNativeFileUploaderProxySpy
         {
-            private readonly string _nativeErrorMessageForFileNotFound;
+            private readonly string _nativeRogueErrorMessage;
             
-            public MockedErroneousNativeFileUploaderProxySpy13(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, string nativeErrorMessageForFileNotFound) : base(uploaderCallbacksProxy)
+            public MockedErroneousNativeFileUploaderProxySpy13(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, string nativeRogueErrorMessage) : base(uploaderCallbacksProxy)
             {
-                _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
+                _nativeRogueErrorMessage = nativeRogueErrorMessage;
             }
 
             public override EFileUploaderVerdict BeginUpload(
@@ -115,8 +115,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                                 order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Corrupt, EFileOperationGroupErrorCode.Unset); // order
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //   order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeRogueErrorMessage, EGlobalErrorCode.Generic); // order
                 });
 
                 return verdict;

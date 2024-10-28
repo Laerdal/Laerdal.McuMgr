@@ -148,21 +148,16 @@ namespace Laerdal.McuMgr.FileUploader
 
             #region android callbacks -> csharp event emitters
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int mcuMgrErrorCode, int fileUploaderGroupReturnCode)
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileUploaderGroupReturnCode); //just in case
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //just in case
 
-                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileOperationGroupErrorCode) fileUploaderGroupReturnCode);
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EGlobalErrorCode) globalErrorCode);
             }
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupErrorCode fileUploaderGroupErrorCode)
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
             {
-                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
-                    resource,
-                    errorMessage,
-                    mcuMgrErrorCode,
-                    fileUploaderGroupErrorCode
-                );
+                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
