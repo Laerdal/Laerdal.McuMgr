@@ -7,13 +7,11 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
     public class UploadUnauthorizedException : UploadErroredOutException, IMcuMgrException
     {
         public string RemoteFilePath { get; }
-        public EGlobalErrorCode GlobalErrorCode { get; }
 
         public UploadUnauthorizedException(string nativeErrorMessage, string remoteFilePath, EGlobalErrorCode globalErrorCode)
-            : base(remoteFilePath, $"{nativeErrorMessage} (globalErrorCode={globalErrorCode})")
+            : base(remoteFilePath, $"{nativeErrorMessage}", globalErrorCode)
         {
             RemoteFilePath = remoteFilePath;
-            GlobalErrorCode = globalErrorCode;
         }
     }
 }
