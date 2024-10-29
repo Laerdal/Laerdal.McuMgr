@@ -1,21 +1,21 @@
 package no.laerdal.mcumgr_laerdal_wrapper;
 
-import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.response.HasReturnCode;
 
-final class McuMgrExceptionHelpers {
-
+final class McuMgrExceptionHelpers
+{
     // this method must be kept aligned between our ios lib and our android lib
-    public static int DeduceGlobalErrorCodeFromException(Exception exception) {
+    public static int DeduceGlobalErrorCodeFromException(Exception exception)
+    {
         if (!(exception instanceof McuMgrErrorException))
             return -99;
 
         McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         HasReturnCode.GroupReturnCode groupReturnCodeSpecs = mcuMgrErrorException.getGroupCode();
         return groupReturnCodeSpecs == null
-               ? mcuMgrErrorException.getCode().value() //                               00
-               : ((groupReturnCodeSpecs.group + 1) * 1000) + groupReturnCodeSpecs.rc; // 10
+               ? mcuMgrErrorException.getCode().value() //                                 00
+               : (((groupReturnCodeSpecs.group + 1) * 1000) + groupReturnCodeSpecs.rc); // 10
 
         //00  for auth errors and for nordic devices that do not support smp v2   these error codes occupy the range [0,999]
         //

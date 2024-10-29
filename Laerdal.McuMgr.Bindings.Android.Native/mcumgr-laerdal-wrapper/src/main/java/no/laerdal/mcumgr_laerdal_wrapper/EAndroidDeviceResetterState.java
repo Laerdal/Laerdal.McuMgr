@@ -1,6 +1,7 @@
 package no.laerdal.mcumgr_laerdal_wrapper;
 
-public enum EAndroidDeviceResetterState {
+public enum EAndroidDeviceResetterState
+{
     NONE(0),
     IDLE(1),
     RESETTING(2),

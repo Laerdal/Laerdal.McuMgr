@@ -13,7 +13,8 @@ import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 import org.jetbrains.annotations.Contract;
 
 @SuppressWarnings("unused")
-public class AndroidFirmwareEraser {
+public class AndroidFirmwareEraser
+{
 
     private ImageManager _imageManager;
     private final McuMgrBleTransport _transport;
@@ -24,20 +25,25 @@ public class AndroidFirmwareEraser {
      * @param context         the android-context of the calling environment
      * @param bluetoothDevice the device to perform the firmware-install on
      */
-    public AndroidFirmwareEraser(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
+    public AndroidFirmwareEraser(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
+    {
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public void beginErasure(final int imageIndex) {
+    public void beginErasure(final int imageIndex)
+    {
         busyStateChangedAdvertisement(true);
 
         setState(EAndroidFirmwareEraserState.ERASING);
 
         _imageManager = new ImageManager(_transport);
-        _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>() {
+        _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>()
+        {
             @Override
-            public void onResponse(@NonNull final McuMgrImageResponse response) {
-                if (!response.isSuccess()) { // check for an error return code
+            public void onResponse(@NonNull final McuMgrImageResponse response)
+            {
+                if (!response.isSuccess())
+                { // check for an error return code
                     fatalErrorOccurredAdvertisement("Erasure failed (error-code '" + response.getReturnCode().toString() + "')");
 
                     setState(EAndroidFirmwareEraserState.FAILED);
@@ -50,7 +56,8 @@ public class AndroidFirmwareEraser {
             }
 
             @Override
-            public void onError(@NonNull final McuMgrException error) {
+            public void onError(@NonNull final McuMgrException error)
+            {
                 fatalErrorOccurredAdvertisement("Erasure failed '" + error.getMessage() + "'");
 
                 busyStateChangedAdvertisement(false);
@@ -60,7 +67,8 @@ public class AndroidFirmwareEraser {
         });
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_imageManager == null)
             return;
 
@@ -72,7 +80,9 @@ public class AndroidFirmwareEraser {
     }
 
     private EAndroidFirmwareEraserState _currentState = EAndroidFirmwareEraserState.NONE;
-    private void setState(EAndroidFirmwareEraserState newState) {
+
+    private void setState(EAndroidFirmwareEraserState newState)
+    {
         final EAndroidFirmwareEraserState oldState = _currentState; //order
 
         _currentState = newState; //order
@@ -81,44 +91,53 @@ public class AndroidFirmwareEraser {
     }
 
     @Contract(pure = true)
-    public void stateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState currentState) {
+    public void stateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState currentState)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     private String _lastFatalErrorMessage;
 
     @Contract(pure = true)
-    public String getLastFatalErrorMessage() {
+    public String getLastFatalErrorMessage()
+    {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage) {
+    public void fatalErrorOccurredAdvertisement(final String errorMessage)
+    {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
     @Contract(pure = true)
-    public void logMessageAdvertisement(final String message, final String category, final String level) {
+    public void logMessageAdvertisement(final String message, final String category, final String level)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     @Contract(pure = true)
-    public void busyStateChangedAdvertisement(final boolean busyNotIdle) {
+    public void busyStateChangedAdvertisement(final boolean busyNotIdle)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    private void readImageErasure() {
+    private void readImageErasure()
+    {
         busyStateChangedAdvertisement(true);
 
-        _imageManager.list(new McuMgrCallback<McuMgrImageStateResponse>() {
+        _imageManager.list(new McuMgrCallback<McuMgrImageStateResponse>()
+        {
 
             @Override
-            public void onResponse(@NonNull final McuMgrImageStateResponse response) {
+            public void onResponse(@NonNull final McuMgrImageStateResponse response)
+            {
                 // postReady(response);
                 busyStateChangedAdvertisement(false);
             }
 
             @Override
-            public void onError(@NonNull final McuMgrException error) {
+            public void onError(@NonNull final McuMgrException error)
+            {
                 fatalErrorOccurredAdvertisement(error.getMessage());
                 busyStateChangedAdvertisement(false);
             }

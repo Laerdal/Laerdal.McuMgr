@@ -53,7 +53,8 @@ public class AndroidFileDownloader
 
     public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
     {
-        if (!IsIdleOrCold()) {
+        if (!IsIdleOrCold())
+        {
             logMessageAdvertisement("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _remoteFilePathSanitized);
             return false;
         }
@@ -93,7 +94,6 @@ public class AndroidFileDownloader
      * @param remoteFilePath the remote-file-path to the file on the remote device that you wish to download
      * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
      *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
-     *
      * @return a verdict indicating whether the file uploading was started successfully or not
      */
     public EAndroidFileDownloaderVerdict beginDownload(
@@ -109,7 +109,8 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
         }
 
-        if (remoteFilePath == null || remoteFilePath.isEmpty()) {
+        if (remoteFilePath == null || remoteFilePath.isEmpty())
+        {
             onError("Target-file provided is dud!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
@@ -130,13 +131,15 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        if (_context == null) {
+        if (_context == null)
+        {
             onError("No context specified - call trySetContext() first");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        if (_bluetoothDevice == null) {
+        if (_bluetoothDevice == null)
+        {
             onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
@@ -193,7 +196,8 @@ public class AndroidFileDownloader
         transferController.resume();
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_fileSystemManager == null)
             return;
 
@@ -215,7 +219,8 @@ public class AndroidFileDownloader
         transferController.cancel(); //order
     }
 
-    private void resetDownloadState() {
+    private void resetDownloadState()
+    {
         _initialBytes = 0;
         _downloadStartTimestamp = 0;
 
@@ -239,14 +244,16 @@ public class AndroidFileDownloader
         }
     }
 
-    private void ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce() {
+    private void ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce()
+    {
         if (_fileDownloaderCallbackProxy != null) //already initialized
             return;
 
         _fileDownloaderCallbackProxy = new FileDownloaderCallbackProxy();
     }
 
-    private EAndroidFileDownloaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce() {
+    private EAndroidFileDownloaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce()
+    {
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileDownloaderVerdict.SUCCESS;
 
@@ -283,9 +290,12 @@ public class AndroidFileDownloader
         if (_transport == null)
             return;
 
-        try {
+        try
+        {
             _transport.disconnect();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             // ignore
         }
 
@@ -297,9 +307,12 @@ public class AndroidFileDownloader
         if (_fileSystemManager == null)
             return;
 
-        try {
+        try
+        {
             _fileSystemManager.closeAll();
-        } catch (McuMgrException e) {
+        }
+        catch (McuMgrException e)
+        {
             // ignore
         }
 

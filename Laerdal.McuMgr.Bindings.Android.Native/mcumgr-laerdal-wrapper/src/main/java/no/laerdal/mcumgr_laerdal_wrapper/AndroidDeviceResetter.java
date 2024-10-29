@@ -13,7 +13,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
-public class AndroidDeviceResetter {
+public class AndroidDeviceResetter
+{
 
     private DefaultManager _manager;
     private final McuMgrTransport _transport;
@@ -24,11 +25,13 @@ public class AndroidDeviceResetter {
      * @param context         the android-context of the calling environment
      * @param bluetoothDevice the device to perform the firmware-install on
      */
-    public AndroidDeviceResetter(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
+    public AndroidDeviceResetter(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
+    {
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public void beginReset() {
+    public void beginReset()
+    {
         try
         {
             _manager = new DefaultManager(_transport);
@@ -42,11 +45,14 @@ public class AndroidDeviceResetter {
 
         setState(EAndroidDeviceResetterState.RESETTING);
 
-        _manager.reset(new McuMgrCallback<McuMgrOsResponse>() {
+        _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
+        {
 
             @Override
-            public void onResponse(@NotNull final McuMgrOsResponse response) {
-                if (!response.isSuccess()) { // check for an error return code
+            public void onResponse(@NotNull final McuMgrOsResponse response)
+            {
+                if (!response.isSuccess())
+                { // check for an error return code
                     fatalErrorOccurredAdvertisement("Reset failed (error-code '" + response.getReturnCode().toString() + "')");
 
                     setState(EAndroidDeviceResetterState.FAILED);
@@ -57,7 +63,8 @@ public class AndroidDeviceResetter {
             }
 
             @Override
-            public void onError(@NotNull final McuMgrException error) {
+            public void onError(@NotNull final McuMgrException error)
+            {
                 fatalErrorOccurredAdvertisement("Reset failed '" + error.getMessage() + "'");
 
                 setState(EAndroidDeviceResetterState.FAILED);
@@ -66,7 +73,8 @@ public class AndroidDeviceResetter {
         });
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_manager == null)
             return;
 
@@ -77,12 +85,15 @@ public class AndroidDeviceResetter {
         mcuMgrTransporter.release();
     }
 
-    public EAndroidDeviceResetterState getState() {
+    public EAndroidDeviceResetterState getState()
+    {
         return _currentState;
     }
 
     private EAndroidDeviceResetterState _currentState = EAndroidDeviceResetterState.NONE;
-    private void setState(final EAndroidDeviceResetterState newState) {
+
+    private void setState(final EAndroidDeviceResetterState newState)
+    {
         final EAndroidDeviceResetterState oldState = _currentState; //order
 
         _currentState = newState; //order
@@ -90,28 +101,33 @@ public class AndroidDeviceResetter {
         stateChangedAdvertisement(oldState, newState); //order
     }
 
-    protected void onCleared() {
+    protected void onCleared()
+    {
         // _manager.setFirmwareUpgradeCallback(null);
     }
 
     private String _lastFatalErrorMessage;
 
     @Contract(pure = true)
-    public String getLastFatalErrorMessage() {
+    public String getLastFatalErrorMessage()
+    {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage) {
+    public void fatalErrorOccurredAdvertisement(final String errorMessage)
+    {
         _lastFatalErrorMessage = errorMessage;
     }
 
     @Contract(pure = true)
-    public void logMessageAdvertisement(final String message, final String category, final String level) {
+    public void logMessageAdvertisement(final String message, final String category, final String level)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     @Contract(pure = true)
-    public void stateChangedAdvertisement(final EAndroidDeviceResetterState oldState, final EAndroidDeviceResetterState currentState) {
+    public void stateChangedAdvertisement(final EAndroidDeviceResetterState oldState, final EAndroidDeviceResetterState currentState)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 

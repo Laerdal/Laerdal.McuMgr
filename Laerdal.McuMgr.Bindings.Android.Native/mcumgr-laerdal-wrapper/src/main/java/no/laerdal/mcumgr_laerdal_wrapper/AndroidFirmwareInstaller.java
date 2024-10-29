@@ -55,15 +55,14 @@ public class AndroidFirmwareInstaller
      * Initiates a firmware installation asynchronously. The progress is advertised through the callbacks provided by this class.
      * Setup interceptors for them to get informed about the status of the firmware-installation.
      *
-     * @param data the firmware bytes to install - can also be a zipped byte stream
-     * @param mode the mode of the installation - typically you want to set this to TEST_AND_CONFIRM in production environments
-     * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
-     *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
-     * @param eraseSettings specifies whether the previous settings should be erased on the target-device
+     * @param data                            the firmware bytes to install - can also be a zipped byte stream
+     * @param mode                            the mode of the installation - typically you want to set this to TEST_AND_CONFIRM in production environments
+     * @param initialMtuSize                  sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                                        Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param eraseSettings                   specifies whether the previous settings should be erased on the target-device
      * @param estimatedSwapTimeInMilliseconds specifies the amount of time to wait before probing the device to see if the firmware that got installed managed to reboot the device successfully - if negative the setting gets ignored
-     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
-     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
-     *
+     * @param windowCapacity                  specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param memoryAlignment                 specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      * @return a verdict indicating whether the firmware installation was started successfully or not
      */
     public EAndroidFirmwareInstallationVerdict beginInstallation(
@@ -202,7 +201,8 @@ public class AndroidFirmwareInstaller
         //3 Set the selected memory alignment. In the app this defaults to 4 to match Nordic devices, but can be modified in the UI.
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_manager == null)
             return;
 
