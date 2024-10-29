@@ -88,8 +88,13 @@ namespace Laerdal.McuMgr.FirmwareEraser
                     oldState: oldState
                 );
 
-            public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareEraserCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
-            public override void FatalErrorOccurredAdvertisement(string errorMessage) => _nativeFirmwareEraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+            public override void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => _nativeFirmwareEraserCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
+
+            public override void FatalErrorOccurredAdvertisement(string errorMessage, nint globalErrorCode)
+                => FatalErrorOccurredAdvertisement(errorMessage, (EGlobalErrorCode)globalErrorCode);
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _nativeFirmwareEraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
 
             #endregion
 
@@ -98,6 +103,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             {
                 EIOSFirmwareEraserState.None => EFirmwareErasureState.None,
                 EIOSFirmwareEraserState.Idle => EFirmwareErasureState.Idle,
+                EIOSFirmwareEraserState.Failed => EFirmwareErasureState.Failed,
                 EIOSFirmwareEraserState.Erasing => EFirmwareErasureState.Erasing,
                 EIOSFirmwareEraserState.Complete => EFirmwareErasureState.Complete,
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")

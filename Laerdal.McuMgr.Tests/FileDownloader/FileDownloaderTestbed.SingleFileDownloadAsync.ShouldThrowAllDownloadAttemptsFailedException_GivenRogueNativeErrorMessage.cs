@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy13(
                 mockedFileData: mockedFileData,
                 downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_(),
-                nativeErrorMessageForFileNotFound: nativeRogueErrorMessage
+                rogueNativeErrorMessage: nativeRogueErrorMessage
             );
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
@@ -79,12 +79,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
         private class MockedErroneousNativeFileDownloaderProxySpy13 : MockedNativeFileDownloaderProxySpy
         {
-            private readonly string _nativeErrorMessageForFileNotFound;
+            private readonly string _rogueNativeErrorMessage;
             
-            public MockedErroneousNativeFileDownloaderProxySpy13(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData, string nativeErrorMessageForFileNotFound) : base(downloaderCallbacksProxy)
+            public MockedErroneousNativeFileDownloaderProxySpy13(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData, string rogueNativeErrorMessage) : base(downloaderCallbacksProxy)
             {
                 _ = mockedFileData;
-                _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
+                _rogueNativeErrorMessage = rogueNativeErrorMessage;
             }
 
             public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
@@ -103,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Unknown, EFileOperationGroupReturnCode.Unset);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _rogueNativeErrorMessage, EGlobalErrorCode.Generic);
                 });
 
                 return verdict;

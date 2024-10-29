@@ -16,11 +16,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.010", "NO ENTRY (5)", 1)] //android
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.020", "NO ENTRY (5)", 2)] //android
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.030", "NO ENTRY (5)", 3)] //android
-        [InlineData("FDT.SFDA.STRFNFE.GNEF.040", "NO_ENTRY (5)", 2)] //ios
-        public async Task SingleFileDownloadAsync_ShouldThrowRemoteFileNotFoundException_GivenNonExistentFilepath(string testcaseNickname, string nativeErrorMessageForFileNotFound, int maxTriesCount)
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.010", 1)] //android
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.020", 2)] //android
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.030", 3)] //android
+        [InlineData("FDT.SFDA.STRFNFE.GNEF.040", 2)] //ios
+        public async Task SingleFileDownloadAsync_ShouldThrowRemoteFileNotFoundException_GivenNonExistentFilepath(string testcaseNickname, int maxTriesCount)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -28,8 +28,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy2(
                 mockedFileData: mockedFileData,
-                downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_(),
-                nativeErrorMessageForFileNotFound: nativeErrorMessageForFileNotFound
+                downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_()
             );
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
@@ -65,7 +64,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FatalErrorOccurred))
                 .WithSender(fileDownloader)
-                .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage.ToUpperInvariant().Contains(nativeErrorMessageForFileNotFound.ToUpperInvariant()));
+                .WithArgs<FatalErrorOccurredEventArgs>(args => args.GlobalErrorCode == EGlobalErrorCode.SubSystemFilesystem_NotFound);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
@@ -82,12 +81,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
         private class MockedErroneousNativeFileDownloaderProxySpy2 : MockedNativeFileDownloaderProxySpy
         {
-            private readonly string _nativeErrorMessageForFileNotFound;
-            
-            public MockedErroneousNativeFileDownloaderProxySpy2(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData, string nativeErrorMessageForFileNotFound) : base(downloaderCallbacksProxy)
+            public MockedErroneousNativeFileDownloaderProxySpy2(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData) : base(downloaderCallbacksProxy)
             {
                 _ = mockedFileData;
-                _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
             }
 
             public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
@@ -105,8 +101,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //                                               order    simulates how the native code behaves
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.NoEntry, EFileOperationGroupReturnCode.Unset); //    order    simulates how the csharp wrapper behaves
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //     order    simulates how the native code behaves
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EGlobalErrorCode.SubSystemFilesystem_NotFound); //    order    simulates how the csharp wrapper behaves
                 });
 
                 return verdict;

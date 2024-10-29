@@ -60,28 +60,28 @@ public class IOSFileDownloader: NSObject {
     public func beginDownload(_ remoteFilePath: String) -> EIOSFileDownloadingInitializationVerdict {
 
         if !isCold() { //keep first   if another download is already in progress we bail out
-            onError("Another download is already in progress")
+            onError("[IOSFD.BD.010] Another download is already in progress")
 
-            return EIOSFileDownloadingInitializationVerdict.failedDownloadAlreadyInProgress
+            return .failedDownloadAlreadyInProgress
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
-            onError("Target-file provided is dud!")
+            onError("[IOSFD.BD.020] Target-file provided is dud!")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
-            onError("Target-file points to a directory instead of a file")
+            onError("[IOSFD.BD.030] Target-file points to a directory instead of a file")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
-            onError("Target-path is not absolute!")
+            onError("[IOSFD.BD.040] Target-path is not absolute!")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         resetUploadState() //order
@@ -91,12 +91,12 @@ public class IOSFileDownloader: NSObject {
 
         let success = _fileSystemManager.download(name: _remoteFilePathSanitized, delegate: self)
         if !success {
-            onError("Failed to commence file-Downloading (check logs for details)")
+            onError("[IOSFD.BD.050] Failed to commence file-Downloading (check logs for details)")
 
-            return EIOSFileDownloadingInitializationVerdict.failedErrorUponCommencing
+            return .failedErrorUponCommencing
         }
 
-        return EIOSFileDownloadingInitializationVerdict.success
+        return .success
     }
 
     @objc
@@ -131,21 +131,21 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func isIdleOrCold() -> Bool {
-        return _currentState == EIOSFileDownloaderState.idle || isCold();
+        return _currentState == .idle || isCold();
     }
 
     private func isCold() -> Bool {
-        return _currentState == EIOSFileDownloaderState.none
-                || _currentState == EIOSFileDownloaderState.error
-                || _currentState == EIOSFileDownloaderState.complete
-                || _currentState == EIOSFileDownloaderState.cancelled
+        return _currentState == .none
+                || _currentState == .error
+                || _currentState == .complete
+                || _currentState == .cancelled
     }
 
     private func resetUploadState() {
         _lastBytesSend = -1
         _lastBytesSendTimestamp = nil
 
-        setState(EIOSFileDownloaderState.idle)
+        setState(.idle)
         busyStateChangedAdvertisement(true)
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
     }
@@ -181,51 +181,13 @@ public class IOSFileDownloader: NSObject {
 
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
-        setState(EIOSFileDownloaderState.error) //keep first
-
-        _lastFatalErrorMessage = errorMessage
-
-        let (errorCode, _) = deduceErrorCode(errorMessage)
-
-        _listener.fatalErrorOccurredAdvertisement(
+        _lastFatalErrorMessage = errorMessage //       order
+        setState(.error) //                            order
+        _listener.fatalErrorOccurredAdvertisement( //  order
                 _remoteFilePathSanitized,
                 errorMessage,
-                errorCode
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
         )
-    }
-
-    // unfortunately I couldnt figure out a way to deduce the error code from the error itself so I had to resort to string sniffing   ugly but it works
-    private func deduceErrorCode(_ errorMessage: String) -> (Int, String?) {
-        let (matchesArray, possibleError) = matches(for: " [(]\\d+[)][.]?$", in: errorMessage) // "UNKNOWN (1)."
-        if possibleError != nil {
-            return (-99, possibleError)
-        }
-
-        let errorCode = matchesArray.isEmpty
-                ? -99
-                : (Int(matchesArray[0].trimmingCharacters(in: .whitespaces).trimmingCharacters(in: ["(", ")", "."]).trimmingCharacters(in: .whitespaces)) ?? 0)
-
-        return (errorCode, possibleError)
-    }
-
-    private func matches(for regex: String, in text: String) -> ([String], String?) { //00
-        do {
-            let regex = try NSRegularExpression(pattern: regex)
-            let results = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
-
-            return (
-                    results.map {
-                        String(text[Range($0.range, in: text)!])
-                    },
-                    nil
-            )
-        } catch let error {
-            print("invalid regex: \(error.localizedDescription)")
-
-            return ([], error.localizedDescription)
-        }
-
-        //00  https://stackoverflow.com/a/27880748/863651
     }
 
     //@objc   dont
@@ -275,7 +237,7 @@ public class IOSFileDownloader: NSObject {
 
         stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == EIOSFileDownloaderState.downloading && newState == EIOSFileDownloaderState.complete) //00
+        if (oldState == .downloading && newState == .complete) //00
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
@@ -286,7 +248,7 @@ public class IOSFileDownloader: NSObject {
 
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(EIOSFileDownloaderState.downloading)
+        setState(.downloading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let DownloadProgressPercentage = (bytesSent * 100) / fileSize
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, throughputKilobytesPerSecond)
@@ -299,14 +261,14 @@ extension IOSFileDownloader: FileDownloadDelegate {
     }
 
     public func downloadDidCancel() {
-        setState(EIOSFileDownloaderState.cancelled)
+        setState(.cancelled)
         busyStateChangedAdvertisement(false)
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 
     public func download(of name: String, didFinish data: Data) {
-        setState(EIOSFileDownloaderState.complete)
+        setState(.complete)
         downloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
         busyStateChangedAdvertisement(false)
     }

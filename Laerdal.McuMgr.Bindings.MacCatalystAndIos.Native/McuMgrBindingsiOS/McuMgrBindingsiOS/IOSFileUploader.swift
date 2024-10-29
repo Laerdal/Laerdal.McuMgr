@@ -66,51 +66,51 @@ public class IOSFileUploader: NSObject {
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
-            onError("Another upload is already in progress")
+            onError("[IOSFU.BU.010] Another upload is already in progress")
 
-            return EIOSFileUploadingInitializationVerdict.failedOtherUploadAlreadyInProgress
+            return .failedOtherUploadAlreadyInProgress
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
-            onError("Target-file provided is dud")
+            onError("[IOSFU.BU.020] Target-file provided is dud")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
-            onError("Target-file points to a directory instead of a file")
+            onError("[IOSFU.BU.030] Target-file points to a directory instead of a file")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
-            onError("Target-path is not absolute!")
+            onError("[IOSFU.BU.040] Target-path is not absolute")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
         if data == nil { // data being nil is not ok    btw data.length==0 is perfectly ok because we might want to create empty files
-            onError("The data provided are nil")
+            onError("[IOSFU.BU.050] The data provided are nil")
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidData
+            return .failedInvalidData
         }
 
         if _cbPeripheral == nil {
-            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
+            onError("[IOSFU.BU.060] No bluetooth-device specified - call trySetBluetoothDevice() first");
 
-            return EIOSFileUploadingInitializationVerdict.failedInvalidSettings;
+            return .failedInvalidSettings;
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            onError("When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+            onError("[IOSFU.BU.070] When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
 
             return .failedInvalidSettings
         }
         
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            onError("Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+            onError("[IOSFU.BU.080] Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
             return .failedInvalidSettings
         }
@@ -132,13 +132,13 @@ public class IOSFileUploader: NSObject {
             delegate: self
         )
         if !success {
-            onError("Failed to commence file-uploading (check logs for details)")
+            onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
 
-            return EIOSFileUploadingInitializationVerdict.failedErrorUponCommencing
+            return .failedErrorUponCommencing
         }
 
-        return EIOSFileUploadingInitializationVerdict.success
-        
+        return .success
+
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
     }
     
@@ -181,7 +181,7 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func cancel(_ reason: String) {
+    public func cancel(_ reason: String = "") {
         _cancellationReason = reason
 
         cancellingAdvertisement(reason)
@@ -199,7 +199,7 @@ public class IOSFileUploader: NSObject {
         _lastBytesSend = 0
         _lastBytesSendTimestamp = nil
 
-        setState(EIOSFileUploaderState.idle)
+        setState(.idle)
         busyStateChangedAdvertisement(true)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
     }
@@ -234,61 +234,26 @@ public class IOSFileUploader: NSObject {
     }
 
     private func isIdleOrCold() -> Bool {
-        return _currentState == EIOSFileUploaderState.idle || isCold();
+        return _currentState == .idle || isCold();
     }
 
     private func isCold() -> Bool {
-        return _currentState == EIOSFileUploaderState.none
-                || _currentState == EIOSFileUploaderState.error
-                || _currentState == EIOSFileUploaderState.complete
-                || _currentState == EIOSFileUploaderState.cancelled
+        return _currentState == .none
+                || _currentState == .error
+                || _currentState == .complete
+                || _currentState == .cancelled
     }
 
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
-        setState(EIOSFileUploaderState.error) //keep first
-
         _lastFatalErrorMessage = errorMessage
 
-        let (errorCode, _) = deduceErrorCode(errorMessage)
-
-        _listener.fatalErrorOccurredAdvertisement(
+        setState(.error) //                           order
+        _listener.fatalErrorOccurredAdvertisement( // order
                 _remoteFilePathSanitized,
                 errorMessage,
-                errorCode
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
         )
-    }
-
-    // unfortunately I couldnt figure out a way to deduce the error code from the error itself so I had to resort to string sniffing   ugly but it works
-    private func deduceErrorCode(_ errorMessage: String) -> (Int, String?) {
-        let (matchesArray, possibleError) = matches(for: " [(]\\d+[)][.]?$", in: errorMessage) // "UNKNOWN (1)."
-        if possibleError != nil {
-            return (-99, possibleError)
-        }
-
-        let errorCode = matchesArray.isEmpty
-                ? -99
-                : (Int(matchesArray[0].trimmingCharacters(in: .whitespaces).trimmingCharacters(in: [ "(", ")", "." ]).trimmingCharacters(in: .whitespaces)) ?? 0)
-
-        return (errorCode, possibleError)
-    }
-
-    private func matches(for regex: String, in text: String) -> ([String], String?) { //00
-        do {
-            let regex = try NSRegularExpression(pattern: regex)
-            let results = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
-
-            return (
-                    results.map { String(text[Range($0.range, in: text)!]) },
-                    nil
-            )
-        } catch let error {
-            print("invalid regex: \(error.localizedDescription)")
-
-            return ([], error.localizedDescription)
-        }
-
-        //00  https://stackoverflow.com/a/27880748/863651
     }
 
     //@objc   dont
@@ -346,7 +311,7 @@ public class IOSFileUploader: NSObject {
 
         stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == EIOSFileUploaderState.uploading && newState == EIOSFileUploaderState.complete) //00
+        if (oldState == .uploading && newState == .complete) //00
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
@@ -358,7 +323,7 @@ public class IOSFileUploader: NSObject {
 extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(EIOSFileUploaderState.uploading)
+        setState(.uploading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let uploadProgressPercentage = (bytesSent * 100) / fileSize
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond)
@@ -370,14 +335,14 @@ extension IOSFileUploader: FileUploadDelegate {
     }
 
     public func uploadDidCancel() {
-        setState(EIOSFileUploaderState.cancelled)
+        setState(.cancelled)
         busyStateChangedAdvertisement(false)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement(_cancellationReason)
     }
 
     public func uploadDidFinish() {
-        setState(EIOSFileUploaderState.complete)
+        setState(.complete)
         fileUploadedAdvertisement()
         busyStateChangedAdvertisement(false)
     }

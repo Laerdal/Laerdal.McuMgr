@@ -305,7 +305,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 catch (DownloadErroredOutException ex)
                 {
-                    if (ex is DownloadErroredOutRemoteFileNotFoundException) //order   no point to retry if the remote file is not there
+                    if (ex is DownloadErroredOutRemoteFileNotFoundException or DownloadErroredOutRemotePathPointsToDirectoryException) //order   no point to retry if the filepath is problematic
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
                         throw;
@@ -396,39 +396,25 @@ namespace Laerdal.McuMgr.FileDownloader
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
-                void FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_(object sender, FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea)
+                void FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_(object _, FileDownloadProgressPercentageAndDataThroughputChangedEventArgs __)
                 {
                     fileDownloadProgressEventsCount++;
                 }
 
-                void FileDownloader_DownloadCompleted_(object sender_, DownloadCompletedEventArgs ea_)
+                void FileDownloader_DownloadCompleted_(object _, DownloadCompletedEventArgs ea_)
                 {
                     taskCompletionSource.TrySetResult(ea_.Data);
                 }
 
-                void FileDownloader_FatalErrorOccurred_(object sender_, FatalErrorOccurredEventArgs ea_)
+                void FileDownloader_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
                 {
-                    var isAboutUnauthorized = ea_.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)", StringComparison.InvariantCultureIgnoreCase) ?? false;
-                    if (isAboutUnauthorized)
+                    taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                     {
-                        taskCompletionSource.TrySetException(new UnauthorizedException(
-                            resource: remoteFilePath,
-                            nativeErrorMessage: ea_.ErrorMessage
-                        ));
-                        return;
-                    }
-                    
-                    var isAboutRemoteFileNotFound = ea_.ErrorMessage
-                        ?.ToUpperInvariant()
-                        .Replace("NO_ENTRY (5)", "NO ENTRY (5)") //normalize the error for android so that it will be the same as in ios
-                        .Contains("NO ENTRY (5)") ?? false;
-                    if (isAboutRemoteFileNotFound)
-                    {
-                        taskCompletionSource.TrySetException(new DownloadErroredOutRemoteFileNotFoundException(remoteFilePath)); //specific case
-                        return;
-                    }
-
-                    taskCompletionSource.TrySetException(new DownloadErroredOutException(ea_.ErrorMessage)); //generic
+                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new DownloadErroredOutRemoteFileNotFoundException(remoteFilePath), // remote file not found
+                        EGlobalErrorCode.SubSystemFilesystem_IsDirectory => new DownloadErroredOutRemotePathPointsToDirectoryException(remoteFilePath), // remote filepath points to a directory
+                        EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UnauthorizedException(remoteFilePath, ea_.ErrorMessage), // unauthorized
+                        _ => new DownloadErroredOutException(remoteFilePath, ea_.GlobalErrorCode)
+                    });
                 }
             }
 
@@ -496,8 +482,8 @@ namespace Laerdal.McuMgr.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
                 => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileOperationGroupReturnCode fileOperationGroupReturnCode)
-                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage, mcuMgrErrorCode, fileOperationGroupReturnCode));
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage, globalErrorCode));
 
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(

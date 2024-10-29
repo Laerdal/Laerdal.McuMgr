@@ -362,28 +362,21 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
-                void FirmwareInstaller_FatalErrorOccurred_(object sender, FatalErrorOccurredEventArgs ea)
+                void FirmwareInstaller_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
                 {
-                    var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)", StringComparison.InvariantCultureIgnoreCase) ?? false;
-                    if (isAboutUnauthorized)
+                    taskCompletionSource.TrySetException(ea_ switch
                     {
-                        taskCompletionSource.TrySetException(new UnauthorizedException(ea.ErrorMessage));
-                        return;
-                    }
-                    
-                    if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut || ea.State == EFirmwareInstallationState.Uploading)
-                    {
-                        taskCompletionSource.TrySetException(new FirmwareInstallationUploadingStageErroredOutException());
-                        return;
-                    }
+                        { GlobalErrorCode: EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied }
+                            => new UnauthorizedException(ea_.ErrorMessage, ea_.GlobalErrorCode),
 
-                    if (ea.FatalErrorType == EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout) //can happen during the fw-confirmation phase which is the last phase
-                    {
-                        taskCompletionSource.TrySetException(new FirmwareInstallationConfirmationStageTimeoutException(estimatedSwapTimeInMilliseconds));
-                        return;
-                    }
+                        { FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout }
+                            => new FirmwareInstallationConfirmationStageTimeoutException(estimatedSwapTimeInMilliseconds, ea_.GlobalErrorCode),
 
-                    taskCompletionSource.TrySetException(new FirmwareInstallationErroredOutException($"{ea.ErrorMessage} (state={ea.State})")); //generic errors fall through here
+                        { FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut } or { State: EFirmwareInstallationState.Uploading }
+                            => new FirmwareInstallationUploadingStageErroredOutException(ea_.GlobalErrorCode),
+
+                        _ => new FirmwareInstallationErroredOutException($"{ea_.ErrorMessage} (state={ea_.State})", ea_.GlobalErrorCode)
+                    });
                 }
             }
             
@@ -477,8 +470,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FirmwareInstaller?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
-                => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(state, fatalErrorType, errorMessage));
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(state, fatalErrorType, errorMessage, globalErrorCode));
 
             public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => FirmwareInstaller?.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(

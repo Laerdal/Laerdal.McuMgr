@@ -55,15 +55,14 @@ public class AndroidFirmwareInstaller
      * Initiates a firmware installation asynchronously. The progress is advertised through the callbacks provided by this class.
      * Setup interceptors for them to get informed about the status of the firmware-installation.
      *
-     * @param data the firmware bytes to install - can also be a zipped byte stream
-     * @param mode the mode of the installation - typically you want to set this to TEST_AND_CONFIRM in production environments
-     * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
-     *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
-     * @param eraseSettings specifies whether the previous settings should be erased on the target-device
+     * @param data                            the firmware bytes to install - can also be a zipped byte stream
+     * @param mode                            the mode of the installation - typically you want to set this to TEST_AND_CONFIRM in production environments
+     * @param initialMtuSize                  sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                                        Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param eraseSettings                   specifies whether the previous settings should be erased on the target-device
      * @param estimatedSwapTimeInMilliseconds specifies the amount of time to wait before probing the device to see if the firmware that got installed managed to reboot the device successfully - if negative the setting gets ignored
-     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
-     * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
-     *
+     * @param windowCapacity                  specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param memoryAlignment                 specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      * @return a verdict indicating whether the firmware installation was started successfully or not
      */
     public EAndroidFirmwareInstallationVerdict beginInstallation(
@@ -114,7 +113,7 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage());
+                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage(), ex2);
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }
@@ -135,7 +134,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage());
+            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage(), ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -148,7 +147,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage());
+            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage(), ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
         }
@@ -202,7 +201,8 @@ public class AndroidFirmwareInstaller
         //3 Set the selected memory alignment. In the app this defaults to 4 to match Nordic devices, but can be modified in the UI.
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_manager == null)
             return;
 
@@ -244,19 +244,23 @@ public class AndroidFirmwareInstaller
         return _lastFatalErrorMessage;
     }
 
-    public void emitFatalError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    public void onError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, Exception ex)
     {
-        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00
-
-        setState(EAndroidFirmwareInstallationState.ERROR); //                                    order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage); //  order
+        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
+        setState(EAndroidFirmwareInstallationState.ERROR); //                         order
+        fatalErrorOccurredAdvertisement( //                                           order
+                currentStateSnapshot,
+                fatalErrorType,
+                errorMessage,
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
+        );
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
-    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    //this method is meant to be overridden by csharp binding libraries to intercept updates
+    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final int globalErrorCode)
     {
-        //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
     }
 
@@ -396,7 +400,7 @@ public class AndroidFirmwareInstaller
                 fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
             }
 
-            emitFatalError(fatalErrorType, ex.getMessage());
+            onError(fatalErrorType, ex.getMessage(), ex);
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
             busyStateChangedAdvertisement(false);

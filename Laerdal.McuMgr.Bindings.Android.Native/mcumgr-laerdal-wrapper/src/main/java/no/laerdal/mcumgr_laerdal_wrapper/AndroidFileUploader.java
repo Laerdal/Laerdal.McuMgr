@@ -5,7 +5,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
-import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.FileUploader;
@@ -54,7 +53,8 @@ public class AndroidFileUploader
 
     public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice)
     {
-        if (!IsIdleOrCold()) {
+        if (!IsIdleOrCold())
+        {
             logMessageAdvertisement("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _remoteFilePathSanitized);
             return false;
         }
@@ -91,13 +91,12 @@ public class AndroidFileUploader
      * Initiates a file upload asynchronously. The progress is advertised through the callbacks provided by this class.
      * Setup interceptors for them to get informed about the status of the firmware-installation.
      *
-     * @param remoteFilePath the remote-file-path to save the given data to on the remote device
-     * @param data the bytes to upload
-     * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
-     *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
-     * @param windowCapacity specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param remoteFilePath  the remote-file-path to save the given data to on the remote device
+     * @param data            the bytes to upload
+     * @param initialMtuSize  sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                        Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param windowCapacity  specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
-     *
      * @return a verdict indicating whether the file uploading was started successfully or not
      */
     public EAndroidFileUploaderVerdict beginUpload(
@@ -108,13 +107,15 @@ public class AndroidFileUploader
             final int memoryAlignment
     )
     {
-        if (!IsCold()) { //keep first
+        if (!IsCold())
+        { //keep first
             onError("Another upload is already in progress");
 
             return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
         }
 
-        if (remoteFilePath == null || remoteFilePath.isEmpty()) {
+        if (remoteFilePath == null || remoteFilePath.isEmpty())
+        {
             onError("Provided target-path is empty", null);
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
@@ -135,19 +136,22 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        if (_context == null) {
+        if (_context == null)
+        {
             onError("No context specified - call trySetContext() first");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        if (_bluetoothDevice == null) {
+        if (_bluetoothDevice == null)
+        {
             onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        if (data == null) { // data being null is not ok   but data.length==0 is perfectly ok because we might want to create empty files
+        if (data == null)
+        { // data being null is not ok   but data.length==0 is perfectly ok because we might want to create empty files
             onError("Provided data is null");
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_DATA;
@@ -189,7 +193,8 @@ public class AndroidFileUploader
         //     aka sending multiple packets without waiting for the response
     }
 
-    private void resetUploadState() {
+    private void resetUploadState()
+    {
         _initialBytes = 0;
         _uploadStartTimestamp = 0;
 
@@ -213,14 +218,16 @@ public class AndroidFileUploader
         }
     }
 
-    private void ensureFileUploaderCallbackProxyIsInitializedExactlyOnce() {
+    private void ensureFileUploaderCallbackProxyIsInitializedExactlyOnce()
+    {
         if (_fileUploaderCallbackProxy != null) //already initialized
             return;
 
         _fileUploaderCallbackProxy = new FileUploaderCallbackProxy();
     }
 
-    private EAndroidFileUploaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce() {
+    private EAndroidFileUploaderVerdict ensureFilesystemManagerIsInitializedExactlyOnce()
+    {
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
@@ -269,7 +276,8 @@ public class AndroidFileUploader
         transferController.resume();
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_fileSystemManager == null)
             return;
 
@@ -281,6 +289,7 @@ public class AndroidFileUploader
     }
 
     private String _cancellationReason = "";
+
     public void cancel(final String reason)
     {
         _cancellationReason = reason;
@@ -309,9 +318,12 @@ public class AndroidFileUploader
         if (_transport == null)
             return;
 
-        try {
+        try
+        {
             _transport.disconnect();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             // ignore
         }
 
@@ -323,9 +335,12 @@ public class AndroidFileUploader
         if (_fileSystemManager == null)
             return;
 
-        try {
+        try
+        {
             _fileSystemManager.closeAll();
-        } catch (McuMgrException e) {
+        }
+        catch (McuMgrException e)
+        {
             // ignore
         }
 
@@ -391,30 +406,21 @@ public class AndroidFileUploader
     }
 
     //@Contract(pure = true) //dont
-    private void onError(final String errorMessage, final Exception exception)
+    public void onError(final String errorMessage, final Exception exception)
     {
-        setState(EAndroidFileUploaderState.ERROR); //keep first
+        setState(EAndroidFileUploaderState.ERROR);
 
-        if (!(exception instanceof McuMgrErrorException))
-        {
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, -1, -1); // -1 values get mapped to the 'generic' error code
-            return;
-        }
-
-        McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         fatalErrorOccurredAdvertisement(
                 _remoteFilePathSanitized,
                 errorMessage,
-                mcuMgrErrorException.getCode().value(),
-                (mcuMgrErrorException.getGroupCode() != null ? mcuMgrErrorException.getGroupCode().group : -99)
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
         );
     }
 
     public void fatalErrorOccurredAdvertisement(
             final String remoteFilePath,
             final String errorMessage,
-            final int mcuMgrErrorCode, //         io.runtime.mcumgr.McuMgrErrorCode
-            final int fsManagerGroupReturnCode // io.runtime.mcumgr.managers.FsManager.ReturnCode
+            final int globalErrorCode // have a look at EGlobalErrorCode.cs in csharp
     )
     {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates

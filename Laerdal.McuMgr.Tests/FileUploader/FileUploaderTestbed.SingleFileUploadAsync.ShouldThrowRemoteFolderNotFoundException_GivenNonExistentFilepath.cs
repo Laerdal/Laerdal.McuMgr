@@ -15,12 +15,12 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     public partial class FileUploaderTestbed
     {
         [Theory]
-        [InlineData("FDT.SFUA.STRFNFE.GNEF.010", EMcuMgrErrorCode.Unknown, "UNKNOWN (1)", 1)] //android + ios
-        [InlineData("FDT.SFUA.STRFNFE.GNEF.020", EMcuMgrErrorCode.Unknown, "UNKNOWN (1)", 2)] //android + ios
-        [InlineData("FDT.SFUA.STRFNFE.GNEF.030", EMcuMgrErrorCode.Unknown, "UNKNOWN (1)", 3)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.010", EGlobalErrorCode.SubSystemFilesystem_NotFound, "UNKNOWN (1)", 1)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.020", EGlobalErrorCode.SubSystemFilesystem_NotFound, "UNKNOWN (1)", 2)] //android + ios
+        [InlineData("FDT.SFUA.STRFNFE.GNEF.030", EGlobalErrorCode.SubSystemFilesystem_NotFound, "UNKNOWN (1)", 3)] //android + ios
         public async Task SingleFileUploadAsync_ShouldThrowRemoteFolderNotFoundException_GivenNonExistFolderInPath(
             string testcaseNickname,
-            EMcuMgrErrorCode mcuMgrErrorCode,
+            EGlobalErrorCode globalErrorCode,
             string nativeErrorMessageForFileNotFound,
             int maxTriesCount
         )
@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy2(
                 mockedFileData: mockedFileData,
                 uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_(),
-                mcuMgrErrorCode: mcuMgrErrorCode,
+                globalErrorCode: globalErrorCode,
                 nativeErrorMessageForFileNotFound: nativeErrorMessageForFileNotFound
             );
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
@@ -87,18 +87,18 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
         private class MockedErroneousNativeFileUploaderProxySpy2 : MockedNativeFileUploaderProxySpy
         {
-            private readonly EMcuMgrErrorCode _mcuMgrErrorCode;
+            private readonly EGlobalErrorCode _globalErrorCode;
             private readonly string _nativeErrorMessageForFileNotFound;
             
             public MockedErroneousNativeFileUploaderProxySpy2(
                 INativeFileUploaderCallbacksProxy uploaderCallbacksProxy,
                 byte[] mockedFileData,
-                EMcuMgrErrorCode mcuMgrErrorCode,
+                EGlobalErrorCode globalErrorCode,
                 string nativeErrorMessageForFileNotFound
             ) : base(uploaderCallbacksProxy)
             {
                 _ = mockedFileData;
-                _mcuMgrErrorCode = mcuMgrErrorCode;
+                _globalErrorCode = globalErrorCode;
                 _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
             }
 
@@ -132,8 +132,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                          order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, _mcuMgrErrorCode, EFileOperationGroupReturnCode.Unset); //  order
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //      order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, _globalErrorCode); //  order
                 });
 
                 return verdict;

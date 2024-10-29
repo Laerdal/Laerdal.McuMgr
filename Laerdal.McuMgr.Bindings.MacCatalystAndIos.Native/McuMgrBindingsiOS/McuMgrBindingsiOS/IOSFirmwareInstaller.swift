@@ -38,27 +38,27 @@ public class IOSFirmwareInstaller: NSObject {
         _lastBytesSendTimestamp = nil
 
         if (imageData.isEmpty) {
-            emitFatalError(.invalidFirmware, "The firmware data-bytes given are dud!")
+            emitFatalError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud!")
 
             return .failedInvalidFirmware
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            emitFatalError(.invalidSettings, "When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+            emitFatalError(.invalidSettings, "[IOSFI.BI.020] When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
 
             return .failedInvalidSettings
         }
 
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            emitFatalError(.invalidSettings, "Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+            emitFatalError(.invalidSettings, "[IOSFI.BI.030] Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
             return .failedInvalidSettings
         }
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
             logMessageAdvertisement(
-                    "Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
+                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             )
@@ -84,7 +84,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            emitFatalError(.invalidSettings, ex.localizedDescription)
+            emitFatalError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
 
             return .failedInvalidSettings
         }
@@ -93,17 +93,19 @@ public class IOSFirmwareInstaller: NSObject {
             setState(.idle)
 
             try _manager.start(
-                images: [ImageManager.Image( //2
-                        image: 0,
-                        slot: 1,
-                        hash: try McuMgrImage(data: imageData).hash,
-                        data: imageData
-                )],
-                using: firmwareUpgradeConfiguration
+                    images: [
+                        ImageManager.Image( //2
+                                image: 0,
+                                slot: 1,
+                                hash: try McuMgrImage(data: imageData).hash,
+                                data: imageData
+                        )
+                    ],
+                    using: firmwareUpgradeConfiguration
             )
 
         } catch let ex {
-            emitFatalError(.deploymentFailed, ex.localizedDescription)
+            emitFatalError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
 
             return .failedDeploymentError
         }
@@ -181,20 +183,24 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter?.close()
     }
 
-    private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {
-        let currentStateSnapshot = _currentState //00
-
-        setState(.error) //                                                                      order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage) //   order
+    private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ error: Error? = nil) {
+        let currentStateSnapshot = _currentState //00  order
+        setState(.error) //                            order
+        fatalErrorOccurredAdvertisement( //            order
+            currentStateSnapshot,
+            fatalErrorType,
+            errorMessage,
+            McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+        )
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
     //@objc   dont
 
-    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ globalErrorCode: Int) {
         _lastFatalErrorMessage = errorMessage
-        _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage)
+        _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage, globalErrorCode)
     }
 
     //@objc   dont
@@ -301,12 +307,6 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        logMessageAdvertisement(
-                "** upgradeDidFail: state=\(state), error-message=\(error.localizedDescription), error-type=\(type(of: error))",
-                "firmware-installer",
-                iOSMcuManagerLibrary.McuMgrLogLevel.debug.name
-        )
-
         var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
         if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
             fatalErrorType = .firmwareUploadingErroredOut
@@ -315,7 +315,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             fatalErrorType = .firmwareImageSwapTimeout
         }
 
-        emitFatalError(fatalErrorType, error.localizedDescription)
+        emitFatalError(fatalErrorType, error.localizedDescription, error)
         busyStateChangedAdvertisement(false)
     }
 

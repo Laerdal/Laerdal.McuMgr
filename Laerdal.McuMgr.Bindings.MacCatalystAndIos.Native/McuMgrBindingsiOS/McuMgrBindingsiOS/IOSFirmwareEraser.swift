@@ -20,28 +20,33 @@ public class IOSFirmwareEraser: NSObject {
     public func beginErasure(_ imageIndex: Int) {
         busyStateChangedAdvertisement(true)
 
-        setState(EIOSFirmwareEraserState.erasing)
+        setState(.erasing)
 
         _manager = ImageManager(transport: _transporter)
         _manager.logDelegate = self
 
         _manager.erase {
             response, error in
+
             if (error != nil) {
-                self.fatalErrorOccurredAdvertisement(error?.localizedDescription ?? "An unspecified error occurred")
-                self.busyStateChangedAdvertisement(false)
-                self.setState(EIOSFirmwareEraserState.failed)
+                self.onError("[IOSFE.BE.010] Failed to start firmware erasure: \(error?.localizedDescription ?? "An unspecified error occurred")", error)
                 return
             }
 
             self.readImageErasure()
-            self.setState(EIOSFirmwareEraserState.complete)
+            self.setState(.complete)
         }
     }
 
     @objc
     public func disconnect() {
         _transporter?.close()
+    }
+
+    private func onError(_ errorMessage: String, _ error: Error?) {
+        setState(.failed)
+        fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
+        busyStateChangedAdvertisement(false)
     }
 
     private var _lastFatalErrorMessage: String
@@ -60,10 +65,9 @@ public class IOSFirmwareEraser: NSObject {
     }
 
     //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ globalErrorCode: Int) {
         _lastFatalErrorMessage = errorMessage //this method is meant to be overridden by csharp binding libraries to intercept updates
-
-        _listener.fatalErrorOccurredAdvertisement(errorMessage)
+        _listener.fatalErrorOccurredAdvertisement(errorMessage, globalErrorCode)
     }
 
     //@objc   dont
@@ -90,9 +94,9 @@ public class IOSFirmwareEraser: NSObject {
 
         _manager.list {
             response, error in
+
             if (error != nil) {
-                self.fatalErrorOccurredAdvertisement(error?.localizedDescription ?? "An unspecified error occurred")
-                self.busyStateChangedAdvertisement(false)
+                self.onError("[IOSFE.RIE.010] Failed to read firmware images after firmware-erasure completed: \(error?.localizedDescription ?? "An unspecified error occurred")", error)
                 return
             }
 

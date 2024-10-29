@@ -27,7 +27,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             ));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>()).WithInnerExceptionExactly<UploadUnauthorizedException>();
+            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>())
+                .WithInnerExceptionExactly<UploadUnauthorizedException>()
+                .And
+                .GlobalErrorCode.Should().Be(EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -73,8 +76,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                               order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileOperationGroupReturnCode.Unset); // order
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                  order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied); // order
                 });
 
                 return verdict;

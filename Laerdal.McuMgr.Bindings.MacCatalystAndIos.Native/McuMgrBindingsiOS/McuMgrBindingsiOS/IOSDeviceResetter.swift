@@ -18,7 +18,7 @@ public class IOSDeviceResetter: NSObject {
 
     @objc
     public func beginReset() {
-        setState(EIOSDeviceResetterState.resetting)
+        setState(.resetting)
 
         _manager = DefaultManager(transport: _transporter)
         _manager.logDelegate = self
@@ -27,21 +27,23 @@ public class IOSDeviceResetter: NSObject {
             response, error in
 
             if (error != nil) {
-                self.fatalErrorOccurredAdvertisement("Reset failed: '\(error?.localizedDescription ?? "<unexpected error occurred>")'")
-
-                self.setState(EIOSDeviceResetterState.failed)
+                self.onError("[IOSDR.BR.010] Reset failed: '\(error?.localizedDescription ?? "<unexpected error occurred>")'", error)
                 return
             }
 
             if (response?.getError() != nil) { // check for an error return code
-                self.fatalErrorOccurredAdvertisement("Reset failed: '\(response?.getError()?.errorDescription ?? "N/A")'")
-
-                self.setState(EIOSDeviceResetterState.failed)
+                self.onError("[IOSDR.BR.020] Reset failed: '\(response?.getError()?.errorDescription ?? "<N/A>")'", response?.getError())
                 return
             }
 
-            self.setState(EIOSDeviceResetterState.complete)
+            self.setState(.complete)
         }
+    }
+
+    private func onError(_ errorMessage: String, _ error: Error?) {
+        setState(.failed)
+
+        fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
     }
 
     @objc
@@ -76,10 +78,10 @@ public class IOSDeviceResetter: NSObject {
     }
 
     //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ errorMessage: String) {
+    private func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ globalErrorCode: Int) {
         _lastFatalErrorMessage = errorMessage
 
-        _listener.fatalErrorOccurredAdvertisement(errorMessage)
+        _listener.fatalErrorOccurredAdvertisement(errorMessage, globalErrorCode)
     }
 
     //@objc   dont

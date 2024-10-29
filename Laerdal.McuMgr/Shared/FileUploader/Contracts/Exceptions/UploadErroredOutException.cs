@@ -7,27 +7,17 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
     public class UploadErroredOutException : Exception, IUploadException
     {
         public string RemoteFilePath { get; }
-        
-        public EMcuMgrErrorCode McuMgrErrorCode { get; } = EMcuMgrErrorCode.Unset;
-        public EFileOperationGroupReturnCode GroupReturnCode { get; } = EFileOperationGroupReturnCode.Unset;
-
-        protected UploadErroredOutException(string remoteFilePath, string errorMessage, Exception innerException = null)
-            : base($"An error occurred while uploading over to '{remoteFilePath}': '{errorMessage}'", innerException)
-        {
-            RemoteFilePath = remoteFilePath;
-        }
+        public EGlobalErrorCode GlobalErrorCode { get; }
 
         public UploadErroredOutException(
             string nativeErrorMessage,
             string remoteFilePath,
-            EMcuMgrErrorCode mcuMgrErrorCode,
-            EFileOperationGroupReturnCode groupReturnCode,
+            EGlobalErrorCode globalErrorCode = EGlobalErrorCode.Unset,
             Exception innerException = null
-        ) : base($"An error occurred while uploading '{remoteFilePath}': '{nativeErrorMessage}' (mcuMgrErrorCode={mcuMgrErrorCode}, groupReturnCode={groupReturnCode})", innerException)
+        ) : base($"An error occurred while uploading '{remoteFilePath}': '{nativeErrorMessage}' (globalErrorCode={globalErrorCode})", innerException)
         {
             RemoteFilePath = remoteFilePath;
-            McuMgrErrorCode = mcuMgrErrorCode;
-            GroupReturnCode = groupReturnCode;
+            GlobalErrorCode = globalErrorCode;
         }
     }
 }

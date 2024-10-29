@@ -39,11 +39,13 @@ public enum EAndroidFirmwareInstallationMode
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFirmwareInstallationMode(int value) {
+    EAndroidFirmwareInstallationMode(int value)
+    {
         _value = value;
     }
 
-    FirmwareUpgradeManager.Mode getValueFirmwareUpgradeManagerMode() throws RuntimeException {
+    FirmwareUpgradeManager.Mode getValueFirmwareUpgradeManagerMode() throws RuntimeException
+    {
         switch (_value)
         {
             case 0:

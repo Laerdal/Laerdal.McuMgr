@@ -18,8 +18,6 @@ namespace Laerdal.McuMgr.DeviceResetter
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter, IDeviceResetterEventEmittable
     {
-        
-        
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeDeviceResetterProxy
         internal class GenericNativeDeviceResetterCallbacksProxy : INativeDeviceResetterCallbacksProxy
         {
@@ -39,8 +37,8 @@ namespace Laerdal.McuMgr.DeviceResetter
                     oldState: oldState
                 ));
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => DeviceResetter?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+                => DeviceResetter?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage, globalErrorCode));
         }
 
         private readonly INativeDeviceResetterProxy _nativeDeviceResetterProxy;
@@ -98,8 +96,8 @@ namespace Laerdal.McuMgr.DeviceResetter
 
             try
             {
-                StateChanged += ResetAsyncOnStateChanged;
-                FatalErrorOccurred += ResetAsyncOnFatalErrorOccurred;
+                StateChanged += DeviceResetter_StateChanged_;
+                FatalErrorOccurred += DeviceResetter_FatalErrorOccurred_;
 
                 BeginReset(); //00 dont use task.run here for now
 
@@ -133,30 +131,27 @@ namespace Laerdal.McuMgr.DeviceResetter
             }
             finally
             {
-                StateChanged -= ResetAsyncOnStateChanged;
-                FatalErrorOccurred -= ResetAsyncOnFatalErrorOccurred;
+                StateChanged -= DeviceResetter_StateChanged_;
+                FatalErrorOccurred -= DeviceResetter_FatalErrorOccurred_;
             }
 
             return;
 
-            void ResetAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+            void DeviceResetter_StateChanged_(object _, StateChangedEventArgs ea_)
             {
-                if (ea.NewState != EDeviceResetterState.Complete)
+                if (ea_.NewState != EDeviceResetterState.Complete)
                     return;
                 
                 taskCompletionSource.TrySetResult(true);
             }
 
-            void ResetAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
+            void DeviceResetter_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
             {
-                var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false;
-                if (isAboutUnauthorized)
+                taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                 {
-                    taskCompletionSource.TrySetException(new UnauthorizedException(ea.ErrorMessage));
-                    return;
-                }
-
-                taskCompletionSource.TrySetException(new DeviceResetterErroredOutException(ea.ErrorMessage)); //generic
+                    EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UnauthorizedException(ea_.ErrorMessage, ea_.GlobalErrorCode),
+                    _ => new DeviceResetterErroredOutException(ea_.ErrorMessage, ea_.GlobalErrorCode)
+                });
             }
             
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the
