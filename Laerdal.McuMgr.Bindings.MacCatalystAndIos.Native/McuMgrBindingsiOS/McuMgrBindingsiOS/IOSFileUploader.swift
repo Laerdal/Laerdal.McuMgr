@@ -66,51 +66,51 @@ public class IOSFileUploader: NSObject {
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
-            onError("Another upload is already in progress")
+            onError("[IOSFU.BU.010] Another upload is already in progress")
 
             return .failedOtherUploadAlreadyInProgress
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
-            onError("Target-file provided is dud")
+            onError("[IOSFU.BU.020] Target-file provided is dud")
 
             return .failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
-            onError("Target-file points to a directory instead of a file")
+            onError("[IOSFU.BU.030] Target-file points to a directory instead of a file")
 
             return .failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
-            onError("Target-path is not absolute")
+            onError("[IOSFU.BU.040] Target-path is not absolute")
 
             return .failedInvalidSettings
         }
 
         if data == nil { // data being nil is not ok    btw data.length==0 is perfectly ok because we might want to create empty files
-            onError("The data provided are nil")
+            onError("[IOSFU.BU.050] The data provided are nil")
 
             return .failedInvalidData
         }
 
         if _cbPeripheral == nil {
-            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
+            onError("[IOSFU.BU.060] No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return .failedInvalidSettings;
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            onError("When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+            onError("[IOSFU.BU.070] When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
 
             return .failedInvalidSettings
         }
         
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            onError("Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+            onError("[IOSFU.BU.080] Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
             return .failedInvalidSettings
         }
@@ -132,13 +132,13 @@ public class IOSFileUploader: NSObject {
             delegate: self
         )
         if !success {
-            onError("Failed to commence file-uploading (check logs for details)")
+            onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
 
             return .failedErrorUponCommencing
         }
 
         return .success
-        
+
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
     }
     
@@ -246,11 +246,10 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
-        setState(.error) //keep first
-
         _lastFatalErrorMessage = errorMessage
 
-        _listener.fatalErrorOccurredAdvertisement(
+        setState(.error) //                           order
+        _listener.fatalErrorOccurredAdvertisement( // order
                 _remoteFilePathSanitized,
                 errorMessage,
                 McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)

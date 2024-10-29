@@ -3,10 +3,12 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
+import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
+import io.runtime.mcumgr.response.HasReturnCode;
 import io.runtime.mcumgr.transfer.DownloadCallback;
 import io.runtime.mcumgr.transfer.TransferController;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
@@ -104,14 +106,14 @@ public class AndroidFileDownloader
     {
         if (!IsCold()) //keep first
         {
-            onError("Another download is already in progress");
+            onError("[AFD.BD.000] Another download is already in progress");
 
             return EAndroidFileDownloaderVerdict.FAILED__DOWNLOAD_ALREADY_IN_PROGRESS;
         }
 
         if (remoteFilePath == null || remoteFilePath.isEmpty())
         {
-            onError("Target-file provided is dud!");
+            onError("[AFD.BD.010] Target-file provided is dud!");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -119,28 +121,28 @@ public class AndroidFileDownloader
         _remoteFilePathSanitized = remoteFilePath.trim();
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
-            onError("Provided target-path points to a directory not a file");
+            onError("[AFD.BD.020] Provided target-path points to a directory not a file");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (!_remoteFilePathSanitized.startsWith("/"))
         {
-            onError("Provided target-path is not an absolute path");
+            onError("[AFD.BD.030] Provided target-path is not an absolute path");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (_context == null)
         {
-            onError("No context specified - call trySetContext() first");
+            onError("[AFD.BD.040] No context specified - call trySetContext() first");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (_bluetoothDevice == null)
         {
-            onError("No bluetooth-device specified - call trySetBluetoothDevice() first");
+            onError("[AFD.BD.050] No bluetooth-device specified - call trySetBluetoothDevice() first");
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -161,7 +163,7 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            onError("Failed to initialize download", ex);
+            onError("[AFD.BD.060] Failed to initialize download: " + ex.getMessage(), ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
@@ -234,10 +236,7 @@ public class AndroidFileDownloader
         if (_transport != null)
             return;
 
-        logMessageAdvertisement("[AFD.ETIIEO.010] (Re)Initializing transport: initial-mtu-size=" + initialMtuSize, "FileDownloader", "TRACE", _remoteFilePathSanitized);
-
         _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
-
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
@@ -257,8 +256,6 @@ public class AndroidFileDownloader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileDownloaderVerdict.SUCCESS;
 
-        logMessageAdvertisement("[AFD.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileDownloader", "TRACE", _remoteFilePathSanitized);
-
         try
         {
             _fileSystemManager = new FsManager(_transport); //order
@@ -267,7 +264,7 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            onError(ex.getMessage(), ex);
+            onError("[AFD.EFMIIEO.010] Failed to initialize the filesystem manager: " + ex.getMessage(), ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -372,21 +369,31 @@ public class AndroidFileDownloader
         return _lastFatalErrorMessage;
     }
 
-    public void onError(final String errorMessage)
+    private void onError(final String errorMessage)
     {
         onError(errorMessage, null);
     }
 
-    //@Contract(pure = true) //dont
-    public void onError(final String errorMessage, final Exception exception)
+    private void onError(final String errorMessage, final Exception exception)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception));
+    }
+
+    private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs));
+    }
+
+    private void onErrorImpl(final String errorMessage, final int globalErrorCode)
     {
         setState(EAndroidFileDownloaderState.ERROR);
 
-        fatalErrorOccurredAdvertisement(
-                _remoteFilePathSanitized,
-                errorMessage,
-                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
-        );
+        fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, globalErrorCode);
+    }
+
+    public void fatalErrorOccurredAdvertisement(final String errorMessage, final int globalErrorCode)
+    { //this method is meant to be overridden by csharp binding libraries to intercept updates
+        _lastFatalErrorMessage = errorMessage;
     }
 
     public void fatalErrorOccurredAdvertisement(

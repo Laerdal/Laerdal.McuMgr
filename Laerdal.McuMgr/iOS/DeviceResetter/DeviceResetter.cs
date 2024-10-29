@@ -88,9 +88,13 @@ namespace Laerdal.McuMgr.DeviceResetter
                     oldState: oldState
                 );
 
-            public override void FatalErrorOccurredAdvertisement(string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(string errorMessage, nint globalErrorCode)
+                => FatalErrorOccurredAdvertisement(errorMessage, (EGlobalErrorCode)globalErrorCode);
+
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
                 => _nativeResetterCallbacksProxy?.FatalErrorOccurredAdvertisement(
-                    errorMessage: errorMessage
+                    errorMessage: errorMessage,
+                    globalErrorCode: globalErrorCode
                 );
 
             #endregion listener events

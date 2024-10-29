@@ -18,8 +18,6 @@ namespace Laerdal.McuMgr.DeviceResetter
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter, IDeviceResetterEventEmittable
     {
-        
-        
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeDeviceResetterProxy
         internal class GenericNativeDeviceResetterCallbacksProxy : INativeDeviceResetterCallbacksProxy
         {
@@ -39,7 +37,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                     oldState: oldState
                 ));
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
                 => DeviceResetter?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
         }
 

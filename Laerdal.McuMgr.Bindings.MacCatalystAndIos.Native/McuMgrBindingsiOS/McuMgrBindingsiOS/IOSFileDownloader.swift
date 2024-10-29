@@ -60,26 +60,26 @@ public class IOSFileDownloader: NSObject {
     public func beginDownload(_ remoteFilePath: String) -> EIOSFileDownloadingInitializationVerdict {
 
         if !isCold() { //keep first   if another download is already in progress we bail out
-            onError("Another download is already in progress")
+            onError("[IOSFD.BD.010] Another download is already in progress")
 
             return .failedDownloadAlreadyInProgress
         }
 
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
-            onError("Target-file provided is dud!")
+            onError("[IOSFD.BD.020] Target-file provided is dud!")
 
             return .failedInvalidSettings
         }
 
         if _remoteFilePathSanitized.hasSuffix("/") {
-            onError("Target-file points to a directory instead of a file")
+            onError("[IOSFD.BD.030] Target-file points to a directory instead of a file")
 
             return .failedInvalidSettings
         }
 
         if !_remoteFilePathSanitized.hasPrefix("/") {
-            onError("Target-path is not absolute!")
+            onError("[IOSFD.BD.040] Target-path is not absolute!")
 
             return .failedInvalidSettings
         }
@@ -91,7 +91,7 @@ public class IOSFileDownloader: NSObject {
 
         let success = _fileSystemManager.download(name: _remoteFilePathSanitized, delegate: self)
         if !success {
-            onError("Failed to commence file-Downloading (check logs for details)")
+            onError("[IOSFD.BD.050] Failed to commence file-Downloading (check logs for details)")
 
             return .failedErrorUponCommencing
         }
@@ -181,11 +181,9 @@ public class IOSFileDownloader: NSObject {
 
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
-        setState(.error) //keep first
-
-        _lastFatalErrorMessage = errorMessage
-
-        _listener.fatalErrorOccurredAdvertisement(
+        _lastFatalErrorMessage = errorMessage //       order
+        setState(.error) //                            order
+        _listener.fatalErrorOccurredAdvertisement( //  order
                 _remoteFilePathSanitized,
                 errorMessage,
                 McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)

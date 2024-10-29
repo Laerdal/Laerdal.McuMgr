@@ -42,8 +42,8 @@ namespace Laerdal.McuMgr.FirmwareEraser
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FirmwareEraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => FirmwareEraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+                => FirmwareEraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage, globalErrorCode));
         }
         
         private readonly INativeFirmwareEraserProxy _nativeFirmwareEraserProxy;

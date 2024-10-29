@@ -9,7 +9,7 @@ import Foundation
 @objc
 public protocol IOSListenerForFirmwareEraser {
     func logMessageAdvertisement(_ message: String, _ category: String, _ level: String)
-    func fatalErrorOccurredAdvertisement(_ errorMessage: String)
+    func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ globalErrorCode: Int)
     func stateChangedAdvertisement(_ oldState: EIOSFirmwareEraserState, _ newState: EIOSFirmwareEraserState)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
 }

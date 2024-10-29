@@ -38,27 +38,27 @@ public class IOSFirmwareInstaller: NSObject {
         _lastBytesSendTimestamp = nil
 
         if (imageData.isEmpty) {
-            emitFatalError(.invalidFirmware, "The firmware data-bytes given are dud!")
+            emitFatalError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud!")
 
             return .failedInvalidFirmware
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            emitFatalError(.invalidSettings, "When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+            emitFatalError(.invalidSettings, "[IOSFI.BI.020] When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
 
             return .failedInvalidSettings
         }
 
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            emitFatalError(.invalidSettings, "Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+            emitFatalError(.invalidSettings, "[IOSFI.BI.030] Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
             return .failedInvalidSettings
         }
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
             logMessageAdvertisement(
-                    "Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
+                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             )
@@ -84,7 +84,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            emitFatalError(.invalidSettings, ex.localizedDescription)
+            emitFatalError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
 
             return .failedInvalidSettings
         }
@@ -93,17 +93,19 @@ public class IOSFirmwareInstaller: NSObject {
             setState(.idle)
 
             try _manager.start(
-                images: [ImageManager.Image( //2
-                        image: 0,
-                        slot: 1,
-                        hash: try McuMgrImage(data: imageData).hash,
-                        data: imageData
-                )],
-                using: firmwareUpgradeConfiguration
+                    images: [
+                        ImageManager.Image( //2
+                                image: 0,
+                                slot: 1,
+                                hash: try McuMgrImage(data: imageData).hash,
+                                data: imageData
+                        )
+                    ],
+                    using: firmwareUpgradeConfiguration
             )
 
         } catch let ex {
-            emitFatalError(.deploymentFailed, ex.localizedDescription)
+            emitFatalError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
 
             return .failedDeploymentError
         }

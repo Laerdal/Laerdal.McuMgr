@@ -4,10 +4,12 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrCallback;
+import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.DefaultManager;
+import io.runtime.mcumgr.response.HasReturnCode;
 import io.runtime.mcumgr.response.dflt.McuMgrOsResponse;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -39,11 +41,13 @@ public class AndroidDeviceResetter
         catch (final Exception ex)
         {
             setState(EAndroidDeviceResetterState.FAILED);
-            fatalErrorOccurredAdvertisement("Failed to create manager: '" + ex.getMessage() + "'");
+            onError("Failed to create manager: '" + ex.getMessage() + "'", ex);
             return;
         }
 
         setState(EAndroidDeviceResetterState.RESETTING);
+
+        AndroidDeviceResetter self = this;
 
         _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
         {
@@ -53,7 +57,7 @@ public class AndroidDeviceResetter
             {
                 if (!response.isSuccess())
                 { // check for an error return code
-                    fatalErrorOccurredAdvertisement("Reset failed (error-code '" + response.getReturnCode().toString() + "')");
+                    self.onError("Reset failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
 
                     setState(EAndroidDeviceResetterState.FAILED);
                     return;
@@ -63,9 +67,9 @@ public class AndroidDeviceResetter
             }
 
             @Override
-            public void onError(@NotNull final McuMgrException error)
+            public void onError(@NotNull final McuMgrException exception)
             {
-                fatalErrorOccurredAdvertisement("Reset failed '" + error.getMessage() + "'");
+                self.onError("Reset failed '" + exception.getMessage() + "'", exception);
 
                 setState(EAndroidDeviceResetterState.FAILED);
             }
@@ -114,8 +118,25 @@ public class AndroidDeviceResetter
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage)
+    private void onError(final String errorMessage, final Exception exception)
     {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception));
+    }
+
+    private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs));
+    }
+
+    private void onErrorImpl(final String errorMessage, final int globalErrorCode)
+    {
+        setState(EAndroidDeviceResetterState.FAILED);
+
+        fatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
+    }
+
+    public void fatalErrorOccurredAdvertisement(final String errorMessage, final int globalErrorCode)
+    { //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
     }
 

@@ -9,6 +9,6 @@ import Foundation
 @objc
 public protocol IOSListenerForDeviceResetter {
     func logMessageAdvertisement(_ message: String, _ category: String, _ level: String)
-    func fatalErrorOccurredAdvertisement(_ errorMessage: String)
+    func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ globalErrorCode: Int)
     func stateChangedAdvertisement(_ oldState: EIOSDeviceResetterState, _ newState: EIOSDeviceResetterState)
 }

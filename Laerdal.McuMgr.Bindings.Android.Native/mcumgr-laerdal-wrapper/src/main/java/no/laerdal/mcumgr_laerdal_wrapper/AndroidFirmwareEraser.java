@@ -4,10 +4,12 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrCallback;
+import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
+import io.runtime.mcumgr.response.HasReturnCode;
 import io.runtime.mcumgr.response.img.McuMgrImageResponse;
 import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 import org.jetbrains.annotations.Contract;
@@ -36,6 +38,8 @@ public class AndroidFirmwareEraser
 
         setState(EAndroidFirmwareEraserState.ERASING);
 
+        AndroidFirmwareEraser self = this;
+
         _imageManager = new ImageManager(_transport);
         _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>()
         {
@@ -44,25 +48,20 @@ public class AndroidFirmwareEraser
             {
                 if (!response.isSuccess())
                 { // check for an error return code
-                    fatalErrorOccurredAdvertisement("Erasure failed (error-code '" + response.getReturnCode().toString() + "')");
-
-                    setState(EAndroidFirmwareEraserState.FAILED);
+                    self.onError("[AFE.BE.OR.010] Erasure failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
                     return;
                 }
 
                 readImageErasure();
-
                 setState(EAndroidFirmwareEraserState.COMPLETE);
             }
 
             @Override
-            public void onError(@NonNull final McuMgrException error)
+            public void onError(@NonNull final McuMgrException exception)
             {
-                fatalErrorOccurredAdvertisement("Erasure failed '" + error.getMessage() + "'");
+                self.onError("[AFE.BE.OE.010] Erasure failed '" + exception.getMessage() + "'", exception);
 
                 busyStateChangedAdvertisement(false);
-
-                setState(EAndroidFirmwareEraserState.IDLE);
             }
         });
     }
@@ -104,7 +103,24 @@ public class AndroidFirmwareEraser
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(final String errorMessage)
+    private void onError(final String errorMessage, final Exception exception)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception));
+    }
+
+    private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs));
+    }
+
+    private void onErrorImpl(final String errorMessage, final int globalErrorCode)
+    {
+        setState(EAndroidFirmwareEraserState.FAILED);
+
+        fatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
+    }
+
+    public void fatalErrorOccurredAdvertisement(final String errorMessage, int globalErrorCode)
     {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -125,9 +141,10 @@ public class AndroidFirmwareEraser
     {
         busyStateChangedAdvertisement(true);
 
+        AndroidFirmwareEraser self = this;
+
         _imageManager.list(new McuMgrCallback<McuMgrImageStateResponse>()
         {
-
             @Override
             public void onResponse(@NonNull final McuMgrImageStateResponse response)
             {
@@ -136,9 +153,9 @@ public class AndroidFirmwareEraser
             }
 
             @Override
-            public void onError(@NonNull final McuMgrException error)
+            public void onError(@NonNull final McuMgrException exception)
             {
-                fatalErrorOccurredAdvertisement(error.getMessage());
+                self.onError("[AFE.RIE.OE.010] Failed to read firmware images after firmware erasure : " + exception.getMessage(), exception);
                 busyStateChangedAdvertisement(false);
             }
         });
