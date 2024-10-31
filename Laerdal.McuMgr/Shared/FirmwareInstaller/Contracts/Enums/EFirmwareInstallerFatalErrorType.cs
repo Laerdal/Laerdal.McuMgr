@@ -8,5 +8,6 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums
         DeploymentFailed = 3,
         FirmwareImageSwapTimeout = 4,
         FirmwareUploadingErroredOut = 5,
+        FailedInstallationAlreadyInProgress = 6,
     }
 }

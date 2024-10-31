@@ -32,49 +32,50 @@ public class AndroidDeviceResetter
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public void beginReset()
+    public EAndroidDeviceResetterInitializationVerdict beginReset()
     {
+        if (!IsCold())
+        { //keep first
+            onError("[ADR.BR.000] Another reset operation is already in progress (state='" + _currentState + "')");
+
+            return EAndroidDeviceResetterInitializationVerdict.FAILED__OTHER_RESET_ALREADY_IN_PROGRESS;
+        }
+
         try
         {
-            _manager = new DefaultManager(_transport);
+            setState(EAndroidDeviceResetterState.IDLE); //order
+            _manager = new DefaultManager(_transport); //order
+            setState(EAndroidDeviceResetterState.RESETTING); //order
+
+            AndroidDeviceResetter self = this;
+            _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
+            {
+                @Override
+                public void onResponse(@NotNull final McuMgrOsResponse response)
+                {
+                    if (!response.isSuccess())
+                    { // check for an error return code
+                        self.onError("[ADR.BR.002] Reset failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
+                        return;
+                    }
+
+                    setState(EAndroidDeviceResetterState.COMPLETE);
+                }
+
+                @Override
+                public void onError(@NotNull final McuMgrException exception)
+                {
+                    self.onError("[ADR.BR.005] Reset failed '" + exception.getMessage() + "'", exception);
+                }
+            });
         }
         catch (final Exception ex)
         {
-            setState(EAndroidDeviceResetterState.FAILED);
-            onError("Failed to create manager: '" + ex.getMessage() + "'", ex);
-            return;
+            onError("[ADR.BR.010] Failed to initialize reset operation: '" + ex.getMessage() + "'", ex);
+            return EAndroidDeviceResetterInitializationVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
 
-        setState(EAndroidDeviceResetterState.RESETTING);
-
-        AndroidDeviceResetter self = this;
-
-        _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
-        {
-
-            @Override
-            public void onResponse(@NotNull final McuMgrOsResponse response)
-            {
-                if (!response.isSuccess())
-                { // check for an error return code
-                    self.onError("Reset failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
-
-                    setState(EAndroidDeviceResetterState.FAILED);
-                    return;
-                }
-
-                setState(EAndroidDeviceResetterState.COMPLETE);
-            }
-
-            @Override
-            public void onError(@NotNull final McuMgrException exception)
-            {
-                self.onError("Reset failed '" + exception.getMessage() + "'", exception);
-
-                setState(EAndroidDeviceResetterState.FAILED);
-            }
-
-        });
+        return EAndroidDeviceResetterInitializationVerdict.SUCCESS;
     }
 
     public void disconnect()
@@ -96,6 +97,13 @@ public class AndroidDeviceResetter
 
     private EAndroidDeviceResetterState _currentState = EAndroidDeviceResetterState.NONE;
 
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidDeviceResetterState.NONE
+                || _currentState == EAndroidDeviceResetterState.COMPLETE;
+    }
+
     private void setState(final EAndroidDeviceResetterState newState)
     {
         final EAndroidDeviceResetterState oldState = _currentState; //order
@@ -116,6 +124,11 @@ public class AndroidDeviceResetter
     public String getLastFatalErrorMessage()
     {
         return _lastFatalErrorMessage;
+    }
+
+    private void onError(final String errorMessage)
+    {
+        onError(errorMessage, null);
     }
 
     private void onError(final String errorMessage, final Exception exception)

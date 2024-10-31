@@ -54,7 +54,13 @@ namespace Laerdal.McuMgr.DeviceResetter
         public string LastFatalErrorMessage => _nativeDeviceResetterProxy?.LastFatalErrorMessage;
 
         public void Disconnect() => _nativeDeviceResetterProxy?.Disconnect();
-        public void BeginReset() => _nativeDeviceResetterProxy?.BeginReset();
+        public EDeviceResetterInitializationVerdict BeginReset()
+        {
+            if (_nativeDeviceResetterProxy == null)
+                throw new InvalidOperationException("The native device resetter is not initialized");
+            
+            return _nativeDeviceResetterProxy.BeginReset();
+        }
 
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
@@ -99,7 +105,9 @@ namespace Laerdal.McuMgr.DeviceResetter
                 StateChanged += DeviceResetter_StateChanged_;
                 FatalErrorOccurred += DeviceResetter_FatalErrorOccurred_;
 
-                BeginReset(); //00 dont use task.run here for now
+                var verdict = BeginReset(); //00 dont use task.run here for now
+                if (verdict != EDeviceResetterInitializationVerdict.Success)
+                    throw new ArgumentException(verdict.ToString());
 
                 _ = timeoutInMs <= 0
                     ? await taskCompletionSource.Task

@@ -17,30 +17,50 @@ public class IOSDeviceResetter: NSObject {
     }
 
     @objc
-    public func beginReset() {
-        setState(.resetting)
+    public func beginReset(_ keepThisDummyParameter: Bool = false) -> EIOSDeviceResetInitializationVerdict {
+        if (!isCold()) { //keep first
+            onError("[IOSDR.BR.000] Another erasure operation is already in progress")
 
-        _manager = DefaultManager(transport: _transporter)
-        _manager.logDelegate = self
-
-        _manager.reset {
-            response, error in
-
-            if (error != nil) {
-                self.onError("[IOSDR.BR.010] Reset failed: '\(error?.localizedDescription ?? "<unexpected error occurred>")'", error)
-                return
-            }
-
-            if (response?.getError() != nil) { // check for an error return code
-                self.onError("[IOSDR.BR.020] Reset failed: '\(response?.getError()?.errorDescription ?? "<N/A>")'", response?.getError())
-                return
-            }
-
-            self.setState(.complete)
+            return .failedOtherResetAlreadyInProgress
         }
+
+        do {
+            setState(.idle)
+            _manager = DefaultManager(transport: _transporter)
+            _manager.logDelegate = self
+
+            setState(.resetting)
+            _manager.reset {
+                response, error in
+
+                if (error != nil) {
+                    self.onError("[IOSDR.BR.010] Reset failed: '\(error?.localizedDescription ?? "<unexpected error occurred>")'", error)
+                    return
+                }
+
+                if (response?.getError() != nil) { // check for an error return code
+                    self.onError("[IOSDR.BR.020] Reset failed: '\(response?.getError()?.errorDescription ?? "<N/A>")'", response?.getError())
+                    return
+                }
+
+                self.setState(.complete)
+            }
+        } catch let ex {
+            onError("[IOSDR.BR.030] Failed to launch the installation process: '\(ex.localizedDescription)", ex)
+
+            return .failedErrorUponCommencing
+        }
+
+        return .success
     }
 
-    private func onError(_ errorMessage: String, _ error: Error?) {
+    private func isCold() -> Bool {
+        return _currentState == .none
+                || _currentState == .failed
+                || _currentState == .complete
+    }
+
+    private func onError(_ errorMessage: String, _ error: Error? = nil) {
         setState(.failed)
 
         fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))

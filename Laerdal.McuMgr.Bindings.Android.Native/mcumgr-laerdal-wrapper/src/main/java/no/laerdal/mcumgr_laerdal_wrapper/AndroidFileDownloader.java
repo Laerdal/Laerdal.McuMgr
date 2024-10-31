@@ -147,23 +147,24 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
-        ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
-
-        final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
-        if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
-            return verdict;
-
-        ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
-
-        setLoggingEnabled(false);
         try
         {
+            resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
+            ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
+            setLoggingEnabledOnConnection(false); //order
+
+            final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
+            if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
+                return verdict;
+
+            tryEnsureConnectionPriorityOnTransport(); //order
+            ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
+
             _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy);
         }
         catch (final Exception ex)
         {
-            onError("[AFD.BD.060] Failed to initialize download: " + ex.getMessage(), ex);
+            onError("[AFD.BD.060] Failed to initialize the download operation: " + ex.getMessage(), ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
@@ -178,7 +179,7 @@ public class AndroidFileDownloader
             return;
 
         setState(EAndroidFileDownloaderState.PAUSED);
-        setLoggingEnabled(true);
+        setLoggingEnabledOnConnection(true);
         transferController.pause();
         busyStateChangedAdvertisement(false);
     }
@@ -194,7 +195,7 @@ public class AndroidFileDownloader
         busyStateChangedAdvertisement(true);
         _initialBytes = 0;
 
-        setLoggingEnabled(false);
+        setLoggingEnabledOnConnection(false);
         transferController.resume();
     }
 
@@ -233,10 +234,11 @@ public class AndroidFileDownloader
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
     {
-        if (_transport != null)
-            return;
+        if (_transport == null)
+        {
+            _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+        }
 
-        _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
@@ -259,27 +261,20 @@ public class AndroidFileDownloader
         try
         {
             _fileSystemManager = new FsManager(_transport); //order
-
-            requestHighConnectionPriority(_fileSystemManager); //order
         }
         catch (final Exception ex)
         {
             onError("[AFD.EFMIIEO.010] Failed to initialize the filesystem manager: " + ex.getMessage(), ex);
 
-            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+            return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
 
         return EAndroidFileDownloaderVerdict.SUCCESS;
     }
 
-    private void requestHighConnectionPriority(FsManager fileSystemManager)
+    private void tryEnsureConnectionPriorityOnTransport()
     {
-        final McuMgrTransport mcuMgrTransporter = fileSystemManager.getTransporter();
-        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
-            return;
-
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) mcuMgrTransporter;
-        bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+        _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
     private void disposeTransport()
@@ -321,13 +316,9 @@ public class AndroidFileDownloader
         _fileDownloaderCallbackProxy = null;
     }
 
-    private void setLoggingEnabled(final boolean enabled)
+    private void setLoggingEnabledOnConnection(final boolean enabled)
     {
-        final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
-        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
-            return;
-
-        ((McuMgrBleTransport) mcuMgrTransporter).setLoggingEnabled(enabled);
+        _transport.setLoggingEnabled(enabled);
     }
 
     private void setState(final EAndroidFileDownloaderState newState)
@@ -488,7 +479,7 @@ public class AndroidFileDownloader
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             onError(exception.getMessage(), exception);
-            setLoggingEnabled(true);
+            setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
 
             _downloadingController = null; //game over
@@ -500,7 +491,7 @@ public class AndroidFileDownloader
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
-            setLoggingEnabled(true);
+            setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
 
             _downloadingController = null; //game over
@@ -514,7 +505,7 @@ public class AndroidFileDownloader
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
             downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
 
             _downloadingController = null; //game over

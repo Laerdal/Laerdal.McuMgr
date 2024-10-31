@@ -80,24 +80,9 @@ public class AndroidFirmwareInstaller
                 && _currentState != EAndroidFirmwareInstallationState.COMPLETE
                 && _currentState != EAndroidFirmwareInstallationState.CANCELLED)
         {
+            onError(EAndroidFirmwareInstallerFatalErrorType.FAILED__INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
+
             return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_ALREADY_IN_PROGRESS;
-        }
-
-        _manager = new FirmwareUpgradeManager(_transport);
-        _manager.setFirmwareUpgradeCallback(new FirmwareInstallCallbackProxy());
-
-        _handlerThread = new HandlerThread("AndroidFirmwareInstaller.HandlerThread"); //todo   peer review whether this is the best way to go    maybe we should be getting this from the call environment?
-        _handlerThread.start();
-
-        _handler = new Handler(_handlerThread.getLooper());
-
-        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
-        { //it is better to just warn the calling environment instead of erroring out
-            logMessageAdvertisement(
-                    "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
-                    "FirmwareInstaller",
-                    "WARN"
-            );
         }
 
         ImageSet images = new ImageSet();
@@ -117,6 +102,23 @@ public class AndroidFirmwareInstaller
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }
+        }
+
+        _manager = new FirmwareUpgradeManager(_transport);
+        _manager.setFirmwareUpgradeCallback(new FirmwareInstallCallbackProxy());
+
+        _handlerThread = new HandlerThread("AndroidFirmwareInstaller.HandlerThread"); //todo   peer review whether this is the best way to go    maybe we should be getting this from the call environment?
+        _handlerThread.start();
+
+        _handler = new Handler(_handlerThread.getLooper());
+
+        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
+        { //it is better to just warn the calling environment instead of erroring out
+            logMessageAdvertisement(
+                    "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
+                    "FirmwareInstaller",
+                    "WARN"
+            );
         }
 
         @NotNull Settings settings;
@@ -244,7 +246,12 @@ public class AndroidFirmwareInstaller
         return _lastFatalErrorMessage;
     }
 
-    public void onError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, Exception ex)
+    public void onError(final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    {
+        onError(fatalErrorType, errorMessage, null);
+    }
+
+    public void onError(final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final Exception ex)
     {
         EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
         setState(EAndroidFirmwareInstallationState.ERROR); //                         order

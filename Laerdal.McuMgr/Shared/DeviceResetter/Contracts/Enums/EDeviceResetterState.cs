@@ -6,6 +6,6 @@
         Idle = 1,
         Resetting = 2,
         Complete = 3,
-        Failed = 4
+        Failed = 4,
     }
 }

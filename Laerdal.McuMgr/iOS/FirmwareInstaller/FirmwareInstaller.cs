@@ -113,6 +113,9 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 int? byteAlignment = null
             )
             {
+                if (_nativeFirmwareInstaller == null)
+                    throw new InvalidOperationException("The native firmware installer is not initialized");
+                
                 var nsDataOfFirmware = NSData.FromArray(data);
                 
                 var verdict = TranslateFirmwareInstallationVerdict(_nativeFirmwareInstaller.BeginInstallation(
@@ -217,6 +220,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     EIOSFirmwareInstallerFatalErrorType.DeploymentFailed => EFirmwareInstallerFatalErrorType.DeploymentFailed,
                     EIOSFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout,
                     EIOSFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut => EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut,
+                    EIOSFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress => EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress,
+
                     _ => throw new ArgumentOutOfRangeException(nameof(fatalErrorType), actualValue: fatalErrorType, message: "Unknown enum value")
                 };
             }

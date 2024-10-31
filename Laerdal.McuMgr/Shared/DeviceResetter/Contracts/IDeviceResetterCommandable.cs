@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts
 {
@@ -11,7 +12,7 @@ namespace Laerdal.McuMgr.DeviceResetter.Contracts
         Task ResetAsync(int timeoutInMs = -1);
         
         /// <summary>Starts the resetting process. Basically reboots the device - it doesn't delete any of the firmware or the configuration.</summary>
-        void BeginReset();
+        EDeviceResetterInitializationVerdict BeginReset();
 
         /// <summary>Drops the active bluetooth-connection to the Zephyr device.</summary>
         void Disconnect();
