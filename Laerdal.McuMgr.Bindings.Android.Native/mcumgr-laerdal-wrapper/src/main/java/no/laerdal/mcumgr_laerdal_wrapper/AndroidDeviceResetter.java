@@ -51,7 +51,6 @@ public class AndroidDeviceResetter
 
         _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
         {
-
             @Override
             public void onResponse(@NotNull final McuMgrOsResponse response)
             {

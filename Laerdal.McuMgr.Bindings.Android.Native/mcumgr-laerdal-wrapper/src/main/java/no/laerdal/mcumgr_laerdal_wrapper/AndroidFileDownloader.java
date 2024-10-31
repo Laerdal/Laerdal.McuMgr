@@ -149,14 +149,15 @@ public class AndroidFileDownloader
 
         try
         {
-            setLoggingEnabled(false);
             resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
             ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
+            setLoggingEnabledOnConnection(false); //order
+
             final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
             if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
                 return verdict;
 
-            tryEnsureHighConnectionPriority(_transport); //order
+            tryEnsureConnectionPriorityOnTransport(); //order
             ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
 
             _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy);
@@ -178,7 +179,7 @@ public class AndroidFileDownloader
             return;
 
         setState(EAndroidFileDownloaderState.PAUSED);
-        setLoggingEnabled(true);
+        setLoggingEnabledOnConnection(true);
         transferController.pause();
         busyStateChangedAdvertisement(false);
     }
@@ -194,7 +195,7 @@ public class AndroidFileDownloader
         busyStateChangedAdvertisement(true);
         _initialBytes = 0;
 
-        setLoggingEnabled(false);
+        setLoggingEnabledOnConnection(false);
         transferController.resume();
     }
 
@@ -233,10 +234,11 @@ public class AndroidFileDownloader
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
     {
-        if (_transport != null)
-            return;
+        if (_transport == null)
+        {
+            _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+        }
 
-        _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
@@ -270,9 +272,9 @@ public class AndroidFileDownloader
         return EAndroidFileDownloaderVerdict.SUCCESS;
     }
 
-    private void tryEnsureHighConnectionPriority(final McuMgrBleTransport connection)
+    private void tryEnsureConnectionPriorityOnTransport()
     {
-        connection.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+        _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
     private void disposeTransport()
@@ -314,13 +316,9 @@ public class AndroidFileDownloader
         _fileDownloaderCallbackProxy = null;
     }
 
-    private void setLoggingEnabled(final boolean enabled)
+    private void setLoggingEnabledOnConnection(final boolean enabled)
     {
-        final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
-        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
-            return;
-
-        ((McuMgrBleTransport) mcuMgrTransporter).setLoggingEnabled(enabled);
+        _transport.setLoggingEnabled(enabled);
     }
 
     private void setState(final EAndroidFileDownloaderState newState)
@@ -481,7 +479,7 @@ public class AndroidFileDownloader
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             onError(exception.getMessage(), exception);
-            setLoggingEnabled(true);
+            setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
 
             _downloadingController = null; //game over
@@ -493,7 +491,7 @@ public class AndroidFileDownloader
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
-            setLoggingEnabled(true);
+            setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
 
             _downloadingController = null; //game over
@@ -507,7 +505,7 @@ public class AndroidFileDownloader
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
             downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
 
             _downloadingController = null; //game over
