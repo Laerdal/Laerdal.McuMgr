@@ -27,9 +27,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
                 _eraserCallbacksProxy = eraserCallbacksProxy;
             }
 
-            public virtual void BeginErasure(int imageIndex)
+            public virtual EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
             {
                 BeginErasureCalled = true;
+                
+                return EFirmwareErasureInitializationVerdict.Success;
             }
 
             public virtual void Disconnect()

@@ -29,9 +29,11 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 _resetterCallbacksProxy = resetterCallbacksProxy;
             }
 
-            public virtual void BeginReset()
+            public virtual EDeviceResetterInitializationVerdict BeginReset()
             {
                 BeginResetCalled = true;
+                
+                return EDeviceResetterInitializationVerdict.Success;
             }
 
             public virtual void Disconnect()

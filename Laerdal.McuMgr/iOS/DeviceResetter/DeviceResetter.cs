@@ -50,11 +50,16 @@ namespace Laerdal.McuMgr.DeviceResetter
             public string LastFatalErrorMessage => _nativeDeviceResetter?.LastFatalErrorMessage;
 
             public void Disconnect() => _nativeDeviceResetter?.Disconnect();
-            public void BeginReset() => _nativeDeviceResetter?.BeginReset();
-            
+
+            public EDeviceResetterInitializationVerdict BeginReset()
+            {
+                if (_nativeDeviceResetter == null)
+                    throw new InvalidOperationException("The native device resetter is not initialized");
+                
+                return TranslateEIOSDeviceResetterInitializationVerdict(_nativeDeviceResetter.BeginReset(keepThisDummyParameter: false));
+            }
+
             #endregion
-
-
 
             #region listener callbacks -> event emitters
 
@@ -108,6 +113,14 @@ namespace Laerdal.McuMgr.DeviceResetter
                 EIOSDeviceResetterState.Complete => EDeviceResetterState.Complete,
                 EIOSDeviceResetterState.Resetting => EDeviceResetterState.Resetting,
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
+            };
+
+            static private EDeviceResetterInitializationVerdict TranslateEIOSDeviceResetterInitializationVerdict(EIOSDeviceResetInitializationVerdict verdict) => verdict switch
+            {
+                EIOSDeviceResetInitializationVerdict.Success => EDeviceResetterInitializationVerdict.Success,
+                EIOSDeviceResetInitializationVerdict.FailedErrorUponCommencing => EDeviceResetterInitializationVerdict.FailedErrorUponCommencing,
+                EIOSDeviceResetInitializationVerdict.FailedOtherResetAlreadyInProgress => EDeviceResetterInitializationVerdict.FailedOtherResetAlreadyInProgress,
+                _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value")
             };
         }
     }

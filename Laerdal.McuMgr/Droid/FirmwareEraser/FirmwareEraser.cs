@@ -66,6 +66,14 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 set => _nativeEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
+            public EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
+            {
+                if (_nativeEraserCallbacksProxy == null)
+                    throw new InvalidOperationException("The native firmware eraser is not initialized");
+
+                return TranslateEAndroidFirmwareEraserInitializationVerdict(base.BeginErasure(imageIndex));
+            }
+
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)
             {
                 base.StateChangedAdvertisement(oldState, newState);
@@ -76,7 +84,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 );
             }
             
-            //keep this override   its needed to conform to the interface
+            //keep this override   it is needed to conform to the interface
             public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
             {
                 _nativeEraserCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState);
@@ -112,7 +120,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 );
             }
 
-            //keep this override   its needed to conform to the interface
+            //keep this override   it is needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
             {
                 _nativeEraserCallbacksProxy?.LogMessageAdvertisement(message, category, level);
@@ -147,6 +155,26 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
+            }
+
+            static internal EFirmwareErasureInitializationVerdict TranslateEAndroidFirmwareEraserInitializationVerdict(EAndroidFirmwareEraserInitializationVerdict beginErasure)
+            {
+                if (beginErasure == EAndroidFirmwareEraserInitializationVerdict.Success)
+                {
+                    return EFirmwareErasureInitializationVerdict.Success;
+                }
+                
+                if (beginErasure == EAndroidFirmwareEraserInitializationVerdict.FailedErrorUponCommencing)
+                {
+                    return EFirmwareErasureInitializationVerdict.FailedErrorUponCommencing;
+                }
+                
+                if (beginErasure == EAndroidFirmwareEraserInitializationVerdict.FailedOtherErasureAlreadyInProgress)
+                {
+                    return EFirmwareErasureInitializationVerdict.FailedOtherErasureAlreadyInProgress;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(beginErasure), beginErasure, "Unknown enum value");
             }
         }
     }

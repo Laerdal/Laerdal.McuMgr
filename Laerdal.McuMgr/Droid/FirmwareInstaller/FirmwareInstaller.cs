@@ -296,6 +296,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     return EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut;
                 }
                 
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress)
+                {
+                    return EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress;
+                }
+                
                 throw new ArgumentOutOfRangeException(nameof(fatalErrorType), fatalErrorType, "Unknown enum value");
             }
 

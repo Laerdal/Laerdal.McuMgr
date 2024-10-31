@@ -46,7 +46,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             {
             }
 
-            public override void BeginErasure(int imageIndex)
+            public override EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
             {
                 base.BeginErasure(imageIndex);
 
@@ -58,6 +58,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
                     await Task.Delay(1_000);
                     StateChangedAdvertisement(oldState: EFirmwareErasureState.Erasing, newState: EFirmwareErasureState.Complete);
                 });
+                
+                return EFirmwareErasureInitializationVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native resetter
             }

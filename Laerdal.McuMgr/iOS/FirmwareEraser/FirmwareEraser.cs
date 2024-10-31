@@ -50,7 +50,13 @@ namespace Laerdal.McuMgr.FirmwareEraser
             public void Disconnect() => _nativeFirmwareEraser?.Disconnect(); //we are simply forwarding the commands down to the native world of ios here
             public string LastFatalErrorMessage => _nativeFirmwareEraser?.LastFatalErrorMessage;
 
-            public void BeginErasure(int imageIndex) => _nativeFirmwareEraser?.BeginErasure(imageIndex);
+            public EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
+            {
+                if (_nativeFirmwareEraser == null)
+                    throw new InvalidOperationException("The native firmware eraser is not initialized");
+                
+                return TranslateEIOSFirmwareErasureInitializationVerdict(_nativeFirmwareEraser.BeginErasure(imageIndex));
+            }
 
             #endregion
 
@@ -107,6 +113,14 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 EIOSFirmwareEraserState.Erasing => EFirmwareErasureState.Erasing,
                 EIOSFirmwareEraserState.Complete => EFirmwareErasureState.Complete,
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value")
+            };
+            
+            static private EFirmwareErasureInitializationVerdict TranslateEIOSFirmwareErasureInitializationVerdict(EIOSFirmwareErasureInitializationVerdict verdict) => verdict switch
+            {
+                EIOSFirmwareErasureInitializationVerdict.Success => EFirmwareErasureInitializationVerdict.Success,
+                EIOSFirmwareErasureInitializationVerdict.FailedErrorUponCommencing => EFirmwareErasureInitializationVerdict.FailedErrorUponCommencing,
+                EIOSFirmwareErasureInitializationVerdict.FailedOtherErasureAlreadyInProgress => EFirmwareErasureInitializationVerdict.FailedOtherErasureAlreadyInProgress,
+                _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value")
             };
         }
     }

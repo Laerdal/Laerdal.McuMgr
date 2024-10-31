@@ -32,38 +32,54 @@ public class AndroidFirmwareEraser
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public void beginErasure(final int imageIndex)
+    public EAndroidFirmwareEraserInitializationVerdict beginErasure(final int imageIndex)
     {
-        busyStateChangedAdvertisement(true);
+        if (!IsCold())
+        { //keep first
+            onError("[AFE.BE.000] Another reset operation is already in progress (state='" + _currentState + "')");
 
-        setState(EAndroidFirmwareEraserState.ERASING);
+            return EAndroidFirmwareEraserInitializationVerdict.FAILED__OTHER_ERASURE_ALREADY_IN_PROGRESS;
+        }
 
-        AndroidFirmwareEraser self = this;
-
-        _imageManager = new ImageManager(_transport);
-        _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>()
+        try
         {
-            @Override
-            public void onResponse(@NonNull final McuMgrImageResponse response)
+            setState(EAndroidFirmwareEraserState.IDLE); //order
+            _imageManager = new ImageManager(_transport); //order
+            busyStateChangedAdvertisement(true); //order
+            setState(EAndroidFirmwareEraserState.ERASING); //order
+
+            AndroidFirmwareEraser self = this;
+            _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>()
             {
-                if (!response.isSuccess())
-                { // check for an error return code
-                    self.onError("[AFE.BE.OR.010] Erasure failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
-                    return;
+                @Override
+                public void onResponse(@NonNull final McuMgrImageResponse response)
+                {
+                    if (!response.isSuccess())
+                    { // check for an error return code
+                        self.onError("[AFE.BE.010] Erasure failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
+                        return;
+                    }
+
+                    readImageErasure();
+                    setState(EAndroidFirmwareEraserState.COMPLETE);
                 }
 
-                readImageErasure();
-                setState(EAndroidFirmwareEraserState.COMPLETE);
-            }
+                @Override
+                public void onError(@NonNull final McuMgrException exception)
+                {
+                    self.onError("[AFE.BE.020] Erasure failed '" + exception.getMessage() + "'", exception);
 
-            @Override
-            public void onError(@NonNull final McuMgrException exception)
-            {
-                self.onError("[AFE.BE.OE.010] Erasure failed '" + exception.getMessage() + "'", exception);
+                    busyStateChangedAdvertisement(false);
+                }
+            });
+        }
+        catch (final Exception ex)
+        {
+            onError("[AFE.BE.010] Failed to initialize erase operation: '" + ex.getMessage() + "'", ex);
+            return EAndroidFirmwareEraserInitializationVerdict.FAILED__ERROR_UPON_COMMENCING;
+        }
 
-                busyStateChangedAdvertisement(false);
-            }
-        });
+        return EAndroidFirmwareEraserInitializationVerdict.SUCCESS;
     }
 
     public void disconnect()
@@ -76,6 +92,13 @@ public class AndroidFirmwareEraser
             return;
 
         mcuMgrTransporter.release();
+    }
+
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidFirmwareEraserState.NONE
+                || _currentState == EAndroidFirmwareEraserState.COMPLETE;
     }
 
     private EAndroidFirmwareEraserState _currentState = EAndroidFirmwareEraserState.NONE;
@@ -101,6 +124,11 @@ public class AndroidFirmwareEraser
     public String getLastFatalErrorMessage()
     {
         return _lastFatalErrorMessage;
+    }
+
+    private void onError(final String errorMessage)
+    {
+        onError(errorMessage, null);
     }
 
     private void onError(final String errorMessage, final Exception exception)

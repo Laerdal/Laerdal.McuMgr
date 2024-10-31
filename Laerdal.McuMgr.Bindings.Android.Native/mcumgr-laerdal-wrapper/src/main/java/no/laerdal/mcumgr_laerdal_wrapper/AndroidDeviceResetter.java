@@ -32,13 +32,20 @@ public class AndroidDeviceResetter
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public void beginReset()
+    public EAndroidDeviceResetterInitializationVerdict beginReset()
     {
+        if (!IsCold())
+        { //keep first
+            onError("[ADR.BR.000] Another reset operation is already in progress (state='" + _currentState + "')");
+
+            return EAndroidDeviceResetterInitializationVerdict.FAILED__OTHER_RESET_ALREADY_IN_PROGRESS;
+        }
+
         try
         {
-            _manager = new DefaultManager(_transport);
-
-            setState(EAndroidDeviceResetterState.RESETTING);
+            setState(EAndroidDeviceResetterState.IDLE); //order
+            _manager = new DefaultManager(_transport); //order
+            setState(EAndroidDeviceResetterState.RESETTING); //order
 
             AndroidDeviceResetter self = this;
             _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
@@ -65,7 +72,10 @@ public class AndroidDeviceResetter
         catch (final Exception ex)
         {
             onError("[ADR.BR.010] Failed to initialize reset operation: '" + ex.getMessage() + "'", ex);
+            return EAndroidDeviceResetterInitializationVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
+
+        return EAndroidDeviceResetterInitializationVerdict.SUCCESS;
     }
 
     public void disconnect()
@@ -87,6 +97,13 @@ public class AndroidDeviceResetter
 
     private EAndroidDeviceResetterState _currentState = EAndroidDeviceResetterState.NONE;
 
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidDeviceResetterState.NONE
+                || _currentState == EAndroidDeviceResetterState.COMPLETE;
+    }
+
     private void setState(final EAndroidDeviceResetterState newState)
     {
         final EAndroidDeviceResetterState oldState = _currentState; //order
@@ -107,6 +124,11 @@ public class AndroidDeviceResetter
     public String getLastFatalErrorMessage()
     {
         return _lastFatalErrorMessage;
+    }
+
+    private void onError(final String errorMessage)
+    {
+        onError(errorMessage, null);
     }
 
     private void onError(final String errorMessage, final Exception exception)

@@ -30,7 +30,9 @@ public class IOSFirmwareInstaller: NSObject {
             _ pipelineDepth: Int,
             _ byteAlignment: Int
     ) -> EIOSFirmwareInstallationVerdict {
-        if _currentState != .none && _currentState != .cancelled && _currentState != .complete && _currentState != .error { //if another installation is already in progress we bail out
+        if !isCold() { //if another installation is already in progress we bail out
+            onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
+
             return .failedInstallationAlreadyInProgress
         }
 
@@ -38,20 +40,20 @@ public class IOSFirmwareInstaller: NSObject {
         _lastBytesSendTimestamp = nil
 
         if (imageData.isEmpty) {
-            emitFatalError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud!")
+            onError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud")
 
             return .failedInvalidFirmware
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
-            emitFatalError(.invalidSettings, "[IOSFI.BI.020] When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
+            onError(.invalidSettings, "[IOSFI.BI.020] When pipeline-depth is set to 2 or above you must specify a byte-alignment >=2 (given byte-alignment is '\(byteAlignment)')")
 
             return .failedInvalidSettings
         }
 
         let byteAlignmentEnum = translateByteAlignmentMode(byteAlignment);
         if (byteAlignmentEnum == nil) {
-            emitFatalError(.invalidSettings, "[IOSFI.BI.030] Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
+            onError(.invalidSettings, "[IOSFI.BI.030] Invalid byte-alignment value '\(byteAlignment)': It must be a power of 2 up to 16")
 
             return .failedInvalidSettings
         }
@@ -84,7 +86,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            emitFatalError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
+            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
 
             return .failedInvalidSettings
         }
@@ -105,7 +107,7 @@ public class IOSFirmwareInstaller: NSObject {
             )
 
         } catch let ex {
-            emitFatalError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
+            onError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
 
             return .failedDeploymentError
         }
@@ -117,6 +119,13 @@ public class IOSFirmwareInstaller: NSObject {
         //1 rF52840 due to how the flash memory works requires ~20 sec to erase images
         //
         //2 the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+    }
+
+    private func isCold() -> Bool {
+        return _currentState == .none
+                || _currentState == .error
+                || _currentState == .complete
+                || _currentState == .cancelled
     }
     
     private func calculateHashBytesOfData(_ data: Data) -> Data {
@@ -183,7 +192,7 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter?.close()
     }
 
-    private func emitFatalError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ error: Error? = nil) {
+    private func onError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ error: Error? = nil) {
         let currentStateSnapshot = _currentState //00  order
         setState(.error) //                            order
         fatalErrorOccurredAdvertisement( //            order
@@ -315,7 +324,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             fatalErrorType = .firmwareImageSwapTimeout
         }
 
-        emitFatalError(fatalErrorType, error.localizedDescription, error)
+        onError(fatalErrorType, error.localizedDescription, error)
         busyStateChangedAdvertisement(false)
     }
 

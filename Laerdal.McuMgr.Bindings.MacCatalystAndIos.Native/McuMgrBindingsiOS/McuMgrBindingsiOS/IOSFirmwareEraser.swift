@@ -17,25 +17,39 @@ public class IOSFirmwareEraser: NSObject {
     }
 
     @objc
-    public func beginErasure(_ imageIndex: Int) {
-        busyStateChangedAdvertisement(true)
+    public func beginErasure(_ imageIndex: Int) -> EIOSFirmwareErasureInitializationVerdict {
+        if (!isCold()) { //keep first
+            onError("[IOSFE.BE.000] Another erasure operation is already in progress");
 
-        setState(.erasing)
-
-        _manager = ImageManager(transport: _transporter)
-        _manager.logDelegate = self
-
-        _manager.erase {
-            response, error in
-
-            if (error != nil) {
-                self.onError("[IOSFE.BE.010] Failed to start firmware erasure: \(error?.localizedDescription ?? "An unspecified error occurred")", error)
-                return
-            }
-
-            self.readImageErasure()
-            self.setState(.complete)
+            return .failedOtherErasureAlreadyInProgress;
         }
+
+        do
+        {
+            setState(.idle)
+            _manager = ImageManager(transport: _transporter)
+            _manager.logDelegate = self
+
+            setState(.erasing)
+            busyStateChangedAdvertisement(true)
+            _manager.erase {
+                response, error in
+
+                if (error != nil) {
+                    self.onError("[IOSFE.BE.010] Failed to start firmware erasure: \(error?.localizedDescription ?? "An unspecified error occurred")", error)
+                    return
+                }
+
+                self.readImageErasure()
+                self.setState(.complete)
+            }
+        } catch let ex {
+            onError("[IOSFE.BE.020] Failed to launch the installation process: '\(ex.localizedDescription)", ex)
+
+            return .failedErrorUponCommencing
+        }
+
+        return .success
     }
 
     @objc
@@ -43,10 +57,16 @@ public class IOSFirmwareEraser: NSObject {
         _transporter?.close()
     }
 
-    private func onError(_ errorMessage: String, _ error: Error?) {
+    private func isCold() -> Bool {
+        return _currentState == .none
+                || _currentState == .failed
+                || _currentState == .complete
+    }
+
+    private func onError(_ errorMessage: String, _ error: Error? = nil) {
         setState(.failed)
-        fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
         busyStateChangedAdvertisement(false)
+        fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
     }
 
     private var _lastFatalErrorMessage: String

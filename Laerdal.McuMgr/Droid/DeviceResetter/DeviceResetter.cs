@@ -60,6 +60,11 @@ namespace Laerdal.McuMgr.DeviceResetter
                 _deviceResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy));
             }
 
+            public EDeviceResetterInitializationVerdict BeginReset()
+            {
+                return TranslateEAndroidDeviceResetterInitializationVerdict(base.BeginReset());
+            }
+
             public override void FatalErrorOccurredAdvertisement(string errorMessage, int globalErrorCode)
             {
                 base.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
@@ -136,6 +141,26 @@ namespace Laerdal.McuMgr.DeviceResetter
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
+            }
+
+            static private EDeviceResetterInitializationVerdict TranslateEAndroidDeviceResetterInitializationVerdict(EAndroidDeviceResetterInitializationVerdict verdict)
+            {
+                if (verdict == EAndroidDeviceResetterInitializationVerdict.Success)
+                {
+                    return EDeviceResetterInitializationVerdict.Success;
+                }
+                
+                if (verdict == EAndroidDeviceResetterInitializationVerdict.FailedErrorUponCommencing)
+                {
+                    return EDeviceResetterInitializationVerdict.FailedErrorUponCommencing;
+                }
+
+                if (verdict == EAndroidDeviceResetterInitializationVerdict.FailedOtherResetAlreadyInProgress)
+                {
+                    return EDeviceResetterInitializationVerdict.FailedOtherResetAlreadyInProgress;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
             }
         }
     }

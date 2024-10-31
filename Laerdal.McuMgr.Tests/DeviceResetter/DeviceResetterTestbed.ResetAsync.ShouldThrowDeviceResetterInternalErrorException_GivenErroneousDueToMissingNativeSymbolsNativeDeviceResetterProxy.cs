@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             {
             }
 
-            public override void BeginReset()
+            public override EDeviceResetterInitializationVerdict BeginReset()
             {
                 base.BeginReset();
 

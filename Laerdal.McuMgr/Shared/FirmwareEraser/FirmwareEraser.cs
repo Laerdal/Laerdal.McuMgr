@@ -58,8 +58,15 @@ namespace Laerdal.McuMgr.FirmwareEraser
         public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
 
         public void Disconnect() => _nativeFirmwareEraserProxy?.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _nativeFirmwareEraserProxy?.BeginErasure(imageIndex);
         
+        public EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex = 1)
+        {
+            if (_nativeFirmwareEraserProxy == null)
+                throw new InvalidOperationException("The native firmware eraser is not initialized");
+            
+            return _nativeFirmwareEraserProxy.BeginErasure(imageIndex);
+        }
+
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
@@ -114,7 +121,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 StateChanged += FirmwareEraser_StateChanged_;
                 FatalErrorOccurred += FirmwareEraser_FatalErrorOccurred_;
 
-                BeginErasure(imageIndex); //00 dont use task.run here for now
+                var verdict = BeginErasure(imageIndex); //00 dont use task.run here for now
+                if (verdict != EFirmwareErasureInitializationVerdict.Success)
+                    throw new ArgumentException(verdict.ToString());
 
                 _ = timeoutInMs <= 0
                     ? await taskCompletionSource.Task
