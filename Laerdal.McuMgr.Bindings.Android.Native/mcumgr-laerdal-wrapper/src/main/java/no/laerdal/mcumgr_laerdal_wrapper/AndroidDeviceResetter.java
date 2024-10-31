@@ -37,43 +37,35 @@ public class AndroidDeviceResetter
         try
         {
             _manager = new DefaultManager(_transport);
+
+            setState(EAndroidDeviceResetterState.RESETTING);
+
+            AndroidDeviceResetter self = this;
+            _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
+            {
+                @Override
+                public void onResponse(@NotNull final McuMgrOsResponse response)
+                {
+                    if (!response.isSuccess())
+                    { // check for an error return code
+                        self.onError("[ADR.BR.002] Reset failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
+                        return;
+                    }
+
+                    setState(EAndroidDeviceResetterState.COMPLETE);
+                }
+
+                @Override
+                public void onError(@NotNull final McuMgrException exception)
+                {
+                    self.onError("[ADR.BR.005] Reset failed '" + exception.getMessage() + "'", exception);
+                }
+            });
         }
         catch (final Exception ex)
         {
-            setState(EAndroidDeviceResetterState.FAILED);
-            onError("Failed to create manager: '" + ex.getMessage() + "'", ex);
-            return;
+            onError("[ADR.BR.010] Failed to initialize reset operation: '" + ex.getMessage() + "'", ex);
         }
-
-        setState(EAndroidDeviceResetterState.RESETTING);
-
-        AndroidDeviceResetter self = this;
-
-        _manager.reset(new McuMgrCallback<McuMgrOsResponse>()
-        {
-            @Override
-            public void onResponse(@NotNull final McuMgrOsResponse response)
-            {
-                if (!response.isSuccess())
-                { // check for an error return code
-                    self.onError("Reset failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
-
-                    setState(EAndroidDeviceResetterState.FAILED);
-                    return;
-                }
-
-                setState(EAndroidDeviceResetterState.COMPLETE);
-            }
-
-            @Override
-            public void onError(@NotNull final McuMgrException exception)
-            {
-                self.onError("Reset failed '" + exception.getMessage() + "'", exception);
-
-                setState(EAndroidDeviceResetterState.FAILED);
-            }
-
-        });
     }
 
     public void disconnect()
