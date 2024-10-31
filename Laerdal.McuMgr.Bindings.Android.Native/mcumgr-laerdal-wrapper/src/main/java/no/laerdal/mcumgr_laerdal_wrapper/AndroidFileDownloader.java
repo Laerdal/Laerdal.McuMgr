@@ -147,23 +147,23 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
-        ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
-
-        final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
-        if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
-            return verdict;
-
-        ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
-
-        setLoggingEnabled(false);
         try
         {
+            setLoggingEnabled(false);
+            resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
+            ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
+            final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
+            if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
+                return verdict;
+
+            tryEnsureHighConnectionPriority(_transport); //order
+            ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
+
             _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy);
         }
         catch (final Exception ex)
         {
-            onError("[AFD.BD.060] Failed to initialize download: " + ex.getMessage(), ex);
+            onError("[AFD.BD.060] Failed to initialize the download operation: " + ex.getMessage(), ex);
 
             return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
@@ -259,27 +259,20 @@ public class AndroidFileDownloader
         try
         {
             _fileSystemManager = new FsManager(_transport); //order
-
-            requestHighConnectionPriority(_fileSystemManager); //order
         }
         catch (final Exception ex)
         {
             onError("[AFD.EFMIIEO.010] Failed to initialize the filesystem manager: " + ex.getMessage(), ex);
 
-            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
+            return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
         }
 
         return EAndroidFileDownloaderVerdict.SUCCESS;
     }
 
-    private void requestHighConnectionPriority(FsManager fileSystemManager)
+    private void tryEnsureHighConnectionPriority(final McuMgrBleTransport connection)
     {
-        final McuMgrTransport mcuMgrTransporter = fileSystemManager.getTransporter();
-        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
-            return;
-
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) mcuMgrTransporter;
-        bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+        connection.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
     private void disposeTransport()
