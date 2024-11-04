@@ -16,7 +16,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             // Act
-            var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: "/path/to/file.bin"));
+            var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
+                remoteFilePath: "/path/to/file.bin"
+            ));
 
             // Assert
             (await work.Should().ThrowExactlyAsync<DownloadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
@@ -34,9 +39,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                base.BeginDownload(remoteFilePath);
+                base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Thread.Sleep(100);
 

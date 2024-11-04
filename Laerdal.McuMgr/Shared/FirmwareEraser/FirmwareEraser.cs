@@ -42,8 +42,8 @@ namespace Laerdal.McuMgr.FirmwareEraser
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FirmwareEraser.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => FirmwareEraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage));
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+                => FirmwareEraser.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(errorMessage, globalErrorCode));
         }
         
         private readonly INativeFirmwareEraserProxy _nativeFirmwareEraserProxy;
@@ -58,8 +58,15 @@ namespace Laerdal.McuMgr.FirmwareEraser
         public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
 
         public void Disconnect() => _nativeFirmwareEraserProxy?.Disconnect();
-        public void BeginErasure(int imageIndex = 1) => _nativeFirmwareEraserProxy?.BeginErasure(imageIndex);
         
+        public EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex = 1)
+        {
+            if (_nativeFirmwareEraserProxy == null)
+                throw new InvalidOperationException("The native firmware eraser is not initialized");
+            
+            return _nativeFirmwareEraserProxy.BeginErasure(imageIndex);
+        }
+
         private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
@@ -111,10 +118,12 @@ namespace Laerdal.McuMgr.FirmwareEraser
 
             try
             {
-                StateChanged += EraseAsyncOnStateChanged;
-                FatalErrorOccurred += EraseAsyncOnFatalErrorOccurred;
+                StateChanged += FirmwareEraser_StateChanged_;
+                FatalErrorOccurred += FirmwareEraser_FatalErrorOccurred_;
 
-                BeginErasure(imageIndex); //00 dont use task.run here for now
+                var verdict = BeginErasure(imageIndex); //00 dont use task.run here for now
+                if (verdict != EFirmwareErasureInitializationVerdict.Success)
+                    throw new ArgumentException(verdict.ToString());
 
                 _ = timeoutInMs <= 0
                     ? await taskCompletionSource.Task
@@ -144,30 +153,27 @@ namespace Laerdal.McuMgr.FirmwareEraser
             }
             finally
             {
-                StateChanged -= EraseAsyncOnStateChanged;
-                FatalErrorOccurred -= EraseAsyncOnFatalErrorOccurred;
+                StateChanged -= FirmwareEraser_StateChanged_;
+                FatalErrorOccurred -= FirmwareEraser_FatalErrorOccurred_;
             }
 
             return;
 
-            void EraseAsyncOnStateChanged(object sender, StateChangedEventArgs ea)
+            void FirmwareEraser_StateChanged_(object _, StateChangedEventArgs ea_)
             {
-                if (ea.NewState != EFirmwareErasureState.Complete)
+                if (ea_.NewState != EFirmwareErasureState.Complete)
                     return;
 
                 taskCompletionSource.TrySetResult(true);
             }
 
-            void EraseAsyncOnFatalErrorOccurred(object sender, FatalErrorOccurredEventArgs ea)
+            void FirmwareEraser_FatalErrorOccurred_(object _, FatalErrorOccurredEventArgs ea_)
             {
-                var isAboutUnauthorized = ea.ErrorMessage?.ToUpperInvariant().Contains("UNRECOGNIZED (11)") ?? false; //just in case
-                if (isAboutUnauthorized)
+                taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                 {
-                    taskCompletionSource.TrySetException(new UnauthorizedException(ea.ErrorMessage));
-                    return;
-                }
-                
-                taskCompletionSource.TrySetException(new FirmwareErasureErroredOutException(ea.ErrorMessage)); //generic
+                    EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UnauthorizedException(ea_.ErrorMessage, ea_.GlobalErrorCode), //just in case
+                    _ => new FirmwareErasureErroredOutException(ea_.ErrorMessage, ea_.GlobalErrorCode)
+                });
             }
             
             //00  we are aware that in order to be 100% accurate about timeouts we should use task.run() here without await and then await the

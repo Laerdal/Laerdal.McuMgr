@@ -6,73 +6,97 @@ public class IOSFileDownloader: NSObject {
 
     private var _listener: IOSListenerForFileDownloader!
     private var _transporter: McuMgrBleTransport!
-    private var _currentState: EIOSFileDownloaderState
+    private var _cbPeripheral: CBPeripheral!
     private var _fileSystemManager: FileSystemManager!
-    private var _lastFatalErrorMessage: String
 
+    private var _currentState: EIOSFileDownloaderState = .none
     private var _lastBytesSend: Int = -1
+    private var _lastFatalErrorMessage: String = ""
     private var _lastBytesSendTimestamp: Date? = nil
-    private var _remoteFilePathSanitized: String
+    private var _remoteFilePathSanitized: String = ""
+
+    @objc
+    public init(_ listener: IOSListenerForFileDownloader!) {
+        _listener = listener
+    }
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFileDownloader!) {
         _listener = listener
-        _transporter = McuMgrBleTransport(cbPeripheral)
-        _currentState = .none
-        _lastFatalErrorMessage = ""
-        _remoteFilePathSanitized = ""
+        _cbPeripheral = cbPeripheral
+    }
+
+    @objc
+    public func trySetBluetoothDevice(_ cbPeripheral: CBPeripheral!) -> Bool {
+        if !isIdleOrCold() {
+            return false
+        }
+
+        if !tryInvalidateCachedTransport() { //order
+            return false
+        }
+
+        _cbPeripheral = cbPeripheral //order
+        return true
+    }
+
+    @objc
+    public func tryInvalidateCachedTransport() -> Bool {
+        if _transporter == nil { //already scrapped
+            return true
+        }
+
+        if !isIdleOrCold() { //if the upload is already in progress we bail out
+            return false
+        }
+
+        disposeFilesystemManager() // order
+        disposeTransport() //         order
+
+        return true;
     }
 
     @objc
     public func beginDownload(_ remoteFilePath: String) -> EIOSFileDownloadingInitializationVerdict {
-        if _currentState != .none
-                   && _currentState != .error
-                   && _currentState != .complete
-                   && _currentState != .cancelled { //if another download is already in progress we bail out
-            return EIOSFileDownloadingInitializationVerdict.failedDownloadAlreadyInProgress
+
+        if !isCold() { //keep first   if another download is already in progress we bail out
+            onError("[IOSFD.BD.010] Another download is already in progress")
+
+            return .failedDownloadAlreadyInProgress
         }
 
-        _lastBytesSend = -1
-        _lastBytesSendTimestamp = nil
+        _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
+        if _remoteFilePathSanitized.isEmpty {
+            onError("[IOSFD.BD.020] Target-file provided is dud!")
 
-        if remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement("", "Target-file provided is dud!")
-
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
-        if remoteFilePath.hasSuffix("/") {
-            setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Target-file points to a directory instead of a file")
+        if _remoteFilePathSanitized.hasSuffix("/") {
+            onError("[IOSFD.BD.030] Target-file points to a directory instead of a file")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
-        if !remoteFilePath.hasPrefix("/") {
-            setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Target-path is not absolute!")
+        if !_remoteFilePathSanitized.hasPrefix("/") {
+            onError("[IOSFD.BD.040] Target-path is not absolute!")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedInvalidSettings
         }
 
-        _fileSystemManager = FileSystemManager(transport: _transporter) // the delegate aspect is implemented in the extension below
-        _fileSystemManager.logDelegate = self
+        resetUploadState() //order
+        disposeFilesystemManager() //00 vital hack
+        ensureTransportIsInitializedExactlyOnce() //order
+        ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
-        setState(EIOSFileDownloaderState.idle)
-        busyStateChangedAdvertisement(true)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
-
-        _remoteFilePathSanitized = remoteFilePath
-        let success = _fileSystemManager.download(name: remoteFilePath, delegate: self)
+        let success = _fileSystemManager.download(name: _remoteFilePathSanitized, delegate: self)
         if !success {
-            setState(EIOSFileDownloaderState.error)
-            fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, "Failed to commence file-Downloading (check logs for details)")
+            onError("[IOSFD.BD.050] Failed to commence file-Downloading (check logs for details)")
 
-            return EIOSFileDownloadingInitializationVerdict.failedInvalidSettings
+            return .failedErrorUponCommencing
         }
 
-        return EIOSFileDownloadingInitializationVerdict.success
+        return .success
     }
 
     @objc
@@ -106,11 +130,64 @@ public class IOSFileDownloader: NSObject {
         _transporter?.close()
     }
 
-    //@objc   dont
-    private func fatalErrorOccurredAdvertisement(_ resource: String, _ errorMessage: String) {
-        _lastFatalErrorMessage = errorMessage
+    private func isIdleOrCold() -> Bool {
+        return _currentState == .idle || isCold();
+    }
 
-        _listener.fatalErrorOccurredAdvertisement(resource, errorMessage)
+    private func isCold() -> Bool {
+        return _currentState == .none
+                || _currentState == .error
+                || _currentState == .complete
+                || _currentState == .cancelled
+    }
+
+    private func resetUploadState() {
+        _lastBytesSend = -1
+        _lastBytesSendTimestamp = nil
+
+        setState(.idle)
+        busyStateChangedAdvertisement(true)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+    }
+
+    private func ensureFilesystemManagerIsInitializedExactlyOnce() {
+        if _fileSystemManager != nil { //already initialized
+            return
+        }
+
+        _fileSystemManager = FileSystemManager(transport: _transporter) //00
+        _fileSystemManager.logDelegate = self //00
+
+        //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileDownloader: McuMgrLogDelegate
+    }
+
+    private func ensureTransportIsInitializedExactlyOnce() {
+        if _transporter != nil {
+            return
+        }
+
+        _transporter = McuMgrBleTransport(_cbPeripheral)
+    }
+
+    private func disposeTransport() {
+        _transporter?.close()
+        _transporter = nil
+    }
+
+    private func disposeFilesystemManager() {
+        //_fileSystemManager?.cancelTransfer()  dont
+        _fileSystemManager = nil
+    }
+
+    //@objc   dont
+    private func onError(_ errorMessage: String, _ error: Error? = nil) {
+        _lastFatalErrorMessage = errorMessage //       order
+        setState(.error) //                            order
+        _listener.fatalErrorOccurredAdvertisement( //  order
+                _remoteFilePathSanitized,
+                errorMessage,
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+        )
     }
 
     //@objc   dont
@@ -143,7 +220,7 @@ public class IOSFileDownloader: NSObject {
     ) {
         _listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
     }
-    
+
     //@objc   dont
     private func downloadCompletedAdvertisement(_ resource: String, _ data: [UInt8]) {
         _listener.downloadCompletedAdvertisement(resource, data)
@@ -160,7 +237,7 @@ public class IOSFileDownloader: NSObject {
 
         stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == EIOSFileDownloaderState.downloading && newState == EIOSFileDownloaderState.complete) //00
+        if (oldState == .downloading && newState == .complete) //00
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
         }
@@ -171,27 +248,27 @@ public class IOSFileDownloader: NSObject {
 
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(EIOSFileDownloaderState.downloading)
+        setState(.downloading)
         let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let DownloadProgressPercentage = (bytesSent * 100) / fileSize
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, throughputKilobytesPerSecond)
     }
 
     public func downloadDidFail(with error: Error) {
-        setState(EIOSFileDownloaderState.error)
-        fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, error.localizedDescription)
+        onError(error.localizedDescription, error)
+
         busyStateChangedAdvertisement(false)
     }
 
     public func downloadDidCancel() {
-        setState(EIOSFileDownloaderState.cancelled)
+        setState(.cancelled)
         busyStateChangedAdvertisement(false)
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
         cancelledAdvertisement()
     }
 
     public func download(of name: String, didFinish data: Data) {
-        setState(EIOSFileDownloaderState.complete)
+        setState(.complete)
         downloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
         busyStateChangedAdvertisement(false)
     }

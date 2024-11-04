@@ -32,7 +32,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 firmwareInstaller.Cancel();
             });
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxTriesCount: 1));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
+                data: [1, 2, 3],
+                maxTriesCount: 1,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            ));
 
             // Assert
             await work.Should()
@@ -86,6 +91,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null,
@@ -98,6 +104,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     eraseSettings: eraseSettings,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
+                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
@@ -115,6 +122,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     await Task.Delay(100, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
+                    
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
                     
                     await Task.Delay(100, _cancellationTokenSource.Token);
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);

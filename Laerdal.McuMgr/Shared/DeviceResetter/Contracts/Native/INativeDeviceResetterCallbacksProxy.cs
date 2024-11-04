@@ -11,6 +11,6 @@ namespace Laerdal.McuMgr.DeviceResetter.Contracts.Native
 
         public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState);
 
-        public void FatalErrorOccurredAdvertisement(string errorMessage);
+        public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode);
     }
 }

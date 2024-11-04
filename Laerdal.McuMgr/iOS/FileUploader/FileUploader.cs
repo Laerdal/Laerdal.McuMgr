@@ -50,7 +50,7 @@ namespace Laerdal.McuMgr.FileUploader
             
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
-            public void Cancel() => _nativeFileUploader?.Cancel();
+            public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
             public void Disconnect() => _nativeFileUploader?.Disconnect();
 
             // public new void Dispose() { ... }    dont   there is no need to override the base implementation
@@ -99,20 +99,34 @@ namespace Laerdal.McuMgr.FileUploader
             }
 
             private NSData _nsDataOfFileInCurrentlyActiveUpload;
-            public EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            
+            public EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+
+                int? pipelineDepth = null, //    ios only
+                int? byteAlignment = null, //    ios only
+
+                int? initialMtuSize = null, //   android only
+                int? windowCapacity = null, //   android only
+                int? memoryAlignment = null //   android only
+            )
             {
                 var nsDataOfFileToUpload = NSData.FromArray(data);
 
                 var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(
                     data: nsDataOfFileToUpload,
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth ?? -1,
+                    byteAlignment: byteAlignment ?? -1
                 ));
                 if (verdict != EFileUploaderVerdict.Success)
                 {
                     nsDataOfFileToUpload.Dispose();
                     return verdict;
                 }
-                
+
                 _nsDataOfFileInCurrentlyActiveUpload = nsDataOfFileToUpload;
                 return EFileUploaderVerdict.Success;
             }
@@ -146,8 +160,11 @@ namespace Laerdal.McuMgr.FileUploader
                 set => _nativeFileUploaderCallbacksProxy!.FileUploader = value;
             }
             
-            public override void CancelledAdvertisement()
-                => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement();
+            public override void CancellingAdvertisement(string reason)
+                => _nativeFileUploaderCallbacksProxy?.CancellingAdvertisement(reason);
+            
+            public override void CancelledAdvertisement(string reason)
+                => _nativeFileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
                 => LogMessageAdvertisement(
@@ -187,23 +204,20 @@ namespace Laerdal.McuMgr.FileUploader
             public override void FatalErrorOccurredAdvertisement(
                 string resource,
                 string errorMessage,
-                nint mcuMgrErrorCode
+                nint globalErrorCode
             ) => FatalErrorOccurredAdvertisement(
                 resource,
                 errorMessage,
-                (EMcuMgrErrorCode)(int)mcuMgrErrorCode,
-                EFileUploaderGroupReturnCode.Unset
+                (EGlobalErrorCode)(int)globalErrorCode
             );
             public void FatalErrorOccurredAdvertisement( //conformance to the interface
                 string resource,
-                string errorMessage, // ReSharper disable once MethodOverloadWithOptionalParameter
-                EMcuMgrErrorCode mcuMgrErrorCode,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
+                string errorMessage,
+                EGlobalErrorCode globalErrorCode
             ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
                 resource,
                 errorMessage,
-                mcuMgrErrorCode,
-                fileUploaderGroupReturnCode
+                globalErrorCode
             );
 
             public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
@@ -225,17 +239,22 @@ namespace Laerdal.McuMgr.FileUploader
                 {
                     return EFileUploaderVerdict.Success;
                 }
+                
+                if (verdict == EIOSFileUploadingInitializationVerdict.FailedInvalidData)
+                {
+                    return EFileUploaderVerdict.FailedInvalidData;
+                }
             
                 if (verdict == EIOSFileUploadingInitializationVerdict.FailedInvalidSettings)
                 {
                     return EFileUploaderVerdict.FailedInvalidSettings;
                 }
 
-                if (verdict == EIOSFileUploadingInitializationVerdict.FailedInvalidData)
+                if (verdict == EIOSFileUploadingInitializationVerdict.FailedErrorUponCommencing)
                 {
-                    return EFileUploaderVerdict.FailedInvalidData;
+                    return EFileUploaderVerdict.FailedErrorUponCommencing;
                 }
-            
+
                 if (verdict == EIOSFileUploadingInitializationVerdict.FailedOtherUploadAlreadyInProgress)
                 {
                     return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;

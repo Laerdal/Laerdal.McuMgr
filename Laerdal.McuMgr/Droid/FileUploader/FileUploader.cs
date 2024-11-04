@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.FileUploader
             );
         }
 
-        private sealed class AndroidFileUploaderProxy : AndroidFileUploader, INativeFileUploaderProxy 
+        private sealed class AndroidFileUploaderProxy : AndroidFileUploader, INativeFileUploaderProxy
         {
             private readonly INativeFileUploaderCallbacksProxy _fileUploaderCallbacksProxy;
             
@@ -91,19 +91,38 @@ namespace Laerdal.McuMgr.FileUploader
                     // ignored
                 }
             }
-            
+
             public void CleanupResourcesOfLastUpload()
             {
                 //nothing to do in android
             }
-            
+
             #region commands
 
-            public new EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth,
+                int? byteAlignment,
+                int? initialMtuSize,
+                int? windowCapacity,
+                int? memoryAlignment
+            )
             {
-                return TranslateFileUploaderVerdict(base.BeginUpload(remoteFilePath, data));
+                return TranslateFileUploaderVerdict(base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize ?? -1,
+                    windowCapacity: windowCapacity ?? -1,
+                    memoryAlignment: memoryAlignment ?? -1
+                ));
             }
             
+            public new void Cancel(string reason = "")
+            {
+                base.Cancel(reason);
+            }
+
             public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
             {
                 var androidContext = context as Context ?? throw new ArgumentException($"Expected {nameof(Context)} to be an AndroidContext but got '{context?.GetType().Name ?? "null"}' instead", nameof(context));
@@ -124,26 +143,21 @@ namespace Laerdal.McuMgr.FileUploader
             }
 
             #endregion commands
-            
+
 
 
             #region android callbacks -> csharp event emitters
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int mcuMgrErrorCode, int fileUploaderGroupReturnCode)
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage, mcuMgrErrorCode, fileUploaderGroupReturnCode); //just in case
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //just in case
 
-                FatalErrorOccurredAdvertisement(resource, errorMessage, (EMcuMgrErrorCode) mcuMgrErrorCode, (EFileUploaderGroupReturnCode) fileUploaderGroupReturnCode);
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EGlobalErrorCode) globalErrorCode);
             }
-            
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EMcuMgrErrorCode mcuMgrErrorCode, EFileUploaderGroupReturnCode fileUploaderGroupReturnCode)
+
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
             {
-                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
-                    resource,
-                    errorMessage,
-                    mcuMgrErrorCode,
-                    fileUploaderGroupReturnCode
-                );
+                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
@@ -168,12 +182,19 @@ namespace Laerdal.McuMgr.FileUploader
                     resource: resource //essentially the remote filepath
                 );
             }
-
-            public override void CancelledAdvertisement()
+            
+            public override void CancellingAdvertisement(string reason)
             {
-                base.CancelledAdvertisement(); //just in case
+                base.CancellingAdvertisement(reason); //just in case
                 
-                _fileUploaderCallbacksProxy?.CancelledAdvertisement();
+                _fileUploaderCallbacksProxy?.CancellingAdvertisement(reason);
+            }
+
+            public override void CancelledAdvertisement(string reason)
+            {
+                base.CancelledAdvertisement(reason); //just in case
+                
+                _fileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
 
             public override void FileUploadedAdvertisement(string resource)
@@ -229,17 +250,22 @@ namespace Laerdal.McuMgr.FileUploader
                 {
                     return EFileUploaderVerdict.Success;
                 }
+                
+                if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
+                {
+                    return EFileUploaderVerdict.FailedInvalidData;
+                }
             
                 if (verdict == EAndroidFileUploaderVerdict.FailedInvalidSettings)
                 {
                     return EFileUploaderVerdict.FailedInvalidSettings;
                 }
 
-                if (verdict == EAndroidFileUploaderVerdict.FailedInvalidData)
+                if (verdict == EAndroidFileUploaderVerdict.FailedErrorUponCommencing)
                 {
-                    return EFileUploaderVerdict.FailedInvalidData;
+                    return EFileUploaderVerdict.FailedErrorUponCommencing;
                 }
-            
+
                 if (verdict == EAndroidFileUploaderVerdict.FailedOtherUploadAlreadyInProgress)
                 {
                     return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;

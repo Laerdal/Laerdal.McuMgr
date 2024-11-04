@@ -2,14 +2,6 @@
 
 <Project>
 
-    <PropertyGroup>
-        <LangVersion>10.0</LangVersion>
-
-        <!-- net8 supports android13 and it corresponds to android-api level 34.0 -->
-        <TargetPlatformVersion Condition="      '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0))' == 'true' ">34</SupportedOSPlatformVersion>
-    </PropertyGroup>
-
     <ItemGroup>
         <!-- the default mechanism automagically scans aars and jars and ... messes things up when multiple aar and jars are involved resulting in cryptic crashes  -->
         <!-- during the build process   so we reset everything back to a blank slate and then proceed to manually set up everything from scratch like we always do  -->
@@ -45,9 +37,9 @@
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" />
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" />
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.7.5.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-2.0.2.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-2.0.2.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.9.0.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-2.2.1.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-2.2.1.jar" />
     </ItemGroup>
 
     <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">

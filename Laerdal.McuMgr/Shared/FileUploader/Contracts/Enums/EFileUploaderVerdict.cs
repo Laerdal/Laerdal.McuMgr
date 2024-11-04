@@ -6,8 +6,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Enums
     public enum EFileUploaderVerdict //this must mirror the java enum values of E[Android|iOS]FileUploaderVerdict
     {
         Success = 0,
-        FailedInvalidSettings = 1,
-        FailedInvalidData = 2,
-        FailedOtherUploadAlreadyInProgress = 3,
+        FailedInvalidData = 1,
+        FailedInvalidSettings = 2,
+        FailedErrorUponCommencing = 3,
+        FailedOtherUploadAlreadyInProgress = 4,
     }
 }

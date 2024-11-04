@@ -20,6 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/file.bin";
+            const string cancellationReason = "blah blah foobar";
 
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_(), isCancellationLeadingToSoftLanding);
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
@@ -31,14 +32,22 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
                 await Task.Delay(500);
 
-                fileUploader.Cancel();
+                fileUploader.Cancel(reason: cancellationReason);
             });
-            var work = new Func<Task>(() => fileUploader.UploadAsync(mockedFileData, remoteFilePath));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                data: mockedFileData,
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             await work.Should().ThrowExactlyAsync<UploadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeTrue();
+            mockedNativeFileUploaderProxy.CancellationReason.Should().Be(cancellationReason);
+
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
@@ -67,19 +76,20 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
             
-            public override void Cancel()
+            public override void Cancel(string reason = "")
             {
-                base.Cancel();
+                base.Cancel(reason);
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
+                    CancellingAdvertisement(reason); //                                                                                                order
                     StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
                         StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                        CancelledAdvertisement(); //                                                                                                       order    
+                        CancelledAdvertisement(reason); //                                                                                                 order    
                     }
                 });
                 
@@ -88,7 +98,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 //     a best effort basis and this is exactly what we are testing here
             }
             
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
                 (FileUploader as IFileUploaderEventSubscribable)!.Cancelled += (sender, args) =>
                 {
@@ -98,7 +116,17 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                var verdict = base.BeginUpload(remoteFilePath, data);
+                var verdict = base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Task.Run(async () => //00 vital
                 {

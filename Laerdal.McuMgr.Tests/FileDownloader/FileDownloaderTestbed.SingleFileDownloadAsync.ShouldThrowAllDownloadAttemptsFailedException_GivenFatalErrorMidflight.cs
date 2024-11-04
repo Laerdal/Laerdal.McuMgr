@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
@@ -29,6 +31,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath
             ));
@@ -71,9 +76,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 _ = mockedFileData;
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(remoteFilePath);
+                var verdict = base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -84,7 +92,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(2_000);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred");
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic);
                 });
 
                 return verdict;

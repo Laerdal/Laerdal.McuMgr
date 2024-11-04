@@ -33,7 +33,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
                 fileDownloader.Cancel();
             });
-            var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath));
+            var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             await work.Should().ThrowExactlyAsync<DownloadCancelledException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
@@ -91,7 +96,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 //     a best effort basis and this is exactly what we are testing here
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
                 _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
@@ -100,8 +105,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 {
                     _cancellationTokenSource.Cancel();
                 };
-                
-                var verdict = base.BeginDownload(remoteFilePath);
+
+                var verdict = base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Task.Run(async () => //00 vital
                 {

@@ -21,7 +21,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1 }, maxTriesCount: 1, timeoutInMs: 100));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
+                data: [1],
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                timeoutInMs: 100,
+                maxTriesCount: 1
+            ));
 
             // Assert
             await work.Should()
@@ -56,6 +63,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null,
@@ -68,6 +76,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     eraseSettings: eraseSettings,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
+                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
@@ -75,6 +84,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(async () => //00 vital
                 {
+                    await Task.Delay(10);
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
+                    
                     await Task.Delay(10);
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Uploading);
 

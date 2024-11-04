@@ -25,7 +25,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<EFileUploaderVerdict>(() => fileUploader.BeginUpload(remoteFilePath, mockedFileData));
+            var work = new Func<EFileUploaderVerdict>(() => fileUploader.BeginUpload(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                data: mockedFileData,
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             work.Should().ThrowExactly<ArgumentException>();
@@ -46,9 +52,27 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] mockedFileData)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
-                var verdict = base.BeginUpload(remoteFilePath, mockedFileData);
+                var verdict = base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Task.Run(async () => //00 vital
                 {

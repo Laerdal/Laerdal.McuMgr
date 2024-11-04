@@ -25,7 +25,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
+            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                remoteFilePath: remoteFilePath
+            ));
 
             // Assert
             work.Should().ThrowExactly<ArgumentException>();
@@ -49,9 +54,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 _mockedFileData = mockedFileData;
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(remoteFilePath);
+                var verdict = base.BeginDownload(
+                    remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Task.Run(async () => //00 vital
                 {

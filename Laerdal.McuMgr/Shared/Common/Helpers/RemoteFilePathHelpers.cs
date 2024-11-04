@@ -13,13 +13,17 @@ namespace Laerdal.McuMgr.Common.Helpers
 
             foreach (var pathAndDataBytes in remoteFilePathsWithTheirDataBytes)
             {
+                ValidatePayload(pathAndDataBytes.Value);
                 ValidateRemoteFilePath(pathAndDataBytes.Key);
-                
-                if (pathAndDataBytes.Value is null)
-                    throw new ArgumentException($"Path '{pathAndDataBytes.Key}' has its bytes set to null!");
             }
         }
         
+        static internal void ValidatePayload<T>(T payloadForUploading)
+        {
+            if (payloadForUploading == null)
+                throw new ArgumentException("Bytes set to null!");
+        }
+
         static internal void ValidateRemoteFilePaths(IEnumerable<string> remoteFilePaths)
         {
             remoteFilePaths = remoteFilePaths ?? throw new ArgumentNullException(nameof(remoteFilePaths));
@@ -36,7 +40,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                 throw new ArgumentException($"The {nameof(remoteFilePath)} parameter is dud!");
 
             remoteFilePath = remoteFilePath.Trim(); //order
-            if (remoteFilePath.EndsWith("/")) //00
+            if (remoteFilePath.EndsWith('/')) //00
                 throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
 
             if (remoteFilePath.Contains('\r') || remoteFilePath.Contains('\n') || remoteFilePath.Contains('\f')) //order
@@ -85,7 +89,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         {
             remoteFilePath = remoteFilePath?.Trim() ?? "";
             
-            remoteFilePath = remoteFilePath.StartsWith("/") //10
+            remoteFilePath = remoteFilePath.StartsWith('/') //10
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 

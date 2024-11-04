@@ -14,6 +14,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public bool CancelCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
             public bool BeginUploadCalled { get; private set; }
+            public string CancellationReason { get; private set; }
 
             public string LastFatalErrorMessage => "";
 
@@ -28,16 +29,25 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 _uploaderCallbacksProxy = uploaderCallbacksProxy;
             }
 
-            public virtual EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public virtual EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null,
+                int? byteAlignment = null,
+                int? initialMtuSize = null,
+                int? windowCapacity = null,
+                int? memoryAlignment = null
+            )
             {
                 BeginUploadCalled = true;
 
                 return EFileUploaderVerdict.Success;
             }
 
-            public virtual void Cancel()
+            public virtual void Cancel(string reason = "")
             {
                 CancelCalled = true;
+                CancellationReason = reason;
             }
 
             public virtual void Disconnect()
@@ -45,8 +55,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 DisconnectCalled = true;
             }
 
-            public void CancelledAdvertisement() 
-                => _uploaderCallbacksProxy.CancelledAdvertisement(); //raises the actual event
+            public void CancellingAdvertisement(string reason = "")
+                => _uploaderCallbacksProxy.CancellingAdvertisement(reason); //raises the actual event
+
+            public void CancelledAdvertisement(string reason = "")
+                => _uploaderCallbacksProxy.CancelledAdvertisement(reason); //raises the actual event
             
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _uploaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
@@ -63,9 +76,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public void FatalErrorOccurredAdvertisement(
                 string resource,
                 string errorMessage,
-                EMcuMgrErrorCode errorCode,
-                EFileUploaderGroupReturnCode fileUploaderGroupReturnCode
-            ) => _uploaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, errorCode, fileUploaderGroupReturnCode); //raises the actual event
+                EGlobalErrorCode globalErrorCode
+            ) => _uploaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //raises the actual event
             
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput)
                 => _uploaderCallbacksProxy.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput); //raises the actual event

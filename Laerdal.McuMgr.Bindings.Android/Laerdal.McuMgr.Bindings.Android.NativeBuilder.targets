@@ -15,7 +15,10 @@
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
-    <Target Name="CompileMcuMgrLaerdalWrapper" BeforeTargets="PrepareForBuild" AfterTargets="TackleJarDependencies" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
+    <Target Name="CompileMcuMgrLaerdalWrapper"
+            AfterTargets="TackleJarDependencies"
+            BeforeTargets="PrepareForBuild"
+            Condition=" '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
 			<!-- in azure we specify the gradlepath explicitly because by default macos13 uses gradle8.6          -->
@@ -23,11 +26,11 @@
 			<GradlePath Condition=" '$(GradlePath)' == '' ">gradle</GradlePath>
 
             <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default -->
-            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
-            <JavaHome Condition=" '$(IsUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
 
             <!-- Windows -->
-            <JavaHome Condition=" '$(IsWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2') ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2') ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
 
             <!-- last ditch effort -->
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
@@ -50,7 +53,7 @@
             <FilteredLines Include="@(FileLines)" Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '^org\.gradle\.java\.home='))"/>
         </ItemGroup>
 
-        <Exec Command="   chmod   +w   &quot;$(GradlePropertiesFilePath)&quot;   " Condition=" '$(IsUnix)' == 'true' "/>
+        <Exec Command="   chmod   +w   &quot;$(GradlePropertiesFilePath)&quot;   " Condition=" '$(IsHostMachineUnix)' == 'true' "/>
         <WriteLinesToFile
                 File="$(GradlePropertiesFilePath)"
                 Lines="@(FilteredLines);org.gradle.java.home=$(JavaHome);"
@@ -60,9 +63,9 @@
         <!--  https://stackoverflow.com/a/48155800/863651   its vital to create local.properties with the sdk.dir pointing to the android sdk home folder otherwise the build will fail -->
         <PropertyGroup>
             <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' ">$(ANDROID_HOME)</AndroidSdkPath>
-            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsOSX)'     == 'true' ">/Users/$(USERNAME)/Library/Android/sdk</AndroidSdkPath>
-            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsLinux)'   == 'true' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
-            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsWindows)' == 'true' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsHostMachineOSX)'     == 'true' ">/Users/$(USERNAME)/Library/Android/sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsHostMachineLinux)'   == 'true' ">/home/$(USERNAME)/Android/Sdk</AndroidSdkPath>
+            <AndroidSdkPath Condition=" '$(AndroidSdkPath)' == '' AND '$(IsHostMachineWindows)' == 'true' ">C:\\Users\\$(USERNAME)\\AppData\\Local\\Android\\sdk</AndroidSdkPath>
 
             <McuMgrLaerdalWrapperAarFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/mcumgr-laerdal-wrapper/build/outputs/aar/mcumgr-laerdal-wrapper-release.aar</McuMgrLaerdalWrapperAarFilePath>
         </PropertyGroup>
@@ -76,15 +79,16 @@
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                                           "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6                            "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsUnix)' == 'true' "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsHostMachineUnix)' == 'true' "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all                  "/>
 
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
     </Target>
 
     <!-- android    download the jar and aar dependencies from maven -->
-    <Target Name="TackleJarDependencies" BeforeTargets="PrepareForBuild" Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' ">
-
+    <Target Name="TackleJarDependencies"
+            BeforeTargets="CompileMcuMgrLaerdalWrapper;PrepareForBuild"
+            Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
         <!-- 1. jars go here - notice the :jar postfix    to pick the right versions have a look at the folder Laerdal.McuMgr.Bindings.Android.Native/lib which contains all .jar files listed below -->
 
         <!-- we dont really need these anymore   they cause problems with duplicate symbols -->
@@ -94,10 +98,10 @@
 
         <!-- these libraries are needed by the mcumgr stack even though they dont show up as dependencies inside the intellij ide -->
         <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/slf4j-api.jar')                        " DestinationFileName="slf4j-api.jar                        " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.16/slf4j-api-2.0.16.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-core.jar')                     " DestinationFileName="jackson-core.jar                     " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.17.2/jackson-core-2.17.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-databind.jar')                 " DestinationFileName="jackson-databind.jar                 " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.17.2/jackson-databind-2.17.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-annotations.jar')              " DestinationFileName="jackson-annotations.jar              " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.17.2/jackson-annotations-2.17.2.jar"/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-dataformat-cbor.jar')          " DestinationFileName="jackson-dataformat-cbor.jar          " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.17.2/jackson-dataformat-cbor-2.17.2.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-core.jar')                     " DestinationFileName="jackson-core.jar                     " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.18.0/jackson-core-2.18.0.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-databind.jar')                 " DestinationFileName="jackson-databind.jar                 " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.18.0/jackson-databind-2.18.0.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-annotations.jar')              " DestinationFileName="jackson-annotations.jar              " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.18.0/jackson-annotations-2.18.0.jar"/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/jackson-dataformat-cbor.jar')          " DestinationFileName="jackson-dataformat-cbor.jar          " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.18.0/jackson-dataformat-cbor-2.18.0.jar"/>
 
         <!-- kotlinx coroutines are needed by .net6+ but we settle those through explicit nuget references over to xamarin.androix.koltin -->
         <!-- <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/kotlinx-coroutines-*.jar')        " DestinationFileName="kotlinx-coroutines-*.jar             " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-rx2/1.7.3/kotlinx-coroutines-*-1.7.3.jar"/> -->
@@ -105,19 +109,19 @@
         <!-- 2. aars go here - notice the .aar postfix  -->
 
         <!-- download -->
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.5.aar')           " DestinationFileName="nordicsemi-android-ble-2.7.5.aar                                         " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.7.5/ble-2.7.5.aar                      "/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.0.2.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-2.0.2.aar                                  " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/2.0.2/mcumgr-ble-2.0.2.aar        "/>
-        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.0.2.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-2.0.2.aar                                 " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/2.0.2/mcumgr-core-2.0.2.aar      "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.9.0.aar')           " DestinationFileName="nordicsemi-android-ble-2.9.0.aar                                         " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/ble/2.9.0/ble-2.9.0.aar                      "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.2.1.aar')    " DestinationFileName="nordicsemi-android-mcumgr-ble-2.2.1.aar                                  " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-ble/2.2.1/mcumgr-ble-2.2.1.aar        "/>
+        <DownloadFile Condition=" !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.2.1.aar')   " DestinationFileName="nordicsemi-android-mcumgr-core-2.2.1.aar                                 " DestinationFolder="$(AndroidLibsDependenciesFolder)" SourceUrl="https://repo1.maven.org/maven2/no/nordicsemi/android/mcumgr-core/2.2.1/mcumgr-core-2.2.1.aar      "/>
 
         <!-- unzip -->
-        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.5.jar')           " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.5.aar                                    "/>
-        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.0.2.jar')    " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.0.2.aar                             "/>
-        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.0.2.jar')   " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.0.2.aar                            "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.9.0.jar')           " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble                    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.9.0.aar                                    "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.2.1.jar')    " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble             " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.2.1.aar                             "/>
+        <Unzip Condition="        !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.2.1.jar')   " DestinationFolder="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core            " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.2.1.aar                            "/>
 
         <!-- copy -->
-        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.5.jar')           " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.7.5.jar           " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble/classes.jar                                  "/>
-        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.0.2.jar')    " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.0.2.jar    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           "/>
-        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.0.2.jar')   " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.0.2.jar   " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core/classes.jar                          "/>
+        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.9.0.jar')           " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble-2.9.0.jar           " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-ble/classes.jar                                  "/>
+        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.2.1.jar')    " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble-2.2.1.jar    " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-ble/classes.jar                           "/>
+        <Copy Condition="         !Exists('$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.2.1.jar')   " DestinationFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core-2.2.1.jar   " SourceFiles="$(AndroidLibsDependenciesFolder)/nordicsemi-android-mcumgr-core/classes.jar                          "/>
     </Target>
 
 </Project>

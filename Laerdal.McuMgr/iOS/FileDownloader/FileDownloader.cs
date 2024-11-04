@@ -9,6 +9,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FileDownloader
@@ -80,6 +81,23 @@ namespace Laerdal.McuMgr.FileDownloader
                 _nativeFileDownloader?.Dispose();
                 _nativeFileDownloader = null;
             }
+            
+            public bool TrySetContext(object context)
+            {
+                return true; //nothing to do in ios   only android needs this and supports it
+            }
+
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                var iosBluetoothDevice = bluetoothDevice as CBPeripheral ?? throw new ArgumentException($"Expected {nameof(bluetoothDevice)} to be of type {nameof(CBPeripheral)}", nameof(bluetoothDevice));
+
+                return _nativeFileDownloader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
+            }
+
+            public bool TryInvalidateCachedTransport()
+            {
+                return _nativeFileDownloader?.TryInvalidateCachedTransport() ?? false;
+            }
 
             #region commands
             
@@ -88,9 +106,14 @@ namespace Laerdal.McuMgr.FileDownloader
             public void Cancel() => _nativeFileDownloader?.Cancel();
             
             public void Disconnect() => _nativeFileDownloader?.Disconnect();
-            
-            public EFileDownloaderVerdict BeginDownload(string remoteFilePath)
-                => TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(remoteFilePath));
+
+            public EFileDownloaderVerdict BeginDownload(
+                string remoteFilePath,
+                int? initialMtuSize = null //  android only
+            )
+            {
+                return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
+            }
 
             #endregion commands
 
@@ -151,8 +174,18 @@ namespace Laerdal.McuMgr.FileDownloader
             public void DownloadCompletedAdvertisement(string resource, byte[] data) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resource, data);
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(
+                string resource,
+                string errorMessage,
+                nint globalErrorCode
+            ) => FatalErrorOccurredAdvertisement(
+                resource,
+                errorMessage,
+                (EGlobalErrorCode)(int)globalErrorCode
+            );
+
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
 
             public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
                 => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
@@ -178,6 +211,11 @@ namespace Laerdal.McuMgr.FileDownloader
                 if (verdict == EIOSFileDownloadingInitializationVerdict.FailedInvalidSettings)
                 {
                     return EFileDownloaderVerdict.FailedInvalidSettings;
+                }
+                
+                if (verdict == EIOSFileDownloadingInitializationVerdict.FailedErrorUponCommencing)
+                {
+                    return EFileDownloaderVerdict.FailedErrorUponCommencing;
                 }
             
                 if (verdict == EIOSFileDownloadingInitializationVerdict.FailedDownloadAlreadyInProgress)

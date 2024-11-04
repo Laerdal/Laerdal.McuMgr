@@ -23,7 +23,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task>(() => fileDownloader.DownloadAsync(remoteFilePath: remoteFilePath, timeoutForDownloadInMs: 100));
+            var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
+                remoteFilePath: remoteFilePath,
+                timeoutForDownloadInMs: 100
+            ));
 
             // Assert
             await work.Should().ThrowExactlyAsync<DownloadTimeoutException>().WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
@@ -51,9 +57,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             {
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(remoteFilePath);
+                var verdict = base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -64,7 +73,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(1_000);
 
                     StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Complete); // order
-                    DownloadCompletedAdvertisement(remoteFilePath, new byte[]{}); //                                                                             order
+                    DownloadCompletedAdvertisement(remoteFilePath, []); //                                                                             order
                 });
 
                 return verdict;

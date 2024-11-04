@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
@@ -20,7 +21,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(data: new byte[] { 1, 2, 3 }, maxTriesCount: 1));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
+                data: [1, 2, 3],
+                maxTriesCount: 1,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            ));
 
             // Assert
             await work.Should()
@@ -61,6 +67,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null,
@@ -73,6 +80,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     eraseSettings: eraseSettings,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
+                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
@@ -80,6 +88,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(async () => //00 vital
                 {
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
                     await Task.Delay(100);
 
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);
@@ -91,8 +100,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Testing);
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error); //                                                       order
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "image swap timeout"); // order
+                    StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error); //                                                                                 order
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "image swap timeout", EGlobalErrorCode.Generic); // order
                 });
 
                 return verdict;

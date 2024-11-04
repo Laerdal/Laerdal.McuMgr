@@ -7,12 +7,15 @@ namespace Laerdal.McuMgr.Common
     {
         static internal ELogLevel TranslateEIOSLogLevel(string level) => level?.Trim().ToUpperInvariant() switch
         {
-            "D" => ELogLevel.Debug,
-            "V" => ELogLevel.Verbose,
-            "I" => ELogLevel.Info,
-            "A" => ELogLevel.Info, //application
-            "W" => ELogLevel.Warning,
-            "E" => ELogLevel.Error,
+            "T" or "TRACE" => ELogLevel.Trace,
+            "D" or "DEBUG" => ELogLevel.Debug,
+            "V" or "VERBOSE" => ELogLevel.Verbose,
+            "I" or "INFO" => ELogLevel.Info,
+            "N" or "NOTICE" => ELogLevel.Info,
+            "A" or "APPLICATION" => ELogLevel.Info, //application
+            "W" or "WARN" => ELogLevel.Warning,
+            "E" or "ERROR" => ELogLevel.Error,
+            "C" or "CRITICAL" => ELogLevel.Error,
             _ => throw new ArgumentOutOfRangeException(nameof(level), level, "Unknown log-level value")
         };
     }

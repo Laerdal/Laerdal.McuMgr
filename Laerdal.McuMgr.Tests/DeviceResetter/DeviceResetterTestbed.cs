@@ -29,9 +29,11 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 _resetterCallbacksProxy = resetterCallbacksProxy;
             }
 
-            public virtual void BeginReset()
+            public virtual EDeviceResetterInitializationVerdict BeginReset()
             {
                 BeginResetCalled = true;
+                
+                return EDeviceResetterInitializationVerdict.Success;
             }
 
             public virtual void Disconnect()
@@ -40,16 +42,16 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
-                => _resetterCallbacksProxy.LogMessageAdvertisement(message, category, level); //raises the actual event
+                => _resetterCallbacksProxy?.LogMessageAdvertisement(message, category, level); //raises the actual event
 
             public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
             {
                 State = newState;
-                _resetterCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+                _resetterCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
             }
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => _resetterCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage); //raises the actual event
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _resetterCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode); //raises the actual event
         }
     }
 }

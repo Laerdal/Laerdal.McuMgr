@@ -11,11 +11,15 @@ import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
 import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.Settings;
+import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.Settings.Builder;
 import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.State;
 import io.runtime.mcumgr.dfu.mcuboot.model.ImageSet;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
@@ -47,9 +51,24 @@ public class AndroidFirmwareInstaller
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
+    /**
+     * Initiates a firmware installation asynchronously. The progress is advertised through the callbacks provided by this class.
+     * Setup interceptors for them to get informed about the status of the firmware-installation.
+     *
+     * @param data                            the firmware bytes to install - can also be a zipped byte stream
+     * @param mode                            the mode of the installation - typically you want to set this to TEST_AND_CONFIRM in production environments
+     * @param initialMtuSize                  sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
+     *                                        Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
+     * @param eraseSettings                   specifies whether the previous settings should be erased on the target-device
+     * @param estimatedSwapTimeInMilliseconds specifies the amount of time to wait before probing the device to see if the firmware that got installed managed to reboot the device successfully - if negative the setting gets ignored
+     * @param windowCapacity                  specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param memoryAlignment                 specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @return a verdict indicating whether the firmware installation was started successfully or not
+     */
     public EAndroidFirmwareInstallationVerdict beginInstallation(
             @NonNull final byte[] data,
             @NonNull final EAndroidFirmwareInstallationMode mode,
+            final int initialMtuSize,
             final boolean eraseSettings,
             final int estimatedSwapTimeInMilliseconds,
             final int windowCapacity,
@@ -61,7 +80,28 @@ public class AndroidFirmwareInstaller
                 && _currentState != EAndroidFirmwareInstallationState.COMPLETE
                 && _currentState != EAndroidFirmwareInstallationState.CANCELLED)
         {
+            onError(EAndroidFirmwareInstallerFatalErrorType.FAILED__INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
+
             return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_ALREADY_IN_PROGRESS;
+        }
+
+        ImageSet images = new ImageSet();
+        try
+        {
+            images.add(data); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
+        }
+        catch (final Exception ex)
+        {
+            try
+            {
+                images.add(new ZipPackage(data).getBinaries()); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
+            }
+            catch (final Exception ex2)
+            {
+                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage(), ex2);
+
+                return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
+            }
         }
 
         _manager = new FirmwareUpgradeManager(_transport);
@@ -81,52 +121,22 @@ public class AndroidFirmwareInstaller
             );
         }
 
-        ImageSet images = new ImageSet();
+        @NotNull Settings settings;
         try
         {
-            images.add(data); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
+            configureConnectionSettings(initialMtuSize);
+
+            settings = digestFirmwareInstallationManagerSettings(
+                    mode,
+                    eraseSettings,
+                    estimatedSwapTimeInMilliseconds,
+                    windowCapacity,
+                    memoryAlignment
+            );
         }
         catch (final Exception ex)
         {
-            try
-            {
-                images.add(new ZipPackage(data).getBinaries()); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
-            }
-            catch (final Exception ex2)
-            {
-                emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage());
-
-                return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
-            }
-        }
-
-        FirmwareUpgradeManager.Settings.Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
-        try
-        {
-            requestHighConnectionPriority();
-
-            _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
-
-            if (estimatedSwapTimeInMilliseconds >= 0)
-            {
-                settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
-            }
-
-            if (windowCapacity >= 0)
-            {
-                settingsBuilder.setWindowCapacity(windowCapacity); //2
-            }
-
-            if (memoryAlignment >= 1)
-            {
-                settingsBuilder.setMemoryAlignment(memoryAlignment); //3
-            }
-
-            settingsBuilder.setEraseAppSettings(eraseSettings);
-        }
-        catch (final Exception ex)
-        {
-            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage());
+            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage(), ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -135,16 +145,43 @@ public class AndroidFirmwareInstaller
         {
             setState(EAndroidFirmwareInstallationState.IDLE);
 
-            _manager.start(images, settingsBuilder.build());
+            _manager.start(images, settings);
         }
         catch (final Exception ex)
         {
-            emitFatalError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage());
+            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage(), ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
         }
 
         return EAndroidFirmwareInstallationVerdict.SUCCESS;
+    }
+
+    private @NotNull Settings digestFirmwareInstallationManagerSettings(@NotNull EAndroidFirmwareInstallationMode mode, boolean eraseSettings, int estimatedSwapTimeInMilliseconds, int windowCapacity, int memoryAlignment)
+    {
+        Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
+
+        _manager.setMode(mode.getValueFirmwareUpgradeManagerMode()); //0
+
+        if (estimatedSwapTimeInMilliseconds >= 0)
+        {
+            settingsBuilder.setEstimatedSwapTime(estimatedSwapTimeInMilliseconds); //1
+        }
+
+        if (windowCapacity >= 2)
+        {
+            settingsBuilder.setWindowCapacity(windowCapacity); //2
+        }
+
+        if (memoryAlignment >= 2)
+        {
+            settingsBuilder.setMemoryAlignment(memoryAlignment); //3
+        }
+
+        settingsBuilder.setEraseAppSettings(eraseSettings);
+
+        return settingsBuilder.build();
+
 
         //0 set the installation mode
         //
@@ -166,7 +203,8 @@ public class AndroidFirmwareInstaller
         //3 Set the selected memory alignment. In the app this defaults to 4 to match Nordic devices, but can be modified in the UI.
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_manager == null)
             return;
 
@@ -202,47 +240,62 @@ public class AndroidFirmwareInstaller
 
     private String _lastFatalErrorMessage;
 
+    @Contract(pure = true)
     public String getLastFatalErrorMessage()
     {
         return _lastFatalErrorMessage;
     }
 
-    public void emitFatalError(EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    public void onError(final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
     {
-        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00
+        onError(fatalErrorType, errorMessage, null);
+    }
 
-        setState(EAndroidFirmwareInstallationState.ERROR); //                                    order
-        fatalErrorOccurredAdvertisement(currentStateSnapshot, fatalErrorType, errorMessage); //  order
+    public void onError(final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final Exception ex)
+    {
+        EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
+        setState(EAndroidFirmwareInstallationState.ERROR); //                         order
+        fatalErrorOccurredAdvertisement( //                                           order
+                currentStateSnapshot,
+                fatalErrorType,
+                errorMessage,
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
+        );
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
 
-    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage)
+    //this method is meant to be overridden by csharp binding libraries to intercept updates
+    public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final int globalErrorCode)
     {
-        //this method is meant to be overridden by csharp binding libraries to intercept updates
         _lastFatalErrorMessage = errorMessage;
     }
 
+    @Contract(pure = true)
     public void logMessageAdvertisement(final String message, final String category, final String level)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void cancelledAdvertisement()
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void busyStateChangedAdvertisement(final boolean busyNotIdle)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void stateChangedAdvertisement(final EAndroidFirmwareInstallationState oldState, final EAndroidFirmwareInstallationState currentState)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
+    @Contract(pure = true)
     public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
@@ -354,7 +407,7 @@ public class AndroidFirmwareInstaller
                 fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
             }
 
-            emitFatalError(fatalErrorType, ex.getMessage());
+            onError(fatalErrorType, ex.getMessage(), ex);
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
             busyStateChangedAdvertisement(false);
@@ -417,13 +470,19 @@ public class AndroidFirmwareInstaller
         }
     }
 
-    private void requestHighConnectionPriority()
+    private void configureConnectionSettings(int initialMtuSize)
     {
         final McuMgrTransport transporter = _manager.getTransporter();
         if (!(transporter instanceof McuMgrBleTransport))
             return;
 
         final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
+
+        if (initialMtuSize > 0)
+        {
+            bleTransporter.setInitialMtu(initialMtuSize);
+        }
+
         bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 

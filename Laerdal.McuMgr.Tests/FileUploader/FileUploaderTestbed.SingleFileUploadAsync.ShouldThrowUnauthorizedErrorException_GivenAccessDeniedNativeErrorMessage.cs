@@ -17,10 +17,20 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
             // Act
-            var work = new Func<Task>(() => fileUploader.UploadAsync(data: new byte[] { 1 }, remoteFilePath: "/path/to/file.bin", maxTriesCount: 2));
+            var work = new Func<Task>(() => fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+
+                data: new byte[] { 1 },
+                maxTriesCount: 2,
+                remoteFilePath: "/path/to/file.bin"
+            ));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>()).WithInnerExceptionExactly<UploadUnauthorizedException>();
+            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>())
+                .WithInnerExceptionExactly<UploadUnauthorizedException>()
+                .And
+                .GlobalErrorCode.Should().Be(EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -36,9 +46,27 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
-                var verdict = base.BeginUpload(remoteFilePath, data);
+                var verdict = base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -48,8 +76,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                               order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EMcuMgrErrorCode.AccessDenied, EFileUploaderGroupReturnCode.Unset); // order
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                  order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, "blah blah", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied); // order
                 });
 
                 return verdict;

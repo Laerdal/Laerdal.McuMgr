@@ -21,7 +21,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<EFirmwareInstallationVerdict>(() => firmwareInstaller.BeginInstallation(mockedFileData));
+            var work = new Func<EFirmwareInstallationVerdict>(() => firmwareInstaller.BeginInstallation(
+                data: mockedFileData,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            ));
 
             // Assert
             work.Should().Throw<ArgumentException>();
@@ -46,6 +50,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null,
@@ -58,6 +63,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     eraseSettings: eraseSettings,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
+                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
@@ -65,6 +71,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 
                 Task.Run(async () => //00 vital
                 {
+                    await Task.Delay(10);
+                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
+                    
                     await Task.Delay(10);
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Uploading);
 

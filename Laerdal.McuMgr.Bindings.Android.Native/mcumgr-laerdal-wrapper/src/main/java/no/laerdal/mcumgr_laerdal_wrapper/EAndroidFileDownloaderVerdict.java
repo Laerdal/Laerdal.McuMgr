@@ -4,7 +4,8 @@ public enum EAndroidFileDownloaderVerdict //this must mirror the enum values of 
 {
     SUCCESS(0),
     FAILED__INVALID_SETTINGS(1),
-    FAILED__DOWNLOAD_ALREADY_IN_PROGRESS(2);
+    FAILED__ERROR_UPON_COMMENCING(2),
+    FAILED__DOWNLOAD_ALREADY_IN_PROGRESS(3);
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;

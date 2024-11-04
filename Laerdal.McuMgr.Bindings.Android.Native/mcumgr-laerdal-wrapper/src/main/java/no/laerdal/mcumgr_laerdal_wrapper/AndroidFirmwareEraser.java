@@ -4,15 +4,19 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrCallback;
+import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
+import io.runtime.mcumgr.response.HasReturnCode;
 import io.runtime.mcumgr.response.img.McuMgrImageResponse;
 import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
+import org.jetbrains.annotations.Contract;
 
 @SuppressWarnings("unused")
-public class AndroidFirmwareEraser {
+public class AndroidFirmwareEraser
+{
 
     private ImageManager _imageManager;
     private final McuMgrBleTransport _transport;
@@ -23,43 +27,63 @@ public class AndroidFirmwareEraser {
      * @param context         the android-context of the calling environment
      * @param bluetoothDevice the device to perform the firmware-install on
      */
-    public AndroidFirmwareEraser(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
+    public AndroidFirmwareEraser(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
+    {
         _transport = new McuMgrBleTransport(context, bluetoothDevice);
     }
 
-    public void beginErasure(final int imageIndex) {
-        busyStateChangedAdvertisement(true);
+    public EAndroidFirmwareEraserInitializationVerdict beginErasure(final int imageIndex)
+    {
+        if (!IsCold())
+        { //keep first
+            onError("[AFE.BE.000] Another reset operation is already in progress (state='" + _currentState + "')");
 
-        setState(EAndroidFirmwareEraserState.ERASING);
+            return EAndroidFirmwareEraserInitializationVerdict.FAILED__OTHER_ERASURE_ALREADY_IN_PROGRESS;
+        }
 
-        _imageManager = new ImageManager(_transport);
-        _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>() {
-            @Override
-            public void onResponse(@NonNull final McuMgrImageResponse response) {
-                if (!response.isSuccess()) { // check for an error return code
-                    fatalErrorOccurredAdvertisement("Erasure failed (error-code '" + response.getReturnCode().toString() + "')");
+        try
+        {
+            setState(EAndroidFirmwareEraserState.IDLE); //order
+            _imageManager = new ImageManager(_transport); //order
+            busyStateChangedAdvertisement(true); //order
+            setState(EAndroidFirmwareEraserState.ERASING); //order
 
-                    setState(EAndroidFirmwareEraserState.FAILED);
-                    return;
+            AndroidFirmwareEraser self = this;
+            _imageManager.erase(imageIndex, new McuMgrCallback<McuMgrImageResponse>()
+            {
+                @Override
+                public void onResponse(@NonNull final McuMgrImageResponse response)
+                {
+                    if (!response.isSuccess())
+                    { // check for an error return code
+                        self.onError("[AFE.BE.010] Erasure failed (error-code '" + response.getReturnCode().toString() + "')", response.getReturnCode(), response.getGroupReturnCode());
+                        return;
+                    }
+
+                    readImageErasure();
+                    setState(EAndroidFirmwareEraserState.COMPLETE);
                 }
 
-                readImageErasure();
+                @Override
+                public void onError(@NonNull final McuMgrException exception)
+                {
+                    self.onError("[AFE.BE.020] Erasure failed '" + exception.getMessage() + "'", exception);
 
-                setState(EAndroidFirmwareEraserState.COMPLETE);
-            }
+                    busyStateChangedAdvertisement(false);
+                }
+            });
+        }
+        catch (final Exception ex)
+        {
+            onError("[AFE.BE.010] Failed to initialize erase operation: '" + ex.getMessage() + "'", ex);
+            return EAndroidFirmwareEraserInitializationVerdict.FAILED__ERROR_UPON_COMMENCING;
+        }
 
-            @Override
-            public void onError(@NonNull final McuMgrException error) {
-                fatalErrorOccurredAdvertisement("Erasure failed '" + error.getMessage() + "'");
-
-                busyStateChangedAdvertisement(false);
-
-                setState(EAndroidFirmwareEraserState.IDLE);
-            }
-        });
+        return EAndroidFirmwareEraserInitializationVerdict.SUCCESS;
     }
 
-    public void disconnect() {
+    public void disconnect()
+    {
         if (_imageManager == null)
             return;
 
@@ -70,8 +94,17 @@ public class AndroidFirmwareEraser {
         mcuMgrTransporter.release();
     }
 
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidFirmwareEraserState.NONE
+                || _currentState == EAndroidFirmwareEraserState.COMPLETE;
+    }
+
     private EAndroidFirmwareEraserState _currentState = EAndroidFirmwareEraserState.NONE;
-    private void setState(EAndroidFirmwareEraserState newState) {
+
+    private void setState(EAndroidFirmwareEraserState newState)
+    {
         final EAndroidFirmwareEraserState oldState = _currentState; //order
 
         _currentState = newState; //order
@@ -79,42 +112,78 @@ public class AndroidFirmwareEraser {
         stateChangedAdvertisement(oldState, newState); //order
     }
 
-    public void stateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState currentState) {
+    @Contract(pure = true)
+    public void stateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState currentState)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     private String _lastFatalErrorMessage;
 
-    public String getLastFatalErrorMessage() {
+    @Contract(pure = true)
+    public String getLastFatalErrorMessage()
+    {
         return _lastFatalErrorMessage;
     }
 
-    public void fatalErrorOccurredAdvertisement(String errorMessage) {
+    private void onError(final String errorMessage)
+    {
+        onError(errorMessage, null);
+    }
+
+    private void onError(final String errorMessage, final Exception exception)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception));
+    }
+
+    private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs)
+    {
+        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs));
+    }
+
+    private void onErrorImpl(final String errorMessage, final int globalErrorCode)
+    {
+        setState(EAndroidFirmwareEraserState.FAILED);
+
+        fatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
+    }
+
+    public void fatalErrorOccurredAdvertisement(final String errorMessage, int globalErrorCode)
+    {
         _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void logMessageAdvertisement(String message, String category, String level) {
+    @Contract(pure = true)
+    public void logMessageAdvertisement(final String message, final String category, final String level)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    public void busyStateChangedAdvertisement(boolean busyNotIdle) {
+    @Contract(pure = true)
+    public void busyStateChangedAdvertisement(final boolean busyNotIdle)
+    {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    private void readImageErasure() {
+    private void readImageErasure()
+    {
         busyStateChangedAdvertisement(true);
 
-        _imageManager.list(new McuMgrCallback<McuMgrImageStateResponse>() {
+        AndroidFirmwareEraser self = this;
 
+        _imageManager.list(new McuMgrCallback<McuMgrImageStateResponse>()
+        {
             @Override
-            public void onResponse(@NonNull final McuMgrImageStateResponse response) {
+            public void onResponse(@NonNull final McuMgrImageStateResponse response)
+            {
                 // postReady(response);
                 busyStateChangedAdvertisement(false);
             }
 
             @Override
-            public void onError(@NonNull final McuMgrException error) {
-                fatalErrorOccurredAdvertisement(error.getMessage());
+            public void onError(@NonNull final McuMgrException exception)
+            {
+                self.onError("[AFE.RIE.OE.010] Failed to read firmware images after firmware erasure : " + exception.getMessage(), exception);
                 busyStateChangedAdvertisement(false);
             }
         });

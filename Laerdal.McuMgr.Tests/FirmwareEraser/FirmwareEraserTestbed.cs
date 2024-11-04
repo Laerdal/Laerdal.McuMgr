@@ -27,9 +27,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
                 _eraserCallbacksProxy = eraserCallbacksProxy;
             }
 
-            public virtual void BeginErasure(int imageIndex)
+            public virtual EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
             {
                 BeginErasureCalled = true;
+                
+                return EFirmwareErasureInitializationVerdict.Success;
             }
 
             public virtual void Disconnect()
@@ -38,16 +40,16 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             }
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
-                => _eraserCallbacksProxy.LogMessageAdvertisement(message, category, level); //raises the actual event
+                => _eraserCallbacksProxy?.LogMessageAdvertisement(message, category, level); //raises the actual event
 
             public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
-                => _eraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+                => _eraserCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
-                => _eraserCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
+                => _eraserCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
 
-            public void FatalErrorOccurredAdvertisement(string errorMessage)
-                => _eraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage); //raises the actual event
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _eraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode); //raises the actual event
         }
     }
 }

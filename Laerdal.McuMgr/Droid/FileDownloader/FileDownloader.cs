@@ -12,6 +12,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
@@ -90,23 +91,58 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
             }
 
-            #region commands 
 
-            public new EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            #region commands
+
+            public EFileDownloaderVerdict BeginDownload(
+                string remoteFilePath,
+                int? initialMtuSize = null //  android only
+            )
             {
-                return TranslateFileDownloaderVerdict(base.BeginDownload(remoteFilePath));
+                return TranslateFileDownloaderVerdict(base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize ?? -1
+                ));
+            }
+            
+            public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
+            {
+                var androidContext = context as Context ?? throw new ArgumentException($"Expected {nameof(Context)} to be an AndroidContext but got '{context?.GetType().Name ?? "null"}' instead", nameof(context));
+                
+                return base.TrySetContext(androidContext);
+            }
+
+            public bool TrySetBluetoothDevice(object bluetoothDevice)
+            {
+                var androidBluetoothDevice = bluetoothDevice as BluetoothDevice ?? throw new ArgumentException($"Expected {nameof(BluetoothDevice)} to be an AndroidBluetoothDevice but got '{bluetoothDevice?.GetType().Name ?? "null"}' instead", nameof(bluetoothDevice));
+                
+                return base.TrySetBluetoothDevice(androidBluetoothDevice);
+            }
+            
+            public new bool TryInvalidateCachedTransport()
+            {
+                return base.TryInvalidateCachedTransport();
             }
             
             #endregion commands
 
 
             #region android callbacks -> csharp event emitters
-            
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage)
-            {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage);
 
-                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage);
+            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int globalErrorCode)
+            {
+                base.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //just in case
+
+                FatalErrorOccurredAdvertisement(resource, errorMessage, (EGlobalErrorCode) globalErrorCode);
+            }
+            
+            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
+            {
+                _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    resource,
+                    errorMessage,
+                    globalErrorCode
+                );
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
@@ -195,7 +231,12 @@ namespace Laerdal.McuMgr.FileDownloader
                 {
                     return EFileDownloaderVerdict.FailedInvalidSettings;
                 }
-            
+
+                if (verdict == EAndroidFileDownloaderVerdict.FailedErrorUponCommencing)
+                {
+                    return EFileDownloaderVerdict.FailedErrorUponCommencing;
+                }
+
                 if (verdict == EAndroidFileDownloaderVerdict.FailedDownloadAlreadyInProgress)
                 {
                     return EFileDownloaderVerdict.FailedDownloadAlreadyInProgress;

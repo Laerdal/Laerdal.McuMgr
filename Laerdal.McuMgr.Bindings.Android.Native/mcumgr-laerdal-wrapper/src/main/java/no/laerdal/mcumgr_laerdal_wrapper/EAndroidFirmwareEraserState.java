@@ -1,6 +1,7 @@
 package no.laerdal.mcumgr_laerdal_wrapper;
 
-public enum EAndroidFirmwareEraserState {
+public enum EAndroidFirmwareEraserState
+{
     NONE(0),
     IDLE(1),
     ERASING(2),

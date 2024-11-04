@@ -1,11 +1,15 @@
 using System;
+using Laerdal.McuMgr.Common.Enums;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions
 {
     public class DeviceResetterErroredOutException : Exception, IDeviceResetterException
     {
-        public DeviceResetterErroredOutException(string errorMessage) : base($"An error occurred while resetting/rebooting the device: '{errorMessage}'")
+        public EGlobalErrorCode GlobalErrorCode { get; } = EGlobalErrorCode.Unset;
+
+        public DeviceResetterErroredOutException(string errorMessage, EGlobalErrorCode globalErrorCode) : base($"An error occurred while resetting/rebooting the device: '{errorMessage}'")
         {
+            GlobalErrorCode = globalErrorCode;
         }
         
         public DeviceResetterErroredOutException(string errorMessage, Exception innerException) : base($"An error occurred while resetting/rebooting the device: '{errorMessage}'", innerException)

@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
@@ -25,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy13(
                 mockedFileData: mockedFileData,
                 downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_(),
-                nativeErrorMessageForFileNotFound: nativeRogueErrorMessage
+                rogueNativeErrorMessage: nativeRogueErrorMessage
             );
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
@@ -33,6 +35,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 maxTriesCount: maxTriesCount, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 remoteFilePath: remoteFilePath,
                 sleepTimeBetweenRetriesInMs: 10
@@ -74,17 +79,20 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
         private class MockedErroneousNativeFileDownloaderProxySpy13 : MockedNativeFileDownloaderProxySpy
         {
-            private readonly string _nativeErrorMessageForFileNotFound;
+            private readonly string _rogueNativeErrorMessage;
             
-            public MockedErroneousNativeFileDownloaderProxySpy13(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData, string nativeErrorMessageForFileNotFound) : base(downloaderCallbacksProxy)
+            public MockedErroneousNativeFileDownloaderProxySpy13(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, byte[] mockedFileData, string rogueNativeErrorMessage) : base(downloaderCallbacksProxy)
             {
                 _ = mockedFileData;
-                _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
+                _rogueNativeErrorMessage = rogueNativeErrorMessage;
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(remoteFilePath);
+                var verdict = base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -95,7 +103,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound);
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _rogueNativeErrorMessage, EGlobalErrorCode.Generic);
                 });
 
                 return verdict;

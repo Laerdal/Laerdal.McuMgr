@@ -104,16 +104,19 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null, // ignored in android   it only affects ios
-                int? byteAlignment = null //  ignored in android   it only affects ios
+                int? byteAlignment = null
+                //  ignored in android   it only affects ios
             )
             {
                 var nativeVerdict = base.BeginInstallation(
                     data: data,
                     mode: TranslateFirmwareInstallationMode(mode),
                     eraseSettings: eraseSettings ?? false,
+                    initialMtuSize: initialMtuSize ?? -1,
                     windowCapacity: windowCapacity ?? -1,
                     memoryAlignment: memoryAlignment ?? -1,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
@@ -128,23 +131,25 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             
             #region callbacks -> events
 
-            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(EAndroidFirmwareInstallationState state, EAndroidFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage);
+                base.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage, globalErrorCode);
 
                 FatalErrorOccurredAdvertisement(
                     state: TranslateEAndroidFirmwareInstallationState(state),
                     errorMessage: errorMessage,
-                    fatalErrorType: TranslateEAndroidFirmwareInstallerFatalErrorType(fatalErrorType)
+                    fatalErrorType: TranslateEAndroidFirmwareInstallerFatalErrorType(fatalErrorType),
+                    globalErrorCode: (EGlobalErrorCode) globalErrorCode
                 );
             }
 
-            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage) //just to conform to the interface
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode) //just to conform to the interface
             {
                 _firmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(
                     state: state,
                     errorMessage: errorMessage,
-                    fatalErrorType: fatalErrorType
+                    fatalErrorType: fatalErrorType,
+                    globalErrorCode: globalErrorCode
                 );
             }
             
@@ -289,6 +294,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut)
                 {
                     return EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut;
+                }
+                
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress)
+                {
+                    return EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress;
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(fatalErrorType), fatalErrorType, "Unknown enum value");

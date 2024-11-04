@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy13(
                 uploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy_(),
-                nativeErrorMessageForFileNotFound: nativeRogueErrorMessage
+                nativeRogueErrorMessage: nativeRogueErrorMessage
             );
             var fileUploader = new McuMgr.FileUploader.FileUploader(mockedNativeFileUploaderProxy);
 
@@ -33,6 +33,9 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 data: mockedFileData, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
                 maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
@@ -75,16 +78,34 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
         private class MockedErroneousNativeFileUploaderProxySpy13 : MockedNativeFileUploaderProxySpy
         {
-            private readonly string _nativeErrorMessageForFileNotFound;
+            private readonly string _nativeRogueErrorMessage;
             
-            public MockedErroneousNativeFileUploaderProxySpy13(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, string nativeErrorMessageForFileNotFound) : base(uploaderCallbacksProxy)
+            public MockedErroneousNativeFileUploaderProxySpy13(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, string nativeRogueErrorMessage) : base(uploaderCallbacksProxy)
             {
-                _nativeErrorMessageForFileNotFound = nativeErrorMessageForFileNotFound;
+                _nativeRogueErrorMessage = nativeRogueErrorMessage;
             }
 
-            public override EFileUploaderVerdict BeginUpload(string remoteFilePath, byte[] data)
+            public override EFileUploaderVerdict BeginUpload(
+                string remoteFilePath,
+                byte[] data,
+                int? pipelineDepth = null, //   ios only
+                int? byteAlignment = null, //   ios only
+                int? initialMtuSize = null, //  android only
+                int? windowCapacity = null, //  android only
+                int? memoryAlignment = null //  android only
+            )
             {
-                var verdict = base.BeginUpload(remoteFilePath, data);
+                var verdict = base.BeginUpload(
+                    data: data,
+                    remoteFilePath: remoteFilePath,
+
+                    pipelineDepth: pipelineDepth, //     ios only
+                    byteAlignment: byteAlignment, //     ios only
+
+                    initialMtuSize: initialMtuSize, //   android only
+                    windowCapacity: windowCapacity, //   android only
+                    memoryAlignment: memoryAlignment //  android only
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -94,8 +115,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //                                                 order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeErrorMessageForFileNotFound, EMcuMgrErrorCode.Corrupt, EFileUploaderGroupReturnCode.Unset); // order
+                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //   order
+                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeRogueErrorMessage, EGlobalErrorCode.Generic); // order
                 });
 
                 return verdict;

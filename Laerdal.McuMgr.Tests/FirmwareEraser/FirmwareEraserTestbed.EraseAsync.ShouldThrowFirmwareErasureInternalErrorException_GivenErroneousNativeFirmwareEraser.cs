@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             {
             }
 
-            public override void BeginErasure(int imageIndex)
+            public override EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
             {
                 base.BeginErasure(imageIndex);
 

@@ -49,20 +49,32 @@ namespace Laerdal.McuMgr.DeviceResetter
             public EDeviceResetterState State => TranslateEAndroidDeviceResetterState(base.State ?? EAndroidDeviceResetterState.None);
 
             // ReSharper disable once UnusedMember.Local
-            private AndroidNativeDeviceResetterAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+            private AndroidNativeDeviceResetterAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer)
+                : base(javaReference, transfer)
             {
             }
 
-            internal AndroidNativeDeviceResetterAdapterProxy(INativeDeviceResetterCallbacksProxy deviceResetterCallbacksProxy, Context context, BluetoothDevice bluetoothDevice) : base(context, bluetoothDevice)
+            internal AndroidNativeDeviceResetterAdapterProxy(INativeDeviceResetterCallbacksProxy deviceResetterCallbacksProxy, Context context, BluetoothDevice bluetoothDevice)
+                : base(context, bluetoothDevice)
             {
                 _deviceResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy));
             }
 
-            public override void FatalErrorOccurredAdvertisement(string errorMessage)
+            public EDeviceResetterInitializationVerdict BeginReset()
             {
-                base.FatalErrorOccurredAdvertisement(errorMessage);
+                return TranslateEAndroidDeviceResetterInitializationVerdict(base.BeginReset());
+            }
+
+            public override void FatalErrorOccurredAdvertisement(string errorMessage, int globalErrorCode)
+            {
+                base.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
                 
-                _deviceResetterCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage);
+                FatalErrorOccurredAdvertisement(errorMessage, (EGlobalErrorCode) globalErrorCode);
+            }
+            
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+            {
+                _deviceResetterCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
             }
 
             public override void StateChangedAdvertisement(EAndroidDeviceResetterState oldState, EAndroidDeviceResetterState newState)
@@ -75,7 +87,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 );
             }
 
-            //keep this method to adhere to the interface
+            //keep this override   it is needed to conform to the interface
             public void StateChangedAdvertisement(EDeviceResetterState oldState, EDeviceResetterState newState)
             {
                 _deviceResetterCallbacksProxy?.StateChangedAdvertisement(
@@ -95,7 +107,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 );
             }
 
-            //keep this override   its needed to conform to the interface
+            //keep this override   it is needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
             {
                 _deviceResetterCallbacksProxy?.LogMessageAdvertisement(message, category, level);
@@ -129,6 +141,26 @@ namespace Laerdal.McuMgr.DeviceResetter
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
+            }
+
+            static private EDeviceResetterInitializationVerdict TranslateEAndroidDeviceResetterInitializationVerdict(EAndroidDeviceResetterInitializationVerdict verdict)
+            {
+                if (verdict == EAndroidDeviceResetterInitializationVerdict.Success)
+                {
+                    return EDeviceResetterInitializationVerdict.Success;
+                }
+                
+                if (verdict == EAndroidDeviceResetterInitializationVerdict.FailedErrorUponCommencing)
+                {
+                    return EDeviceResetterInitializationVerdict.FailedErrorUponCommencing;
+                }
+
+                if (verdict == EAndroidDeviceResetterInitializationVerdict.FailedOtherResetAlreadyInProgress)
+                {
+                    return EDeviceResetterInitializationVerdict.FailedOtherResetAlreadyInProgress;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
             }
         }
     }

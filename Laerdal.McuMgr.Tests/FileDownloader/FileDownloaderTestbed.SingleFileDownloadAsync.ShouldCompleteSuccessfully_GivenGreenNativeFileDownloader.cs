@@ -1,8 +1,10 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
+using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 #pragma warning disable xUnit1026
@@ -23,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-            var expectedRemoteFilepath = remoteFilePath.StartsWith("/")
+            var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 
@@ -38,6 +40,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp.",
+                
                 maxTriesCount: maxTriesCount,
                 remoteFilePath: remoteFilePath,
                 sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
@@ -84,11 +89,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             }
 
             private int _tryCount;
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath)
+            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
                 _tryCount++;
-                
-                var verdict = base.BeginDownload(remoteFilePath);
+
+                var verdict = base.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize
+                );
 
                 Task.Run(async () => //00 vital
                 {
@@ -99,7 +107,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     if (_tryCount < _maxNumberOfTriesForSuccess)
                     {
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred");
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_Corrupt);
                         return;
                     }
                     

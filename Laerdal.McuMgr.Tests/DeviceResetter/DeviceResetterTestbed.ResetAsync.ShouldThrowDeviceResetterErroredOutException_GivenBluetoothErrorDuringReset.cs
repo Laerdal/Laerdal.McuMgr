@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
@@ -48,7 +49,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             {
             }
 
-            public override void BeginReset()
+            public override EDeviceResetterInitializationVerdict BeginReset()
             {
                 base.BeginReset();
 
@@ -59,10 +60,12 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 
                     await Task.Delay(20);
                     StateChangedAdvertisement(oldState: EDeviceResetterState.Resetting, newState: EDeviceResetterState.Failed);
-                    FatalErrorOccurredAdvertisement("bluetooth error blah blah");
+                    FatalErrorOccurredAdvertisement("bluetooth error blah blah", EGlobalErrorCode.Generic);
 
                     //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native resetter
                 });
+                
+                return EDeviceResetterInitializationVerdict.Success;
             }
         }
     }

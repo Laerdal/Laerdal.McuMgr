@@ -59,38 +59,54 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 
                 _nativeEraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
-            
+
             public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
                 get => _nativeEraserCallbacksProxy!.FirmwareEraser;
                 set => _nativeEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
+            public EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
+            {
+                if (_nativeEraserCallbacksProxy == null)
+                    throw new InvalidOperationException("The native firmware eraser is not initialized");
+
+                return TranslateEAndroidFirmwareEraserInitializationVerdict(base.BeginErasure(imageIndex));
+            }
+
             public override void StateChangedAdvertisement(EAndroidFirmwareEraserState oldState, EAndroidFirmwareEraserState newState)
             {
                 base.StateChangedAdvertisement(oldState, newState);
-                
-                StateChangedAdvertisement(newState: TranslateEAndroidFirmwareEraserState(newState), oldState: TranslateEAndroidFirmwareEraserState(oldState));
+
+                StateChangedAdvertisement(
+                    newState: TranslateEAndroidFirmwareEraserState(newState),
+                    oldState: TranslateEAndroidFirmwareEraserState(oldState)
+                );
             }
             
-            //keep this override   its needed to conform to the interface
+            //keep this override   it is needed to conform to the interface
             public void StateChangedAdvertisement(EFirmwareErasureState oldState, EFirmwareErasureState newState)
             {
-                _nativeEraserCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState);
+                _nativeEraserCallbacksProxy?.StateChangedAdvertisement(newState: newState, oldState: oldState);
             }
             
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
                 base.BusyStateChangedAdvertisement(busyNotIdle); //just in case
 
-                _nativeEraserCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle);
+                _nativeEraserCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void FatalErrorOccurredAdvertisement(string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(errorMessage);
-                
-                _nativeEraserCallbacksProxy.FatalErrorOccurredAdvertisement(errorMessage);
+                base.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
+
+                FatalErrorOccurredAdvertisement(errorMessage, (EGlobalErrorCode) globalErrorCode);
+            }
+            
+            public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
+            {
+                _nativeEraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode);
             }
             
             public override void LogMessageAdvertisement(string message, string category, string level)
@@ -104,10 +120,10 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 );
             }
 
-            //keep this override   its needed to conform to the interface
+            //keep this override   it is needed to conform to the interface
             public void LogMessageAdvertisement(string message, string category, ELogLevel level)
             {
-                _nativeEraserCallbacksProxy.LogMessageAdvertisement(message, category, level);
+                _nativeEraserCallbacksProxy?.LogMessageAdvertisement(message, category, level);
             }
 
             // ReSharper disable once MemberCanBePrivate.Global
@@ -139,6 +155,26 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 }
                 
                 throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown enum value");
+            }
+
+            static internal EFirmwareErasureInitializationVerdict TranslateEAndroidFirmwareEraserInitializationVerdict(EAndroidFirmwareEraserInitializationVerdict beginErasure)
+            {
+                if (beginErasure == EAndroidFirmwareEraserInitializationVerdict.Success)
+                {
+                    return EFirmwareErasureInitializationVerdict.Success;
+                }
+                
+                if (beginErasure == EAndroidFirmwareEraserInitializationVerdict.FailedErrorUponCommencing)
+                {
+                    return EFirmwareErasureInitializationVerdict.FailedErrorUponCommencing;
+                }
+                
+                if (beginErasure == EAndroidFirmwareEraserInitializationVerdict.FailedOtherErasureAlreadyInProgress)
+                {
+                    return EFirmwareErasureInitializationVerdict.FailedOtherErasureAlreadyInProgress;
+                }
+                
+                throw new ArgumentOutOfRangeException(nameof(beginErasure), beginErasure, "Unknown enum value");
             }
         }
     }

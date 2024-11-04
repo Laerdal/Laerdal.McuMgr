@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts
 {
@@ -18,7 +19,7 @@ namespace Laerdal.McuMgr.FirmwareEraser.Contracts
         /// Starts the erasure process on the firmware-image specified.
         /// </summary>
         /// <param name="imageIndex">The zero-based index of the firmware image to delete. By default it's 1 which is the index of the inactive firmware image.</param>
-        void BeginErasure(int imageIndex = 1);
+        EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex = 1);
 
         /// <summary>Drops the active bluetooth-connection to the Zephyr device.</summary>
         void Disconnect();

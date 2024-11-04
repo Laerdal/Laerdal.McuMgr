@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -105,12 +106,16 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null, //not applicable in ios
                 int? windowCapacity = null, //not applicable in ios
                 int? memoryAlignment = null, //not applicable in ios
                 int? pipelineDepth = null,
                 int? byteAlignment = null
             )
             {
+                if (_nativeFirmwareInstaller == null)
+                    throw new InvalidOperationException("The native firmware installer is not initialized");
+                
                 var nsDataOfFirmware = NSData.FromArray(data);
                 
                 var verdict = TranslateFirmwareInstallationVerdict(_nativeFirmwareInstaller.BeginInstallation(
@@ -149,18 +154,20 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             public override void CancelledAdvertisement() => _nativeFirmwareInstallerCallbacksProxy?.CancelledAdvertisement();
             public override void BusyStateChangedAdvertisement(bool busyNotIdle) => _nativeFirmwareInstallerCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
 
-            public override void FatalErrorOccurredAdvertisement(EIOSFirmwareInstallationState state, EIOSFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage)
+            public override void FatalErrorOccurredAdvertisement(EIOSFirmwareInstallationState state, EIOSFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, nint globalErrorCode)
                 => FatalErrorOccurredAdvertisement(
                     state: TranslateEIOSFirmwareInstallationState(state),
                     errorMessage: errorMessage,
-                    fatalErrorType: TranslateEIOSFirmwareInstallerFatalErrorType(fatalErrorType)
+                    fatalErrorType: TranslateEIOSFirmwareInstallerFatalErrorType(fatalErrorType),
+                    globalErrorCode: (EGlobalErrorCode) globalErrorCode
                 );
-            
-            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage) //just to conform to the interface
+
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode) //just to conform to the interface
                 => _nativeFirmwareInstallerCallbacksProxy?.FatalErrorOccurredAdvertisement(
                     state: state,
                     errorMessage: errorMessage,
-                    fatalErrorType: fatalErrorType
+                    fatalErrorType: fatalErrorType,
+                    globalErrorCode: globalErrorCode
                 );
 
             public override void LogMessageAdvertisement(string message, string category, string level)
@@ -213,6 +220,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     EIOSFirmwareInstallerFatalErrorType.DeploymentFailed => EFirmwareInstallerFatalErrorType.DeploymentFailed,
                     EIOSFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout,
                     EIOSFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut => EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut,
+                    EIOSFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress => EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress,
+
                     _ => throw new ArgumentOutOfRangeException(nameof(fatalErrorType), actualValue: fatalErrorType, message: "Unknown enum value")
                 };
             }

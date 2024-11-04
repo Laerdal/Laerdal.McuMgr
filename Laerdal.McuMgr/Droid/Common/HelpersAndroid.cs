@@ -7,12 +7,13 @@ namespace Laerdal.McuMgr.Common
     {
         static public ELogLevel TranslateEAndroidLogLevel(string level) => level?.Trim().ToUpperInvariant() switch //derived from sl4j https://www.slf4j.org/api/org/apache/log4j/Level.html
         {
+            "TRACE" => ELogLevel.Trace,
             "DEBUG" => ELogLevel.Debug,
-            "TRACE" => ELogLevel.Verbose,
+            "VERBOSE" => ELogLevel.Verbose,
             "INFO" => ELogLevel.Info,
-            "FATAL" => ELogLevel.Error,
             "WARN" => ELogLevel.Warning,
             "ERROR" => ELogLevel.Error,
+            "FATAL" => ELogLevel.Error,
             _ => throw new ArgumentOutOfRangeException(nameof(level), level, "Unknown log-level value")
         };
     }

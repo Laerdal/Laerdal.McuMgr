@@ -29,7 +29,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(new byte[] { 1, 2, 3 }, maxTriesCount: 1));
+            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
+                data: [1, 2, 3],
+                maxTriesCount: 1,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            ));
 
             // Assert
             await work.Should().CompleteWithinAsync(4.Seconds());
@@ -65,8 +70,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy,
                 int numberOfFirmwareUploadingEventsToEmitCount,
                 ECachedFirmwareType cachedFirmwareTypeToEmulate
-            )
-                : base(firmwareInstallerCallbacksProxy)
+            ) : base(firmwareInstallerCallbacksProxy)
             {
                 _cachedFirmwareTypeToEmulate = cachedFirmwareTypeToEmulate;
                 _numberOfFirmwareUploadingEventsToEmitCount = numberOfFirmwareUploadingEventsToEmitCount;
@@ -77,6 +81,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null,
@@ -89,6 +94,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     eraseSettings: eraseSettings,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
+                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
@@ -96,6 +102,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                 Task.Run(function: async () => //00 vital
                 {
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
                     await Task.Delay(10);
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);
