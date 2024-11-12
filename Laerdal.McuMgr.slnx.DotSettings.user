@@ -1,8 +1,11 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AAndroidFirmwareInstaller_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003FUsers_003FDominic_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F70029469267e4beb864e0766d0bb075d17a00_003Fa8_003Ffbdeecdb_003FAndroidFirmwareInstaller_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CustomTools/CustomToolsData/@EntryValue"></s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=5074b48a_002Ddd85_002D447d_002Db5d1_002D16b7a75eed14/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Solution /&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=5074b48a_002Ddd85_002D447d_002Db5d1_002D16b7a75eed14/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
+	
+	
     
     <s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=d7f9be95_002Dea55_002D4275_002Dfc46_002Ddb78a6f5c9b0_0023Laerdal_002EMcuMgr_002EBindings_002EiOS/@EntryIndexedValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=9220adc5_002D1de5_002D81aa_002D702b_002D1bd3428beb05_0023Laerdal_002EMcuMgr_002EBindings_002EMacCatalyst/@EntryIndexedValue">True</s:Boolean>
@@ -37,6 +40,9 @@
     <s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpUseContinuousIndentInsideBracesMigration/@EntryIndexedValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ESettingsUpgrade_002EMigrateBlankLinesAroundFieldToBlankLinesAroundProperty/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=f5d7549d_002D3a41_002D210b_002D4275_002Db021d346c7c5_0023Laerdal_002EMcuMgr_002EBindings_002EAndroid/@EntryIndexedValue">True</s:Boolean>
+	
+	
+	
     <s:Boolean x:Key="/Default/UserDictionary/Words/=autodispose/@EntryIndexedValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/UserDictionary/Words/=Commandable/@EntryIndexedValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/UserDictionary/Words/=EIOS/@EntryIndexedValue">True</s:Boolean>

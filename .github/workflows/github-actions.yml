@@ -116,7 +116,7 @@ jobs:
           rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
-        uses: 'EnricoMi/publish-unit-test-result-action/macos@master'
+        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
         if: always()
         with:
           files: |

@@ -62,10 +62,10 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1177.0</Version>
-        <FileVersion>1.0.1177.0</FileVersion>
-        <PackageVersion>1.0.1177.0</PackageVersion>
-        <AssemblyVersion>1.0.1177.0</AssemblyVersion>
+        <Version>1.0.1087.0</Version>
+        <FileVersion>1.0.1087.0</FileVersion>
+        <PackageVersion>1.0.1087.0</PackageVersion>
+        <AssemblyVersion>1.0.1087.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -114,7 +114,7 @@
         <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
         <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="ShouldBuildNativeLibraries: '$(ShouldBuildNativeLibraries)' "/>
+        <Message Importance="high" Text="ShouldBuildNativeLibraries:   '$(ShouldBuildNativeLibraries)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->

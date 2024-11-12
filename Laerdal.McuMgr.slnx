@@ -1,23 +1,22 @@
 ﻿<Solution>
-    <Folder Name="/_Misc/">
-        <File Path="README.md"/>
-        <File Path="LICENSE"/>
-        <File Path=".gitignore"/>
-        <File Path="azure-pipelines.yml"/>
-        <File Path="Laerdal.Scripts\Laerdal.CreateNewReleaseInGithub.sh"/>
-        <File Path="Laerdal.Scripts\Laerdal.Builder.targets"/>
-        <File Path="Laerdal.Scripts\Laerdal.Version.sh"/>
-        <File Path="global.json"/>
-        <File Path="Laerdal.Scripts\Laerdal.SetupBuildEnvironment.sh"/>
-        <File Path=".github\workflows\github-actions.yml"/>
-        <File Path="Laerdal.Scripts\Laerdal.GenerateSignAndUploadSbom.sh"/>
-    </Folder>
-    <Folder Name="/_Tests/">
-        <Project Path="Laerdal.McuMgr.Tests\Laerdal.McuMgr.Tests.csproj" Type="Classic C#"/>
-    </Folder>
-    <Project Path="Laerdal.McuMgr.Bindings.Android\Laerdal.McuMgr.Bindings.Android.csproj" Type="Classic C#"/>
-    <Project Path="Laerdal.McuMgr.Bindings.iOS\Laerdal.McuMgr.Bindings.iOS.csproj" Type="Classic C#"/>
-    <Project Path="Laerdal.McuMgr.Bindings.MacCatalyst\Laerdal.McuMgr.Bindings.MacCatalyst.csproj" Type="Classic C#"/>
-    <Project Path="Laerdal.McuMgr.Bindings.NetStandard\Laerdal.McuMgr.Bindings.NetStandard.csproj" Type="Classic C#"/>
-    <Project Path="Laerdal.McuMgr\Laerdal.McuMgr.csproj" Type="Classic C#"/>
+  <Folder Name="/_Misc/">
+    <File Path="README.md" />
+    <File Path="LICENSE" />
+    <File Path=".gitignore" />
+    <File Path="Laerdal.Scripts\Laerdal.CreateNewReleaseInGithub.sh" />
+    <File Path="Laerdal.Scripts\Laerdal.Builder.targets" />
+    <File Path="Laerdal.Scripts\Laerdal.Version.sh" />
+    <File Path="global.json" />
+    <File Path="Laerdal.Scripts\Laerdal.SetupBuildEnvironment.sh" />
+    <File Path=".github\workflows\github-actions.yml" />
+    <File Path="Laerdal.Scripts\Laerdal.GenerateSignAndUploadSbom.sh" />
+  </Folder>
+  <Folder Name="/_Tests/">
+    <Project Path="Laerdal.McuMgr.Tests\Laerdal.McuMgr.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Project Path="Laerdal.McuMgr.Bindings.Android\Laerdal.McuMgr.Bindings.Android.csproj" Type="Classic C#" />
+  <Project Path="Laerdal.McuMgr.Bindings.iOS\Laerdal.McuMgr.Bindings.iOS.csproj" Type="Classic C#" />
+  <Project Path="Laerdal.McuMgr.Bindings.MacCatalyst\Laerdal.McuMgr.Bindings.MacCatalyst.csproj" Type="Classic C#" />
+  <Project Path="Laerdal.McuMgr.Bindings.NetStandard\Laerdal.McuMgr.Bindings.NetStandard.csproj" Type="Classic C#" />
+  <Project Path="Laerdal.McuMgr\Laerdal.McuMgr.csproj" Type="Classic C#" />
 </Solution>

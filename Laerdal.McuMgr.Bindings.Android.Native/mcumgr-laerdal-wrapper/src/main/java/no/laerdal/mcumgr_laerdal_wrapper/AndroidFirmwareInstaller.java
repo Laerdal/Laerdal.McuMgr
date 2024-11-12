@@ -28,8 +28,13 @@ public class AndroidFirmwareInstaller
 
     @SuppressWarnings("FieldCanBeLocal")
     private HandlerThread _handlerThread;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Context _context;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final BluetoothDevice _bluetoothDevice;
+
+    private McuMgrTransport _transport;
     private FirmwareUpgradeManager _manager;
-    private final McuMgrTransport _transport;
 
     private int _imageSize;
     private int _bytesSent;
@@ -48,7 +53,8 @@ public class AndroidFirmwareInstaller
      */
     public AndroidFirmwareInstaller(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice)
     {
-        _transport = new McuMgrBleTransport(context, bluetoothDevice);
+        _context = context;
+        _bluetoothDevice = bluetoothDevice;
     }
 
     /**
@@ -75,10 +81,7 @@ public class AndroidFirmwareInstaller
             final int memoryAlignment
     )
     {
-        if (_currentState != EAndroidFirmwareInstallationState.NONE //if an installation is already in progress we bail out
-                && _currentState != EAndroidFirmwareInstallationState.ERROR
-                && _currentState != EAndroidFirmwareInstallationState.COMPLETE
-                && _currentState != EAndroidFirmwareInstallationState.CANCELLED)
+        if (!IsCold()) //if an installation is already in progress we bail out
         {
             onError(EAndroidFirmwareInstallerFatalErrorType.FAILED__INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
 
@@ -104,6 +107,7 @@ public class AndroidFirmwareInstaller
             }
         }
 
+        _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         _manager = new FirmwareUpgradeManager(_transport);
         _manager.setFirmwareUpgradeCallback(new FirmwareInstallCallbackProxy());
 
@@ -157,6 +161,15 @@ public class AndroidFirmwareInstaller
         return EAndroidFirmwareInstallationVerdict.SUCCESS;
     }
 
+    @Contract(pure = true)
+    private boolean IsCold()
+    {
+        return _currentState == EAndroidFirmwareInstallationState.NONE
+                || _currentState == EAndroidFirmwareInstallationState.ERROR
+                || _currentState == EAndroidFirmwareInstallationState.COMPLETE
+                || _currentState == EAndroidFirmwareInstallationState.CANCELLED;
+    }
+
     private @NotNull Settings digestFirmwareInstallationManagerSettings(@NotNull EAndroidFirmwareInstallationMode mode, boolean eraseSettings, int estimatedSwapTimeInMilliseconds, int windowCapacity, int memoryAlignment)
     {
         Builder settingsBuilder = new FirmwareUpgradeManager.Settings.Builder();
@@ -205,14 +218,20 @@ public class AndroidFirmwareInstaller
 
     public void disconnect()
     {
-        if (_manager == null)
+        if (_transport == null) {
+            logMessageAdvertisement("Transport is null - no need to disconnect", "FirmwareInstaller", "VERBOSE");
             return;
+        }
 
-        final McuMgrTransport mcuMgrTransporter = _manager.getTransporter();
-        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
-            return;
-
-        mcuMgrTransporter.release();
+        try
+        {
+            _transport.release();
+            logMessageAdvertisement("Connection closed!", "FirmwareInstaller", "INFO");
+        }
+        catch (Exception ex)
+        {
+            logMessageAdvertisement("Failed to close transport connection: " + ex.getMessage(), "FirmwareInstaller", "ERROR");
+        }
     }
 
     private EAndroidFirmwareInstallationState _currentState = EAndroidFirmwareInstallationState.NONE;
