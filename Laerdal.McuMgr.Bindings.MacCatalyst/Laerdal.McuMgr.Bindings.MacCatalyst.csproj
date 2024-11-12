@@ -28,6 +28,10 @@
         <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(TargetPlatformVersion)' == ''                                      ">17.0</TargetPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                                                             ">13.1</SupportedOSPlatformVersion>
 
+        <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
+        <!-- kick in and take the ApiDefinitions.cs and StructsAndEnums.cs files into account    -->
+        <IsBindingProject>true</IsBindingProject>
+        
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
         <LangVersion>10.0</LangVersion>
@@ -112,15 +116,6 @@
         <None Remove="Laerdal.McuMgr.Bindings.MacCatalyst.csproj.DotSettings"/>
         <None Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/Laerdal.Mac.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
-
-    <PropertyGroup>
-        <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
-        <!-- kick in and take the ApiDefinitions.cs and StructsAndEnums.cs files into account    -->
-        <IsBindingProject>true</IsBindingProject>
-
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
-    </PropertyGroup>
 
     <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
