@@ -30,7 +30,7 @@ declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framewo
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./${SWIFT_PROJECT_NAME}/build"
 declare SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
-declare SWIFT_PROJECT_PATH="./${SWIFT_PROJECT_NAME}/${SWIFT_PROJECT_NAME}.xcodeproj"
+declare SWIFT_PROJECT_PATH="./McuMgrBindingsiOS/${SWIFT_PROJECT_NAME}.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
 
 declare OUTPUT_FOLDER_POSTFIX=""

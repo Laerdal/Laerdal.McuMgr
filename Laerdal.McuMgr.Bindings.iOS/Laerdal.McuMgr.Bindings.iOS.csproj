@@ -221,7 +221,7 @@
         <!-- to future maintainers     pipelines will generate a nuget without the Frameworks/McuMgrBindingsiOS.framework folder as a <NativeReference> -->
         <!-- to future maintainers     causing the iOS nuget to be poisoned and cause cryptic errors in runtime about missing symbols etc               -->
 
-        <Touch Files="$(NativeFrameworkActualTargetFolderpath)/.keepme_in_git_otherwise_azure_pipelines_will_break" AlwaysCreate="true"/>
+        <Touch Files="$(NativeFrameworkActualTargetFolderpath)/.keepme_in_git_otherwise_cicd_pipelines_will_break" AlwaysCreate="true"/>
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->
