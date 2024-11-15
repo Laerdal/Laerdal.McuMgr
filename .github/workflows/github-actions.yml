@@ -24,12 +24,12 @@ env:
 
   BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34" # for the csproj file
 
-  BINDINGS_IOS___SDK_VERSION: "17.5" # for xcodebuild
-  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer" # for xcodebuild
+  BINDINGS_IOS___SDK_VERSION: "18.1" # for xcodebuild
+  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
   BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "17.0" # for the csproj file
 
-  BINDINGS_MACCATALYST___SDK_VERSION: "14.5" # for xcodebuild
-  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_15.4.app/Contents/Developer" # for xcodebuild
+  BINDINGS_MACCATALYST___SDK_VERSION: "15.1" # for xcodebuild
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
   BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "17.0" # for the csproj file
 
 on:
@@ -49,7 +49,7 @@ jobs:
   
   build:
 
-    runs-on: 'macos-14'
+    runs-on: 'macos-15' # need a macos image that supports xcode 16.1+
     
     #   variable substitution is not supported in github at all    so we cant do stuff like this
     #
