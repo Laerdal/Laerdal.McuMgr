@@ -218,34 +218,6 @@ if [ $exitCode != 0 ]; then
   exit 140
 fi
 
-echo
-echo "** Mono:"
-which  mono  &&  mono  --version
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to find 'mono'."
-  exit 150
-fi
-
-echo
-echo "** MSBuild:"
-which   msbuild  &&  msbuild   --version
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to find 'msbuild'."
-  exit 160
-fi
-
-
-
-echo
-echo "** Nuget:"
-which  nuget  &&  nuget  help
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to find 'nuget'."
-  exit 170
-fi
 
 echo
 echo "** Adding 'Artifacts' Folder as a Nuget Source (dotnet):"

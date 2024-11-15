@@ -28,6 +28,10 @@
         <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(TargetPlatformVersion)' == ''                                      ">17.0</TargetPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                                                             ">13.1</SupportedOSPlatformVersion>
 
+        <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
+        <!-- kick in and take the ApiDefinitions.cs and StructsAndEnums.cs files into account    -->
+        <IsBindingProject>true</IsBindingProject>
+        
         <OutputPath>bin\</OutputPath>
         <OutputType>Library</OutputType>
         <LangVersion>10.0</LangVersion>
@@ -112,15 +116,6 @@
         <None Remove="Laerdal.McuMgr.Bindings.MacCatalyst.csproj.DotSettings"/>
         <None Include="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/Laerdal.Mac.CompileAndGenerateFatLibs.sh"/>
     </ItemGroup>
-
-    <PropertyGroup>
-        <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
-        <!-- kick in and take the ApiDefinitions.cs and StructsAndEnums.cs files into account    -->
-        <IsBindingProject>true</IsBindingProject>
-
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <MtouchExtraArgs>-v -v -v -v</MtouchExtraArgs>
-    </PropertyGroup>
 
     <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
@@ -220,7 +215,7 @@
         <!-- to future maintainers     pipelines will generate a nuget without the Frameworks/McuMgrBindingsiOS.framework folder as a <NativeReference> -->
         <!-- to future maintainers     causing the iOS nuget to be poisoned and cause cryptic errors in runtime about missing symbols etc               -->
 
-        <Touch Files="$(NativeFrameworkActualTargetFolderpath)/.keepme_in_git_otherwise_azure_pipelines_will_break" AlwaysCreate="true"/>
+        <Touch Files="$(NativeFrameworkActualTargetFolderpath)/.keepme_in_git_otherwise_cicd_pipelines_will_break" AlwaysCreate="true"/>
     </Target>
 
     <!-- https://learn.microsoft.com/en-us/xamarin/ios/platform/binding-objective-c/walkthrough?tabs=windows#create-a-xamarinios-binding-project -->

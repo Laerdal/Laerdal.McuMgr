@@ -14,10 +14,10 @@ declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
 
 if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
-  XCODEBUILD_TARGET_SDK_VERSION="17.5" # requires xcode 15.4
+  XCODEBUILD_TARGET_SDK_VERSION="18.1" # requires xcode 16.1
 
 elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # maccatalyst
-  XCODEBUILD_TARGET_SDK_VERSION="14.5" # requires xcode 15.4
+  XCODEBUILD_TARGET_SDK_VERSION="15.1" # requires xcode 16.1
 fi
 
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
@@ -30,7 +30,7 @@ declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framewo
 declare SWIFT_PROJECT_NAME="McuMgrBindingsiOS"
 declare SWIFT_BUILD_PATH="./${SWIFT_PROJECT_NAME}/build"
 declare SWIFT_BUILD_SCHEME="McuMgrBindingsiOS"
-declare SWIFT_PROJECT_PATH="./${SWIFT_PROJECT_NAME}/${SWIFT_PROJECT_NAME}.xcodeproj"
+declare SWIFT_PROJECT_PATH="./McuMgrBindingsiOS/${SWIFT_PROJECT_NAME}.xcodeproj"
 declare SWIFT_PACKAGES_PATH="./packages"
 
 declare OUTPUT_FOLDER_POSTFIX=""
