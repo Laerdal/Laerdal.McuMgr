@@ -2,6 +2,9 @@
 
 # set -x
 
+declare host_os=""
+declare host_os_and_architecture=""
+
 declare project_name=""
 declare project_version=""
 
@@ -16,6 +19,31 @@ declare sbom_signing_key_file_path=""
 
 declare dependency_tracker_url=""
 declare dependency_tracker_api_key_file_path=""
+
+function sniff_host_os_and_architecture() {
+  host_os="$(uname -s)"
+  case "${host_os}" in
+    Linux*)     host_os=Linux   ;;
+    MINGW*)     host_os=Windows ;;
+    Darwin*)    host_os=Mac     ;;
+    CYGWIN*)    host_os=Windows ;;
+    MSYS_NT*)   host_os=Windows ;;
+  esac
+
+  declare architecture=$(uname -m)
+  case ${architecture} in
+      i386)    architecture="x86"   ;;
+      i686)    architecture="x86"   ;;
+      x86_64)  architecture="x64"   ;;
+      
+      armv7l)  architecture="arm"   ;;
+      arm64)   architecture="arm64" ;;
+      aarch64) architecture="arm64" ;;
+      arm)     dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
+  esac
+  
+  host_os_and_architecture="${host_os}-${architecture}" # e.g. Linux-x64
+}
 
 function parse_arguments() {
 
@@ -160,8 +188,7 @@ function usage() {
   echo "Usage: ${script_name}  --project-name  <name>   --project-version <version>   [--parent-project-name  <name>   --parent-project-version <version>]   --csproj-file-path <path>    --csproj-file-path <path>   --output-directory-path <path>  --output-sbom-file-name <name>   --sbom-signing-key-file-path <path>   --dependency-tracker-url <url>   --dependency-tracker-api-key-file-path <api_key>  "
 }
 
-function install_tools() {
-
+function install_dotnet_cyclonedx() {
   echo
   echo "** Installing CycloneDX as a dotnet tool:"
   dotnet   tool       \
@@ -181,25 +208,60 @@ function install_tools() {
     echo "##vso[task.logissue type=error]Something's wrong with 'dotnet-CycloneDX'."
     exit 12
   fi
+}
 
-  # we need to install the CycloneDX tool too in order to sign the artifacts
-  curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.26.0/cyclonedx-osx-arm64 \
-    && chmod   +x       cyclonedx
-  declare exitCode=$?
-  if [ $exitCode != 0 ]; then
-    echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
-    exit 13
+function install_cyclonedx_standalone() { # we need to install the CycloneDX tool too in order to sign the artifacts
+  echo "** Installing cyclonedx cli tool for '${host_os}'"  
+  if [[ ${host_os} == "Mac" ]] || [[ ${host_os} == "Linux" ]]; then
+     brew install cyclonedx/cyclonedx/cyclonedx-cli # both the macos and linux vmimages support brew so we can use it
+     declare exitCode=$?
+     if [ $exitCode != 0 ]; then
+        echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+        exit 1
+     fi
+
+     return
   fi
 
+  if [[ ${host_os_and_architecture} == "Windows-x86" ]]; then # windows does not support brew and chocolatey does not have a cyclonedx-cli package as of Q3 2024
+     curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x86.exe \
+      && chmod   +x       cyclonedx
+     declare exitCode=$?
+     if [ $exitCode != 0 ]; then
+        echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+        exit 1
+     fi
+
+     return
+  fi
+  
+  if [[ ${host_os_and_architecture} == "Windows-x64" ]]; then
+       curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x64.exe \
+        && chmod   +x       cyclonedx
+       declare exitCode=$?
+       if [ $exitCode != 0 ]; then
+          echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+          exit 1
+       fi
+
+       return
+  fi
+  
+  echo "##vso[task.logissue type=error]Unsupported host OS '${host_os_and_architecture}' - cannot install 'cyclonedx-cli'."
+  exit 1
+}
+
+function install_tools() {
+  install_dotnet_cyclonedx
+  install_cyclonedx_standalone
 }
 
 function generate_sign_and_upload_sbom() {
   # set -x
 
-  # GENERATE SBOM   we intentionally disable package restore because the packages are already restored at this point
+  # GENERATE SBOM
   dotnet-CycloneDX      "${csproj_file_path}"             \
         --exclude-dev                                     \
-        --disable-package-restore                         \
         --include-project-references                      \
                                                           \
         --output      "${output_directory_path}"          \
@@ -273,6 +335,7 @@ function generate_sign_and_upload_sbom() {
 }
 
 function main() {
+  sniff_host_os_and_architecture
   parse_arguments "$@"
   install_tools
   generate_sign_and_upload_sbom
