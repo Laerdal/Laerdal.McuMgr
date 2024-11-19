@@ -16,34 +16,11 @@ declare csproj_classifier=""
 declare output_directory_path=""
 declare output_sbom_file_name=""
 declare sbom_signing_key_file_path=""
+declare skip_installing_cyclonedx_cli_tool="no"
+declare skip_installing_cyclonedx_dotnet_extension="no"
 
 declare dependency_tracker_url=""
 declare dependency_tracker_api_key_file_path=""
-
-function sniff_host_os_and_architecture() {
-  host_os="$(uname -s)"
-  case "${host_os}" in
-    Linux*)     host_os=Linux   ;;
-    MINGW*)     host_os=Windows ;;
-    Darwin*)    host_os=Mac     ;;
-    CYGWIN*)    host_os=Windows ;;
-    MSYS_NT*)   host_os=Windows ;;
-  esac
-
-  declare architecture=$(uname -m)
-  case ${architecture} in
-      i386)    architecture="x86"   ;;
-      i686)    architecture="x86"   ;;
-      x86_64)  architecture="x64"   ;;
-      
-      armv7l)  architecture="arm"   ;;
-      arm64)   architecture="arm64" ;;
-      aarch64) architecture="arm64" ;;
-      arm)     dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
-  esac
-  
-  host_os_and_architecture="${host_os}-${architecture}" # e.g. Linux-x64
-}
 
 function parse_arguments() {
 
@@ -93,6 +70,16 @@ function parse_arguments() {
     --sbom-signing-key-file-path)
       sbom_signing_key_file_path="$2"
       shift
+      ;;
+
+    --skip-installing-cyclonedx-cli-tool)
+      skip_installing_cyclonedx_cli_tool="yes"
+      # shift # no need to shift here
+      ;;
+
+    --skip-installing-cyclonedx-dotnet-extension)
+      skip_installing_cyclonedx_dotnet_extension="yes"
+      # shift # no need to shift here
       ;;
 
     --dependency-tracker-url)
@@ -185,10 +172,50 @@ function parse_arguments() {
 function usage() {
   local -r script_name=$(basename "$0")
 
-  echo "Usage: ${script_name}  --project-name  <name>   --project-version <version>   [--parent-project-name  <name>   --parent-project-version <version>]   --csproj-file-path <path>    --csproj-file-path <path>   --output-directory-path <path>  --output-sbom-file-name <name>   --sbom-signing-key-file-path <path>   --dependency-tracker-url <url>   --dependency-tracker-api-key-file-path <api_key>  "
+  echo "Usage: ${script_name}  --project-name  <name>   --project-version <version>  [--skip-installing-cyclonedx-cli-tool]  [--skip-installing-cyclonedx-dotnet-extension]  [--parent-project-name  <name>   --parent-project-version <version>]   --csproj-file-path <path>    --csproj-file-path <path>   --output-directory-path <path>  --output-sbom-file-name <name>   --sbom-signing-key-file-path <path>   --dependency-tracker-url <url>   --dependency-tracker-api-key-file-path <api_key>  "
+}
+
+function sniff_and_validate_host_os_and_architecture() {
+  host_os="$(uname -s)"
+  case "${host_os}" in
+    Linux*)     host_os="Linux"   ;;
+    MINGW*)     host_os="Windows" ;;
+    Darwin*)    host_os="Mac"     ;;
+    CYGWIN*)    host_os="Windows" ;;
+    MSYS_NT*)   host_os="Windows" ;;
+  esac
+
+  declare architecture=$(uname -m)
+  case ${architecture} in
+      i386)    architecture="x86"   ;;
+      i686)    architecture="x86"   ;;
+      x64)     architecture="x64"   ;; # shouldnt happen but just in case
+      x86_64)  architecture="x64"   ;;
+      
+      armv7l)  architecture="arm"   ;;
+      arm64)   architecture="arm64" ;;
+      aarch64) architecture="arm64" ;;
+      arm)     dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
+  esac
+  
+  host_os_and_architecture="${host_os}-${architecture}" # e.g. Linux-x64
+  
+  if [[ ${host_os}                  == "Mac"         ]] \
+  || [[ ${host_os}                  == "Linux"       ]] \
+  || [[ ${host_os_and_architecture} == "Windows-x86" ]] \
+  || [[ ${host_os_and_architecture} == "Windows-x64" ]]; then
+    return # host os is supported 
+  fi
+
+  echo "Unsupported host OS '${host_os_and_architecture}' - don't know how to install the CycloneDX tool on this platform."
+  exit 1
 }
 
 function install_dotnet_cyclonedx() {
+    if [[ ${skip_installing_cyclonedx_dotnet_extension} == "yes" ]]; then
+      return # the calling environment might have τηε cyclonedx extension for dotnet preinstalled
+    fi
+  
   echo
   echo "** Installing CycloneDX as a dotnet tool:"
   dotnet   tool       \
@@ -196,7 +223,7 @@ function install_dotnet_cyclonedx() {
                --global   CycloneDX
   declare exitCode=$?
   if [ $exitCode != 0 ]; then
-    echo "##vso[task.logissue type=error]Something went wrong with the CycloneDX tool for dotnet."
+    echo "Something went wrong with the CycloneDX tool for dotnet."
     exit 10
   fi
 
@@ -205,18 +232,24 @@ function install_dotnet_cyclonedx() {
   which    dotnet-CycloneDX   &&   dotnet-CycloneDX   --version
   declare exitCode=$?
   if [ $exitCode != 0 ]; then
-    echo "##vso[task.logissue type=error]Something's wrong with 'dotnet-CycloneDX'."
+    echo "Something's wrong with 'dotnet-CycloneDX'."
     exit 12
   fi
 }
 
 function install_cyclonedx_standalone() { # we need to install the CycloneDX tool too in order to sign the artifacts
+  if [[ ${skip_installing_cyclonedx_cli_tool} == "yes" ]]; then
+    return # the calling environment might have cyclonedx preinstalled
+  fi
+
+  sniff_and_validate_host_os_and_architecture # keep first
+
   echo "** Installing cyclonedx cli tool for '${host_os}'"  
   if [[ ${host_os} == "Mac" ]] || [[ ${host_os} == "Linux" ]]; then
      brew install cyclonedx/cyclonedx/cyclonedx-cli # both the macos and linux vmimages support brew so we can use it
      declare exitCode=$?
      if [ $exitCode != 0 ]; then
-        echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+        echo "Failed to install 'cyclonedx'."
         exit 1
      fi
 
@@ -228,7 +261,7 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
       && chmod   +x       cyclonedx
      declare exitCode=$?
      if [ $exitCode != 0 ]; then
-        echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+        echo "Failed to install 'cyclonedx'."
         exit 1
      fi
 
@@ -240,20 +273,20 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
         && chmod   +x       cyclonedx
        declare exitCode=$?
        if [ $exitCode != 0 ]; then
-          echo "##vso[task.logissue type=error]Failed to install 'cyclonedx'."
+          echo "Failed to install 'cyclonedx'."
           exit 1
        fi
 
        return
   fi
   
-  echo "##vso[task.logissue type=error]Unsupported host OS '${host_os_and_architecture}' - cannot install 'cyclonedx-cli'."
+  echo "Unsupported host OS '${host_os_and_architecture}' - cannot install 'cyclonedx-cli'."
   exit 1
 }
 
 function install_tools() {
-  install_dotnet_cyclonedx
-  install_cyclonedx_standalone
+  install_dotnet_cyclonedx                    # order
+  install_cyclonedx_standalone                # order
 }
 
 function generate_sign_and_upload_sbom() {
@@ -271,7 +304,7 @@ function generate_sign_and_upload_sbom() {
         --filename "${output_sbom_file_name}"
   declare exitCode=$?
   if [ ${exitCode} != 0 ]; then
-    echo "##vso[task.logissue type=error]Failed to generate the SBOM!"
+    echo "Failed to generate the SBOM!"
     exit 20
   fi
 
@@ -284,7 +317,7 @@ function generate_sign_and_upload_sbom() {
                --key-file   "${sbom_signing_key_file_path}"
   declare exitCode=$?
   if [ ${exitCode} != 0 ]; then
-    echo "##vso[task.logissue type=error]Singing the SBOM failed!"
+    echo "Singing the SBOM failed!"
     exit 30
   fi
   #  echo -e "\n\n"
@@ -329,16 +362,15 @@ function generate_sign_and_upload_sbom() {
   echo "** Curl sbom-uploading HTTP Response Code: ${http_response_code}"
   
   if [ ${exitCode} != 0 ]; then
-    echo "##vso[task.logissue type=error]SBOM Uploading failed!"
+    echo "SBOM Uploading failed!"
     exit 40
   fi
 }
 
 function main() {
-  sniff_host_os_and_architecture
-  parse_arguments "$@"
-  install_tools
-  generate_sign_and_upload_sbom
+  parse_arguments "$@" #           order
+  install_tools #                  order
+  generate_sign_and_upload_sbom #  order
 }
 
 main "$@"
