@@ -384,12 +384,11 @@ function generate_sign_and_upload_sbom() {
       \
       -w "%{http_code}"
   )
-  declare exitCode=$?
-  set +x
+  # declare exitCode=$? # no point to get the exit code because we use a subshell to capture the http response code
 
   echo "** Curl sbom-uploading HTTP Response Code: ${http_response_code}"
 
-  if [ ${exitCode} != 0 ]; then
+  if [[ -z ${http_response_code} ]] || [[ ${http_response_code} -gt 299 ]]; then
     echo "SBOM Uploading failed!"
     exit 40
   fi
@@ -402,3 +401,4 @@ function main() {
 }
 
 main "$@"
+# set +x
