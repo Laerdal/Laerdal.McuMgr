@@ -26,17 +26,17 @@ function parse_arguments() {
 
   while [[ $# -gt 0 ]]; do
     case $1 in
-    
+
     --project-name)
       project_name="$2"
       shift
       ;;
-    
+
     --project-version)
       project_version="$2"
       shift
       ;;
-    
+
     --parent-project-name)
       parent_project_name="$2"
       shift
@@ -61,7 +61,7 @@ function parse_arguments() {
       output_directory_path="$2"
       shift
       ;;
-    
+
     --output-sbom-file-name)
       output_sbom_file_name="$2"
       shift
@@ -119,11 +119,11 @@ function parse_arguments() {
 
   # if [[ -z ${parent_project_version} ]]; then         this is optional
   #      ...
-  
+
   # if [[ -n ${parent_project_name} && -z ${parent_project_version} ]]; then # nah   better not to enforce this
   #   echo "Specifying --parent-project-version is mandatory when --parent-project-name has been used!"
   #   usage
-  #   exit 1    
+  #   exit 1
   # fi
 
   if [[ -z ${csproj_file_path} ]]; then
@@ -149,13 +149,13 @@ function parse_arguments() {
     usage
     exit 1
   fi
-  
+
   if [[ -z ${sbom_signing_key_file_path} ]]; then
     echo "Specifying --sbom-signing-key-file-path is mandatory!"
     usage
     exit 1
   fi
-  
+
   if [[ -z ${dependency_tracker_url} ]]; then
     echo "Specifying --dependency-tracker-url is mandatory!"
     usage
@@ -178,33 +178,35 @@ function usage() {
 function sniff_and_validate_host_os_and_architecture() {
   host_os="$(uname -s)"
   case "${host_os}" in
-    Linux*)     host_os="Linux"   ;;
-    MINGW*)     host_os="Windows" ;;
-    Darwin*)    host_os="Mac"     ;;
-    CYGWIN*)    host_os="Windows" ;;
-    MSYS_NT*)   host_os="Windows" ;;
+  Linux*) host_os="Linux" ;;
+  MINGW*) host_os="Windows" ;;
+  Darwin*) host_os="Mac" ;;
+  CYGWIN*) host_os="Windows" ;;
+  MSYS_NT*) host_os="Windows" ;;
   esac
 
   declare architecture=$(uname -m)
   case ${architecture} in
-      i386)    architecture="x86"   ;;
-      i686)    architecture="x86"   ;;
-      x64)     architecture="x64"   ;; # shouldnt happen but just in case
-      x86_64)  architecture="x64"   ;;
-      
-      armv7l)  architecture="arm"   ;;
-      arm64)   architecture="arm64" ;;
-      aarch64) architecture="arm64" ;;
-      arm)     dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
+  i386) architecture="x86" ;;
+  i686) architecture="x86" ;;
+  x64) architecture="x64" ;; # shouldnt happen but just in case
+  x86_64) architecture="x64" ;;
+
+  armv7l) architecture="arm" ;;
+  arm64) architecture="arm64" ;;
+  aarch64) architecture="arm64" ;;
+  arm) dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
   esac
-  
+
   host_os_and_architecture="${host_os}-${architecture}" # e.g. Linux-x64
-  
-  if [[ ${host_os}                  == "Mac"         ]] \
-  || [[ ${host_os}                  == "Linux"       ]] \
-  || [[ ${host_os_and_architecture} == "Windows-x86" ]] \
-  || [[ ${host_os_and_architecture} == "Windows-x64" ]]; then
-    return # host os is supported 
+
+  if [[ ${host_os} == "Mac" ]] ||
+    [[ ${host_os} == "Linux" ]] ||
+    [[ ${host_os_and_architecture} == "Windows-x86" ]] ||
+    [[ ${host_os_and_architecture} == "Windows-x64" ]] ||
+    [[ ${host_os_and_architecture} == "Windows-arm" ]] ||
+    [[ ${host_os_and_architecture} == "Windows-arm64" ]]; then
+    return # host os is supported
   fi
 
   echo "Unsupported host OS '${host_os_and_architecture}' - don't know how to install the CycloneDX tool on this platform."
@@ -212,15 +214,15 @@ function sniff_and_validate_host_os_and_architecture() {
 }
 
 function install_dotnet_cyclonedx() {
-    if [[ ${skip_installing_cyclonedx_dotnet_extension} == "yes" ]]; then
-      return # the calling environment might have τηε cyclonedx extension for dotnet preinstalled
-    fi
-  
+  if [[ ${skip_installing_cyclonedx_dotnet_extension} == "yes" ]]; then
+    return # the calling environment might have τηε cyclonedx extension for dotnet preinstalled
+  fi
+
   echo
   echo "** Installing CycloneDX as a dotnet tool:"
-  dotnet   tool       \
-           install    \
-               --global   CycloneDX
+  dotnet tool \
+    install \
+    --global CycloneDX
   declare exitCode=$?
   if [ $exitCode != 0 ]; then
     echo "Something went wrong with the CycloneDX tool for dotnet."
@@ -229,7 +231,7 @@ function install_dotnet_cyclonedx() {
 
   echo
   echo "** CycloneDX:"
-  which    dotnet-CycloneDX   &&   dotnet-CycloneDX   --version
+  which dotnet-CycloneDX && dotnet cyclonedx --version
   declare exitCode=$?
   if [ $exitCode != 0 ]; then
     echo "Something's wrong with 'dotnet-CycloneDX'."
@@ -242,79 +244,101 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
     return # the calling environment might have cyclonedx preinstalled
   fi
 
-  sniff_and_validate_host_os_and_architecture # keep first
+  sniff_and_validate_host_os_and_architecture
 
-  echo "** Installing cyclonedx cli tool for '${host_os}'"  
+  echo "** Installing cyclonedx cli tool for '${host_os}'"
   if [[ ${host_os} == "Mac" ]] || [[ ${host_os} == "Linux" ]]; then
-     brew install cyclonedx/cyclonedx/cyclonedx-cli # both the macos and linux vmimages support brew so we can use it
-     declare exitCode=$?
-     if [ $exitCode != 0 ]; then
-        echo "Failed to install 'cyclonedx'."
-        exit 1
-     fi
+    brew install cyclonedx/cyclonedx/cyclonedx-cli # both the macos and linux vmimages support brew so we can use it
+    declare exitCode=$?
+    if [ $exitCode != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 1
+    fi
 
-     return
+    return
   fi
 
   if [[ ${host_os_and_architecture} == "Windows-x86" ]]; then # windows does not support brew and chocolatey does not have a cyclonedx-cli package as of Q3 2024
-     curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x86.exe \
-      && chmod   +x       cyclonedx
-     declare exitCode=$?
-     if [ $exitCode != 0 ]; then
-        echo "Failed to install 'cyclonedx'."
-        exit 1
-     fi
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x86.exe &&
+      chmod +x cyclonedx
+    declare exitCode=$?
+    if [ $exitCode != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 1
+    fi
 
-     return
+    return
   fi
-  
+
   if [[ ${host_os_and_architecture} == "Windows-x64" ]]; then
-       curl         --output cyclonedx    --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x64.exe \
-        && chmod   +x       cyclonedx
-       declare exitCode=$?
-       if [ $exitCode != 0 ]; then
-          echo "Failed to install 'cyclonedx'."
-          exit 1
-       fi
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x64.exe &&
+      chmod +x cyclonedx
+    declare exitCode=$?
+    if [ $exitCode != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 1
+    fi
 
-       return
+    return
   fi
-  
+
+  if [[ ${host_os_and_architecture} == "Windows-arm" ]]; then
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-arm.exe &&
+      chmod +x cyclonedx
+    declare exitCode=$?
+    if [ $exitCode != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 10
+    fi
+
+    return
+  fi
+
+  if [[ ${host_os_and_architecture} == "Windows-arm64" ]]; then
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-arm64.exe &&
+      chmod +x cyclonedx
+    declare exitCode=$?
+    if [ $exitCode != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 10
+    fi
+
+    return
+  fi
+
   echo "Unsupported host OS '${host_os_and_architecture}' - cannot install 'cyclonedx-cli'."
   exit 1
 }
 
 function install_tools() {
-  install_dotnet_cyclonedx                    # order
-  install_cyclonedx_standalone                # order
+  install_dotnet_cyclonedx     # order
+  install_cyclonedx_standalone # order
 }
 
 function generate_sign_and_upload_sbom() {
   # set -x
 
   # GENERATE SBOM
-  dotnet-CycloneDX      "${csproj_file_path}"             \
-        --exclude-dev                                     \
-        --include-project-references                      \
-                                                          \
-        --output      "${output_directory_path}"          \
-        --set-type    "${csproj_classifier}"              \
-        --set-version "${project_version}"                \
-                                                          \
-        --filename "${output_sbom_file_name}"
+  dotnet cyclonedx "${csproj_file_path}" \
+    --exclude-dev \
+    --include-project-references \
+    \
+    --output "${output_directory_path}" \
+    --set-type "${csproj_classifier}" \
+    --set-version "${project_version}" \
+    \
+    --filename "${output_sbom_file_name}"
   declare exitCode=$?
   if [ ${exitCode} != 0 ]; then
     echo "Failed to generate the SBOM!"
     exit 20
   fi
 
-
-
   # SIGN SBOM     todo  figure out why this doesnt actually sign anything on windows even though on macos it works as intended
   declare -r bom_file_path="${output_directory_path}/${output_sbom_file_name}"
-  ./cyclonedx  sign   bom             \
-               "${bom_file_path}"     \
-               --key-file   "${sbom_signing_key_file_path}"
+  ./cyclonedx sign bom \
+    "${bom_file_path}" \
+    --key-file "${sbom_signing_key_file_path}"
   declare exitCode=$?
   if [ ${exitCode} != 0 ]; then
     echo "Singing the SBOM failed!"
@@ -324,43 +348,41 @@ function generate_sign_and_upload_sbom() {
   #  tail "${bom_file_path}"
   #  echo -e "\n\n"
 
-
-
   # UPLOAD SBOM
   declare optional_parent_project_name_parameter=""
   if [[ -n ${parent_project_name} ]]; then
-      optional_parent_project_name_parameter="--form parentName=${parent_project_name}"
-  fi
-  
-  declare optional_parent_project_version_parameter=""
-  if [[ -n ${parent_project_version} ]]; then
-      optional_parent_project_version_parameter="--form parentVersion=${parent_project_version}"
+    optional_parent_project_name_parameter="--form parentName=${parent_project_name}"
   fi
 
-  declare -r http_response_code=$(                                                                       \
-      curl   "${dependency_tracker_url}"                                                                 \
-                                --location                                                               \
-                                --request "POST"                                                         \
-                                                                                                         \
-                                --header "Content-Type: multipart/form-data"                             \
-                                --header "X-API-Key: $(cat "${dependency_tracker_api_key_file_path}")"   \
-                                                                                                         \
-                                --form "bom=@${bom_file_path}"                                           \
-                                --form "autoCreate=true"                                                 \
-                                                                                                         \
-                                --form "projectName=${project_name}"                                     \
-                                --form "projectVersion=${project_version}"                               \
-                                                                                                         \
-                                ${optional_parent_project_name_parameter}                                \
-                                ${optional_parent_project_version_parameter}                             \
-                                                                                                         \
-                                -w "%{http_code}"                                                        \
+  declare optional_parent_project_version_parameter=""
+  if [[ -n ${parent_project_version} ]]; then
+    optional_parent_project_version_parameter="--form parentVersion=${parent_project_version}"
+  fi
+
+  declare -r http_response_code=$(
+    curl "${dependency_tracker_url}" \
+      --location \
+      --request "POST" \
+      \
+      --header "Content-Type: multipart/form-data" \
+      --header "X-API-Key: $(cat "${dependency_tracker_api_key_file_path}")" \
+      \
+      --form "bom=@${bom_file_path}" \
+      --form "autoCreate=true" \
+      \
+      --form "projectName=${project_name}" \
+      --form "projectVersion=${project_version}" \
+      \
+      ${optional_parent_project_name_parameter} \
+      ${optional_parent_project_version_parameter} \
+      \
+      -w "%{http_code}"
   )
   declare exitCode=$?
   set +x
-  
+
   echo "** Curl sbom-uploading HTTP Response Code: ${http_response_code}"
-  
+
   if [ ${exitCode} != 0 ]; then
     echo "SBOM Uploading failed!"
     exit 40
@@ -368,8 +390,8 @@ function generate_sign_and_upload_sbom() {
 }
 
 function main() {
-  parse_arguments "$@" #           order
-  install_tools #                  order
+  parse_arguments "$@"          #           order
+  install_tools                 #                  order
   generate_sign_and_upload_sbom #  order
 }
 
