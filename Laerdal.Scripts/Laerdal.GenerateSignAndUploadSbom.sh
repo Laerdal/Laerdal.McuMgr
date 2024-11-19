@@ -336,7 +336,13 @@ function generate_sign_and_upload_sbom() {
 
   # SIGN SBOM     todo  figure out why this doesnt actually sign anything on windows even though on macos it works as intended
   declare -r bom_file_path="${output_directory_path}/${output_sbom_file_name}"
-  ./cyclonedx sign bom \
+  
+  declare cyclonedxCliFilepath="./cyclonedx"     # we prioritize the local installation of the cyclonedx cli tool but
+  if [[ ! -f "${cyclonedxCliFilepath}" ]]; then  # if the local installation of the cyclonedx cli tool is not available
+    cyclonedxCliFilepath="cyclonedx"             # then and only then we opt to use the global installation of the tool
+  fi
+
+  "${cyclonedxCliFilepath}" sign bom \
     "${bom_file_path}" \
     --key-file "${sbom_signing_key_file_path}"
   declare exitCode=$?
