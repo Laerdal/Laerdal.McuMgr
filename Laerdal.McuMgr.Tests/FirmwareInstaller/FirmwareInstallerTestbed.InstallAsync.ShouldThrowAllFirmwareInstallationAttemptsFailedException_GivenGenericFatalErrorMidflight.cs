@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
@@ -30,9 +31,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationErroredOutException>() // todo  AllFirmwareInstallationAttemptsFailedException
-                .WithMessage("*fatal error occurred*")
-                .WithTimeoutInMs(3_000);
+                .ThrowWithinAsync<AllFirmwareInstallationAttemptsFailedException>(3_000.Milliseconds())  
+                .WithInnerException(typeof(FirmwareInstallationUploadingStageErroredOutException))
+                .WithMessage("*fatal error occurred 123*");
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -43,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.FatalErrorOccurred))
                 .WithSender(firmwareInstaller)
-                .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred");
+                .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred 123");
             
             eventsMonitor
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
@@ -103,7 +104,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error); //                                                                  order
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.Generic, "fatal error occurred", EGlobalErrorCode.Generic); // order
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.Generic, "fatal error occurred 123", EGlobalErrorCode.Generic); // order
                 });
 
                 return verdict;

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
@@ -32,9 +33,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             (
-                await work.Should()
-                    .ThrowExactlyAsync<AllFirmwareInstallationAttemptsFailedException>()
-                    .WithTimeoutInMs(3_000)
+                await work.Should().ThrowWithinAsync<AllFirmwareInstallationAttemptsFailedException>(3_000.Milliseconds())
             ).WithInnerException<FirmwareInstallationUploadingStageErroredOutException>();
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();

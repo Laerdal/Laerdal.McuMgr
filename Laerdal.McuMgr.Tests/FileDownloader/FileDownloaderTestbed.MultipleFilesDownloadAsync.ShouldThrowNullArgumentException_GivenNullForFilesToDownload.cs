@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
@@ -28,7 +29,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             ));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<ArgumentNullException>().WithTimeoutInMs(500);
+            await work.Should().ThrowWithinAsync<ArgumentNullException>(500.Milliseconds());
 
             eventsMonitor.OccurredEvents.Should().HaveCount(0);
 

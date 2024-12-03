@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
@@ -21,7 +22,10 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             var work = new Func<Task>(() => deviceResetter.ResetAsync());
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<DeviceResetterInternalErrorException>().WithTimeoutInMs(100)).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
+            (await work
+                    .Should()
+                    .ThrowWithinAsync<DeviceResetterInternalErrorException>(500.Milliseconds())
+                ).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeDeviceResetterProxy.BeginResetCalled.Should().BeTrue();

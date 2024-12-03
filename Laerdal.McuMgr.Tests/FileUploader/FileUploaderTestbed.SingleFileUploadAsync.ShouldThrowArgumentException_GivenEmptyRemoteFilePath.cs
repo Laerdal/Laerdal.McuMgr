@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
@@ -30,7 +31,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             ));
 
             // Assert
-            await work.Should().ThrowExactlyAsync<ArgumentException>().WithTimeoutInMs(500);
+            await work.Should().ThrowWithinAsync<ArgumentException>(500.Milliseconds());
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
