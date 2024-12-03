@@ -352,10 +352,7 @@ namespace Laerdal.McuMgr.FileUploader
                     if (verdict != EFileUploaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
-                    _ = timeoutForUploadInMs < 0
-                        ? await taskCompletionSource.Task
-                        : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutForUploadInMs); //order
-
+                    await taskCompletionSource.WaitTaskWithOptionalTimeoutAsync(timeoutForUploadInMs); //order
                     break;
                 }
                 catch (TimeoutException ex)

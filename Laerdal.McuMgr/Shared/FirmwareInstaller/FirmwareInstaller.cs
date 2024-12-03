@@ -266,9 +266,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     if (verdict != EFirmwareInstallationVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
-                    _ = timeoutInMs <= 0
-                        ? await taskCompletionSource.Task
-                        : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
+                    await taskCompletionSource.WaitTaskWithOptionalTimeoutAsync(timeoutInMs);
                 }
                 catch (TimeoutException ex)
                 {
@@ -373,7 +371,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                             => new FirmwareInstallationConfirmationStageTimeoutException(estimatedSwapTimeInMilliseconds, ea_.GlobalErrorCode),
 
                         { FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut } or { State: EFirmwareInstallationState.Uploading }
-                            => new FirmwareInstallationUploadingStageErroredOutException(ea_.GlobalErrorCode),
+                            => new FirmwareInstallationUploadingStageErroredOutException(ea_.ErrorMessage, ea_.GlobalErrorCode),
 
                         _ => new FirmwareInstallationErroredOutException($"{ea_.ErrorMessage} (state={ea_.State})", ea_.GlobalErrorCode)
                     });

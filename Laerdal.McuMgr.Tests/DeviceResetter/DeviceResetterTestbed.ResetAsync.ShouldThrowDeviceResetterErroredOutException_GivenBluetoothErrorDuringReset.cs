@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
@@ -23,8 +24,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
 
             // Assert
             await work
-                .Should().ThrowExactlyAsync<DeviceResetterErroredOutException>()
-                .WithTimeoutInMs(500)
+                .Should().ThrowWithinAsync<DeviceResetterErroredOutException>(500.Milliseconds())
                 .WithMessage("*bluetooth error blah blah*");
 
             mockedNativeDeviceResetterProxy.DisconnectCalled.Should().BeFalse(); //00

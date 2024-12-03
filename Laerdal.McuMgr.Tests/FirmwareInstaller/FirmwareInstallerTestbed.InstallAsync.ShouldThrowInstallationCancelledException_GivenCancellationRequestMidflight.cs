@@ -40,9 +40,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             ));
 
             // Assert
-            await work.Should()
-                .ThrowExactlyAsync<FirmwareInstallationCancelledException>()
-                .WithTimeoutInMs((int)5.Seconds().TotalMilliseconds);
+            await work.Should().ThrowWithinAsync<FirmwareInstallationCancelledException>(5.Seconds());
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeTrue();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00

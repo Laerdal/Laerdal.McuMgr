@@ -45,8 +45,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Assert
             await work.Should()
-                .ThrowExactlyAsync<AllDownloadAttemptsFailedException>()
-                .WithTimeoutInMs((int)3.Seconds().TotalMilliseconds);
+                .ThrowWithinAsync<AllDownloadAttemptsFailedException>(3.Seconds());
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
