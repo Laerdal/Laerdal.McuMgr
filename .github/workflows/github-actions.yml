@@ -117,7 +117,7 @@ jobs:
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
-        if: always()
+        if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
         with:
           files: |
             TestResults/**/TEST-*.xml
