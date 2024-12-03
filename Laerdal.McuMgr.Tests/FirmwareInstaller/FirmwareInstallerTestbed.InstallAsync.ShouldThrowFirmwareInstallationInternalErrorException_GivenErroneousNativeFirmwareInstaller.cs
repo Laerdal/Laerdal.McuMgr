@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
@@ -26,9 +27,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
             // Assert
             (
-                await work.Should()
-                    .ThrowExactlyAsync<FirmwareInstallationInternalErrorException>()
-                    .WithTimeoutInMs(1_000)
+                await work.Should().ThrowWithinAsync<FirmwareInstallationInternalErrorException>(1_000.Milliseconds())
             ).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();

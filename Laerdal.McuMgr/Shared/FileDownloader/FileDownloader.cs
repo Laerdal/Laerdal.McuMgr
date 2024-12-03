@@ -285,10 +285,7 @@ namespace Laerdal.McuMgr.FileDownloader
                     if (verdict != EFileDownloaderVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
-                    result = timeoutForDownloadInMs < 0
-                        ? await taskCompletionSource.Task
-                        : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutForDownloadInMs);
-
+                    result = await taskCompletionSource.WaitTaskWithOptionalTimeoutAsync(timeoutForDownloadInMs);
                     break;
                 }
                 catch (TimeoutException ex)

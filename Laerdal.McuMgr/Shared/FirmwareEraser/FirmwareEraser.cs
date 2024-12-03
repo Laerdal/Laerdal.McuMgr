@@ -125,9 +125,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 if (verdict != EFirmwareErasureInitializationVerdict.Success)
                     throw new ArgumentException(verdict.ToString());
 
-                _ = timeoutInMs <= 0
-                    ? await taskCompletionSource.Task
-                    : await taskCompletionSource.Task.WithTimeoutInMs(timeout: timeoutInMs);
+                await taskCompletionSource.WaitTaskWithOptionalTimeoutAsync(timeoutInMs);
             }
             catch (TimeoutException ex)
             {

@@ -11,16 +11,16 @@
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <!-- - in azure we omit building maccatalyst for the time being because net8 needs maccatalyst 17.2+ which is only available on macos14 which microsoft currently (Q1 2024) doesn't provide us with in azure just yet -->
 
-        <TargetFrameworks>$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks)net8.0;</TargetFrameworks>
         <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
         <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
 
-        <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true' ">true</IsNet8>
-        <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true' ">true</IsNet8IOS>
-        <IsNet8Android Condition="     '$(TargetFramework.ToLower().StartsWith(net8.0-android))'       == 'true' ">true</IsNet8Android>
-        <IsNetStandard Condition="     '$(TargetFramework.ToLower().StartsWith(netstandard))'          == 'true' ">true</IsNetStandard>
-        <IsNet8MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0-maccatalyst))'   == 'true' ">true</IsNet8MacCatalyst>
+        <IsDudNet8_0 Condition="     '$(TargetFramework)'                                              == 'net8.0' ">true</IsDudNet8_0>
+        <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true'   ">true</IsNet8>
+        <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true'   ">true</IsNet8IOS>
+        <IsNet8Android Condition="     '$(TargetFramework.ToLower().StartsWith(net8.0-android))'       == 'true'   ">true</IsNet8Android>
+        <IsNet8MacCatalyst Condition=" '$(TargetFramework.ToLower().StartsWith(net8.0-maccatalyst))'   == 'true'   ">true</IsNet8MacCatalyst>
         
         <IsNetX Condition="                '$(IsNet8)'             == 'true' ">true</IsNetX>
         <IsNetXIOS Condition="             '$(IsNet8IOS)'          == 'true' ">true</IsNetXIOS>
@@ -71,10 +71,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1177.0</Version>
-        <FileVersion>1.0.1177.0</FileVersion>
-        <PackageVersion>1.0.1177.0</PackageVersion>
-        <AssemblyVersion>1.0.1177.0</AssemblyVersion>
+        <Version>1.0.1092.0</Version>
+        <FileVersion>1.0.1092.0</FileVersion>
+        <PackageVersion>1.0.1092.0</PackageVersion>
+        <AssemblyVersion>1.0.1092.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -159,7 +159,7 @@
     </ItemGroup>
 
     <!-- NETSTANDARD -->
-    <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
+    <ItemGroup Condition=" '$(IsDudNet8_0)' == 'true' ">
         <Compile Include="NetStandard\**\*.cs"/>
     </ItemGroup>
     
@@ -167,21 +167,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1177.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1092.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1177.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1092.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1177.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1092.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
-    <ItemGroup Condition=" '$(IsNetStandard)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1177.0"/>
+    <ItemGroup Condition=" '$(IsDudNet8_0)' == 'true' ">
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1092.0"/>
     </ItemGroup>
 
 </Project>
