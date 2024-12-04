@@ -12,7 +12,7 @@ namespace Laerdal.McuMgr.Common.Helpers
     /// Task is not actually in a "scheduler" (since TCS tasks are <see href="https://blog.stephencleary.com/2015/04/a-tour-of-task-part-10-promise-tasks.html">Promise Tasks</see>)
     /// never completing tasks, of any type, is <see href="https://devblogs.microsoft.com/pfxteam/dont-forget-to-complete-your-tasks/">generally considered a bug</see>.
     /// </summary>
-    public static class TaskCompletionSourceExtensions
+    static internal class TaskCompletionSourceExtensions
     {
         /// <summary>
         /// Sets up a timeout-monitor on the given task. This is essentially a wrapper around <see cref="System.Threading.Tasks.Task.WaitAsync(TimeSpan)"/>
@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithOptionalTimeoutAsync(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithOptionalTimeoutAsync(timeout);
         /// }
         /// finally
         /// {
@@ -60,11 +60,11 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public static Task WaitTaskWithOptionalTimeoutAsync(this TaskCompletionSource tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
+        public static Task WaitAndFossilizeTaskWithOptionalTimeoutAsync(this TaskCompletionSource tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
         {
             return timeoutInMilliseconds <= 0
                 ? tcs.Task
-                : tcs.WaitTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
+                : tcs.WaitAndFossilizeTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithOptionalTimeoutAsync(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithOptionalTimeoutAsync(timeout);
         /// }
         /// finally
         /// {
@@ -113,11 +113,11 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public static Task WaitTaskWithOptionalTimeoutAsync(this TaskCompletionSource tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
+        public static Task WaitAndFossilizeTaskWithOptionalTimeoutAsync(this TaskCompletionSource tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
         {
             return timespan <= TimeSpan.Zero
                 ? tcs.Task
-                : tcs.WaitTaskWithTimeoutAsync(timespan, cancellationToken);
+                : tcs.WaitAndFossilizeTaskWithTimeoutAsync(timespan, cancellationToken);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithOptionalTimeoutAsync(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithOptionalTimeoutAsync(timeout);
         /// }
         /// finally
         /// {
@@ -167,9 +167,9 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public static Task WaitTaskWithTimeoutAsync(this TaskCompletionSource tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
+        public static Task WaitAndFossilizeTaskWithTimeoutAsync(this TaskCompletionSource tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
         {
-            return tcs.WaitTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
+            return tcs.WaitAndFossilizeTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithTimeoutAsync(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithTimeoutAsync(timeout);
         /// }
         /// finally
         /// {
@@ -219,7 +219,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public async static Task WaitTaskWithTimeoutAsync(this TaskCompletionSource tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
+        public async static Task WaitAndFossilizeTaskWithTimeoutAsync(this TaskCompletionSource tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
         {
             if (timespan < TimeSpan.Zero) //note that this deviates from the behaviour of .WaitAsync() which does accept -1 milliseconds which means "wait forever"
             {
@@ -279,7 +279,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithTimeoutAsync&lt;int&gt;(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithTimeoutAsync&lt;int&gt;(timeout);
         /// }
         /// finally
         /// {
@@ -304,11 +304,11 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public static Task<T> WaitTaskWithOptionalTimeoutAsync<T>(this TaskCompletionSource<T> tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
+        public static Task<T> WaitAndFossilizeTaskWithOptionalTimeoutAsync<T>(this TaskCompletionSource<T> tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
         {
             return timeoutInMilliseconds <= 0
                 ? tcs.Task
-                : tcs.WaitTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
+                : tcs.WaitAndFossilizeTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
         }
     
         /// <summary>
@@ -332,7 +332,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithOptionalTimeoutAsync&lt;int&gt;(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithOptionalTimeoutAsync&lt;int&gt;(timeout);
         /// }
         /// finally
         /// {
@@ -357,11 +357,11 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public static Task<T> WaitTaskWithOptionalTimeoutAsync<T>(this TaskCompletionSource<T> tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
+        public static Task<T> WaitAndFossilizeTaskWithOptionalTimeoutAsync<T>(this TaskCompletionSource<T> tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
         {
             return timespan <= TimeSpan.Zero
                 ? tcs.Task
-                : tcs.WaitTaskWithTimeoutAsync(timespan, cancellationToken);
+                : tcs.WaitAndFossilizeTaskWithTimeoutAsync(timespan, cancellationToken);
         }
 
         /// <summary>
@@ -385,7 +385,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithTimeoutAsync&lt;int&gt;(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithTimeoutAsync&lt;int&gt;(timeout);
         /// }
         /// finally
         /// {
@@ -410,9 +410,9 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public static Task<T> WaitTaskWithTimeoutAsync<T>(this TaskCompletionSource<T> tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
+        public static Task<T> WaitAndFossilizeTaskWithTimeoutAsync<T>(this TaskCompletionSource<T> tcs, int timeoutInMilliseconds, CancellationToken cancellationToken = default)
         {
-            return tcs.WaitTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
+            return tcs.WaitAndFossilizeTaskWithTimeoutAsync(TimeSpan.FromMilliseconds(timeoutInMilliseconds), cancellationToken);
         }
 
         /// <summary>
@@ -436,7 +436,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         /// try
         /// {
         ///     PropertyChanged += MyEventHandler_;
-        ///     await tcs.WaitTaskWithTimeoutAsync&lt;int&gt;(timeout);
+        ///     await tcs.WaitAndFossilizeTaskWithTimeoutAsync&lt;int&gt;(timeout);
         /// }
         /// finally
         /// {
@@ -461,7 +461,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         ///     }
         /// }
         /// </code>
-        public async static Task<T> WaitTaskWithTimeoutAsync<T>(this TaskCompletionSource<T> tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
+        public async static Task<T> WaitAndFossilizeTaskWithTimeoutAsync<T>(this TaskCompletionSource<T> tcs, TimeSpan timespan, CancellationToken cancellationToken = default)
         {
             if (timespan < TimeSpan.Zero) //note that this deviates from the behaviour of .WaitAsync() which does accept -1 milliseconds which means "wait forever"
             {

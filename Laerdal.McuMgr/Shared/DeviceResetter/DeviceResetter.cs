@@ -98,7 +98,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
         public async Task ResetAsync(int timeoutInMs = -1)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
+            var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
 
             try
             {
@@ -109,7 +109,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 if (verdict != EDeviceResetterInitializationVerdict.Success)
                     throw new ArgumentException(verdict.ToString());
 
-                await taskCompletionSource.WaitTaskWithOptionalTimeoutAsync(timeoutInMs);
+                await taskCompletionSource.WaitAndFossilizeTaskWithOptionalTimeoutAsync(timeoutInMs);
             }
             catch (TimeoutException ex)
             {
