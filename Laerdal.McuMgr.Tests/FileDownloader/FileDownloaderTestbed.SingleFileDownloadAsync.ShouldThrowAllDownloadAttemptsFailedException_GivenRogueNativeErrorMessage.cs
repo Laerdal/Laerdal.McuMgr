@@ -26,8 +26,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             var mockedNativeFileDownloaderProxy = new MockedErroneousNativeFileDownloaderProxySpy13(
                 mockedFileData: mockedFileData,
-                downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_(),
-                rogueNativeErrorMessage: nativeRogueErrorMessage
+                rogueNativeErrorMessage: nativeRogueErrorMessage,
+                downloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy_()
             );
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
@@ -44,8 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             ));
 
             // Assert
-            await work.Should()
-                .ThrowWithinAsync<AllDownloadAttemptsFailedException>(3.Seconds());
+            await work.Should().ThrowWithinAsync<AllDownloadAttemptsFailedException>(3.Seconds());
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
