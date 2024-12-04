@@ -109,7 +109,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 if (verdict != EDeviceResetterInitializationVerdict.Success)
                     throw new ArgumentException(verdict.ToString());
 
-                await taskCompletionSource.WaitTaskWithOptionalTimeoutAsync(timeoutInMs);
+                await taskCompletionSource.WaitAndFossilizeTaskWithOptionalTimeoutAsync(timeoutInMs);
             }
             catch (TimeoutException ex)
             {
