@@ -213,7 +213,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             var didWarnOnceAboutUnstableConnection = false;
             for (var triesCount = 1; !isCancellationRequested;)
             {
-                var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
+                var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
                 try
                 {
                     Cancelled += FirmwareInstaller_Cancelled_;

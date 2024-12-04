@@ -240,7 +240,7 @@ namespace Laerdal.McuMgr.FileDownloader
             var didWarnOnceAboutUnstableConnection = false;
             for (var triesCount = 1; !isCancellationRequested;)
             {
-                var taskCompletionSource = new TaskCompletionSource<byte[]>(state: null);
+                var taskCompletionSource = new TaskCompletionSourceRCA<byte[]>(state: null);
 
                 try
                 {
@@ -344,6 +344,8 @@ namespace Laerdal.McuMgr.FileDownloader
                 }
                 finally
                 {
+                    taskCompletionSource.TrySetCanceled(); //it is best to ensure that the task is fossilized in case of rogue exceptions
+                    
                     Cancelled -= FileDownloader_Cancelled_;
                     StateChanged -= FileDownloader_StateChanged_;
                     DownloadCompleted -= FileDownloader_DownloadCompleted_;

@@ -98,7 +98,7 @@ namespace Laerdal.McuMgr.DeviceResetter
 
         public async Task ResetAsync(int timeoutInMs = -1)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
+            var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
 
             try
             {

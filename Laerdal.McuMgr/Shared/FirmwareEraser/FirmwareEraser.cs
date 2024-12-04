@@ -114,7 +114,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
 
         public async Task EraseAsync(int imageIndex = 1, int timeoutInMs = -1)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>(state: false);
+            var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
 
             try
             {
