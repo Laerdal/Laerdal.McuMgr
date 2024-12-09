@@ -266,7 +266,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     if (verdict != EFirmwareInstallationVerdict.Success)
                         throw new ArgumentException(verdict.ToString());
 
-                    await taskCompletionSource.WaitAndFossilizeTaskWithOptionalTimeoutAsync(timeoutInMs);
+                    await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs);
                 }
                 catch (TimeoutException ex)
                 {
