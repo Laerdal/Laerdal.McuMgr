@@ -38,8 +38,8 @@
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" />
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" />
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.9.0.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-2.2.1.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-2.2.1.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-2.2.2.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-2.2.2.jar" />
     </ItemGroup>
 
     <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">
