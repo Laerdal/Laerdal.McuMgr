@@ -129,21 +129,6 @@ jobs:
           name: 'Artifacts'
           path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'
 
-      - name: '🚀 Publish Nugets over to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
-        shell: 'bash'
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        run: |
-          cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                          \
-                    &&                                                                  \
-          ls .                                                                          \
-                    &&                                                                  \
-          dotnet                                                                        \
-                  nuget                                                                 \
-                  push                                                                  \
-                  --source   "https://nuget.pkg.github.com/Laerdal/index.json"          \
-                  --api-key  "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                         \
-                  *nupkg
-
       - name: '🚀 Publish Nugets over to Nuget.org'
         shell: 'bash'
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
@@ -158,3 +143,20 @@ jobs:
                   --source   "https://api.nuget.org/v3/index.json"                                \
                   --api-key  "${{env.SCL_NUGET_ORG_FEED_API_KEY}}"                                \
                   *.nupkg
+      
+      # we no longer publish our nugets to the github feed considering that we are already publishing them to nuget.org right above
+      #
+      # - name: '🚀 Publish Nugets over to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
+      #   shell: 'bash'
+      #   if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      #   run: |
+      #     cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                          \
+      #               &&                                                                  \
+      #     ls .                                                                          \
+      #               &&                                                                  \
+      #     dotnet                                                                        \
+      #             nuget                                                                 \
+      #             push                                                                  \
+      #             --source   "https://nuget.pkg.github.com/Laerdal/index.json"          \
+      #             --api-key  "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                         \
+      #             *nupkg
