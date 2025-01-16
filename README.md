@@ -78,7 +78,7 @@ The following types of operations are supported on devices running on Nordic's n
 
 | Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
 |-----------|---------------------------------------------------------------------------|------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
-| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 15.0 <br/> (api-levels: 20 / 30 / 35) | ✅ 12.0+ <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 15.0 <br/> (api-levels: 20 / 30 / 35) | ✅ 12.0+ <br/> ( sdk: iphoneos-sdk 18.1 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
 
 
 ## ❗️ Salient Points
@@ -95,7 +95,7 @@ to the device.**
 
 - **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
   
-- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 15.4 and iPhoneOS SDK 17.5.**
+- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.1.**
     The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better. 
 
 ## 🚀 Using the Nugets in your Projects
