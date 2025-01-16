@@ -25,7 +25,7 @@
 
         <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj    notice that the ordering of the following evaluations is important! -->
         <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>
-        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(TargetPlatformVersion)' == ''                                      ">17.0</TargetPlatformVersion>
+        <TargetPlatformVersion       Condition=" '$(IsNetXMacCatalyst)' == 'true'  and  '$(TargetPlatformVersion)' == ''                                      ">18.0</TargetPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsNetXMacCatalyst)' == 'true'                                                                             ">13.1</SupportedOSPlatformVersion>
 
         <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
@@ -43,7 +43,7 @@
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                                                 -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">17.0</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">18.0</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
         <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode_15.4.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
     </PropertyGroup>
 
@@ -77,10 +77,10 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1092.0</Version>
-        <FileVersion>1.0.1092.0</FileVersion>
-        <PackageVersion>1.0.1092.0</PackageVersion>
-        <AssemblyVersion>1.0.1092.0</AssemblyVersion>
+        <Version>1.0.1208.0</Version>
+        <FileVersion>1.0.1208.0</FileVersion>
+        <PackageVersion>1.0.1208.0</PackageVersion>
+        <AssemblyVersion>1.0.1208.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Summary>McuMgr Bindings for MacCatalyst - MAUI ready</Summary>

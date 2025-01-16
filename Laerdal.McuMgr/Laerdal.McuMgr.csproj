@@ -37,11 +37,13 @@
         <!-- #1 these properties must be kept in sync between this file and laerdal.mcumgr.bindings.[android|ios|maccatalyst].csproj -->
         <!-- #2 even though this is library is pure csharp we still have to specify the target-plaform-version for each target because if we dont dont the build system throws a tantrum from oct 2024 onwards -->
         <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)'         != '' ">$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
         <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)'     != '' ">$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+
+        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">18.0</TargetPlatformVersion>
         <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">34</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>        
-        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">18.0</TargetPlatformVersion>
+
         <!-- minimum ios/android/maccatalyst os versions that we support -->
         <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true' ">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsAndroid)'     == 'true' ">21</SupportedOSPlatformVersion>
@@ -71,10 +73,10 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1092.0</Version>
-        <FileVersion>1.0.1092.0</FileVersion>
-        <PackageVersion>1.0.1092.0</PackageVersion>
-        <AssemblyVersion>1.0.1092.0</AssemblyVersion>
+        <Version>1.0.1208.0</Version>
+        <FileVersion>1.0.1208.0</FileVersion>
+        <PackageVersion>1.0.1208.0</PackageVersion>
+        <AssemblyVersion>1.0.1208.0</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -167,21 +169,21 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1208.0"/>
     </ItemGroup>
 
     <!-- IOS/MacCatalyst -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1208.0"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1208.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsDudNet8_0)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1208.0"/>
     </ItemGroup>
 
 </Project>
