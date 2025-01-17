@@ -806,6 +806,15 @@ dotnet                                              \
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 
+- Trying to use the iOS/Android flavours of this library in desktop-simulator for iOS/Android will probably result in compilation errors. If you want to perform general purpose
+  UI-testing on your desktop using such simulators you need to tweak your nuget references to use the `-force-dud` nuget of `Laerdal.McuMgr` like so:
+
+```xml
+<PackageReference Include="Laerdal.McuMgr" Version="2.3.4-force-dud">
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
+</PackageReference>
+```
+
 ## Contributing
 
 We welcome contributions to this project in the form of bug reports, feature requests, and pull requests.

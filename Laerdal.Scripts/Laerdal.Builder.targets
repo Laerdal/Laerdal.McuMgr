@@ -165,9 +165,6 @@
 
     <Target Name="_updatePackageVersionsInCsprojFile">
         <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;Version&gt;.*?&lt;/Version&gt;" ReplacementText="&lt;Version&gt;$(Version)&lt;/Version&gt;"/>
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;FileVersion&gt;.*?&lt;/FileVersion&gt;" ReplacementText="&lt;FileVersion&gt;$(Version)&lt;/FileVersion&gt;"/>
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;PackageVersion&gt;.*?&lt;/PackageVersion&gt;" ReplacementText="&lt;PackageVersion&gt;$(Version)&lt;/PackageVersion&gt;"/>
-        <_replaceRegexInFile InputFile="$(ProjectFile)" Regex="&lt;AssemblyVersion&gt;.*?&lt;/AssemblyVersion&gt;" ReplacementText="&lt;AssemblyVersion&gt;$(Version)&lt;/AssemblyVersion&gt;"/>
 
         <!-- this affects only laerdal.mcumgr.csproj -->
         <_replaceRegexInFile InputFile="$(ProjectFile)"
@@ -254,7 +251,13 @@
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
-                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;" Targets="Restore;Rebuild"/>
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;"
+                 Targets="Restore;Rebuild"/>
+
+        <!-- -force-dud build aiming just pure net8 without bindings   this is meant for desktop simulators of android and ios for ui testing purposes of apps -->
+        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
+                 Properties="$(_Laerdal_Build_Parameters);BuildOnlyDudNet8=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;"
+                 Targets="Restore;Rebuild"/>
     </Target>
 
     <!-- TESTS -->

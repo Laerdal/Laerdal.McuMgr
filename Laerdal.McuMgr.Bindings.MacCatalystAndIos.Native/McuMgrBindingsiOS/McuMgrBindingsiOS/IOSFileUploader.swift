@@ -258,7 +258,9 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
-        _listener.logMessageAdvertisement(message, category, level, _remoteFilePathSanitized)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.logMessageAdvertisement(message, category, level, self._remoteFilePathSanitized)
+        }
     }
 
     //@objc   dont
@@ -294,10 +296,12 @@ public class IOSFileUploader: NSObject {
             _ progressPercentage: Int,
             _ averageThroughput: Float32
     ) {
-        _listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                progressPercentage,
-                averageThroughput
-        )
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    progressPercentage,
+                    averageThroughput
+            )
+        }
     }
 
     private func setState(_ newState: EIOSFileUploaderState) {

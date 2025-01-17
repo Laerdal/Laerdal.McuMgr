@@ -102,32 +102,32 @@
 			isa = PBXGroup;
 			children = (
 				E769DC768A6D6F0D1CAC3C06 /* McuMgrBindingsiOS.h */,
-				E769D3E2D33EE281518619A7 /* IOSFirmwareInstaller.swift */,
-				E769D1DEDAD5F89C361DF28C /* EIOSFirmwareInstallationVerdict.swift */,
-				B04DC3642CD3C7810048B553 /* EIOSDeviceResetInitializationVerdict.swift */,
-				B04DC3662CD3E1A20048B553 /* EIOSFirmwareErasureInitializationVerdict.swift */,
-				E769DC8A37490B096716C6B8 /* EIOSFirmwareInstallationMode.swift */,
-				E769DCEDC8442691AF65E8F8 /* EIOSFirmwareInstallationState.swift */,
-				E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */,
-				E769D5CB3083656E75BFBC1A /* IOSFirmwareEraser.swift */,
-				E769D3130BA737A0C282D1DD /* EIOSFirmwareEraserState.swift */,
-				E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */,
+				E769D9D0270D6C4E5DF8E7CE /* EIOSFileUploaderState.swift */,
+				E769D3E9D67A36F06CF0EFB4 /* EIOSFileDownloaderState.swift */,
 				E769DD0EF706588EF75704AE /* EIOSDeviceResetterState.swift */,
+				E769D3130BA737A0C282D1DD /* EIOSFirmwareEraserState.swift */,
+				E769DCEDC8442691AF65E8F8 /* EIOSFirmwareInstallationState.swift */,
+				E769DC8A37490B096716C6B8 /* EIOSFirmwareInstallationMode.swift */,
+				E769D1DEDAD5F89C361DF28C /* EIOSFirmwareInstallationVerdict.swift */,
+				E769DD92BBBF9A69EAF334F4 /* EIOSFirmwareInstallationFatalError.swift */,
+				B04DC3642CD3C7810048B553 /* EIOSDeviceResetInitializationVerdict.swift */,
+				E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */,
+				E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */,
+				B04DC3662CD3E1A20048B553 /* EIOSFirmwareErasureInitializationVerdict.swift */,
+				E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */,
+				E769D417A16B8DCE9D59165A /* IOSFileUploader.swift */,
+				E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */,
+				E769D9B93897FF4C9ABBAF94 /* IOSFileDownloader.swift */,
+				E769D5CB3083656E75BFBC1A /* IOSFirmwareEraser.swift */,
+				E769D3E2D33EE281518619A7 /* IOSFirmwareInstaller.swift */,
+				B0FF8AE82CCFF8E1004B39DE /* IOSListenerForFileUploader.swift */,
 				E769D93618819B3E676FE0EA /* IOSListenerForDeviceResetter.swift */,
 				E769DD6F60E601AFA283D34B /* IOSListenerForFirmwareEraser.swift */,
-				E769D13250C8CDA8CA70A8B7 /* IOSListenerForFirmwareInstaller.swift */,
-				E769DE03C73A46ADFF350E43 /* package.json */,
-				E769DC33E51C5D88437572EB /* DummyPlaceholder.swift */,
-				E769D9D0270D6C4E5DF8E7CE /* EIOSFileUploaderState.swift */,
-				E769D417A16B8DCE9D59165A /* IOSFileUploader.swift */,
-				E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */,
-				E769D8D446B42BE572E246D4 /* McuMgrExceptionHelpers.swift */,
-				E769D9B93897FF4C9ABBAF94 /* IOSFileDownloader.swift */,
-				E769D3E9D67A36F06CF0EFB4 /* EIOSFileDownloaderState.swift */,
 				E769D19F5EC3404138BFDFF8 /* IOSListenerForFileDownloader.swift */,
-				E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */,
-				E769DD92BBBF9A69EAF334F4 /* EIOSFirmwareInstallationFatalError.swift */,
-				B0FF8AE82CCFF8E1004B39DE /* IOSListenerForFileUploader.swift */,
+				E769D13250C8CDA8CA70A8B7 /* IOSListenerForFirmwareInstaller.swift */,
+				E769D8D446B42BE572E246D4 /* McuMgrExceptionHelpers.swift */,
+				E769DC33E51C5D88437572EB /* DummyPlaceholder.swift */,
+				E769DE03C73A46ADFF350E43 /* package.json */,
 			);
 			path = McuMgrBindingsiOS;
 			sourceTree = "<group>";
@@ -194,10 +194,9 @@
 			};
 			buildConfigurationList = E769D4DE04FEC8EDF4BFF2BF /* Build configuration list for PBXProject "McuMgrBindingsiOS" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 			);
 			mainGroup = E769D5C169A2617737447E64;
@@ -273,7 +272,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -365,7 +364,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
