@@ -215,7 +215,9 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
-        _listener.logMessageAdvertisement(message, category, level);
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.logMessageAdvertisement(message, category, level)
+        }
     }
 
     //@objc   dont
@@ -245,7 +247,9 @@ public class IOSFirmwareInstaller: NSObject {
             _ progressPercentage: Int,
             _ averageThroughput: Float32
     ) {
-        _listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
+        }
     }
 
     private func setState(_ newState: EIOSFirmwareInstallationState) {
@@ -371,9 +375,9 @@ extension IOSFirmwareInstaller: McuMgrLogDelegate {
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
         logMessageAdvertisement(
-                msg,
-                category.rawValue,
-                level.name
+            msg,
+            category.rawValue,
+            level.name
         )
     }
 }
