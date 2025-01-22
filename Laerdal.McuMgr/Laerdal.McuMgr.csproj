@@ -11,7 +11,7 @@
         <!-- - the dud build for net8 also comes in handy when we want to launch an application inside an ios-simulator in the macos desktop (for UI testing purposes) -->
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <!-- - in azure we omit building maccatalyst for the time being because net8 needs maccatalyst 17.2+ which is only available on macos14 which microsoft currently (Q1 2024) doesn't provide us with in azure just yet -->
-        
+
         <PackageVersionPostfix Condition=" '$(BuildOnlyDudNet8)' == 'true' ">-force-dud</PackageVersionPostfix>
 
         <TargetFrameworks>$(TargetFrameworks)net8.0;</TargetFrameworks>
@@ -76,7 +76,7 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1230.0</Version>
+        <Version>1.0.1226.0</Version>
 
         <FileVersion>$(Version)</FileVersion>
         <PackageVersion>$(Version)</PackageVersion>
@@ -176,22 +176,22 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1230.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1226.0"/>
     </ItemGroup>
 
     <!-- IOS -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1230.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1226.0"/>
     </ItemGroup>
 
     <!-- MACCATALYST -->
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1230.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1226.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsDudNet8_0)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1230.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1226.0"/>
     </ItemGroup>
 
 </Project>

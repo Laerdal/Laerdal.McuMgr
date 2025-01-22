@@ -9,10 +9,13 @@
 &lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=131e5d65_002D002c_002D354a_002D58d9_002D743f2733d18b_0023Laerdal_002EMcuMgr_002EBindings_002EAndroid/@EntryIndexedValue">True</s:Boolean>
 	
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=7674d292_002D10b2_002Dc83c_002D9cd9_002D47a43552ee3a_0023Laerdal_002EMcuMgr_002ETests/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=94474637_002D1b5f_002D7eb0_002D8a7f_002D7e95aa6c0c0b_0023Laerdal_002EMcuMgr/@EntryIndexedValue">True</s:Boolean>
+	
+	
+	
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=962e09e8_002D0e53_002D1451_002D63b3_002D13d08deac464_0023Laerdal_002EMcuMgr_002EBindings_002ENetStandard/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=b3bb4f82_002D8427_002D49d7_002D5e69_002De0f8ffbb8be7_0023Laerdal_002EMcuMgr_002EBindings_002EiOS/@EntryIndexedValue">True</s:Boolean>
+	
 	
 	
     
