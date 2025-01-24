@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Constants;
+using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
@@ -15,6 +16,7 @@ using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.FileUploader
 {
@@ -516,6 +518,7 @@ namespace Laerdal.McuMgr.FileUploader
             };
         }
 
+        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea);
         void IFileUploaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea);
         void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);

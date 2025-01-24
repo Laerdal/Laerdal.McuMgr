@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Constants;
+using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -16,6 +17,7 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
@@ -435,6 +437,7 @@ namespace Laerdal.McuMgr.FileDownloader
             //    the download cannot commence to begin with
         }
 
+        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFileDownloaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
         void IFileDownloaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);

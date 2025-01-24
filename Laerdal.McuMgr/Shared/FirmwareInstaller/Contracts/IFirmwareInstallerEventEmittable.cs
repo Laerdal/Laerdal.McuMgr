@@ -1,9 +1,10 @@
+using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
 {
-    internal interface IFirmwareInstallerEventEmittable
+    internal interface IFirmwareInstallerEventEmittable : ILogEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
         void OnLogEmitted(LogEmittedEventArgs ea);

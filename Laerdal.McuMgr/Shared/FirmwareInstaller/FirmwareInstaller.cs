@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Constants;
+using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -385,7 +386,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             //10  we dont want to wrap our own exceptions obviously   we only want to sanitize native exceptions from java and swift that stem
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
-
+        
+        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFirmwareInstallerEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
         void IFirmwareInstallerEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFirmwareInstallerEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);

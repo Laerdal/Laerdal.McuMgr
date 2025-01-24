@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -12,6 +13,7 @@ using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.DeviceResetter
 {
@@ -168,6 +170,7 @@ namespace Laerdal.McuMgr.DeviceResetter
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
+        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         void IDeviceResetterEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         void IDeviceResetterEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         void IDeviceResetterEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);

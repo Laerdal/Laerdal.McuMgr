@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -13,6 +14,7 @@ using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 [assembly: InternalsVisibleTo("Laerdal.McuMgr.Tests")]
 namespace Laerdal.McuMgr.FirmwareEraser
@@ -182,6 +184,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
+        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         void IFirmwareEraserEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //       we made these interface implementations
         void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); // explicit to avoid making them public
         void IFirmwareEraserEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);

@@ -1,10 +1,12 @@
-﻿using Laerdal.McuMgr.Common.Events;
+﻿using Laerdal.McuMgr.Common.Contracts;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
 {
     //must be internal because there is absolutely no point for anyone outside this assembly to be able to raise these events
-    internal interface IFileUploaderEventEmittable
+    internal interface IFileUploaderEventEmittable : ILogEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
         void OnCancelling(CancellingEventArgs ea);
