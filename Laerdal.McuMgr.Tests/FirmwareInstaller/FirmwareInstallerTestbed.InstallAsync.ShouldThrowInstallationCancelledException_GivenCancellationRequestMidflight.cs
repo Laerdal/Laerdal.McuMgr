@@ -15,15 +15,28 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
     public partial class FirmwareInstallerTestbed
     {
         [Theory]
-        [InlineData("FIT.IA.STFICE.GCRM.010", true)]
-        [InlineData("FIT.IA.STFICE.GCRM.020", false)]
-        public async Task InstallAsync_ShouldThrowFirmwareInstallationCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding)
+        [InlineData("FIT.IA.STFICE.GCRM.010", false, false)]
+        [InlineData("FIT.IA.STFICE.GCRM.015", false, true)]
+        [InlineData("FIT.IA.STFICE.GCRM.020", true, false)]
+        [InlineData("FIT.IA.STFICE.GCRM.025", true, true)]
+        public async Task InstallAsync_ShouldThrowFirmwareInstallationCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding, bool simulateUserlandExceptionsInEventHandlers)
         {
             // Arrange
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy3(new GenericNativeFirmwareInstallerCallbacksProxy_(), isCancellationLeadingToSoftLanding);
             var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
+
+            if (simulateUserlandExceptionsInEventHandlers)
+            {
+                firmwareInstaller.Cancelled += (_, _) => throw new Exception($"{nameof(firmwareInstaller.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
+                firmwareInstaller.LogEmitted += (_, _) => throw new Exception($"{nameof(firmwareInstaller.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+                firmwareInstaller.StateChanged += (_, _) => throw new Exception($"{nameof(firmwareInstaller.StateChanged)} -> oops!");
+                firmwareInstaller.BusyStateChanged += (_, _) => throw new Exception($"{nameof(firmwareInstaller.BusyStateChanged)} -> oops!");
+                firmwareInstaller.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(firmwareInstaller.FatalErrorOccurred)} -> oops!");
+                firmwareInstaller.IdenticalFirmwareCachedOnTargetDeviceDetected += (_, _) => throw new Exception($"{nameof(firmwareInstaller.IdenticalFirmwareCachedOnTargetDeviceDetected)} -> oops!");
+                firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged)} -> oops!");    
+            }
 
             // Act
             _ = Task.Run(async () =>

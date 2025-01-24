@@ -27,6 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 { "/some/file/path/pointing/to/a/directory", null },
             };
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy6(new GenericNativeFileDownloaderCallbacksProxy_(), expectedResults);
+            
             var fileDownloader = new McuMgr.FileDownloader.FileDownloader(mockedNativeFileDownloaderProxy);
 
             var remoteFilePathsToTest = new[]
@@ -49,6 +50,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             };
 
             using var eventsMonitor = fileDownloader.Monitor();
+
+            fileDownloader.Cancelled += (_, _) => throw new Exception($"{nameof(fileDownloader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
+            fileDownloader.LogEmitted += (_, _) => throw new Exception($"{nameof(fileDownloader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+            fileDownloader.StateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.StateChanged)} -> oops!");
+            fileDownloader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.BusyStateChanged)} -> oops!");
+            fileDownloader.DownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.DownloadCompleted)} -> oops!");
+            fileDownloader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileDownloader.FatalErrorOccurred)} -> oops!");
+            fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged)} -> oops!");
 
             // Act
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(

@@ -108,7 +108,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 int? memoryAlignment = null //  android only
             )
             {
-                (FileUploader as IFileUploaderEventSubscribable)!.Cancelled += (sender, args) =>
+                (FileUploader as IFileUploaderEventSubscribable)!.Cancelled += (_, _) =>
                 {
                     _cancellationTokenSource.Cancel();
                 };

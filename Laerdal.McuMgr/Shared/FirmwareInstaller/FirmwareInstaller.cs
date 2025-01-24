@@ -394,11 +394,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         void IFirmwareInstallerEventEmittable.OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => OnIdenticalFirmwareCachedOnTargetDeviceDetected(ea);
         void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndDataThroughputChanged(ea);
 
-        private void OnCancelled(CancelledEventArgs ea) => _cancelled?.Invoke(this, ea);
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.Invoke(this, ea);
-        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.Invoke(this, ea);
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.Invoke(this, ea);
-        private void OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => _identicalFirmwareCachedOnTargetDeviceDetected?.Invoke(this, ea);
+        private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //           we suppress exceptions here because if we allow them to bubble towards the native code then the
+        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //        native code can crash which can potentially cause very nasty problems in the firmware installation
+        private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => _identicalFirmwareCachedOnTargetDeviceDetected?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
 
         private void OnStateChanged(StateChangedEventArgs ea)
         {
@@ -421,7 +421,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             }
             finally
             {
-                _stateChanged?.Invoke(this, ea); //00 must be dead last
+                _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //00 must be dead last
             }
 
             //00  if we raise the state-changed event before the switch statement then the calling environment will unwire the event handlers of
@@ -437,7 +437,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             }
             finally
             {
-                _firmwareUploadProgressPercentageAndDataThroughputChanged?.Invoke(this, ea);    
+                _firmwareUploadProgressPercentageAndDataThroughputChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);    
             }
         }
 
