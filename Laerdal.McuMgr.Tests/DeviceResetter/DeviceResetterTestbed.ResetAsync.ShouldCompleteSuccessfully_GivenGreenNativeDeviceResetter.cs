@@ -15,6 +15,9 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
 
             using var eventsMonitor = deviceResetter.Monitor();
+            deviceResetter.LogEmitted += (_, _) => throw new Exception($"{nameof(deviceResetter.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+            deviceResetter.StateChanged += (_, _) => throw new Exception($"{nameof(deviceResetter.StateChanged)} -> oops!");
+            deviceResetter.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(deviceResetter.FatalErrorOccurred)} -> oops!");
 
             // Act
             var work = new Func<Task>(() => deviceResetter.ResetAsync());

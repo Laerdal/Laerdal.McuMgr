@@ -2,6 +2,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
+using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
@@ -42,6 +43,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             };
 
             using var eventsMonitor = fileUploader.Monitor();
+            fileUploader.Cancelled += (_, _) => throw new Exception($"{nameof(fileUploader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
+            fileUploader.LogEmitted += (_, _) => throw new Exception($"{nameof(fileUploader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+            fileUploader.StateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.StateChanged)} -> oops!");
+            fileUploader.FileUploaded += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploaded)} -> oops!");
+            fileUploader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.BusyStateChanged)} -> oops!");
+            fileUploader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
+            fileUploader.FileUploadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadProgressPercentageAndDataThroughputChanged)} -> oops!");
 
             // Act
             var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(
@@ -61,9 +69,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             ]);
 
             eventsMonitor.OccurredEvents
-                .Count(args => args.EventName == nameof(fileUploader.FileUploaded))
+                .Where(args => args.EventName == nameof(fileUploader.FileUploaded))
+                .Select(x => x.Parameters.OfType<FileUploadedEventArgs>().FirstOrDefault().Resource)
                 .Should()
-                .Be(filesThatShouldBeSuccessfullyUploaded.Length);
+                .BeEquivalentTo(filesThatShouldBeSuccessfullyUploaded);
 
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileUploader.FatalErrorOccurred))

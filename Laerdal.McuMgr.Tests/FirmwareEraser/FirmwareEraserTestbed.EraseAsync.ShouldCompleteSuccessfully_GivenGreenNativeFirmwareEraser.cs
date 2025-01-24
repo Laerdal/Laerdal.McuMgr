@@ -14,6 +14,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
             var mockedNativeFirmwareEraserProxy = new MockedGreenNativeFirmwareEraserProxySpy1(new McuMgr.FirmwareEraser.FirmwareEraser.GenericNativeFirmwareEraserCallbacksProxy());
             var firmwareEraser = new McuMgr.FirmwareEraser.FirmwareEraser(mockedNativeFirmwareEraserProxy);
 
+            firmwareEraser.LogEmitted += (_, _) => throw new Exception($"{nameof(firmwareEraser.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+            firmwareEraser.StateChanged += (_, _) => throw new Exception($"{nameof(firmwareEraser.StateChanged)} -> oops!");
+            firmwareEraser.BusyStateChanged += (_, _) => throw new Exception($"{nameof(firmwareEraser.BusyStateChanged)} -> oops!");
+            firmwareEraser.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(firmwareEraser.FatalErrorOccurred)} -> oops!");
+
             // Act
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2));
 
