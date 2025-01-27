@@ -5,7 +5,7 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.Common.Helpers
 {
-    static internal class EventHandlerExtensions
+    static internal class EventFiringExtensions
     {
         static internal void InvokeAndIgnoreExceptions<TEventArgs>(this EventHandler<TEventArgs> eventHandlers, ILogEmittable sender, TEventArgs args) //00
         {
