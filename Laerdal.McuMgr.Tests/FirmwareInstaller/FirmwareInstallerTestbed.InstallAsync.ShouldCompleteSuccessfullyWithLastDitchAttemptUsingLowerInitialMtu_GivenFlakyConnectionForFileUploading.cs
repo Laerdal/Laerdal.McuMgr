@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
         [InlineData("FIT.IA.SCSWLDAULIM.GPDFFU.010", 2, false)]
         [InlineData("FIT.IA.SCSWLDAULIM.GPDFFU.020", 3, false)]
         [InlineData("FIT.IA.SCSWLDAULIM.GPDFFU.030", 5, false)]
-        [InlineData("FIT.IA.SCSWLDAULIM.GPDFFU.025", 5, true)] //simulateUserlandExceptionsInEventHandlers
+        [InlineData("FIT.IA.SCSWLDAULIM.GPDFFU.035", 5, true)] //simulateUserlandExceptionsInEventHandlers
         public async Task InstallAsync_ShouldCompleteSuccessfullyWithLastDitchAttemptUsingLowerInitialMtu_GivenFlakyConnectionForFileUploading(string testNickname, int maxTriesCount, bool simulateUserlandExceptionsInEventHandlers)
         {
             // Arrange
