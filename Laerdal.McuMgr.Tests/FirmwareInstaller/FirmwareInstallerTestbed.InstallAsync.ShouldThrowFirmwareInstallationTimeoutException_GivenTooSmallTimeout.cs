@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
 
-                timeoutInMs: 100,
+                timeoutInMs: 500,
                 maxTriesCount: 1
             ));
 
@@ -88,7 +88,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     await Task.Delay(10);
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Uploading);
 
-                    await Task.Delay(1_000);
+                    await Task.Delay(2_000);
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Complete);
                 });
 

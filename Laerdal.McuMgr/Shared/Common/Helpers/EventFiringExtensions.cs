@@ -5,12 +5,34 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.Common.Helpers
 {
-    static internal class EventHandlerExtensions
+    static internal class EventFiringExtensions
     {
+        static internal void InvokeAndIgnoreExceptions<TEventArgs>(this EventHandler<TEventArgs> eventHandlers, ILogEmittable sender, TEventArgs args) //00
+        {
+#if DEBUG
+            ArgumentNullException.ThrowIfNull(args); //better not check this in release mode for performance reasons
+            ArgumentNullException.ThrowIfNull(sender);
+#endif
+
+            try
+            {
+                eventHandlers?.Invoke(sender, args);
+            }
+            catch
+            {
+                //ignored
+            }
+
+            //00  the difference between .InvokeAndIgnoreExceptions() and .InvokeAllEventHandlersAndIgnoreExceptions()
+            //    is that the event-firing will halt if one of the event handlers throws an exception
+        }
+        
         static internal void InvokeAllEventHandlersAndIgnoreExceptions<TEventArgs>(this EventHandler<TEventArgs> eventHandlers, ILogEmittable sender, TEventArgs args)
         {
-            ArgumentNullException.ThrowIfNull(args);
+#if DEBUG
+            ArgumentNullException.ThrowIfNull(args); //better not check this in release mode for performance reasons
             ArgumentNullException.ThrowIfNull(sender);
+#endif
 
             if (eventHandlers == null)
                 return;
