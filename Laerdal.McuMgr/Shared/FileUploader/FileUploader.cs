@@ -528,9 +528,9 @@ namespace Laerdal.McuMgr.FileUploader
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileUploadProgressPercentageAndDataThroughputChanged(ea);
 
+        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnCancelling(CancellingEventArgs ea) => _cancelling?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
