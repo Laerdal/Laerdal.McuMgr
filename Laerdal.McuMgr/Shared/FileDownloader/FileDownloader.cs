@@ -453,7 +453,7 @@ namespace Laerdal.McuMgr.FileDownloader
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileDownloaderProxy
         internal class GenericNativeFileDownloaderCallbacksProxy : INativeFileDownloaderCallbacksProxy

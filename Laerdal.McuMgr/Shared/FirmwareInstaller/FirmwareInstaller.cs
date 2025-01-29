@@ -402,6 +402,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => _identicalFirmwareCachedOnTargetDeviceDetected?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
 
+        private int _fileUploadProgressEventsCount;
+        private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
+        {
+            _fileUploadProgressEventsCount++; //order
+            _firmwareUploadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea); //order   typically there is only one subscriber to this event so we can use the simple .invoke() flavour here
+        }
+
         private void OnStateChanged(StateChangedEventArgs ea)
         {
             try
@@ -429,20 +436,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             //00  if we raise the state-changed event before the switch statement then the calling environment will unwire the event handlers of
             //    the identical-firmware-cached-on-target-device-detected event before it gets fired and the event will be ignored altogether
         }
-
-        private int _fileUploadProgressEventsCount;
-        private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
-        {
-            try
-            {
-                _fileUploadProgressEventsCount++;
-            }
-            finally
-            {
-                _firmwareUploadProgressPercentageAndDataThroughputChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);    
-            }
-        }
-
+        
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy
         internal class GenericNativeFirmwareInstallerCallbacksProxy : INativeFirmwareInstallerCallbacksProxy
         {
