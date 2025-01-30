@@ -117,6 +117,7 @@ jobs:
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
+        continue-on-error: true # sometimes this action spazes out and fails   we ignore such hiccups because they are not really critical
         if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
         with:
           files: |
