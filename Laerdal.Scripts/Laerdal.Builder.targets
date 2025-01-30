@@ -274,7 +274,7 @@
             <TestParameters>$(TestParameters) 'Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj'</TestParameters>
             <TestParameters>$(TestParameters)    --logger 'trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml'</TestParameters>
             <TestParameters>$(TestParameters)    --no-restore</TestParameters>
-            <TestParameters>$(TestParameters)    --verbosity '4'</TestParameters>
+            <TestParameters>$(TestParameters)    --verbosity 'detailed'</TestParameters>
             <TestParameters>$(TestParameters)    --configuration '$(Configuration)'</TestParameters>
             <TestParameters>$(TestParameters)    --results-directory '$(Laerdal_Test_Results_Folderpath)'</TestParameters>
             <TestParameters>$(TestParameters)    -m:1</TestParameters>
