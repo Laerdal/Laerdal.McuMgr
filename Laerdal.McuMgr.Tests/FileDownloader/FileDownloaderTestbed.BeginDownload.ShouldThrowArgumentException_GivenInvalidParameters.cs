@@ -10,11 +10,15 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     public partial class FileDownloaderTestbed
     {
         [Theory]
-        [InlineData("FDT.BD.STAE.GIRFP.010", "")]
-        [InlineData("FDT.BD.STAE.GIRFP.020", null)]
-        [InlineData("FDT.BD.STAE.GIRFP.030", "foo/bar/")] //  paths are not allowed
-        [InlineData("FDT.BD.STAE.GIRFP.040", "/foo/bar/")] // to end with a slash 
-        public void BeginDownload_ShouldThrowArgumentException_GivenInvalidRemoteFilePath(string testcaseNickname, string remoteFilePath)
+        [InlineData("FDT.BD.STAE.GIP.010", "", "foobar", "acme corp.")]
+        [InlineData("FDT.BD.STAE.GIP.020", null, "foobar", "acme corp.")]
+        [InlineData("FDT.BD.STAE.GIP.030", "foo/bar/", "foobar", "acme corp.")] //  paths are not allowed
+        [InlineData("FDT.BD.STAE.GIP.040", "/foo/bar/", "foobar", "acme corp.")] // to end with a slash
+        [InlineData("FDT.BD.STAE.GIP.050", "/foo/bar", "", "acme corp.")] //        invalid hostDeviceModel
+        [InlineData("FDT.BD.STAE.GIP.060", "/foo/bar", "  ", "acme corp.")] //      invalid hostDeviceModel
+        [InlineData("FDT.BD.STAE.GIP.070", "/foo/bar", "foobar", "")] //            invalid hostDeviceManufacturer
+        [InlineData("FDT.BD.STAE.GIP.080", "/foo/bar", "foobar", "  ")] //          invalid hostDeviceManufacturer
+        public void BeginDownload_ShouldThrowArgumentException_GivenInvalidParameters(string testcaseNickname, string remoteFilePath, string hostDeviceModel, string hostDeviceManufacturer)
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
@@ -26,10 +30,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
 
             // Act
             var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp.",
-
-                remoteFilePath: remoteFilePath
+                remoteFilePath: remoteFilePath,
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer
             ));
 
             // Assert

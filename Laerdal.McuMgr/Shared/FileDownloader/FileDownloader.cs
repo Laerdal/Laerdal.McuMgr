@@ -50,8 +50,13 @@ namespace Laerdal.McuMgr.FileDownloader
             int? windowCapacity = null //not applicable currently   but nordic considers these for future use
         )
         {
-            RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
-            remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+
+            remoteFilePath = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePath(remoteFilePath);
 
             var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
                 initialMtuSize: initialMtuSize,
@@ -175,8 +180,13 @@ namespace Laerdal.McuMgr.FileDownloader
             int? memoryAlignment = null
         )
         {
-            RemoteFilePathHelpers.ValidateRemoteFilePaths(remoteFilePaths); //                                        order
-            var sanitizedUniqueRemoteFilesPaths = RemoteFilePathHelpers.SanitizeRemoteFilePaths(remoteFilePaths); //  order
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+
+            var sanitizedUniqueRemoteFilesPaths = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePaths(remoteFilePaths);
 
             var results = sanitizedUniqueRemoteFilesPaths.ToDictionary(
                 keySelector: x => x,
@@ -230,6 +240,12 @@ namespace Laerdal.McuMgr.FileDownloader
         {
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero!");
+            
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
             
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs

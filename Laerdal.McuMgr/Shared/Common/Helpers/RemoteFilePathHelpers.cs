@@ -7,11 +7,32 @@ namespace Laerdal.McuMgr.Common.Helpers
 {
     static internal class RemoteFilePathHelpers
     {
-        static public void ValidateRemoteFilePathsWithDataBytes<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        static internal string ValidateAndSanitizeRemoteFilePath(string remoteFilePath)
         {
-            remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
+            ValidateRemoteFilePath(remoteFilePath); //throws an exception if something is wrong
 
-            foreach (var pathAndDataBytes in remoteFilePathsWithTheirDataBytes)
+            return SanitizeRemoteFilePath(remoteFilePath);
+        }
+
+        static public IReadOnlyDictionary<string, T> ValidateAndSanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        {
+            ValidateRemoteFilePathsWithData(remoteFilePathsWithTheirDataBytes); //throws an exception if something is wrong
+
+            return SanitizeRemoteFilePathsWithData(remoteFilePathsWithTheirDataBytes);
+        }
+        
+        static internal string[] ValidateAndSanitizeRemoteFilePaths(IEnumerable<string> remoteFilePaths)
+        {
+            ValidateRemoteFilePaths(remoteFilePaths); //throws an exception if something is wrong
+
+            return SanitizeRemoteFilePaths(remoteFilePaths);
+        }
+        
+        static public void ValidateRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirData)
+        {
+            remoteFilePathsWithTheirData = remoteFilePathsWithTheirData ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirData));
+
+            foreach (var pathAndDataBytes in remoteFilePathsWithTheirData)
             {
                 ValidatePayload(pathAndDataBytes.Value);
                 ValidateRemoteFilePath(pathAndDataBytes.Key);
@@ -70,7 +91,7 @@ namespace Laerdal.McuMgr.Common.Helpers
 
             return results;
         }
-        
+
         //used by the downloader
         static internal string[] SanitizeRemoteFilePaths(IEnumerable<string> remoteFilePaths)
         {

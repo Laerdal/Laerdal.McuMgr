@@ -10,9 +10,13 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
     public partial class FirmwareInstallerTestbed
     {
         [Theory]
-        [InlineData("FIT.BI.STAE.GIFDB.010", null)]
-        [InlineData("FIT.BI.STAE.GIFDB.020", new byte[] {})]
-        public void BeginInstallation_ShouldThrowArgumentException_GivenInvalidFirmwareDataBytes(string testcaseNickname, byte[] mockedFileData)
+        [InlineData("FIT.BI.STAE.GIFDB.010", new byte[] {}, "foobar", "acme corp.")]
+        [InlineData("FIT.BI.STAE.GIFDB.020", null, "foobar", "acme corp.")]
+        [InlineData("FIT.BI.STAE.GIFDB.030", new byte[] { 1 }, "", "acme corp.")] //        invalid hostDeviceModel
+        [InlineData("FIT.BI.STAE.GIFDB.040", new byte[] { 1 }, "  ", "acme corp.")] //      invalid hostDeviceModel
+        [InlineData("FIT.BI.STAE.GIFDB.050", new byte[] { 1 }, "foobar", "")] //            invalid hostDeviceManufacturer
+        [InlineData("FIT.BI.STAE.GIFDB.060", new byte[] { 1 }, "foobar", "  ")] //          invalid hostDeviceManufacturer
+        public void BeginInstallation_ShouldThrowArgumentException_GivenInvalidParameters(string testcaseNickname, byte[] mockedFileData, string hostDeviceModel, string hostDeviceManufacturer)
         {
             // Arrange
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy1(new GenericNativeFirmwareInstallerCallbacksProxy_());
@@ -23,8 +27,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             // Act
             var work = new Func<EFirmwareInstallationVerdict>(() => firmwareInstaller.BeginInstallation(
                 data: mockedFileData,
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp."
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer
             ));
 
             // Assert

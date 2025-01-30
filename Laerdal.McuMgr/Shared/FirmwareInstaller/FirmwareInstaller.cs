@@ -56,6 +56,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             if (data == null || !data.Any())
                 throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
 
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+
             var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
                 uploadingNotDownloading: true,
 
@@ -204,6 +210,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         {
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "The maximum amount of tries must be greater than zero");
+            
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
             
             gracefulCancellationTimeoutInMs = gracefulCancellationTimeoutInMs >= 0 //we want to ensure that the timeout is always sane
                 ? gracefulCancellationTimeoutInMs

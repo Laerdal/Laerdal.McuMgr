@@ -59,10 +59,14 @@ namespace Laerdal.McuMgr.FileUploader
             int? memoryAlignment = null
         )
         {
-            data = data ?? throw new ArgumentNullException(nameof(data));
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
             
-            RemoteFilePathHelpers.ValidateRemoteFilePath(remoteFilePath); //                    order
-            remoteFilePath = RemoteFilePathHelpers.SanitizeRemoteFilePath(remoteFilePath); //   order
+            data = data ?? throw new ArgumentNullException(nameof(data));
+            remoteFilePath = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePath(remoteFilePath);
 
             var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
                 hostDeviceModel: hostDeviceModel,
@@ -217,11 +221,15 @@ namespace Laerdal.McuMgr.FileUploader
             int? memoryAlignment = null
         ) where TData : notnull
         {
-            RemoteFilePathHelpers.ValidateRemoteFilePathsWithDataBytes(remoteFilePathsAndTheirData);
-            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.SanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+
+            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
 
             var filesThatFailedToBeUploaded = new List<string>(2);
-
             foreach (var x in sanitizedRemoteFilePathsAndTheirData)
             {
                 try
@@ -287,6 +295,12 @@ namespace Laerdal.McuMgr.FileUploader
             
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
+
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
             
             var dataArray = await GetDataAsByteArray_(data, autodisposeStream);
             
