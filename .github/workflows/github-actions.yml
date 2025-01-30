@@ -121,8 +121,8 @@ jobs:
         if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
         with:
           files: |
-            TestResults/**/TEST-*.xml
-            TestResults/**/TEST-*.trx
+            TestResults/**/*.xml
+            TestResults/**/*.trx
 
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
         uses: 'actions/upload-artifact@v4'
