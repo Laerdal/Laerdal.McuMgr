@@ -1,12 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <!-- ================== HOST MACHINE DETECTION ==================== -->
+    <PropertyGroup>
+        <IsHostMachineOSX>false</IsHostMachineOSX>
+        <IsHostMachineOSX Condition=" $([System.OperatingSystem]::IsMacOS()) ">true</IsHostMachineOSX>
+
+        <IsHostMachineLinux>false</IsHostMachineLinux>
+        <IsHostMachineLinux Condition=" $([System.OperatingSystem]::IsLinux()) ">true</IsHostMachineLinux>
+
+        <IsHostMachineWindows>false</IsHostMachineWindows>
+        <IsHostMachineWindows Condition=" $([System.OperatingSystem]::IsWindows()) ">true</IsHostMachineWindows>
+
+        <!-- keep dead last -->
+        <IsHostMachineUnix>false</IsHostMachineUnix>
+        <IsHostMachineUnix Condition=" $(IsHostMachineOSX) Or $(IsHostMachineLinux) ">true</IsHostMachineUnix>
+    </PropertyGroup>
+
     <!-- SHARED -->
     <PropertyGroup>
-        <IsHostMachineOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsHostMachineOSX>
-        <IsHostMachineLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsHostMachineLinux>
-        <IsHostMachineWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsHostMachineWindows>
-        <IsHostMachineUnix Condition="     '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
-
         <!-- - note that we build against net8.0 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
         <!-- - the dud build for net8 also comes in handy when we want to launch an application inside an ios-simulator in the macos desktop (for UI testing purposes) -->
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
