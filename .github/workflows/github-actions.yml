@@ -115,15 +115,6 @@ jobs:
                    &&                                                                                                                                                              \
           rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
-      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
-        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
-        continue-on-error: true # sometimes this action spazes out and fails   we ignore such hiccups because they are not really critical
-        if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
-        with:
-          files: |
-            TestResults/**/*.xml
-            TestResults/**/*.trx
-
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
         uses: 'actions/upload-artifact@v4'
         with:
@@ -144,7 +135,16 @@ jobs:
                   --source   "https://api.nuget.org/v3/index.json"                                \
                   --api-key  "${{env.SCL_NUGET_ORG_FEED_API_KEY}}"                                \
                   *.nupkg
-      
+
+      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
+        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
+        continue-on-error: true # sometimes this action spazes out and fails   we ignore such hiccups because they are not really critical
+        if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
+        with:
+          files: |
+            TestResults/**/*.xml
+            TestResults/**/*.trx
+
       # we no longer publish our nugets to the github feed considering that we are already publishing them to nuget.org right above
       #
       # - name: '🚀 Publish Nugets over to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
