@@ -133,12 +133,12 @@
 
     <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
         <!-- these dependencies have been field-tested and are known to work at least as far back as Android 10.0 -->
-        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.15.0.1" PrivateAssets="All" />
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.15.0.2" PrivateAssets="All" />
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.0.21.1" />
-        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.9.0.1" />
+        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.0.21.2" />
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.9.0.2" />
     </ItemGroup>
 
 </Project>
