@@ -13,7 +13,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="7.0.0" />
+        <!-- FluentAssertions versions 8+ are free for open source projects    -->
+        <!-- and non commercial use but commercial use requires a paid license -->
+        <!--                                                                   -->
+        <!-- Version 7 will remain fully open source indefinitely and receive  -->
+        <!-- bugfixes and other important corrections                          -->
+        <PackageReference Include="FluentAssertions" Version="[7.1.0, 8)" />
+
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
 
         <PackageReference Include="xunit" Version="2.9.2" />
