@@ -251,7 +251,7 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
   declare -r cyclonedx_version="0.27.2"
 
   if [[ ${host_os} == "Mac" ]] || [[ ${host_os} == "Linux" ]]; then
-    brew install cyclonedx/cyclonedx/cyclonedx-cli # both the macos and linux vmimages support brew so we can use it
+    brew install cyclonedx/cyclonedx/cyclonedx-cli # macos and linux vmimages do support brew so we can use it
     declare exitCode=$?
     if [ ${exitCode} != 0 ]; then
       echo "Failed to install 'cyclonedx'."
