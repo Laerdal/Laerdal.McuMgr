@@ -266,17 +266,11 @@
             Condition=" '$(Should_Skip_Tests)' == 'false' "
             AfterTargets="BuildProjects">
 
-        <!-- we need to restore packages manually on the test project because dotnet restore has some issues in this regard -->
-        <MSBuild Targets="Clean;Restore"
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_Tests)"
-                 Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);"/>
-
         <PropertyGroup>
             <_DotnetTestCommand> </_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand) dotnet  test</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --logger &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --no-restore</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity &quot;normal&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration &quot;$(Configuration)&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory &quot;$(Laerdal_Test_Results_Folderpath)&quot;</_DotnetTestCommand>
