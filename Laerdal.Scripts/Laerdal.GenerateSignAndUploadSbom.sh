@@ -399,8 +399,8 @@ function generate_sign_and_upload_sbom() {
 }
 
 function main() {
-  parse_arguments "$@"          #           order
-  install_tools                 #                  order
+  parse_arguments "$@"          #  order
+  install_tools                 #  order
   generate_sign_and_upload_sbom #  order
 }
 
