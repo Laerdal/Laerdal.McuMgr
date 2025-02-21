@@ -224,41 +224,6 @@
             <!--<_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False;</_Laerdal_Build_Parameters>-->
         </PropertyGroup>
 
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)"
-                 Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
-
-        <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
-        <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
-        <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
-        <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Clean"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="CompileMcuMgrLaerdalWrapper"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)"
-                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;Skip_CompileMcuMgrLaerdalWrapper=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
-
-        <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main          -->
-        <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols   -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
-
-        <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main         -->
-        <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols  -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
-        <MSBuild Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
-
-        <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
-                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;"
-                 Targets="Restore;Rebuild"/>
-
-        <!-- -force-dud build aiming just pure net8 without bindings   this is meant for desktop simulators of android and ios for ui testing purposes of apps -->
-        <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildOnlyDudNet8=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;"
-                 Targets="Restore;Rebuild"/>
     </Target>
 
     <!-- TESTS -->
@@ -266,22 +231,16 @@
             Condition=" '$(Should_Skip_Tests)' == 'false' "
             AfterTargets="BuildProjects">
 
-        <!-- we need to restore packages manually on the test project because dotnet restore has some issues in this regard -->
-        <MSBuild Targets="Clean;Restore"
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_Tests)"
-                 Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);"/>
-
         <PropertyGroup>
             <_DotnetTestCommand> </_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand) dotnet  test</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --logger &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --no-restore</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity &quot;normal&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration &quot;$(Configuration)&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory &quot;$(Laerdal_Test_Results_Folderpath)&quot;</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    -m:1</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=true</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</_DotnetTestCommand>
@@ -325,6 +284,7 @@
         <PropertyGroup>
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
 
+            <_Laerdal_Create_Github_Release_Script_Parameters> </_Laerdal_Create_Github_Release_Script_Parameters>
             <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --log</_Laerdal_Create_Github_Release_Script_Parameters>
             <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
             <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
