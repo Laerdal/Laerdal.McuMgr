@@ -10,6 +10,11 @@
         <LangVersion>12.0</LangVersion>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
+
+        <!-- these are needed so that we dont get a warning when building this project or when dependabot is analyzing it -->
+        <UseMaui>true</UseMaui>
+        <UseMauiEssentials>true</UseMauiEssentials>
+        <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     </PropertyGroup>
 
     <ItemGroup>
@@ -32,6 +37,11 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+
+        <!-- these are needed so that we dont get a warning when building this project or when dependabot is analyzing it -->
+        <!-- Warning MA002 : Starting with .NET 8, setting  <UseMaui>true</UseMaui>  does not automatically include NuGet package references in your project. -->
+        <PackageReference Include="Microsoft.Maui.Controls" Version="[$(MauiVersion), 9)"/>
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="[$(MauiVersion), 9)"/>
     </ItemGroup>
 
     <ItemGroup>
