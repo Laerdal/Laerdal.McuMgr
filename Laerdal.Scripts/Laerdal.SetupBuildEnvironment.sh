@@ -60,13 +60,13 @@ if [ $exitCode != 0 ]; then
   exit 30
 fi
 
-# install a specific version of dotnet8 to ensure consistent results
-curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 8.0 -Version 8.0.100
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'dotnet8'."
-  exit 40
-fi
+# we enforce this via global.json
+# curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 8.0 -Version 8.0.405
+# declare exitCode=$?
+# if [ $exitCode != 0 ]; then
+#   echo "##vso[task.logissue type=error]Failed to install 'dotnet8'."
+#   exit 40
+# fi
 
 echo
 echo "** Dotnet CLI:"
