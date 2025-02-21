@@ -365,6 +365,7 @@
 
             <!-- notice that we intentionally use $(Laerdal_Version_Assembly) instead of $(Laerdal_Version_Full) -->
             <!-- because cyclonedx inherently ear-tags sboms with the former rather than the later               -->
+            <_Laerdal_Sbom_Script_Parameters> </_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --project-version &quot;$(Laerdal_Version_Assembly)&quot;</_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --output-directory-path &quot;$(PackageOutputPath)&quot;</_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --sbom-signing-key-file-path &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
@@ -375,6 +376,15 @@
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --csproj-classifier &quot;Library&quot;</_Laerdal_Sbom_Script_Parameters>
             
             <_Logical_And>&amp;&amp;</_Logical_And>
+
+            <_Laerdal_Sbom_Scriptlet> </_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  chmod +x           ./Laerdal.GenerateSignAndUploadSbom.sh</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;              --output-sbom-file-name &quot;sbom.laerdal.mcumgr.xml&quot;              --parent-project-name &quot;[Group::Laerdal.McuMgr]&quot;</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_iOS_Name)&quot;          --output-sbom-file-name &quot;sbom.laerdal.mcumgr.ios.xml&quot;          --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Android_Name)&quot;      --output-sbom-file-name &quot;sbom.laerdal.mcumgr.android.xml&quot;      --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_MacCatalyst_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.maccatalyst.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_NetStandard_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.netstandard.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+
         </PropertyGroup>
 
         <!-- 1  we ignore suppress any errors and continue because sometimes the sbom mechanism spazzes out due to intermittent errors when installing cli tooling   go figure -->
@@ -382,17 +392,8 @@
         <!-- 3  https://docs.dependencytrack.org/usage/cicd/#large-payloads                                                                                                    -->
         <Message Importance="High" Text="** Generating, Singing and Uploading SBOMs:"/>
         <Exec Timeout="60000"
+              Command=" bash -c '$(_Laerdal_Sbom_Scriptlet)' "
               ContinueOnError="WarnAndContinue"
-              Command="
-                bash -c '\
-                   chmod +x           ./Laerdal.GenerateSignAndUploadSbom.sh \
-                   $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;              --output-sbom-file-name &quot;sbom.laerdal.mcumgr.xml&quot;              --parent-project-name &quot;[Group::Laerdal.McuMgr]&quot; \
-                   $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_iOS_Name)&quot;          --output-sbom-file-name &quot;sbom.laerdal.mcumgr.ios.xml&quot;          --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension \
-                   $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Android_Name)&quot;      --output-sbom-file-name &quot;sbom.laerdal.mcumgr.android.xml&quot;      --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension \
-                   $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_MacCatalyst_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.maccatalyst.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension \
-                   $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_NetStandard_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.netstandard.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension \
-                '
-              "
               ConsoleToMSBuild="true"
               WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
     </Target>
