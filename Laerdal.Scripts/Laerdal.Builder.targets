@@ -368,7 +368,7 @@
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --dependency-tracker-api-key-file-path &quot;$(Laerdal_Dependency_Tracker_Api_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
 
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --csproj-classifier &quot;Library&quot;</_Laerdal_Sbom_Script_Parameters>
-            
+
             <_Logical_And>&amp;&amp;</_Logical_And>
 
             <_Laerdal_Sbom_Scriptlet> </_Laerdal_Sbom_Scriptlet>
