@@ -84,8 +84,9 @@
         <Message Importance="High" Text="** Configuration            = '$(Configuration)'"/>
         <Message Importance="High" Text="** PackageOutputPath        = '$(PackageOutputPath)'"/>
 
-        <Message Importance="High" Text="** Laerdal_Source_Branch    = '$(Laerdal_Source_Branch)'"/>
-        <Message Importance="High" Text="** Laerdal_Repository_Path  = '$(Laerdal_Repository_Path)'"/>
+        <Message Importance="High" Text="** Laerdal_Source_Branch            = '$(Laerdal_Source_Branch)'"/>
+        <Message Importance="High" Text="** Laerdal_Repository_Path          = '$(Laerdal_Repository_Path)'"/>
+        <Message Importance="High" Text="** Laerdal_Test_Results_Folderpath  = '$(Laerdal_Test_Results_Folderpath)'"/>
 
         <Message Importance="High" Text="** Laerdal_Bindings_iOS___DotnetTargetPlatformVersion          = '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)'"/>
         <Message Importance="High" Text="** Laerdal_Bindings_Android___DotnetTargetPlatformVersion      = '$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)'"/>
@@ -225,7 +226,7 @@
 
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)"
                  Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
-        
+
         <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
@@ -265,26 +266,22 @@
             Condition=" '$(Should_Skip_Tests)' == 'false' "
             AfterTargets="BuildProjects">
 
-        <MSBuild Targets="Clean;Restore"
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_Tests)"
-                 Properties="Configuration=$(Configuration);Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);"/>
-
         <PropertyGroup>
-            <TestParameters>$(TestParameters) test</TestParameters>
-            <TestParameters>$(TestParameters) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;</TestParameters>
-            <TestParameters>$(TestParameters)    --logger &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;</TestParameters>
-            <TestParameters>$(TestParameters)    --no-restore</TestParameters>
-            <TestParameters>$(TestParameters)    --verbosity &quot;detailed&quot;</TestParameters>
-            <TestParameters>$(TestParameters)    --configuration &quot;$(Configuration)&quot;</TestParameters>
-            <TestParameters>$(TestParameters)    --results-directory &quot;$(Laerdal_Test_Results_Folderpath)&quot;</TestParameters>
-            <TestParameters>$(TestParameters)    -m:1</TestParameters>
-            <TestParameters>$(TestParameters)    -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)</TestParameters>
-            <TestParameters>$(TestParameters)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TestParameters>
-            <TestParameters>$(TestParameters)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</TestParameters>
-            <TestParameters>$(TestParameters)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TestParameters>
+            <_DotnetTestCommand> </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand) dotnet  test</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --logger &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity &quot;normal&quot;</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration &quot;$(Configuration)&quot;</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory &quot;$(Laerdal_Test_Results_Folderpath)&quot;</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -m:1</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</_DotnetTestCommand>
         </PropertyGroup>
 
-        <Exec Command=" bash -c &quot;    dotnet   $(TestParameters)    &quot; "
+        <Exec Command=" bash  -c  '$(_DotnetTestCommand)' "
               ConsoleToMSBuild="true"
               WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)"/>
 
@@ -362,6 +359,7 @@
 
             <!-- notice that we intentionally use $(Laerdal_Version_Assembly) instead of $(Laerdal_Version_Full) -->
             <!-- because cyclonedx inherently ear-tags sboms with the former rather than the later               -->
+            <_Laerdal_Sbom_Script_Parameters> </_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --project-version &quot;$(Laerdal_Version_Assembly)&quot;</_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --output-directory-path &quot;$(PackageOutputPath)&quot;</_Laerdal_Sbom_Script_Parameters>
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --sbom-signing-key-file-path &quot;$(Laerdal_Dependency_Tracker_Private_Signing_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
@@ -370,18 +368,28 @@
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --dependency-tracker-api-key-file-path &quot;$(Laerdal_Dependency_Tracker_Api_Key_File_Path)&quot;</_Laerdal_Sbom_Script_Parameters>
 
             <_Laerdal_Sbom_Script_Parameters>$(_Laerdal_Sbom_Script_Parameters) --csproj-classifier &quot;Library&quot;</_Laerdal_Sbom_Script_Parameters>
+
+            <_Logical_And>&amp;&amp;</_Logical_And>
+
+            <_Laerdal_Sbom_Scriptlet> </_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  chmod +x           ./Laerdal.GenerateSignAndUploadSbom.sh</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;              --output-sbom-file-name &quot;sbom.laerdal.mcumgr.xml&quot;              --parent-project-name &quot;[Group::Laerdal.McuMgr]&quot;</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_iOS_Name)&quot;          --output-sbom-file-name &quot;sbom.laerdal.mcumgr.ios.xml&quot;          --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Android_Name)&quot;      --output-sbom-file-name &quot;sbom.laerdal.mcumgr.android.xml&quot;      --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_MacCatalyst_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.maccatalyst.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+            <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_NetStandard_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.netstandard.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
+
         </PropertyGroup>
 
-        <!-- https://docs.dependencytrack.org/usage/cicd/#large-payloads   also notice that we are forced to target           -->
-        <!-- /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server  -->
+        <!-- 1  we ignore suppress any errors and continue because sometimes the sbom mechanism spazzes out due to intermittent errors when installing cli tooling   go figure -->
+        <!-- 2  also notice that we are forced to target /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server       -->
+        <!-- 3  https://docs.dependencytrack.org/usage/cicd/#large-payloads                                                                                                    -->
         <Message Importance="High" Text="** Generating, Singing and Uploading SBOMs:"/>
-
-        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgr_ProjectFile)&quot;                      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;              --output-sbom-file-name &quot;sbom.laerdal.mcumgr.xml&quot;              --parent-project-name &quot;[Group::Laerdal.McuMgr]&quot;  " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
-        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_iOS)&quot;          --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_iOS_Name)&quot;          --output-sbom-file-name &quot;sbom.laerdal.mcumgr.ios.xml&quot;          --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
-        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Android_Name)&quot;      --output-sbom-file-name &quot;sbom.laerdal.mcumgr.android.xml&quot;      --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
-        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_MacCatalyst_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.maccatalyst.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
-        <Exec Command="   bash    Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_NetStandard_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.netstandard.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot;   " ConsoleToMSBuild="true" WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
-
+        <Exec Timeout="60000"
+              Command=" bash -c '$(_Laerdal_Sbom_Scriptlet)' "
+              ContinueOnError="WarnAndContinue"
+              ConsoleToMSBuild="true"
+              WorkingDirectory="$(Laerdal_Script_FolderPath)"/>
     </Target>
 
 </Project>
