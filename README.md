@@ -2,25 +2,7 @@
 
 ![Platforms](https://img.shields.io/badge/Platforms-_MAUI_|_iOS_|_MacCatalyst_|_Android_-blue.svg)
 
-- Latest Nugets:
-
-
-      Laerdal.McuMgr Nugets:
-  
-  [![Laerdal.McuMgr package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)
-
-      Laerdal.McuMgr.Bindings.iOS Nugets:
-
-  [![Laerdal.McuMgr.Bindings.iOS package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)
-
-      Laerdal.McuMgr.Bindings.Android Nugets:
-
-  [![Laerdal.McuMgr.Bindings.Android package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)
-
-      Laerdal.McuMgr.Bindings.NetStandard Nugets (WIP!):
-
-  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)
-
+( other platforms like Windows will only compile but they will throw NotImplemented exceptions at runtime )
 
 - Release Build Status (main branch):
 
