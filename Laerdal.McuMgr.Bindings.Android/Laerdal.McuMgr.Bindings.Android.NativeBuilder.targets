@@ -11,7 +11,9 @@
         <MakeDir Directories="Libraries/Dependencies" />
     </Target>
     
-    <Target Name="CheckAndroidLibraryFilesExist" AfterTargets="CompileMcuMgrLaerdalWrapper">
+    <Target Name="CheckAndroidLibraryFilesExist"
+            AfterTargets="CompileMcuMgrLaerdalWrapper"
+            Condition=" '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
         <Error Condition="!Exists('$(CoreAarLibrary)')" Text="'$(CoreAarLibrary)' does not exist"/>
     </Target>
 
