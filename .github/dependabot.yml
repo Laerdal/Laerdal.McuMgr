@@ -10,6 +10,7 @@ registries:
     url: "https://api.nuget.org/v3/index.json"
     type: "nuget-feed"
 
+
 updates:
 
   - package-ecosystem: "github-actions"

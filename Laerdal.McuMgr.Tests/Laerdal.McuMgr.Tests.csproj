@@ -18,12 +18,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- FluentAssertions versions 8+ are free for open source projects    -->
-        <!-- and non commercial use but commercial use requires a paid license -->
-        <!--                                                                   -->
-        <!-- Version 7 will remain fully open source indefinitely and receive  -->
-        <!-- bugfixes and other important corrections                          -->
-        <PackageReference Include="FluentAssertions" Version="[7.1.0, 8)" />
+        <!-- FluentAssertions versions 8+ are free for open source projects                -->
+        <!-- and non commercial use but commercial use requires a paid license             -->
+        <!--                                                                               -->
+        <!-- Version 7 will remain fully open source indefinitely and receive              -->
+        <!-- bugfixes and other important corrections                                      -->
+        <!--                                                                               -->
+        <!-- Notice that we cant use version-ranging here ala [7.1.0, 8) because           -->
+        <!-- dependabot has an issue with version ranges causing it to spazz and error out -->
+        <PackageReference Include="FluentAssertions" Version="7.1.0" />
 
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
 
@@ -40,8 +43,8 @@
 
         <!-- these are needed so that we dont get a warning when building this project or when dependabot is analyzing it -->
         <!-- Warning MA002 : Starting with .NET 8, setting  <UseMaui>true</UseMaui>  does not automatically include NuGet package references in your project. -->
-        <PackageReference Include="Microsoft.Maui.Controls" Version="[$(MauiVersion), 9)"/>
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="[$(MauiVersion), 9)"/>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)"/>
     </ItemGroup>
 
     <ItemGroup>
