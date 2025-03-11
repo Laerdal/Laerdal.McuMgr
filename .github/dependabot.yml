@@ -6,20 +6,61 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/"
+    directory: "Laerdal.McuMgr.Tests/"
     schedule:
       interval: "daily"
       time: "02:00"
       timezone: "Europe/London"
-    target-branch: "develop"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
     ignore:
       - dependency-name: 'FluentAssertions' #        ignore major-version updates FluentAssertions from version 8 and above
         versions: ['8.*', '9.*', '10.*', '11.*'] #   because FluentAssertions requires a paid license for corporate use
         # update-types: [ 'version-update:semver-major' ] 
+
+  - package-ecosystem: "nuget"
+    directory: "Laerdal.McuMgr/"
+    schedule:
+      interval: "daily"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
+
+  - package-ecosystem: "nuget"
+    directory: "Laerdal.McuMgr.Bindings.Android/"
+    schedule:
+      interval: "daily"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
+
+  - package-ecosystem: "nuget"
+    directory: "Laerdal.McuMgr.Bindings.iOS/"
+    schedule:
+      interval: "daily"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
+
+  - package-ecosystem: "nuget"
+    directory: "Laerdal.McuMgr.Bindings.MacCatalyst/"
+    schedule:
+      interval: "daily"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
+
+  - package-ecosystem: "nuget"
+    directory: "Laerdal.McuMgr.Bindings.NetStandard/"
+    schedule:
+      interval: "daily"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
       time: "02:00"
       timezone: "Europe/London"
-    target-branch: "develop"
+    target-branch: "ksidirop/NOJIRA-fix-dependabot"
