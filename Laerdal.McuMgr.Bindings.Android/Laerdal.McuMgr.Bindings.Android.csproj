@@ -6,12 +6,7 @@
         <IsHostMachineUnix Condition="     '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
 
         <LangVersion>10.0</LangVersion>
-        
-        <!-- to future maintainers     we stick with net8 for now in android because as it turned out the net8 toolchain generates broken      -->
-        <!-- to future maintainers     android dlls that cause missing-symbols-errors in runtime   what a freakshow net8 turned out to be man  -->
-        <!--                                                                                                                                   -->
-        <!--                                             https://github.com/dotnet/maui/issues/21102                                           -->
-        <!--                                                                                                                                   -->
+
         <TargetFramework>net8.0-android</TargetFramework>
 
         <IsNet8 Condition="               '$(TargetFramework.ToLower().StartsWith(net8))' == 'true'          ">true</IsNet8>
