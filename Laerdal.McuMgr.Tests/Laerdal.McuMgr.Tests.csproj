@@ -26,7 +26,7 @@
         <!--                                                                               -->
         <!-- Notice that we cant use version-ranging here ala [7.1.0, 8) because           -->
         <!-- dependabot has an issue with version ranges causing it to spazz and error out -->
-        <PackageReference Include="FluentAssertions" Version="7.1.0" />
+        <PackageReference Include="FluentAssertions" Version="7.2.0" />
 
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
 
