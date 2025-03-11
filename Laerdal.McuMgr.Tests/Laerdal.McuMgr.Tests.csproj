@@ -43,8 +43,8 @@
 
         <!-- these are needed so that we dont get a warning when building this project or when dependabot is analyzing it -->
         <!-- Warning MA002 : Starting with .NET 8, setting  <UseMaui>true</UseMaui>  does not automatically include NuGet package references in your project. -->
-        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)"/>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100"/>
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100"/>
     </ItemGroup>
 
     <ItemGroup>
