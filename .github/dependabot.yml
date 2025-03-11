@@ -29,14 +29,14 @@ updates:
   #      timezone: "Europe/London"
   #    target-branch: "develop"
 
-  - package-ecosystem: "nuget"
-    directory: "Laerdal.McuMgr.Bindings.Android/"
-    registries: "*"
-    schedule:
-      interval: "weekly"
-      time: "02:00"
-      timezone: "Europe/London"
-    target-branch: "develop"
+  # - package-ecosystem: "nuget"
+  #   directory: "Laerdal.McuMgr.Bindings.Android/" # doesn't really work due to a shortcoming of dependabot https://stackoverflow.com/questions/79501615/dependabot-error-while-trying-to-restore-nugets-for-a-dotnet8-android-project
+  #   registries: "*"
+  #   schedule:
+  #     interval: "weekly"
+  #     time: "02:00"
+  #     timezone: "Europe/London"
+  #   target-branch: "develop"
 
   #  - package-ecosystem: "nuget"
   #    directory: "Laerdal.McuMgr.Bindings.iOS/"
