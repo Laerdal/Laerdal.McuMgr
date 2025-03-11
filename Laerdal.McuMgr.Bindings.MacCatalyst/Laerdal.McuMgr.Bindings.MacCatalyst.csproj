@@ -150,8 +150,8 @@
     <!-- compiling any additional target-framework which will find the compiled framework-libs already in place                                            -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
             BeforeTargets="CompileProxyProjectAndGenerateFatLibs">
-        <Error Condition=" '$(MSBuildNodeCount)' != '' and $(MSBuildNodeCount) &gt; 1 "
-               Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
+        <Error Condition=" '$(MSBuildNodeCount)' != '' and $(MSBuildNodeCount) &gt; 1 and '$(BuildingProject)' == 'true' "
+               Text="** Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
 
     <!-- 1  its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel       -->
