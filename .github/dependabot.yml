@@ -4,6 +4,12 @@
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
+
+registries:
+  nuget-org:
+    url: "https://api.nuget.org/v3/index.json"
+    type: "nuget-feed"
+
 updates:
 
   - package-ecosystem: "github-actions"
@@ -24,6 +30,7 @@ updates:
 
   - package-ecosystem: "nuget"
     directory: "Laerdal.McuMgr.Bindings.Android/"
+    registries: "*"
     schedule:
       interval: "weekly"
       time: "02:00"
@@ -32,6 +39,7 @@ updates:
 
   - package-ecosystem: "nuget"
     directory: "Laerdal.McuMgr.Bindings.iOS/"
+    registries: "*"
     schedule:
       interval: "weekly"
       time: "02:00"
@@ -40,6 +48,7 @@ updates:
 
   - package-ecosystem: "nuget"
     directory: "Laerdal.McuMgr.Bindings.MacCatalyst/"
+    registries: "*"
     schedule:
       interval: "weekly"
       time: "02:00"
@@ -48,6 +57,7 @@ updates:
   
   #  - package-ecosystem: "nuget"
   #    directory: "Laerdal.McuMgr.Bindings.NetStandard/" # no need
+  #    registries: "*"
   #    schedule:
   #      interval: "daily"
   #      time: "02:00"
@@ -56,12 +66,16 @@ updates:
 
   - package-ecosystem: "nuget"
     directory: "Laerdal.McuMgr.Tests/"
+    registries: "*"
     schedule:
       interval: "daily"
       time: "02:00"
       timezone: "Europe/London"
     target-branch: "develop"
     ignore:
-      - dependency-name: 'FluentAssertions' #        ignore major-version updates FluentAssertions from version 8 and above
-        versions: [ '8.*', '9.*', '10.*', '11.*' ] #   because FluentAssertions requires a paid license for corporate use
-        # update-types: [ 'version-update:semver-major' ] 
+      - dependency-name: "FluentAssertions" #            ignore major-version updates FluentAssertions from version 8 and above
+        versions: [ "8.*", "9.*", "10.*", "11.*" ] #     because FluentAssertions requires a paid license for corporate use
+        update-types: [ "version-update:semver-major" ] 
+      - dependency-name: "Microsoft.Maui.*"
+        versions: [ "8.*", "9.*", "10.*", "11.*" ]
+        update-types: [ "version-update:semver-major" ] 
