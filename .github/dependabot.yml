@@ -88,3 +88,6 @@ updates:
       - dependency-name: "Microsoft.Maui.*"
         versions: [ "8.*", "9.*", "10.*", "11.*" ]
         update-types: [ "version-update:semver-major" ] 
+      - dependency-name: "Laerdal.McuMgr.*"
+        versions: [ "2.*", "3.*", "4.*", "5.*" ]
+        update-types: [ "version-update:semver-major" ] 
