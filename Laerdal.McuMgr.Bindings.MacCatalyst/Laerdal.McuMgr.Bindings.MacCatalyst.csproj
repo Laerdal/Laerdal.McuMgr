@@ -77,7 +77,7 @@
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1226.0</Version>
+        <Version>2.53.34</Version>
 
         <FileVersion>$(Version)</FileVersion>
         <PackageVersion>$(Version)</PackageVersion>
