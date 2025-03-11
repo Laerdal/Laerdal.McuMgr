@@ -23,7 +23,7 @@
         <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj     notice that the ordering of the following evaluations is important! -->
         <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true'  and  '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TargetPlatformVersion>
         <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true'  and  '$(TargetPlatformVersion)'                              == '' ">17.0</TargetPlatformVersion>
-        <SupportedOSPlatformVersion  Condition=" '$(IsNetXIos)' == 'true'                                                                     ">11.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion  Condition=" '$(IsNetXIos)' == 'true'                                                                     ">12.0</SupportedOSPlatformVersion>
 
         <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->
         <!-- kick in and take the ApiDefinitions.cs and StructsAndEnums.cs files into account    -->
