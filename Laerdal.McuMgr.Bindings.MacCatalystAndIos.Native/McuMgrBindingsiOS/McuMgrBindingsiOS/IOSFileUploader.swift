@@ -14,7 +14,7 @@ public class IOSFileUploader: NSObject {
     private var _cancellationReason: String = ""
     private var _lastFatalErrorMessage: String = ""
     private var _lastBytesSendTimestamp: Date? = nil
-    private var _remoteFilePathSanitized: String!
+    private var _remoteFilePathSanitized: String = ""
 
     @objc
     public init(_ listener: IOSListenerForFileUploader!) {
@@ -124,18 +124,28 @@ public class IOSFileUploader: NSObject {
         if (pipelineDepth >= 0) {
             configuration.pipelineDepth = pipelineDepth
         }
-                
-        let success = _fileSystemManager.upload( //order
-            name: _remoteFilePathSanitized,
-            data: data!,
-            using: configuration,
-            delegate: self
-        )
-        if !success {
-            onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+
+        do
+        {
+            let success = _fileSystemManager.upload( //order
+                    name: _remoteFilePathSanitized,
+                    data: data!,
+                    using: configuration,
+                    delegate: self
+            )
+            if !success {
+                onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+
+                return .failedErrorUponCommencing
+            }
+        }
+        catch let error //even though static analysis claims that no exception can be thrown it is in fact possible for the .upload() method to crash due to mtu related errors!
+        {
+            onError("[IOSFU.BU.095] Failed to commence file-uploading (check logs for details)", error)
 
             return .failedErrorUponCommencing
         }
+
 
         return .success
 
@@ -221,6 +231,22 @@ public class IOSFileUploader: NSObject {
         }
 
         _transporter = McuMgrBleTransport(_cbPeripheral)
+
+        if _transporter.mtu == nil {
+            //todo:  get rid of this workaround when nordic manages to squash the bug which causes the .mtu property to be left uninitialized
+            //todo:  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/337
+
+            _transporter.mtu = min(
+                _cbPeripheral.maximumWriteValueLength(for: .withoutResponse),
+                McuManager.getDefaultMtu(scheme: _transporter.getScheme())
+            )
+        }
+
+        logMessageAdvertisement(
+            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized and has mtu='\(String(describing: _transporter.mtu))'",
+            McuMgrLogCategory.transport.rawValue,
+            McuMgrLogLevel.info.name
+        )
     }
 
     private func disposeTransport() {

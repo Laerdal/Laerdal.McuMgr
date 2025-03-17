@@ -167,6 +167,19 @@ public class IOSFileDownloader: NSObject {
         }
 
         _transporter = McuMgrBleTransport(_cbPeripheral)
+        
+        if _transporter.mtu == nil {
+            //todo:  get rid of this workaround when nordic manages to squash the bug which causes the .mtu property to be left uninitialized
+            //todo:  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/337
+
+            _transporter.mtu = min(_cbPeripheral.maximumWriteValueLength(for: .withoutResponse), McuManager.getDefaultMtu(scheme: _transporter.getScheme()))
+        }
+
+        logMessageAdvertisement(
+            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized and has mtu='\(String(describing: _transporter.mtu))'",
+            McuMgrLogCategory.transport.rawValue,
+            McuMgrLogLevel.info.name
+        )
     }
 
     private func disposeTransport() {

@@ -19,6 +19,18 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter = McuMgrBleTransport(cbPeripheral)
         _currentState = .none
         _lastFatalErrorMessage = ""
+        
+        if _transporter.mtu == nil {
+            //todo:  get rid of this workaround when nordic manages to squash the bug which causes the .mtu property to be left uninitialized
+            //todo:  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/337
+            _transporter.mtu = min(cbPeripheral.maximumWriteValueLength(for: .withoutResponse), McuManager.getDefaultMtu(scheme: _transporter.getScheme()))
+        }
+        
+        _listener.logMessageAdvertisement(
+            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized and has mtu='\(String(describing: _transporter.mtu))'",
+            McuMgrLogCategory.transport.rawValue,
+            McuMgrLogLevel.info.name
+        )
     }
 
     @objc
