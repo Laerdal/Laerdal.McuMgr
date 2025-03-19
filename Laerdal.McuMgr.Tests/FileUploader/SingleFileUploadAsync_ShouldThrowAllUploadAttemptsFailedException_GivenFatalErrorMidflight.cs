@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
@@ -54,6 +55,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 .Should().Raise(nameof(fileUploader.FatalErrorOccurred))
                 .WithSender(fileUploader)
                 .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred");
+            
+            eventsMonitor
+                .Should().Raise(nameof(fileUploader.LogEmitted))
+                .WithSender(fileUploader)
+                .WithArgs<LogEmittedEventArgs>(args => args.Level == ELogLevel.Error && args.Message.Contains("fatal error occurred"));
             
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
