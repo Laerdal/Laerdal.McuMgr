@@ -12,6 +12,8 @@ public class IOSFirmwareInstaller: NSObject {
 
     private var _lastBytesSend: Int = -1;
     private var _lastBytesSendTimestamp: Date? = nil;
+    
+    private var _peripheralMaxWriteValueLengthForWithoutResponse: Int = -1;
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
@@ -20,17 +22,7 @@ public class IOSFirmwareInstaller: NSObject {
         _currentState = .none
         _lastFatalErrorMessage = ""
         
-        if _transporter.mtu == nil {
-            //todo:  get rid of this workaround when nordic manages to squash the bug which causes the .mtu property to be left uninitialized
-            //todo:  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/337
-            _transporter.mtu = min(cbPeripheral.maximumWriteValueLength(for: .withoutResponse), McuManager.getDefaultMtu(scheme: _transporter.getScheme()))
-        }
-        
-        _listener.logMessageAdvertisement(
-            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized and has mtu='\(String(describing: _transporter.mtu))'",
-            McuMgrLogCategory.transport.rawValue,
-            McuMgrLogLevel.info.name
-        )
+        _peripheralMaxWriteValueLengthForWithoutResponse = cbPeripheral!.maximumWriteValueLength(for: .withoutResponse)
     }
 
     @objc
@@ -78,6 +70,22 @@ public class IOSFirmwareInstaller: NSObject {
             )
         }
 
+        _listener.logMessageAdvertisement(
+                "** transport has mtu='\(String(describing: _transporter.mtu))'",
+                McuMgrLogCategory.transport.rawValue,
+                McuMgrLogLevel.info.name
+        )
+        _listener.logMessageAdvertisement(
+                "** McuManager.getDefaultMtu(scheme: getScheme())=\(String(describing: McuManager.getDefaultMtu(scheme: _transporter.getScheme())))",
+                McuMgrLogCategory.transport.rawValue,
+                McuMgrLogLevel.info.name
+        )
+        _listener.logMessageAdvertisement(
+                "** _peripheralMaxWriteValueLengthForWithoutResponse=\(String(describing: _peripheralMaxWriteValueLengthForWithoutResponse))",
+                McuMgrLogCategory.transport.rawValue,
+                McuMgrLogLevel.info.name
+        )
+
         _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
         _manager.logDelegate = self
 
@@ -88,7 +96,7 @@ public class IOSFirmwareInstaller: NSObject {
 
         do {
             firmwareUpgradeConfiguration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
-            
+
             if (pipelineDepth >= 0) {
                 firmwareUpgradeConfiguration.pipelineDepth = pipelineDepth
             }
@@ -139,17 +147,17 @@ public class IOSFirmwareInstaller: NSObject {
                 || _currentState == .complete
                 || _currentState == .cancelled
     }
-    
+
     private func calculateHashBytesOfData(_ data: Data) -> Data {
         var hasher = Hasher()
         hasher.combine(data)
 
         let hashNumeric = hasher.finalize()
-        
+
         let hashData = withUnsafeBytes(of: hashNumeric.littleEndian) { Data($0) } //00
 
         return hashData
-        
+
         //00   notice that we have to be explicit in terms of endianess to avoid nasty surprises when transmitting bytes over the air
         //     https://stackoverflow.com/a/28681106/863651
     }
@@ -208,10 +216,10 @@ public class IOSFirmwareInstaller: NSObject {
         let currentStateSnapshot = _currentState //00  order
         setState(.error) //                            order
         fatalErrorOccurredAdvertisement( //            order
-            currentStateSnapshot,
-            fatalErrorType,
-            errorMessage,
-            McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+                currentStateSnapshot,
+                fatalErrorType,
+                errorMessage,
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
         )
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
@@ -387,9 +395,9 @@ extension IOSFirmwareInstaller: McuMgrLogDelegate {
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
         logMessageAdvertisement(
-            msg,
-            category.rawValue,
-            level.name
+                msg,
+                category.rawValue,
+                level.name
         )
     }
 }
