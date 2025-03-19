@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
@@ -54,6 +55,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 .Should().Raise(nameof(fileDownloader.FatalErrorOccurred))
                 .WithSender(fileDownloader)
                 .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred");
+                        
+            eventsMonitor
+                .Should().Raise(nameof(fileDownloader.LogEmitted))
+                .WithSender(fileDownloader)
+                .WithArgs<LogEmittedEventArgs>(args => args.Level == ELogLevel.Error && args.Message.Contains("fatal error occurred"));
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
