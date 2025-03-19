@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
@@ -40,6 +41,11 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 .WithSender(deviceResetter)
                 .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "bluetooth error blah blah");
 
+            eventsMonitor
+                .Should().Raise(nameof(deviceResetter.LogEmitted))
+                .WithSender(deviceResetter)
+                .WithArgs<LogEmittedEventArgs>(args => args.Level == ELogLevel.Error && args.Message.Contains("bluetooth error blah blah"));
+            
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
