@@ -411,9 +411,26 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance 
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //                        we suppress exceptions here because if we allow them to bubble towards the native code then the
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //   native code can crash which can potentially cause very nasty problems in the firmware installation
-        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => _identicalFirmwareCachedOnTargetDeviceDetected?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
 
+        private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
+        {
+            OnLogEmitted(new LogEmittedEventArgs(
+                level: ELogLevel.Error,
+                message: $"[{nameof(ea.State)}='{ea.State}'] [{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] [{nameof(ea.FatalErrorType)}='{ea.FatalErrorType}'] {ea.ErrorMessage}",
+                resource: "",
+                category: "firmware-installer"
+            ));
+
+            OnFatalErrorOccurred_(ea);
+            return;
+
+            void OnFatalErrorOccurred_(FatalErrorOccurredEventArgs ea_)
+            {
+                _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea_);
+            }
+        }
+        
         private int _fileUploadProgressEventsCount;
         private void OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea)
         {

@@ -188,6 +188,23 @@ namespace Laerdal.McuMgr.FirmwareEraser
         void IFirmwareEraserEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); //                       we are using explicit interface
         void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); // implementations to avoid making these methods public
         void IFirmwareEraserEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        void IFirmwareEraserEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        
+        void IFirmwareEraserEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
+        {
+            (this as ILogEmittable).OnLogEmitted(new LogEmittedEventArgs(
+                level: ELogLevel.Error,
+                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
+                resource: "",
+                category: "firmware-eraser"
+            ));
+            
+            OnFatalErrorOccurred_(ea);
+            return;
+
+            void OnFatalErrorOccurred_(FatalErrorOccurredEventArgs ea_)
+            {
+                _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea_);
+            }
+        }
     }
 }

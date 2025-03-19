@@ -173,6 +173,22 @@ namespace Laerdal.McuMgr.DeviceResetter
         void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         void IDeviceResetterEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea);
         void IDeviceResetterEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        void IDeviceResetterEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        void IDeviceResetterEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
+        {            
+            (this as ILogEmittable).OnLogEmitted(new LogEmittedEventArgs(
+                level: ELogLevel.Error,
+                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
+                resource: "",
+                category: "device-resetter"
+            ));
+            
+            OnFatalErrorOccurred_(ea);
+            return;
+
+            void OnFatalErrorOccurred_(FatalErrorOccurredEventArgs ea_)
+            {
+                _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea_);
+            }
+        }
     }
 }
