@@ -177,7 +177,7 @@ namespace Laerdal.McuMgr.DeviceResetter
         {            
             (this as ILogEmittable).OnLogEmitted(new LogEmittedEventArgs(
                 level: ELogLevel.Error,
-                message: $"{ea.ErrorMessage} [{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}']",
+                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
                 resource: "",
                 category: "device-resetter"
             ));

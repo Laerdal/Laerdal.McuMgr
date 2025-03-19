@@ -473,7 +473,7 @@ namespace Laerdal.McuMgr.FileDownloader
         {
             OnLogEmitted(new LogEmittedEventArgs(
                 level: ELogLevel.Error,
-                message: $"{ea.ErrorMessage} [{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}']",
+                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
                 resource: ea.Resource,
                 category: "file-downloader"
             ));

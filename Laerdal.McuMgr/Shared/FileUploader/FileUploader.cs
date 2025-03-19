@@ -554,7 +554,7 @@ namespace Laerdal.McuMgr.FileUploader
         {
             OnLogEmitted(new LogEmittedEventArgs(
                 level: ELogLevel.Error,
-                message: $"{ea.ErrorMessage} [{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}']",
+                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
                 resource: ea.RemoteFilePath,
                 category: "file-uploader"
             ));

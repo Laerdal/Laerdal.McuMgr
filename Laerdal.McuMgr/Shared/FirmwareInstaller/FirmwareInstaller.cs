@@ -417,7 +417,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
         {
             OnLogEmitted(new LogEmittedEventArgs(
                 level: ELogLevel.Error,
-                message: $"{ea.ErrorMessage} [{nameof(ea.State)}='{ea.State}', {nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}', {nameof(ea.FatalErrorType)}='{ea.FatalErrorType}']",
+                message: $"[{nameof(ea.State)}='{ea.State}'] [{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] [{nameof(ea.FatalErrorType)}='{ea.FatalErrorType}'] {ea.ErrorMessage}",
                 resource: "",
                 category: "firmware-installer"
             ));
