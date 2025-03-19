@@ -71,7 +71,7 @@ public class IOSFirmwareInstaller: NSObject {
         }
 
         _listener.logMessageAdvertisement(
-                "** transport has mtu='\(String(describing: _transporter.mtu))'",
+                "**_transporter.mtu='\(String(describing: _transporter.mtu))'",
                 McuMgrLogCategory.transport.rawValue,
                 McuMgrLogLevel.info.name
         )
