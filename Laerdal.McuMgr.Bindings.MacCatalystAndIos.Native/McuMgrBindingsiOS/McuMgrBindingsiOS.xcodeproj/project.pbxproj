@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B028FB802940DF1400CB71EB /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = B028FB7F2940DF1400CB71EB /* iOSMcuManagerLibrary */; };
 		B04DC3652CD3C7810048B553 /* EIOSDeviceResetInitializationVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04DC3642CD3C7810048B553 /* EIOSDeviceResetInitializationVerdict.swift */; };
 		B04DC3672CD3E1A20048B553 /* EIOSFirmwareErasureInitializationVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04DC3662CD3E1A20048B553 /* EIOSFirmwareErasureInitializationVerdict.swift */; };
+		B0CFA8132D8A053A007BC223 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = B0CFA8122D8A053A007BC223 /* iOSMcuManagerLibrary */; };
 		B0FF8AE92CCFF8E1004B39DE /* IOSListenerForFileUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FF8AE82CCFF8E1004B39DE /* IOSListenerForFileUploader.swift */; };
 		E769D0FFF3A39C575B982F6D /* InvalidFirmwareInstallationModeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */; };
 		E769D1175ADD137DCA6B0207 /* EIOSFirmwareEraserState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D3130BA737A0C282D1DD /* EIOSFirmwareEraserState.swift */; };
@@ -75,7 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B028FB802940DF1400CB71EB /* iOSMcuManagerLibrary in Frameworks */,
+				B0CFA8132D8A053A007BC223 /* iOSMcuManagerLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -179,7 +179,7 @@
 			);
 			name = McuMgrBindingsiOS;
 			packageProductDependencies = (
-				B028FB7F2940DF1400CB71EB /* iOSMcuManagerLibrary */,
+				B0CFA8122D8A053A007BC223 /* iOSMcuManagerLibrary */,
 			);
 			productName = McuMgrBindingsiOS;
 			productReference = E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */;
@@ -201,7 +201,7 @@
 			);
 			mainGroup = E769D5C169A2617737447E64;
 			packageReferences = (
-				B028FB7E2940DF1400CB71EB /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
+				B0CFA8112D8A053A007BC223 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
 			);
 			productRefGroup = E769D749382EC6E62A93A5D0 /* Products */;
 			projectDirPath = "";
@@ -461,20 +461,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B028FB7E2940DF1400CB71EB /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
+		B0CFA8112D8A053A007BC223 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git";
+			repositoryURL = "git@github.com:Laerdal/IOS-nRF-Connect-Device-Manager.git";
 			requirement = {
-				kind = exactVersion;
-				version = 1.9.2;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B028FB7F2940DF1400CB71EB /* iOSMcuManagerLibrary */ = {
+		B0CFA8122D8A053A007BC223 /* iOSMcuManagerLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B028FB7E2940DF1400CB71EB /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			package = B0CFA8112D8A053A007BC223 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
 			productName = iOSMcuManagerLibrary;
 		};
 /* End XCSwiftPackageProductDependency section */
