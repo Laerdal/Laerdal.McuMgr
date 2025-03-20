@@ -222,14 +222,14 @@ namespace Laerdal.McuMgr.FileUploader
                 globalErrorCode
             );
 
-            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float currentThroughput)
                 => FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    averageThroughput: averageThroughput,
+                    currentThroughput: currentThroughput,
                     progressPercentage: (int)progressPercentage
                 );
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput) //conformance to the interface
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput) //conformance to the interface
                 => _nativeFileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    averageThroughput: averageThroughput,
+                    currentThroughput: currentThroughput,
                     progressPercentage: progressPercentage
                 );
             

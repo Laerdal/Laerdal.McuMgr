@@ -15,6 +15,6 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void FileUploadedAdvertisement(string resource);
         void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode);
-        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput);
+        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput);
     }
 }
