@@ -14,6 +14,6 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Native
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void DownloadCompletedAdvertisement(string resource, byte[] data);
         void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode);
-        void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput);
+        void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput);
     }
 }

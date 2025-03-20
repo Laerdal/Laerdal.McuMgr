@@ -113,7 +113,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                     for (var i = 0; i < _numberOfFirmwareUploadingEventsToEmitCount; i++)
                     {
-                        FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: i + 1, averageThroughput: 10);
+                        FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: i + 1, currentThroughput: 10);
                         await Task.Delay(10);
                     }
 

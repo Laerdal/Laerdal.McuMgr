@@ -198,12 +198,12 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     oldState: oldState
                 );
 
-            public override void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float averageThroughput)
-                => FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement((int)progressPercentage, averageThroughput);
+            public override void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float currentThroughput)
+                => FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement((int)progressPercentage, currentThroughput);
             
-            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput) //just to conform to the interface
+            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput) //just to conform to the interface
                 => _nativeFirmwareInstallerCallbacksProxy?.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    averageThroughput: averageThroughput,
+                    currentThroughput: currentThroughput,
                     progressPercentage: progressPercentage
                 );
             

@@ -216,7 +216,7 @@ private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs
 private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(EventPattern<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> eventPattern)
 {
     var ea = eventPattern.EventArgs; //00
-    FirmwareUploadAverageThroughputInKilobytes = ea.AverageThroughput;
+    FirmwareUploadCurrentThroughputInKilobytes = ea.CurrentThroughput;
 
     if (FirmwareInstallationOverallProgressPercentage < 50) //10  hack
     {
@@ -542,7 +542,7 @@ private void CleanupDeviceResetter()
         MassFileUploaderStage = "";
         MassFileUploadProgressPercentage = 0;
         MassFileUploadCurrentlyUploadedFile = "";
-        MassFileUploadAverageThroughputInKilobytes = 0;
+        MassFileUploadCurrentThroughputInKilobytes = 0;
         MassFileUploaderNumberOfFilesUploadedSuccessfully = 0;
         MassFileUploaderNumberOfFailuresToUploadCurrentFile = 0;
     }
@@ -589,7 +589,7 @@ private void CleanupDeviceResetter()
     private void CleanupFileUploader()
     {
         MassFileUploadProgressPercentage = 0;
-        MassFileUploadAverageThroughputInKilobytes = 0;
+        MassFileUploadCurrentThroughputInKilobytes = 0;
 
         _massFileUploader?.Disconnect();
         _massFileUploader = null;
@@ -624,7 +624,7 @@ private void CleanupDeviceResetter()
     {
         MassFileUploadProgressPercentage = ea.ProgressPercentage;
         MassFileUploadCurrentlyUploadedFile = Path.GetFileName(ea.RemoteFilePath);
-        MassFileUploadAverageThroughputInKilobytes = ea.AverageThroughput;
+        MassFileUploadCurrentThroughputInKilobytes = ea.CurrentThroughput;
     }
 ```
 

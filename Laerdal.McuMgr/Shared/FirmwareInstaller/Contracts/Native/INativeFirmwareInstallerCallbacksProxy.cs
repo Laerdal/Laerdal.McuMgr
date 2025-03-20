@@ -12,6 +12,6 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Native
         void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
         void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode);
-        void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float averageThroughput);
+        void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput);
     }
 }
