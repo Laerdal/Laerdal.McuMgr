@@ -153,7 +153,6 @@ public class IOSFileUploader: NSObject {
             return .failedErrorUponCommencing
         }
 
-
         return .success
 
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
@@ -234,7 +233,7 @@ public class IOSFileUploader: NSObject {
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
         let properMtu = initialMtuSize <= 0
-        ? _cbPeripheral!.maximumWriteValueLength(for: .withoutResponse)
+        ? Constants.DefaultMtuForAssetUploading
         : initialMtuSize
         
         if _transporter != nil {

@@ -12,8 +12,6 @@ public class IOSFirmwareInstaller: NSObject {
 
     private var _lastBytesSend: Int = -1;
     private var _lastBytesSendTimestamp: Date? = nil;
-    
-    private var _peripheralMaxWriteValueLengthForWithoutResponse: Int = -1;
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
@@ -21,8 +19,6 @@ public class IOSFirmwareInstaller: NSObject {
         _transporter = McuMgrBleTransport(cbPeripheral)
         _currentState = .none
         _lastFatalErrorMessage = ""
-        
-        _peripheralMaxWriteValueLengthForWithoutResponse = cbPeripheral!.maximumWriteValueLength(for: .withoutResponse)
     }
 
     private let EstimatedSwapTimeoutInMillisecondsWarningMinThreshold : Int16 = 1_000;
@@ -80,7 +76,7 @@ public class IOSFirmwareInstaller: NSObject {
         }
  
         _transporter.mtu = initialMtuSize <= 0
-        ? _peripheralMaxWriteValueLengthForWithoutResponse
+        ? Constants.DefaultMtuForAssetUploading
         : initialMtuSize
 
         _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
@@ -127,7 +123,7 @@ public class IOSFirmwareInstaller: NSObject {
                     McuMgrLogLevel.info.name
             )
             _listener.logMessageAdvertisement(
-                    "** peripheralMaxWriteValueLengthForWithoutResponse=\(String(describing: _peripheralMaxWriteValueLengthForWithoutResponse))",
+                "** DefaultMtuForAssetUploading=\(String(describing: Constants.DefaultMtuForAssetUploading))",
                     McuMgrLogCategory.transport.rawValue,
                     McuMgrLogLevel.info.name
             )
