@@ -11,14 +11,16 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// Begins the file-downloading process on multiple files. Files that cannot be downloaded due to errors will have a null entry in the returned dictionary. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
         /// <param name="remoteFilePaths">The remote files to download.</param>
-        /// <param name="hostDeviceManufacturer"></param>
-        /// <param name="hostDeviceModel"></param>
+        /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="timeoutPerDownloadInMs">The amount of time to wait for each download to complete before skipping it.</param>
         /// <param name="maxRetriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
-        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
-        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
-        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
+        /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
+        ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
+        ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
+        /// </param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -45,15 +47,17 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// Begins the file-downloading process. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
         /// <param name="remoteFilePath">The remote file to download.</param>
-        /// <param name="hostDeviceManufacturer"></param>
-        /// <param name="hostDeviceModel"></param>
+        /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="timeoutForDownloadInMs">The amount of time to wait for the operation to complete before bailing out.</param>
         /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllDownloadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
-        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
-        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
-        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
+        /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
+        ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
+        ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
+        /// </param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -79,11 +83,13 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// Begins the file-downloading process. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
         /// <param name="remoteFilePath">The remote file to download.</param>
-        /// <param name="hostDeviceManufacturer"></param>
-        /// <param name="hostDeviceModel"></param>
-        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
-        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
-        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
+        /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
+        ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
+        ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
+        /// </param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT

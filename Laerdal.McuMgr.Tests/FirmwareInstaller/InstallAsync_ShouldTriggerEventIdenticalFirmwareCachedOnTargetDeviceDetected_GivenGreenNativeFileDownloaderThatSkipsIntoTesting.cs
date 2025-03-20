@@ -92,9 +92,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                     data: data,
                     mode: mode,
                     eraseSettings: eraseSettings,
+                    initialMtuSize: initialMtuSize,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
-                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds

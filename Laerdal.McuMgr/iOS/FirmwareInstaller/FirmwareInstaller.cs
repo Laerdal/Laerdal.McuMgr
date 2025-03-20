@@ -106,9 +106,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
                 int? estimatedSwapTimeInMilliseconds = null,
-                int? initialMtuSize = null, //not applicable in ios
-                int? windowCapacity = null, //not applicable in ios
-                int? memoryAlignment = null, //not applicable in ios
+                int? initialMtuSize = null,
+
+                int? windowCapacity = null, //  not applicable in ios
+                int? memoryAlignment = null, // not applicable in ios
                 int? pipelineDepth = null,
                 int? byteAlignment = null
             )
@@ -122,8 +123,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                     mode: TranslateFirmwareInstallationMode(mode),
                     imageData: nsDataOfFirmware,
                     eraseSettings: eraseSettings ?? false,
+                    
                     pipelineDepth: pipelineDepth ?? -1,
                     byteAlignment: byteAlignment ?? -1,
+                    initialMtuSize: initialMtuSize ?? -1,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
                 ));
 

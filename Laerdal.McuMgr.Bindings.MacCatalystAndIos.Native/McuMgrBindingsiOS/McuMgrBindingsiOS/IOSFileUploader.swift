@@ -62,7 +62,8 @@ public class IOSFileUploader: NSObject {
             _ remoteFilePath: String,
             _ data: Data?,
             _ pipelineDepth: Int,
-            _ byteAlignment: Int
+            _ byteAlignment: Int,
+            _ initialMtuSize: Int //if zero or negative then it will be set to peripheralMaxWriteValueLengthForWithoutResponse
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
@@ -115,9 +116,15 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
+        if (initialMtuSize > 5_000) { //negative or zero value are ok however
+            onError("[IOSFU.BU.085] Invalid mtu value '\(initialMtuSize)': Must be zero or positive and less than or equal to 5_000")
+
+            return .failedInvalidSettings
+        }
+
         resetUploadState() //order
         disposeFilesystemManager() //00 vital hack
-        ensureTransportIsInitializedExactlyOnce() //order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
@@ -225,25 +232,21 @@ public class IOSFileUploader: NSObject {
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileUploader: McuMgrLogDelegate
     }
 
-    private func ensureTransportIsInitializedExactlyOnce() {
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize <= 0
+        ? _cbPeripheral!.maximumWriteValueLength(for: .withoutResponse)
+        : initialMtuSize
+        
         if _transporter != nil {
+            _transporter.mtu = properMtu
             return
         }
-
+        
         _transporter = McuMgrBleTransport(_cbPeripheral)
-
-        if _transporter.mtu == nil {
-            //todo:  get rid of this workaround when nordic manages to squash the bug which causes the .mtu property to be left uninitialized
-            //todo:  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/337
-
-            _transporter.mtu = min(
-                _cbPeripheral.maximumWriteValueLength(for: .withoutResponse),
-                McuManager.getDefaultMtu(scheme: _transporter.getScheme())
-            )
-        }
-
+        _transporter.mtu = properMtu
+        
         logMessageAdvertisement(
-            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized and has mtu='\(String(describing: _transporter.mtu))'",
+            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized with mtu='\(String(describing: _transporter.mtu))'",
             McuMgrLogCategory.transport.rawValue,
             McuMgrLogLevel.info.name
         )

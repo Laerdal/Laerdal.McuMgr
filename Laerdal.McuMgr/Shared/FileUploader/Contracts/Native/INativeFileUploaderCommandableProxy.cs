@@ -10,9 +10,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Native
         EFileUploaderVerdict BeginUpload(
             string remoteFilePath,
             byte[] data,
+            int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
-            int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
         );

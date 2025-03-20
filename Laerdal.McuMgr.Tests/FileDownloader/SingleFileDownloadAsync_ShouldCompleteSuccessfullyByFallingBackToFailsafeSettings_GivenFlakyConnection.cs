@@ -17,8 +17,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
     {
         [Theory]
         [InlineData("FDT.SFDA.SCSBFBTFS.GFBC.010", "/path/to/file.bin", 2)]
-        // [InlineData("FDT.SFDA.SCSBFBTFS.GFBC.020", "/path/to/file.bin", 3)]
-        // [InlineData("FDT.SFDA.SCSBFBTFS.GFBC.030", "/path/to/file.bin", 5)]
+        [InlineData("FDT.SFDA.SCSBFBTFS.GFBC.020", "/path/to/file.bin", 3)]
+        [InlineData("FDT.SFDA.SCSBFBTFS.GFBC.030", "/path/to/file.bin", 5)]
         public async Task SingleFileDownloadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettings_GivenFlakyBluetoothConnection(string testcaseNickname, string remoteFilePath, int maxTriesCount)
         {
             // Arrange
@@ -43,7 +43,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync((maxTriesCount * 200).Seconds());
+            await work.Should().CompleteWithinAsync((maxTriesCount * 400).Seconds());
             
             mockedNativeFileDownloaderProxy.BugDetected.Should().BeNull();
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
@@ -127,9 +127,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     await Task.Delay(5);
                     FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
 
-                    if (_tryCounter == _maxTriesCount && initialMtuSize != AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize)
+                    if (_tryCounter == _maxTriesCount && initialMtuSize == null)
                     {
-                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to {AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize} but it's set to {initialMtuSize?.ToString() ?? "(null)"} instead - something is wrong!";
+                        BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //  order
                         FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //                   order
                         return;

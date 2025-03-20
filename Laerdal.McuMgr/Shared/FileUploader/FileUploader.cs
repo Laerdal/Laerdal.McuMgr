@@ -51,12 +51,13 @@ namespace Laerdal.McuMgr.FileUploader
 
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
+
             int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+
+            int? pipelineDepth = null, //  ios
+            int? byteAlignment = null, //  ios
+            int? windowCapacity = null, // android
+            int? memoryAlignment = null // android
         )
         {
             if (string.IsNullOrWhiteSpace(hostDeviceModel))
@@ -72,18 +73,20 @@ namespace Laerdal.McuMgr.FileUploader
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer,
 
+                initialMtuSize: initialMtuSize,
+                uploadingNotDownloading: true,
+
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
-                initialMtuSize: initialMtuSize,
+
                 windowCapacity: windowCapacity,
-                memoryAlignment: memoryAlignment,
-                uploadingNotDownloading: true
+                memoryAlignment: memoryAlignment
             );
             if (failsafeConnectionSettings != null)
             {
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
                 pipelineDepth = failsafeConnectionSettings.Value.pipelineDepth;
                 byteAlignment = failsafeConnectionSettings.Value.byteAlignment;
-                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
                 windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
                 memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
                 
@@ -99,11 +102,11 @@ namespace Laerdal.McuMgr.FileUploader
             var verdict = _nativeFileUploaderProxy.BeginUpload(
                 data: data,
                 remoteFilePath: remoteFilePath,
+                initialMtuSize: initialMtuSize,
 
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
 
-                initialMtuSize: initialMtuSize,
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment
             );
@@ -214,9 +217,9 @@ namespace Laerdal.McuMgr.FileUploader
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true,
             bool autodisposeStreams = false,
+            int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
-            int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
         ) where TData : notnull
@@ -237,21 +240,24 @@ namespace Laerdal.McuMgr.FileUploader
                     await UploadAsync(
                         data: x.Value,
                         remoteFilePath: x.Key,
-                        
+
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
 
                         timeoutForUploadInMs: timeoutPerUploadInMs,
                         maxTriesCount: maxTriesPerUpload,
 
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
                         autodisposeStream: autodisposeStreams,
-                        
+                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+
+                        initialMtuSize: initialMtuSize,
+
                         pipelineDepth: pipelineDepth,
                         byteAlignment: byteAlignment,
-                        initialMtuSize: initialMtuSize,
+
                         windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment);
+                        memoryAlignment: memoryAlignment
+                    );
                 }
                 catch (UploadErroredOutException)
                 {
@@ -353,16 +359,17 @@ namespace Laerdal.McuMgr.FileUploader
                     }
 
                     var verdict = BeginUpload( //00 dont use task.run here for now
+                        data: dataArray,
                         remoteFilePath: remoteFilePath,
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
-                        
-                        data: dataArray, //                   ios only
+
+                        initialMtuSize: initialMtuSize,
+
                         pipelineDepth: pipelineDepth, //      ios only
+                        windowCapacity: windowCapacity, //    ios only
 
                         byteAlignment: byteAlignment, //      android only
-                        initialMtuSize: initialMtuSize, //    android only
-                        windowCapacity: windowCapacity,
                         memoryAlignment: memoryAlignment //   android only
                     );
                     if (verdict != EFileUploaderVerdict.Success)

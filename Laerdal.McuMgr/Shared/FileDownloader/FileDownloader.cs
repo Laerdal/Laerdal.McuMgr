@@ -72,8 +72,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 
                 OnLogEmitted(new LogEmittedEventArgs(
                     level: ELogLevel.Warning,
-                    message: $"[FD.BD.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
-                             $"(initialMtuSize={initialMtuSize})",
+                    message: $"[FD.BD.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings (initialMtuSize={initialMtuSize})",
                     resource: "File",
                     category: "FileDownloader"
                 ));

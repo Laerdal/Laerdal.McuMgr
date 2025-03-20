@@ -25,6 +25,8 @@ public class IOSFirmwareInstaller: NSObject {
         _peripheralMaxWriteValueLengthForWithoutResponse = cbPeripheral!.maximumWriteValueLength(for: .withoutResponse)
     }
 
+    private let EstimatedSwapTimeoutInMillisecondsWarningMinThreshold : Int16 = 1_000;
+    
     @objc
     public func beginInstallation(
             _ imageData: Data,
@@ -32,7 +34,8 @@ public class IOSFirmwareInstaller: NSObject {
             _ eraseSettings: Bool,
             _ estimatedSwapTimeInMilliseconds: Int,
             _ pipelineDepth: Int,
-            _ byteAlignment: Int
+            _ byteAlignment: Int,
+            _ initialMtuSize: Int //if zero or negative then it will be set to peripheralMaxWriteValueLengthForWithoutResponse
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
             onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
@@ -62,29 +65,23 @@ public class IOSFirmwareInstaller: NSObject {
             return .failedInvalidSettings
         }
 
-        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
+        if (initialMtuSize > 5_000) { //negative or zero values are ok
+            onError(.invalidSettings, "[IOSFI.BI.035] Invalid mtu value '\(initialMtuSize)': Must be zero or positive and less than or equal to 5_000")
+
+            return .failedInvalidSettings
+        }
+
+        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= EstimatedSwapTimeoutInMillisecondsWarningMinThreshold) { //its better to just warn the calling environment instead of erroring out
             logMessageAdvertisement(
-                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
+                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1_000)' milliseconds instead?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             )
         }
-
-        _listener.logMessageAdvertisement(
-                "**_transporter.mtu='\(String(describing: _transporter.mtu))'",
-                McuMgrLogCategory.transport.rawValue,
-                McuMgrLogLevel.info.name
-        )
-        _listener.logMessageAdvertisement(
-                "** McuManager.getDefaultMtu(scheme: getScheme())=\(String(describing: McuManager.getDefaultMtu(scheme: _transporter.getScheme())))",
-                McuMgrLogCategory.transport.rawValue,
-                McuMgrLogLevel.info.name
-        )
-        _listener.logMessageAdvertisement(
-                "** _peripheralMaxWriteValueLengthForWithoutResponse=\(String(describing: _peripheralMaxWriteValueLengthForWithoutResponse))",
-                McuMgrLogCategory.transport.rawValue,
-                McuMgrLogLevel.info.name
-        )
+ 
+        _transporter.mtu = initialMtuSize <= 0
+        ? _peripheralMaxWriteValueLengthForWithoutResponse
+        : initialMtuSize
 
         _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
         _manager.logDelegate = self
@@ -102,7 +99,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
             if (estimatedSwapTimeInMilliseconds >= 0) {
-                firmwareUpgradeConfiguration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1000) //1 nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
+                firmwareUpgradeConfiguration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1_000) //1 nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
             }
 
         } catch let ex {
@@ -113,6 +110,27 @@ public class IOSFirmwareInstaller: NSObject {
 
         do {
             setState(.idle)
+
+            _listener.logMessageAdvertisement(
+                    "** transporter.mtu='\(String(describing: _transporter.mtu))'",
+                    McuMgrLogCategory.transport.rawValue,
+                    McuMgrLogLevel.info.name
+            )
+            _listener.logMessageAdvertisement(
+                    "** firmwareUpgradeConfiguration.reassemblyBufferSize=\(String(describing: firmwareUpgradeConfiguration.reassemblyBufferSize))",
+                    McuMgrLogCategory.transport.rawValue,
+                    McuMgrLogLevel.info.name
+            )
+            _listener.logMessageAdvertisement(
+                    "** McuManager.getDefaultMtu(scheme: getScheme())=\(String(describing: McuManager.getDefaultMtu(scheme: _transporter.getScheme())))",
+                    McuMgrLogCategory.transport.rawValue,
+                    McuMgrLogLevel.info.name
+            )
+            _listener.logMessageAdvertisement(
+                    "** peripheralMaxWriteValueLengthForWithoutResponse=\(String(describing: _peripheralMaxWriteValueLengthForWithoutResponse))",
+                    McuMgrLogCategory.transport.rawValue,
+                    McuMgrLogLevel.info.name
+            )
 
             try _manager.start(
                     images: [

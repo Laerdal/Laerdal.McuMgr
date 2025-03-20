@@ -18,20 +18,22 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// Allowed types for TData are 'Stream', 'Func&lt;Stream&gt;', 'Func&lt;Task&lt;Stream&gt;&gt;', 'Func&lt;ValueTask&lt;Stream&gt;&gt;', 'byte[]' and 'IEnumerable&lt;byte&gt;'.
         /// </remarks>
         /// <param name="remoteFilePathsAndTheirData">The files to upload.</param>
-        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
         /// <param name="autodisposeStreams">If set to 'true' the mechanism will dispose of the data-streams after they have been read into their respective byte arrays (default is 'false').</param>
+        /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
+        ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
+        ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
+        /// </param>
         /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
         ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
-        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
-        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
-        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -50,9 +52,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
             int maxTriesPerUpload = 10,
             bool moveToNextUploadInCaseOfError = true,
             bool autodisposeStreams = false,
+            int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
-            int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
         );
@@ -68,20 +70,21 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// </remarks>
         /// <param name="localData">The local data to upload.</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
-        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="timeoutForUploadInMs">The amount of time to wait for the upload to complete before bailing out.</param>
         /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="autodisposeStream">If set to 'true' the mechanism will dispose of the data-stream after it has been read into a byte array (default is 'false').</param>
+        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
+        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
+        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
+        /// </param>
         /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
         ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
-        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
-        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
-        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -101,9 +104,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
             int sleepTimeBetweenRetriesInMs = 1_000,
             int gracefulCancellationTimeoutInMs = 2_500,
             bool autodisposeStream = false,
+            int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
-            int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
         );
@@ -111,17 +114,17 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <summary>
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
-        /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
-        /// <param name="data">The file-data.</param>
-        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="data">The file-data</param>
+        /// <param name="remoteFilePath">The remote file-path to upload the data to</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation
+        ///     (on Android this is useful for some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and
+        ///     if the value provided is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
         /// <param name="pipelineDepth">(iOS only) If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at
         ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
-        /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
-        ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
-        ///     If null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -136,11 +139,11 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
             byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
             int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+            int? pipelineDepth = null, //  ios
+            int? byteAlignment = null, //  ios
+            int? windowCapacity = null, // android
+            int? memoryAlignment = null // android
         );
         
         /// <summary>

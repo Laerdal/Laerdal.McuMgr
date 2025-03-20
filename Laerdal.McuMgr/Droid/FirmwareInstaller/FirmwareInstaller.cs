@@ -108,8 +108,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null, // ignored in android   it only affects ios
-                int? byteAlignment = null
-                //  ignored in android   it only affects ios
+                int? byteAlignment = null  // ignored in android   it only affects ios
             )
             {
                 var nativeVerdict = base.BeginInstallation(

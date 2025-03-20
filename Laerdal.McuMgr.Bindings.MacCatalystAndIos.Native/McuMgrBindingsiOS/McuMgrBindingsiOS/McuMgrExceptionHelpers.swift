@@ -21,7 +21,7 @@ internal class McuMgrExceptionHelpers {
 
         return groupSubsystemId == 0
                 ? errorCode
-                : ((groupSubsystemId + 1) * 1000 + groupErrorCode);
+                : ((groupSubsystemId + 1) * 1_000 + groupErrorCode);
 
         //00   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/198
     }
