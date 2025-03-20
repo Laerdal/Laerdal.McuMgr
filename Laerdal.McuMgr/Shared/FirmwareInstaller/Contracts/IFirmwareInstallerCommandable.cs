@@ -25,8 +25,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
-        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
-        /// </param>
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the default value is 57).</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -76,8 +75,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
-        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
-        /// </param>
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the default value is 57).</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower or equal to MCUMGR_BUF_COUNT
@@ -91,8 +89,6 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         ///     once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.</param>
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
-        /// <param name="mtu">(iOS only) The MTU size to use for the firmware installation. If null or negative it will default to the maximum-write-value-length-for-no-response
-        ///     for the underlying device (in iOS the value is 20).</param>
         /// <returns>A verdict that you can use to tell whether the installation has indeed kicked-off or not.</returns>
         EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,

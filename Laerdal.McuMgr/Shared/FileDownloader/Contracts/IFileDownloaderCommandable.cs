@@ -19,8 +19,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
-        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
-        /// </param>
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the default value is 57).</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -56,8 +55,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
-        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
-        /// </param>
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the default value is 57).</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
@@ -88,8 +86,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
-        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the value is 20).
-        /// </param>
+        ///     If null or negative it will default to the maximum-write-value-length-for-no-response for the underlying device (in iOS the default value is 57).</param>
         /// <param name="windowCapacity">(Android only) Set the window capacity. Values > 1 enable a new implementation for uploading
         ///     the images, which makes use of SMP pipelining feature. The app will send this many packets immediately, without waiting for notification
         ///     confirming each packet. This value should be lower than or equal to MCUMGR_BUF_COUNT
