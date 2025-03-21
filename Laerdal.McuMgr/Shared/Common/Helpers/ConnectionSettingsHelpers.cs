@@ -1,3 +1,4 @@
+using System;
 using Laerdal.McuMgr.Common.Constants;
 
 namespace Laerdal.McuMgr.Common.Helpers
@@ -15,14 +16,11 @@ namespace Laerdal.McuMgr.Common.Helpers
             if (!isConnectionTooUnstableForUploading)
                 return null;
 
-            var initialMtuSize =
-#if __ANDROID__
-                uploadingNotDownloading  //android                                                 when noticing persistent failures when uploading/downloading we
-                ? AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize //      resort to forcing the most failsafe settings we know of just in case
-                : AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize; //   we manage to salvage this situation (works with SamsungA8 android tablets)
-#else // __IOS__
-                -1;
-#endif
+            var initialMtuSize = OperatingSystem.IsAndroid()
+                ? uploadingNotDownloading //android                                                   when noticing persistent failures when uploading/downloading we
+                    ? AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize //     resort to forcing the most failsafe settings we know of just in case
+                    : AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize //   we manage to salvage this situation (works with SamsungA8 android tablets)
+                : -1;
             
             var byteAlignment = uploadingNotDownloading // ios + maccatalyst
                 ? AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment
