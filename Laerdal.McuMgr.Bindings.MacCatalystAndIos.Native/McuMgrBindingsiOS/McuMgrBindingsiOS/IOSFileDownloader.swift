@@ -57,7 +57,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func beginDownload(_ remoteFilePath: String) -> EIOSFileDownloadingInitializationVerdict {
+    public func beginDownload(_ remoteFilePath: String, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
 
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("[IOSFD.BD.010] Another download is already in progress")
@@ -86,7 +86,7 @@ public class IOSFileDownloader: NSObject {
 
         resetUploadState() //order
         disposeFilesystemManager() //00 vital hack
-        ensureTransportIsInitializedExactlyOnce() //order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         let success = _fileSystemManager.download(name: _remoteFilePathSanitized, delegate: self)
@@ -161,25 +161,20 @@ public class IOSFileDownloader: NSObject {
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileDownloader: McuMgrLogDelegate
     }
 
-    private func ensureTransportIsInitializedExactlyOnce() {
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize <= 0 //             at the time of this writing the mtu doesnt play a major role whwn downloading
+                ? Constants.DefaultMtuForAssetUploading // (it is mostly for when we are uploading) but we are applying it just in case
+                : initialMtuSize
+
         if _transporter != nil {
+            _transporter.mtu = properMtu
             return
         }
 
         _transporter = McuMgrBleTransport(_cbPeripheral)
-        
-        if _transporter.mtu == nil {
-            //todo:  get rid of this workaround when nordic manages to squash the bug which causes the .mtu property to be left uninitialized
-            //todo:  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/337
+        _transporter.mtu = properMtu
 
-            _transporter.mtu = min(_cbPeripheral.maximumWriteValueLength(for: .withoutResponse), McuManager.getDefaultMtu(scheme: _transporter.getScheme()))
-        }
-
-        logMessageAdvertisement(
-            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized and has mtu='\(String(describing: _transporter.mtu))'",
-            McuMgrLogCategory.transport.rawValue,
-            McuMgrLogLevel.info.name
-        )
+        logMessageAdvertisement("[IOSFD.ETIIEO.010] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
     }
 
     private func disposeTransport() {

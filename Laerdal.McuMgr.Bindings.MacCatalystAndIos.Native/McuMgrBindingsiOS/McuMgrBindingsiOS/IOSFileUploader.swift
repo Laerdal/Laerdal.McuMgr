@@ -233,14 +233,14 @@ public class IOSFileUploader: NSObject {
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
         let properMtu = initialMtuSize <= 0
-        ? Constants.DefaultMtuForAssetUploading
-        : initialMtuSize
+                ? Constants.DefaultMtuForAssetUploading
+                : initialMtuSize
         
         if _transporter != nil {
             _transporter.mtu = properMtu
             return
         }
-        
+
         _transporter = McuMgrBleTransport(_cbPeripheral)
         _transporter.mtu = properMtu
 

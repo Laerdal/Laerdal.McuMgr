@@ -67,8 +67,8 @@ namespace Laerdal.McuMgr.FileDownloader
             if (failsafeConnectionSettings != null)
             {
                 initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
-                // windowCapacity = connectionSettings.Value.windowCapacity;
-                // memoryAlignment = connectionSettings.Value.memoryAlignment;
+                // windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                // memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
                 
                 OnLogEmitted(new LogEmittedEventArgs(
                     level: ELogLevel.Warning,

@@ -109,10 +109,13 @@ namespace Laerdal.McuMgr.FileDownloader
 
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
-                int? initialMtuSize = null //  android only
+                int? initialMtuSize = null
             )
             {
-                return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
+                return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize ?? -1
+                ));
             }
 
             #endregion commands
