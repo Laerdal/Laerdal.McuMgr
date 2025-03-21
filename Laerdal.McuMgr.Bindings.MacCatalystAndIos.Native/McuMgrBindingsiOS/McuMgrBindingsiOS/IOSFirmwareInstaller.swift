@@ -107,26 +107,7 @@ public class IOSFirmwareInstaller: NSObject {
         do {
             setState(.idle)
 
-            _listener.logMessageAdvertisement(
-                    "** transporter.mtu='\(String(describing: _transporter.mtu))'",
-                    McuMgrLogCategory.transport.rawValue,
-                    McuMgrLogLevel.info.name
-            )
-            _listener.logMessageAdvertisement(
-                    "** firmwareUpgradeConfiguration.reassemblyBufferSize=\(String(describing: firmwareUpgradeConfiguration.reassemblyBufferSize))",
-                    McuMgrLogCategory.transport.rawValue,
-                    McuMgrLogLevel.info.name
-            )
-            _listener.logMessageAdvertisement(
-                    "** McuManager.getDefaultMtu(scheme: getScheme())=\(String(describing: McuManager.getDefaultMtu(scheme: _transporter.getScheme())))",
-                    McuMgrLogCategory.transport.rawValue,
-                    McuMgrLogLevel.info.name
-            )
-            _listener.logMessageAdvertisement(
-                "** DefaultMtuForAssetUploading=\(String(describing: Constants.DefaultMtuForAssetUploading))",
-                    McuMgrLogCategory.transport.rawValue,
-                    McuMgrLogLevel.info.name
-            )
+            logMessageAdvertisement("[IOSFI.BI.055] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
 
             try _manager.start(
                     images: [

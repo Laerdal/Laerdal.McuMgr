@@ -243,12 +243,8 @@ public class IOSFileUploader: NSObject {
         
         _transporter = McuMgrBleTransport(_cbPeripheral)
         _transporter.mtu = properMtu
-        
-        logMessageAdvertisement(
-            "[native::ensureTransportIsInitializedExactlyOnce()] transport initialized with mtu='\(String(describing: _transporter.mtu))'",
-            McuMgrLogCategory.transport.rawValue,
-            McuMgrLogLevel.info.name
-        )
+
+        logMessageAdvertisement("[IOSFU.ETIIEO.010] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
     }
 
     private func disposeTransport() {
