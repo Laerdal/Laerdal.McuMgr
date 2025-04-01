@@ -170,9 +170,15 @@ if [ "$minor_override" != "true" ]; then
         
     elif [ "$branch_name" == "$develop_branch" ]; then
         minor=$( git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path )
-        
+        if [[ "$minor" -gt 0 ]]; then
+            minor=$((minor + 1)) # vital to increment by one (to account for the merge-commit on the master branch) otherwise the non-master-tags will be lagging behind the latest master-tag in terms of version
+        fi
+
     else
         minor=$( git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path )
+        if [[ "$minor" -gt 0 ]]; then
+            minor=$((minor + 1)) # vital to increment by one (to account for the merge-commit on the master branch) otherwise the non-master-tags will be lagging behind the latest master-tag in terms of version
+        fi
     fi
 
 else
