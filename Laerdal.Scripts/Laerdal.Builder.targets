@@ -384,7 +384,7 @@
         <!-- 1  we ignore suppress any errors and continue because sometimes the sbom mechanism spazzes out due to intermittent errors when installing cli tooling   go figure -->
         <!-- 2  also notice that we are forced to target /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server       -->
         <!-- 3  https://docs.dependencytrack.org/usage/cicd/#large-payloads                                                                                                    -->
-        <Message Importance="High" Text="** Generating, Singing and Uploading SBOMs:"/>
+        <Message Importance="High" Text="** Generating, Signing and Uploading SBOMs:"/>
 
         <!-- we follow this method because it works the same for both *nix and windows systems in our -->
         <!-- cicd pipelines    its mostly windows that has problems running bash-scripts tbh          -->
