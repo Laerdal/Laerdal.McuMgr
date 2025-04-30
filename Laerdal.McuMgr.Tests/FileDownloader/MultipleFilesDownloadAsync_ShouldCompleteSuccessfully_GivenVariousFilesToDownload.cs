@@ -65,7 +65,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 hostDeviceManufacturer: "acme corp.",
                 
                 remoteFilePaths: remoteFilePathsToTest,
-                maxRetriesPerDownload: 4
+                maxTriesPerDownload: 4
             ));
 
             // Assert

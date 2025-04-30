@@ -14,7 +14,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         /// <param name="hostDeviceManufacturer"></param>
         /// <param name="hostDeviceModel"></param>
         /// <param name="timeoutPerDownloadInMs">The amount of time to wait for each download to complete before skipping it.</param>
-        /// <param name="maxRetriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
+        /// <param name="maxTriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
         /// <param name="initialMtuSize">(Android only) Set the initial MTU size for the connection employed by the firmware-installation
         ///     (useful for some problematic devices such as Samsung A8 tablets). Acceptable custom values must lay within the range [23, 517].
@@ -34,7 +34,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int timeoutPerDownloadInMs = -1,
-            int maxRetriesPerDownload = 10,
+            int maxTriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
             int? initialMtuSize = null,
             int? windowCapacity = null,

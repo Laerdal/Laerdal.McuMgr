@@ -173,7 +173,7 @@ namespace Laerdal.McuMgr.FileDownloader
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int timeoutPerDownloadInMs = -1,
-            int maxRetriesPerDownload = 10,
+            int maxTriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
             int? initialMtuSize = null,
             int? windowCapacity = null,
@@ -202,7 +202,7 @@ namespace Laerdal.McuMgr.FileDownloader
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
 
-                        maxTriesCount: maxRetriesPerDownload,
+                        maxTriesCount: maxTriesPerDownload,
                         timeoutForDownloadInMs: timeoutPerDownloadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
 
