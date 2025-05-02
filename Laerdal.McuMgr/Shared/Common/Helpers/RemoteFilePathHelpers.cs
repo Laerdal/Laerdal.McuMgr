@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Laerdal.McuMgr.Common.Helpers
             return SanitizeRemoteFilePath(remoteFilePath);
         }
 
-        static public IReadOnlyDictionary<string, T> ValidateAndSanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        static internal FrozenDictionary<string, T> ValidateAndSanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             ValidateRemoteFilePathsWithData(remoteFilePathsWithTheirDataBytes); //throws an exception if something is wrong
 
@@ -28,7 +29,7 @@ namespace Laerdal.McuMgr.Common.Helpers
             return SanitizeRemoteFilePaths(remoteFilePaths);
         }
         
-        static public void ValidateRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirData)
+        static internal void ValidateRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirData)
         {
             remoteFilePathsWithTheirData = remoteFilePathsWithTheirData ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirData));
 
@@ -71,7 +72,7 @@ namespace Laerdal.McuMgr.Common.Helpers
         }
         
         //used by the uploader
-        static public IReadOnlyDictionary<string, T> SanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        static internal FrozenDictionary<string, T> SanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
 
@@ -89,7 +90,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                 results.Add(sanitizedPath, pathWithDataBytes.Value);
             }
 
-            return results;
+            return results.ToFrozenDictionary();
         }
 
         //used by the downloader
