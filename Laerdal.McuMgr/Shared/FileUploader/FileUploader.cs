@@ -227,6 +227,9 @@ namespace Laerdal.McuMgr.FileUploader
 
             if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
                 throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+            
+            if (sleepTimeBetweenUploadsInMs < 0)
+                throw new ArgumentOutOfRangeException(nameof(sleepTimeBetweenUploadsInMs), sleepTimeBetweenUploadsInMs, "Must be greater than or equal to zero");
 
             var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
 
@@ -256,7 +259,7 @@ namespace Laerdal.McuMgr.FileUploader
                         memoryAlignment: memoryAlignment
                     );
 
-                    if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex)
+                    if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex) //we skip sleeping after the last upload
                     {
                         await Task.Delay(sleepTimeBetweenUploadsInMs);
                     }
