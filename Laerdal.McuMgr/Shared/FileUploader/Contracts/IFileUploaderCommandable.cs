@@ -20,7 +20,8 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <param name="remoteFilePathsAndTheirData">The files to upload.</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
-        /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
+        /// <param name="sleepTimeBetweenUploadsInMs">The time to sleep, in milliseconds, between successful uploads. Defaults to zero.</param>
+        /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep, in milliseconds, between each retry after a failed try. Defaults to 100ms.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
@@ -45,6 +46,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
             IDictionary<string, TData> remoteFilePathsAndTheirData,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            int sleepTimeBetweenUploadsInMs = 0,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,

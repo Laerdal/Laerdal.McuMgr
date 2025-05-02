@@ -209,6 +209,7 @@ namespace Laerdal.McuMgr.FileUploader
             IDictionary<string, TData> remoteFilePathsAndTheirData,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            int sleepTimeBetweenUploadsInMs = 0,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
@@ -229,35 +230,42 @@ namespace Laerdal.McuMgr.FileUploader
 
             var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
 
-            var filesThatFailedToBeUploaded = new List<string>(2);
-            foreach (var x in sanitizedRemoteFilePathsAndTheirData)
+            var lastIndex = sanitizedRemoteFilePathsAndTheirData.Count - 1;
+            var filesThatFailedToBeUploaded = (List<string>) null;
+            foreach (var ((remoteFilePath, data), i) in sanitizedRemoteFilePathsAndTheirData.Select((x, i) => (x, i)))
             {
                 try
                 {
                     await UploadAsync(
-                        data: x.Value,
-                        remoteFilePath: x.Key,
-                        
+                        data: data,
+                        remoteFilePath: remoteFilePath,
+
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
 
-                        timeoutForUploadInMs: timeoutPerUploadInMs,
                         maxTriesCount: maxTriesPerUpload,
-
+                        timeoutForUploadInMs: timeoutPerUploadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+
                         autodisposeStream: autodisposeStreams,
-                        
+
                         pipelineDepth: pipelineDepth,
                         byteAlignment: byteAlignment,
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment);
+                        memoryAlignment: memoryAlignment
+                    );
+
+                    if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex)
+                    {
+                        await Task.Delay(sleepTimeBetweenUploadsInMs);
+                    }
                 }
                 catch (UploadErroredOutException)
                 {
                     if (moveToNextUploadInCaseOfError) //00
                     {
-                        filesThatFailedToBeUploaded.Add(x.Key);
+                        (filesThatFailedToBeUploaded ??= new List<string>(4)).Add(remoteFilePath);
                         continue;
                     }
 
@@ -268,7 +276,7 @@ namespace Laerdal.McuMgr.FileUploader
             return filesThatFailedToBeUploaded;
 
             //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
-            //    tactic because failures are fairly common when uploading 50 files or more over to aed devices, and we wanted to ensure
+            //    tactic because failures are fairly common when uploading 50 files or more over to mcumgr devices, and we wanted to ensure
             //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
         }
         
