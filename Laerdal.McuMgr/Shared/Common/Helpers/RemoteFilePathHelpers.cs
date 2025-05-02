@@ -76,6 +76,10 @@ namespace Laerdal.McuMgr.Common.Helpers
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
 
+            var isAlreadySane = remoteFilePathsWithTheirDataBytes.Select(x => x.Key).All(path => path == SanitizeRemoteFilePath(path));
+            if (isAlreadySane)
+                return remoteFilePathsWithTheirDataBytes.ToFrozenDictionary(); //optimization
+
             var results = new Dictionary<string, T>(remoteFilePathsWithTheirDataBytes.Count);
             foreach (var pathWithDataBytes in remoteFilePathsWithTheirDataBytes)
             {
