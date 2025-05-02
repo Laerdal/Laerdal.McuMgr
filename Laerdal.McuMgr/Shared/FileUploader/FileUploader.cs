@@ -304,6 +304,9 @@ namespace Laerdal.McuMgr.FileUploader
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
 
+            if (sleepTimeBetweenRetriesInMs < 0)
+                throw new ArgumentOutOfRangeException(nameof(sleepTimeBetweenRetriesInMs), sleepTimeBetweenRetriesInMs, "Must be greater than or equal to zero");
+            
             if (string.IsNullOrWhiteSpace(hostDeviceModel))
                 throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
 
