@@ -85,7 +85,7 @@ public class IOSDeviceResetter: NSObject {
         stateChangedAdvertisement(oldState, newState) //order
     }
 
-    private var _lastFatalErrorMessage: String
+    private var _lastFatalErrorMessage: String = ""
 
     @objc
     public func getLastFatalErrorMessage() -> String {

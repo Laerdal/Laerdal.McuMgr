@@ -14,7 +14,7 @@ public class IOSFileUploader: NSObject {
     private var _cancellationReason: String = ""
     private var _lastFatalErrorMessage: String = ""
     private var _lastBytesSendTimestamp: Date? = nil
-    private var _remoteFilePathSanitized: String!
+    private var _remoteFilePathSanitized: String = ""
 
     @objc
     public init(_ listener: IOSListenerForFileUploader!) {
@@ -264,12 +264,12 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func cancellingAdvertisement(_ reason: String) {
+    private func cancellingAdvertisement(_ reason: String?) {
         _listener.cancellingAdvertisement(reason)
     }
 
     //@objc   dont
-    private func cancelledAdvertisement(_ reason: String) {
+    private func cancelledAdvertisement(_ reason: String?) {
         _listener.cancelledAdvertisement(reason)
     }
 
