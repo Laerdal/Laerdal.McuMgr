@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
 
         /// <summary>Event raised when the download is complete</summary>
         event EventHandler<DownloadCompletedEventArgs> DownloadCompleted;
-        
+
         /// <summary>Event raised when the firmware-installation process progresses in terms of downloading the firmware files across</summary>
         event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> FileDownloadProgressPercentageAndDataThroughputChanged;
     }

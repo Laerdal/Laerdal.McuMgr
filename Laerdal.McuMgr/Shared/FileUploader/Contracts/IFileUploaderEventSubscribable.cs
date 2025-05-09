@@ -9,6 +9,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <summary>Event raised when a fatal error occurs</summary>
         event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred;
 
+        /// <summary>Event raised when the operation kick-starts the cancellation process</summary>
+        event EventHandler<CancellingEventArgs> Cancelling;
+        
         /// <summary>Event raised when the operation gets cancelled</summary>
         event EventHandler<CancelledEventArgs> Cancelled;
 
