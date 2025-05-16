@@ -2,10 +2,12 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Runtime.InteropServices;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
@@ -17,7 +19,12 @@ namespace Laerdal.McuMgr.FileDownloader
     /// <inheritdoc cref="IFileDownloader"/>
     public partial class FileDownloader : IFileDownloader
     {
-        public FileDownloader(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
+        public FileDownloader(object nativeBluetoothDevice) // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
+            : this(NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<CBPeripheral>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice)))
+        {
+        }
+
+        public FileDownloader(CBPeripheral nativeBluetoothDevice) : this(ValidateArgumentsAndConstructProxy(nativeBluetoothDevice))
         {
         }
         

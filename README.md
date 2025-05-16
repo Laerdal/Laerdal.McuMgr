@@ -108,7 +108,7 @@ private Laerdal.McuMgr.FirmwareInstaller.IFirmwareInstaller _firmwareInstaller;
 public async Task InstallFirmwareAsync()
 {
     var firmwareRawBytes = ...; //byte[]
-    var desiredBluetoothDevice = ...; //android bluetooth device here 
+    var desiredBluetoothDevice = ...; //android/ios bluetooth device here 
 
     try
     {
@@ -632,17 +632,85 @@ private void CleanupDeviceResetter()
 
 ## 📱 iOS
 
-Same as in Android with the only difference being that the constructors change a bit:
+Same as in Android. Just make sure to pass a CBPeripheral to the constructors change a bit:
 
 ```c#
-_fileUploader = new Laerdal.McuMgr.FileUploader.FileUploader(desiredBluetoothDevice.CbPeripheral);
-_firmwareEraser   = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice.CbPeripheral);
-_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice.CbPeripheral);
+_fileUploader = new Laerdal.McuMgr.FileUploader.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareEraser   = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
 
-_deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.CbPeripheral);
+_deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice); // must be a CBPeripheral
 ```
 
+Note that the constructors support passing both a native device (CBPeripheral on iOS and BluetoothDevice on Android) or simply an 'object' that is castable to either of these types.
+This is done to help you write more uniform code across platforms. You might want to create your own factory-service to smoothen things even further on your:
 
+```c#
+using Laerdal.Ble.Abstraction;
+using Laerdal.McuMgr.DeviceResetter.Contracts;
+using Laerdal.McuMgr.FileDownloader.Contracts;
+using Laerdal.McuMgr.FileUploader.Contracts;
+using Laerdal.McuMgr.FirmwareEraser.Contracts;
+using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using YourApp.Contracts;
+
+namespace YourApp.Services;
+
+public interface IPlatformSpecificMcumgrFactoryService
+{
+    IFileUploader? SpawnFileUploader(IDevice device);
+    IFileDownloader? SpawnFileDownloader(IDevice device);
+    IFirmwareEraser? SpawnFirmwareEraser(IDevice device);
+    IDeviceResetter? SpawnDeviceResetter(IDevice device);
+    IFirmwareInstaller? SpawnFirmwareInstaller(IDevice device);
+}
+
+public sealed class McumgrFactoryService : IPlatformSpecificMcumgrFactoryService
+{
+    public IFileDownloader SpawnFileDownloader(IYourAbstractBleDevice yourAbstractBleDevice)
+    {
+        return new FileDownloader.FileDownloader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice); // .NativeDevice is defined as 'object' and points to either iOS/CBPeripheral or Android/BluetoothDevice depending on the underlying platform
+    }
+    
+    public IFileUploader SpawnFileUploader(IDevice device)
+    {
+        return new FileUploader.FileUploader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+
+    public IFirmwareEraser SpawnFirmwareEraser(IDevice device)
+    {
+        return new FirmwareEraser.FirmwareEraser(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+
+    public IDeviceResetter SpawnDeviceResetter(IDevice device)
+    {
+        return new DeviceResetter.DeviceResetter(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+
+    public IFirmwareInstaller SpawnFirmwareInstaller(IDevice device)
+    {
+        return new FirmwareInstaller.FirmwareInstaller(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+}
+
+// and then use it inside your UI classes
+
+public class YourViewModel
+{
+    private readonly IPlatformSpecificMcumgrFactoryService _mcumgrFactoryService;
+
+    public YourViewModel(IPlatformSpecificMcumgrFactoryService mcumgrFactoryService) //injected via DI
+    {
+        _mcumgrFactoryService = mcumgrFactoryService;
+    }
+
+    public void DoSomething()
+    {
+        var fileUploader = _mcumgrFactoryService.SpawnFileUploader(yourAbstractBleDevice); //works the same across all platforms
+        // ...
+    }
+}
+````
 
 ## 💻 Windows / UWP
 

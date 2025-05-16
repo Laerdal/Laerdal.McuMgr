@@ -9,16 +9,23 @@ using Android.Runtime;
 using Laerdal.McuMgr.Bindings.Android;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
     /// <inheritdoc cref="IFileDownloader"/>
     public partial class FileDownloader : IFileDownloader
     {
+        public FileDownloader(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
+            androidContext: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<Context>(obj: androidContext, parameterName: nameof(androidContext), allowNulls: true),
+            bluetoothDevice: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<BluetoothDevice>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice))
+        )
+        {
+        }
+        
         public FileDownloader(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
         }
