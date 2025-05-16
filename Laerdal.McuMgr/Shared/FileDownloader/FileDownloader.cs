@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.FileDownloader
             _nativeFileDownloaderProxy = nativeFileDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFileDownloaderProxy));
             _nativeFileDownloaderProxy.FileDownloader = this; //vital
         }
-        
+
         public void Dispose()
         {
             _nativeFileDownloaderProxy?.Dispose();

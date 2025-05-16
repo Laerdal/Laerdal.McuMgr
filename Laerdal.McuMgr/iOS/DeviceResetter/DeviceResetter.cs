@@ -5,6 +5,7 @@ using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
@@ -15,6 +16,11 @@ namespace Laerdal.McuMgr.DeviceResetter
     /// <inheritdoc cref="IDeviceResetter"/>
     public partial class DeviceResetter : IDeviceResetter
     {
+        public DeviceResetter(object nativeBluetoothDevice) // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
+            : this(NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<CBPeripheral>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice)))
+        {
+        }
+        
         public DeviceResetter(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
         {
         }
