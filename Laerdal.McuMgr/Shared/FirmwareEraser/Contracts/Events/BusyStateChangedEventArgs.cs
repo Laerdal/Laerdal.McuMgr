@@ -7,7 +7,7 @@ namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Events
 {
     public readonly struct BusyStateChangedEventArgs : IMcuMgrEventArgs
     {
-        public bool BusyNotIdle { get; }
+        public bool BusyNotIdle { get; init; }
 
         public BusyStateChangedEventArgs(bool busyNotIdle)
         {

@@ -8,8 +8,8 @@ namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Events
 {
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public EFirmwareErasureState NewState { get; }
-        public EFirmwareErasureState OldState { get; }
+        public EFirmwareErasureState NewState { get; init; }
+        public EFirmwareErasureState OldState { get; init; }
 
         public StateChangedEventArgs(EFirmwareErasureState oldState, EFirmwareErasureState newState)
         {

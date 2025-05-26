@@ -3,14 +3,13 @@
 
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
     public readonly struct FatalErrorOccurredEventArgs : IMcuMgrEventArgs
     {
-        public string ErrorMessage { get; }
-        public string RemoteFilePath { get; }
+        public string ErrorMessage { get; init; }
+        public string RemoteFilePath { get; init; }
 
         public EGlobalErrorCode GlobalErrorCode { get; }
 

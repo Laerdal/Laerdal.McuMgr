@@ -8,9 +8,9 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public string Resource { get; }
-        public EFileDownloaderState NewState { get; }
-        public EFileDownloaderState OldState { get; }
+        public string Resource { get; init; }
+        public EFileDownloaderState NewState { get; init; }
+        public EFileDownloaderState OldState { get; init; }
 
         public StateChangedEventArgs(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
         {

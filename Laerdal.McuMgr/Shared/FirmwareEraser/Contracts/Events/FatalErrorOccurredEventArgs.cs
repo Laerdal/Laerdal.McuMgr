@@ -8,8 +8,8 @@ namespace Laerdal.McuMgr.FirmwareEraser.Contracts.Events
 {
     public readonly struct FatalErrorOccurredEventArgs : IMcuMgrEventArgs
     {
-        public string ErrorMessage { get; }
-        public EGlobalErrorCode GlobalErrorCode { get; }
+        public string ErrorMessage { get; init; }
+        public EGlobalErrorCode GlobalErrorCode { get; init; }
 
         public FatalErrorOccurredEventArgs(string errorMessage, EGlobalErrorCode globalErrorCode)
         {

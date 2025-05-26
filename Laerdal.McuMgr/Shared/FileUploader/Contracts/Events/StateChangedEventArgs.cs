@@ -8,9 +8,9 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public string Resource { get; }
-        public EFileUploaderState NewState { get; }
-        public EFileUploaderState OldState { get; }
+        public string Resource { get; init; }
+        public EFileUploaderState NewState { get; init; }
+        public EFileUploaderState OldState { get; init; }
 
         public StateChangedEventArgs(string resource, EFileUploaderState oldState, EFileUploaderState newState)
         {
