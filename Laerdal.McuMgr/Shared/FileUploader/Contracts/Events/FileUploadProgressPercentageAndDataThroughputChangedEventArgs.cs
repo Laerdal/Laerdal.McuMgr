@@ -6,10 +6,10 @@ using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public readonly struct FileUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs
+    public readonly struct FileUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
-        public int ProgressPercentage { get; }
-        public float CurrentThroughput { get; } //kbs / sec
+        public readonly int ProgressPercentage;
+        public readonly float CurrentThroughput; //kbs / sec
 
         public FileUploadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughput)
         {

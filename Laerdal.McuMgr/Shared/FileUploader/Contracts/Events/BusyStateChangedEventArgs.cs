@@ -5,9 +5,9 @@ using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
-    public readonly struct BusyStateChangedEventArgs : IMcuMgrEventArgs
+    public readonly struct BusyStateChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
-        public bool BusyNotIdle { get; }
+        public readonly bool BusyNotIdle;
 
         public BusyStateChangedEventArgs(bool busyNotIdle)
         {

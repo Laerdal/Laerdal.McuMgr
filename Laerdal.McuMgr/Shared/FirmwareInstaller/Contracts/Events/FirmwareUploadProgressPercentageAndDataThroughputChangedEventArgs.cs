@@ -6,10 +6,10 @@ using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
-    public readonly struct FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs
+    public readonly struct FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
-        public int ProgressPercentage { get; }
-        public float CurrentThroughput { get; } //kbs / sec
+        public readonly int ProgressPercentage;
+        public readonly float CurrentThroughput; //kbs / sec
 
         public FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughput)
         {
