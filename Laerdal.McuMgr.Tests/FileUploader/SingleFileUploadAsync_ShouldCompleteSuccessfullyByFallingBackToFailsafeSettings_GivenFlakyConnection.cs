@@ -22,6 +22,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
+            var allLogEas = new List<LogEmittedEventArgs>(8);
             
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy120(
                 maxTriesCount: maxTriesCount,
@@ -32,14 +33,18 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task>(() => fileUploader.UploadAsync(
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp.",
+            var work = new Func<Task>(() =>
+            {
+                fileUploader.LogEmitted += (object _, in LogEmittedEventArgs ea) => allLogEas.Add(ea);
                 
-                data: stream,
-                maxTriesCount: maxTriesCount,
-                remoteFilePath: remoteFilePath
-            ));
+                return fileUploader.UploadAsync(
+                    hostDeviceModel: "foobar",
+                    hostDeviceManufacturer: "acme corp.",
+                    data: stream,
+                    maxTriesCount: maxTriesCount,
+                    remoteFilePath: remoteFilePath
+                );
+            });
 
             // Assert
             await work.Should().CompleteWithinAsync((maxTriesCount * 2).Seconds());
@@ -50,7 +55,8 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             eventsMonitor
-                .OccurredEvents.Where(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
+                .OccurredEvents
+                .Where(x => x.EventName == nameof(fileUploader.FatalErrorOccurred))
                 .Should().HaveCount(maxTriesCount - 1); //one error for each try except the last one
             
             eventsMonitor
@@ -58,12 +64,14 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 .WithSender(fileUploader)
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
-            eventsMonitor
-                .OccurredEvents
-                .Where(x => x.EventName == nameof(fileUploader.LogEmitted))
-                .SelectMany(x => x.Parameters)
-                .OfType<LogEmittedEventArgs>()
-                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("[FU.UA.010]"))
+            // eventsMonitor
+            //     .OccurredEvents
+            //     .Where(x => x.EventName == nameof(deviceResetter.LogEmitted))
+            //     .SelectMany(x => x.Parameters)
+            //     .OfType<LogEmittedEventArgs>() //xunit or fluent-assertions has memory corruption issues with this probably because of the zero-copy delegate! :(
+
+            allLogEas
+                .Count(l => l is {Level: ELogLevel.Warning} && l.Message.Contains("[FU.UA.010]", StringComparison.InvariantCulture))
                 .Should()
                 .Be(1);
             

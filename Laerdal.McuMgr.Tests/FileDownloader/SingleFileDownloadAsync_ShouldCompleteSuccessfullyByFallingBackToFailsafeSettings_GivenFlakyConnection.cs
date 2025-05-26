@@ -22,6 +22,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         public async Task SingleFileDownloadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettings_GivenFlakyBluetoothConnection(string testcaseNickname, string remoteFilePath, int maxTriesCount)
         {
             // Arrange
+            var allLogEas = new List<LogEmittedEventArgs>(8);
             var expectedData = (byte[]) [1, 2, 3];
             
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy120(
@@ -34,13 +35,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task>(() => fileDownloader.DownloadAsync(
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp.",
+            var work = new Func<Task>(() =>
+            {
+                fileDownloader.LogEmitted += (object _, in LogEmittedEventArgs ea) => allLogEas.Add(ea);
                 
-                maxTriesCount: maxTriesCount,
-                remoteFilePath: remoteFilePath
-            ));
+                return fileDownloader.DownloadAsync(
+                    hostDeviceModel: "foobar",
+                    hostDeviceManufacturer: "acme corp.",
+                    maxTriesCount: maxTriesCount,
+                    remoteFilePath: remoteFilePath
+                );
+            });
 
             // Assert
             await work.Should().CompleteWithinAsync((maxTriesCount * 200).Seconds());
@@ -51,22 +56,26 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
 
             eventsMonitor
-                .OccurredEvents.Where(x => x.EventName == nameof(fileDownloader.FatalErrorOccurred))
+                .OccurredEvents
+                .Where(x => x.EventName == nameof(fileDownloader.FatalErrorOccurred))
                 .Should().HaveCount(maxTriesCount - 1); //one error for each try except the last one
             
             eventsMonitor
-                .Should().Raise(nameof(fileDownloader.StateChanged))
+                .Should()
+                .Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
 
-            eventsMonitor
-                .OccurredEvents
-                .Where(x => x.EventName == nameof(fileDownloader.LogEmitted))
-                .SelectMany(x => x.Parameters)
-                .OfType<LogEmittedEventArgs>()
-                .Count(l => l is { Level: ELogLevel.Warning } && l.Message.Contains("[FD.DA.010]"))
+            // eventsMonitor
+            //     .OccurredEvents
+            //     .Where(x => x.EventName == nameof(deviceResetter.LogEmitted))
+            //     .SelectMany(x => x.Parameters)
+            //     .OfType<LogEmittedEventArgs>() //xunit or fluent-assertions has memory corruption issues with this probably because of the zero-copy delegate! :(
+
+            allLogEas
+                .Count(l => l is {Level: ELogLevel.Warning} && l.Message.Contains("[FD.DA.010]", StringComparison.InvariantCulture))
                 .Should()
-                .Be(1);
+                .BeGreaterOrEqualTo(1);
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))

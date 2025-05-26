@@ -2,7 +2,6 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
-using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Exceptions;
@@ -16,12 +15,18 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
         public async Task ResetAsync_ShouldThrowDeviceResetterErroredOutException_GivenBluetoothErrorDuringReset()
         {
             // Arrange
+            var allLogsEas = new List<LogEmittedEventArgs>(8);
             var mockedNativeDeviceResetterProxy = new MockedErroneousDueToBluetoothNativeDeviceResetterProxySpy(new McuMgr.DeviceResetter.DeviceResetter.GenericNativeDeviceResetterCallbacksProxy());
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
             using var eventsMonitor = deviceResetter.Monitor();
 
             // Act
-            var work = new Func<Task>(() => deviceResetter.ResetAsync());
+            var work = new Func<Task>(() =>
+            {
+                deviceResetter.LogEmitted += (object _, in LogEmittedEventArgs ea) => allLogsEas.Add(ea);
+                
+                return deviceResetter.ResetAsync();
+            });
 
             // Assert
             await work
@@ -40,11 +45,17 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
                 .Should().Raise(nameof(deviceResetter.FatalErrorOccurred))
                 .WithSender(deviceResetter)
                 .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "bluetooth error blah blah");
-
-            eventsMonitor
-                .Should().Raise(nameof(deviceResetter.LogEmitted))
-                .WithSender(deviceResetter)
-                .WithArgs<LogEmittedEventArgs>(args => args.Level == ELogLevel.Error && args.Message.Contains("bluetooth error blah blah"));
+            
+            // eventsMonitor
+            //     .OccurredEvents
+            //     .Where(x => x.EventName == nameof(deviceResetter.LogEmitted))
+            //     .SelectMany(x => x.Parameters)
+            //     .OfType<LogEmittedEventArgs>() //xunit or fluent-assertions has memory corruption issues with this probably because of the zero-copy delegate! :(
+                
+            allLogsEas
+                .Count(l => l is { Level: ELogLevel.Error } && l.Message.Contains("bluetooth error blah blah", StringComparison.InvariantCulture))
+                .Should()
+                .BeGreaterOrEqualTo(1);
             
             //00 we dont want to disconnect the device regardless of the outcome
         }
