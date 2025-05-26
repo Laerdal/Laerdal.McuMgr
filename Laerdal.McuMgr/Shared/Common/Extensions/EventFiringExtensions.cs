@@ -1,9 +1,9 @@
 using System;
 using Laerdal.McuMgr.Common.Contracts;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
-namespace Laerdal.McuMgr.Common.Helpers
+namespace Laerdal.McuMgr.Common.Extensions
 {
     static internal class EventFiringExtensions
     {
@@ -55,7 +55,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                         try
                         {
                             sender.OnLogEmitted(new LogEmittedEventArgs( //try to at least inform the calling environment that the user-land event handler messed up big time!
-                                level: Enums.ELogLevel.Error,
+                                level: ELogLevel.Error,
                                 message:
                                 $"[EHE.IEHAIE.010] An event handler threw an exception (which got ignored) while firing event '{nameof(TEventArgs)}'" +
                                 $"(This shouldn't happen! If the error stems from user-land you should fix your code!):\n\n{ex}",
@@ -75,7 +75,7 @@ namespace Laerdal.McuMgr.Common.Helpers
                 try
                 {
                     sender.OnLogEmitted(new LogEmittedEventArgs(
-                        level: Enums.ELogLevel.Error,
+                        level: ELogLevel.Error,
                         message: $"[EHE.IEHAIE.020] Internal error:\n\n{ex}",
                         category: "event-handlers",
                         resource: "events"
