@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
@@ -16,8 +15,6 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.FileDownloader
 {
@@ -453,17 +450,16 @@ namespace Laerdal.McuMgr.FileDownloader
             //    the download cannot commence to begin with
         }
 
-        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
+        void ILogEmittable.OnLogEmitted(in LogEmittedEventArgs ea) => OnLogEmitted(in ea);
         void IFileDownloaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
-        void IFileDownloaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
         void IFileDownloaderEventEmittable.OnDownloadCompleted(DownloadCompletedEventArgs ea) => OnDownloadCompleted(ea);
         void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
         void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileDownloadProgressPercentageAndDataThroughputChanged(ea);
         
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
@@ -477,7 +473,7 @@ namespace Laerdal.McuMgr.FileDownloader
                 resource: ea.Resource,
                 category: "file-downloader"
             ));
-            
+
             OnFatalErrorOccurred_(ea);
             return;
 

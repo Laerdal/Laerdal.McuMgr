@@ -184,9 +184,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
-        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
-        void IFirmwareEraserEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); //                       we are using explicit interface
-        void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); // implementations to avoid making these methods public
+        void ILogEmittable.OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
+
+        void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); // we are using explicit interface implementations to avoid making these methods public
         void IFirmwareEraserEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         
         void IFirmwareEraserEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
