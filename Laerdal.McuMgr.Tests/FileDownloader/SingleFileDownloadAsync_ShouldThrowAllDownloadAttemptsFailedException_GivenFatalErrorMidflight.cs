@@ -3,12 +3,10 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
-using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Exceptions;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloader.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
@@ -22,6 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
         public async Task SingleFileDownloadAsync_ShouldThrowAllDownloadAttemptsFailedException_GivenFatalErrorMidflight(string testcaseDescription, int maxTriesCount)
         {
             // Arrange
+            var allLogEas = new List<LogEmittedEventArgs>(8);
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/file.bin";
 
@@ -31,13 +30,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<Task>(() => fileDownloader.DownloadAsync(
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp.",
+            var work = new Func<Task>(() =>
+            {
+                fileDownloader.LogEmitted += (object _, in LogEmittedEventArgs ea) => allLogEas.Add(ea);
                 
-                maxTriesCount: maxTriesCount,
-                remoteFilePath: remoteFilePath
-            ));
+                return fileDownloader.DownloadAsync(
+                    hostDeviceModel: "foobar",
+                    hostDeviceManufacturer: "acme corp.",
+                    maxTriesCount: maxTriesCount,
+                    remoteFilePath: remoteFilePath
+                );
+            });
 
             // Assert
             await work.Should()
@@ -55,11 +58,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                 .Should().Raise(nameof(fileDownloader.FatalErrorOccurred))
                 .WithSender(fileDownloader)
                 .WithArgs<FatalErrorOccurredEventArgs>(args => args.ErrorMessage == "fatal error occurred");
-                        
-            eventsMonitor
-                .Should().Raise(nameof(fileDownloader.LogEmitted))
-                .WithSender(fileDownloader)
-                .WithArgs<LogEmittedEventArgs>(args => args.Level == ELogLevel.Error && args.Message.Contains("fatal error occurred"));
+
+            // eventsMonitor
+            //     .OccurredEvents
+            //     .Where(x => x.EventName == nameof(deviceResetter.LogEmitted))
+            //     .SelectMany(x => x.Parameters)
+            //     .OfType<LogEmittedEventArgs>() //xunit or fluent-assertions has memory corruption issues with this probably because of the zero-copy delegate! :(
+
+            allLogEas
+                .Count(l => l is {Level: ELogLevel.Error} && l.Message.Contains("fatal error occurred", StringComparison.InvariantCulture))
+                .Should()
+                .BeGreaterThanOrEqualTo(1);
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Enums;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Native;
 
@@ -15,7 +16,7 @@ namespace Laerdal.McuMgr.Tests.DeviceResetter
             var deviceResetter = new McuMgr.DeviceResetter.DeviceResetter(mockedNativeDeviceResetterProxy);
 
             using var eventsMonitor = deviceResetter.Monitor();
-            deviceResetter.LogEmitted += (_, _) => throw new Exception($"{nameof(deviceResetter.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+            deviceResetter.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(deviceResetter.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             deviceResetter.StateChanged += (_, _) => throw new Exception($"{nameof(deviceResetter.StateChanged)} -> oops!");
             deviceResetter.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(deviceResetter.FatalErrorOccurred)} -> oops!");
 
