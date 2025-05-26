@@ -1,5 +1,6 @@
 using System;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
@@ -16,7 +17,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         event EventHandler<CancelledEventArgs> Cancelled;
 
         /// <summary>Event raised when a log gets emitted</summary>
-        event EventHandler<LogEmittedEventArgs> LogEmitted;
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
 
         /// <summary>Event raised when the file-uploading state changes</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;

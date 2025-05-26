@@ -1,5 +1,6 @@
 using System;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
@@ -13,7 +14,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts
         event EventHandler<CancelledEventArgs> Cancelled;
 
         /// <summary>Event raised when a log gets emitted</summary>
-        event EventHandler<LogEmittedEventArgs> LogEmitted;
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
 
         /// <summary>Event raised when the firmware installation state changes</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;

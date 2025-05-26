@@ -1,5 +1,6 @@
 using System;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.DeviceResetter.Contracts.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts
@@ -7,8 +8,8 @@ namespace Laerdal.McuMgr.DeviceResetter.Contracts
     public interface IDeviceResetterEventSubscribable
     {
         /// <summary>Event that is raised when the device-resetter emits a log-message.</summary>
-        event EventHandler<LogEmittedEventArgs> LogEmitted;
-        
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
+
         /// <summary>Event that is raised when the state of the device-resetter changes.</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;
         
