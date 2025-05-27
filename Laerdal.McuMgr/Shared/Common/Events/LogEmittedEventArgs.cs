@@ -3,7 +3,7 @@ using Laerdal.McuMgr.Common.Enums;
 
 namespace Laerdal.McuMgr.Common.Events
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Auto)]
     public readonly struct LogEmittedEventArgs : IMcuMgrEventArgs
     {
         public string Message { get; }

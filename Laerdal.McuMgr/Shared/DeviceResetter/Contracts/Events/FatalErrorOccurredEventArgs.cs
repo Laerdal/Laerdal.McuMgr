@@ -7,7 +7,7 @@ using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.DeviceResetter.Contracts.Events
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Auto)]
     public readonly struct FatalErrorOccurredEventArgs : IMcuMgrEventArgs
     {
         public string ErrorMessage { get; init; }

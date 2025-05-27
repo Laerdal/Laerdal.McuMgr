@@ -8,7 +8,7 @@ using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Auto)]
     public readonly struct FatalErrorOccurredEventArgs : IMcuMgrEventArgs
     {
         public string ErrorMessage { get; init; }

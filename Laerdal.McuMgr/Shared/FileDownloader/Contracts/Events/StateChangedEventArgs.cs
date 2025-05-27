@@ -7,7 +7,7 @@ using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Auto)]
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
         public string Resource { get; init; }
