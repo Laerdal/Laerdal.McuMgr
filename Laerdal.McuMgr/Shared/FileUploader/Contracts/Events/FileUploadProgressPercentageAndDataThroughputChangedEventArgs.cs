@@ -2,10 +2,12 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
 using System;
+using System.Runtime.InteropServices;
 using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
+    //[StructLayout(LayoutKind.Sequential)] //no need both int and float are 4bytes long
     public readonly struct FileUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
         public readonly int ProgressPercentage;
