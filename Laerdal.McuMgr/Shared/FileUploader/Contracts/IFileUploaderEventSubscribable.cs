@@ -1,5 +1,6 @@
 using System;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
@@ -9,11 +10,14 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
         /// <summary>Event raised when a fatal error occurs</summary>
         event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred;
 
+        /// <summary>Event raised when the operation kick-starts the cancellation process</summary>
+        event EventHandler<CancellingEventArgs> Cancelling;
+        
         /// <summary>Event raised when the operation gets cancelled</summary>
         event EventHandler<CancelledEventArgs> Cancelled;
 
         /// <summary>Event raised when a log gets emitted</summary>
-        event EventHandler<LogEmittedEventArgs> LogEmitted;
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
 
         /// <summary>Event raised when the file-uploading state changes</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;

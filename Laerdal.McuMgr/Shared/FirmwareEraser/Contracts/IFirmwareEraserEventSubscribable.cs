@@ -1,5 +1,6 @@
 using System;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareEraser.Contracts
@@ -7,7 +8,7 @@ namespace Laerdal.McuMgr.FirmwareEraser.Contracts
     public interface IFirmwareEraserEventSubscribable
     {
         /// <summary>Event raised when a log gets emitted</summary>
-        event EventHandler<LogEmittedEventArgs> LogEmitted;
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
         
         /// <summary>Event raised when the state changes</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;

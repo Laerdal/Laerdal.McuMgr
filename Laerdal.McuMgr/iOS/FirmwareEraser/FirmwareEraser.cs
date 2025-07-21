@@ -5,6 +5,7 @@ using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
@@ -15,6 +16,11 @@ namespace Laerdal.McuMgr.FirmwareEraser
     /// <inheritdoc cref="IFirmwareEraser"/>
     public partial class FirmwareEraser : IFirmwareEraser
     {
+        public FirmwareEraser(object nativeBluetoothDevice) // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
+            : this(NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<CBPeripheral>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice)))
+        {
+        }
+
         public FirmwareEraser(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
         {
         }

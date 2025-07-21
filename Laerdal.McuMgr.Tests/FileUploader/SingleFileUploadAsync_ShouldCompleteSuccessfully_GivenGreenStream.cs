@@ -16,10 +16,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     {
         [Theory]
         [InlineData("FUT.SFUA.SCS.GVSTBR.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FUT.SFUA.SCS.GVSTBR.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
+        //[InlineData("FUT.SFUA.SCS.GVSTBR.020", "/path/to/file.bin", 2, -100)] //negative time throws
         [InlineData("FUT.SFUA.SCS.GVSTBR.030", "/path/to/file.bin", 2, +000)]
         [InlineData("FUT.SFUA.SCS.GVSTBR.040", "/path/to/file.bin", 2, +100)]
-        [InlineData("FUT.SFUA.SCS.GVSTBR.050", "/path/to/file.bin", 3, -100)]
+        //[InlineData("FUT.SFUA.SCS.GVSTBR.050", "/path/to/file.bin", 3, -100)] //negative time throws
         [InlineData("FUT.SFUA.SCS.GVSTBR.060", "/path/to/file.bin", 3, +000)]
         [InlineData("FUT.SFUA.SCS.GVSTBR.070", "/path/to/file.bin", 3, +100)]
         public async Task SingleFileUploadAsync_ShouldCompleteSuccessfully_GivenVariousSleepTimesBetweenRetries(string testcaseNickname, string remoteFilePath, int maxTriesCount, int sleepTimeBetweenRetriesInMs)

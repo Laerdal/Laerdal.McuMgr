@@ -8,7 +8,7 @@ public class IOSFirmwareInstaller: NSObject {
     private var _listener: IOSListenerForFirmwareInstaller!
     private var _transporter: McuMgrBleTransport!
     private var _currentState: EIOSFirmwareInstallationState
-    private var _lastFatalErrorMessage: String;
+    private var _lastFatalErrorMessage: String = ""
 
     private var _lastBytesSend: Int = -1;
     private var _lastBytesSendTimestamp: Date? = nil;

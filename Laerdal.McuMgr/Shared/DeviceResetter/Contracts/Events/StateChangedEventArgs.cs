@@ -8,8 +8,8 @@ namespace Laerdal.McuMgr.DeviceResetter.Contracts.Events
 {
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public EDeviceResetterState NewState { get; }
-        public EDeviceResetterState OldState { get; }
+        public EDeviceResetterState NewState { get; init; }
+        public EDeviceResetterState OldState { get; init; }
 
         public StateChangedEventArgs(EDeviceResetterState oldState, EDeviceResetterState newState)
         {

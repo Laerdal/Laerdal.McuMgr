@@ -6,10 +6,10 @@ using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
-    public readonly struct FileDownloadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs
+    public readonly struct FileDownloadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
-        public int ProgressPercentage { get; }
-        public float CurrentThroughput { get; } //kbs / sec
+        public readonly int ProgressPercentage;
+        public readonly float CurrentThroughput; //kbs / sec
 
         public FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughput)
         {

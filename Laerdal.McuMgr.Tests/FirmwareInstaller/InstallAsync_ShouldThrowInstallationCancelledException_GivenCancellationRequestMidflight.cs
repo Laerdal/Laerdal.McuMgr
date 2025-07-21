@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
@@ -30,7 +31,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             if (simulateUserlandExceptionsInEventHandlers)
             {
                 firmwareInstaller.Cancelled += (_, _) => throw new Exception($"{nameof(firmwareInstaller.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
-                firmwareInstaller.LogEmitted += (_, _) => throw new Exception($"{nameof(firmwareInstaller.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+                firmwareInstaller.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(firmwareInstaller.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
                 firmwareInstaller.StateChanged += (_, _) => throw new Exception($"{nameof(firmwareInstaller.StateChanged)} -> oops!");
                 firmwareInstaller.BusyStateChanged += (_, _) => throw new Exception($"{nameof(firmwareInstaller.BusyStateChanged)} -> oops!");
                 firmwareInstaller.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(firmwareInstaller.FatalErrorOccurred)} -> oops!");

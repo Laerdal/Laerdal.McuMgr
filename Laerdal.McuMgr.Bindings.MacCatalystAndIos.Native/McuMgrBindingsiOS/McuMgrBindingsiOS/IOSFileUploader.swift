@@ -288,12 +288,12 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func cancellingAdvertisement(_ reason: String) {
+    private func cancellingAdvertisement(_ reason: String?) {
         _listener.cancellingAdvertisement(reason)
     }
 
     //@objc   dont
-    private func cancelledAdvertisement(_ reason: String) {
+    private func cancelledAdvertisement(_ reason: String?) {
         _listener.cancelledAdvertisement(reason)
     }
 

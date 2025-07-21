@@ -7,7 +7,7 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Events
 {
     public readonly struct CancelledEventArgs : IMcuMgrEventArgs
     {
-        public string Reason { get; }
+        public string Reason { get; init; }
         
         public CancelledEventArgs(string reason)
         {

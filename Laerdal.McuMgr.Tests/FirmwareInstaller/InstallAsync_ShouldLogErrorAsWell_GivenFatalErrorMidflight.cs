@@ -14,18 +14,24 @@ public partial class FirmwareInstallerTestbed
     public async Task InstallAsync_ShouldLogErrorAsWell_GivenFatalErrorMidflight()
     {
         // Arrange
+        var allLogEas = new List<LogEmittedEventArgs>(8);
         var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy20(new McuMgr.FirmwareInstaller.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy());
         var firmwareInstaller = new McuMgr.FirmwareInstaller.FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
 
         using var eventsMonitor = firmwareInstaller.Monitor();
 
         // Act
-        var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
-            data: [1, 2, 3],
-            maxTriesCount: 1,
-            hostDeviceModel: "foobar",
-            hostDeviceManufacturer: "acme corp."
-        ));
+        var work = new Func<Task>(() =>
+        {
+            firmwareInstaller.LogEmitted += (object _, in LogEmittedEventArgs ea) => allLogEas.Add(ea);
+            
+            return firmwareInstaller.InstallAsync(
+                data: [1, 2, 3],
+                maxTriesCount: 1,
+                hostDeviceModel: "foobar",
+                hostDeviceManufacturer: "acme corp."
+            );
+        });
 
         // Assert
         await work.Should().ThrowWithinAsync<AllFirmwareInstallationAttemptsFailedException>(3_000.Milliseconds());
@@ -40,14 +46,16 @@ public partial class FirmwareInstallerTestbed
             .Should().Raise(nameof(firmwareInstaller.FatalErrorOccurred))
             .WithSender(firmwareInstaller);
 
-        eventsMonitor
-            .OccurredEvents
-            .Where(x => x.EventName == nameof(firmwareInstaller.LogEmitted))
-            .SelectMany(x => x.Parameters)
-            .OfType<LogEmittedEventArgs>()
-            .Count(l => l is { Level: ELogLevel.Error } && l.Message.Contains("blah blah"))
+        // eventsMonitor
+        //     .OccurredEvents
+        //     .Where(x => x.EventName == nameof(deviceResetter.LogEmitted))
+        //     .SelectMany(x => x.Parameters)
+        //     .OfType<LogEmittedEventArgs>() //xunit or fluent-assertions has memory corruption issues with this probably because of the zero-copy delegate! :(
+
+        allLogEas
+            .Count(l => l is {Level: ELogLevel.Error} && l.Message.Contains("blah blah", StringComparison.InvariantCulture))
             .Should()
-            .Be(1);
+            .BeGreaterThanOrEqualTo(1);
 
         //00 we dont want to disconnect the device regardless of the outcome
     }

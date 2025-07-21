@@ -8,7 +8,6 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
     internal interface IFileDownloaderEventEmittable : ILogEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
-        void OnLogEmitted(LogEmittedEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);
         void OnBusyStateChanged(BusyStateChangedEventArgs ea);
         void OnDownloadCompleted(DownloadCompletedEventArgs ea);

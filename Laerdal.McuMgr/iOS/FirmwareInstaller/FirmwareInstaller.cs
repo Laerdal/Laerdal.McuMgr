@@ -7,6 +7,7 @@ using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
@@ -17,6 +18,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
     /// <inheritdoc cref="IFirmwareInstaller"/>
     public partial class FirmwareInstaller : IFirmwareInstaller
     {
+        public FirmwareInstaller(object nativeBluetoothDevice) // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
+            : this(NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<CBPeripheral>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice)))
+        {
+        }
+
         public FirmwareInstaller(CBPeripheral bluetoothDevice) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice))
         {
         }

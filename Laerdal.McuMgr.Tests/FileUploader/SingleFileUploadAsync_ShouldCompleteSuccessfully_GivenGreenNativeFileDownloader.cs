@@ -14,10 +14,10 @@ namespace Laerdal.McuMgr.Tests.FileUploader
     {
         [Theory]
         [InlineData("FUT.SFUA.SCS.GGNFD.010", "path/to/file.bin", 01, +100)] // this should be normalized to /path/to/file.bin
-        [InlineData("FUT.SFUA.SCS.GGNFD.020", "/path/to/file.bin", 2, -100)] // negative sleep time should be interpreted as 0
+        //[InlineData("FUT.SFUA.SCS.GGNFD.020", "/path/to/file.bin", 2, -100)] // negative time throws
         [InlineData("FUT.SFUA.SCS.GGNFD.030", "/path/to/file.bin", 2, +000)]
         [InlineData("FUT.SFUA.SCS.GGNFD.040", "/path/to/file.bin", 2, +100)]
-        [InlineData("FUT.SFUA.SCS.GGNFD.050", "/path/to/file.bin", 3, -100)]
+        //[InlineData("FUT.SFUA.SCS.GGNFD.050", "/path/to/file.bin", 3, -100)] // negative time throws
         [InlineData("FUT.SFUA.SCS.GGNFD.060", "/path/to/file.bin", 3, +000)]
         [InlineData("FUT.SFUA.SCS.GGNFD.070", "/path/to/file.bin", 3, +100)]
         public async Task SingleFileUploadAsync_ShouldCompleteSuccessfully_GivenGreenNativeFileUploader(

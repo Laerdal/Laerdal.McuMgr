@@ -6,6 +6,6 @@ namespace Laerdal.McuMgr.Common.Contracts
     // have a look in EventHandlerExtensions.InvokeAllEventHandlersAndIgnoreExceptions() for more info
     internal interface ILogEmittable
     {
-        void OnLogEmitted(LogEmittedEventArgs ea);
+        void OnLogEmitted(in LogEmittedEventArgs ea);
     }
 }

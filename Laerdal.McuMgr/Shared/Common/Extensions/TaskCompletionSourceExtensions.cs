@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Laerdal.McuMgr.Common.Helpers
+namespace Laerdal.McuMgr.Common.Extensions
 {
     /// <summary>
     /// A family of extension methods that ensure that the <see cref="TaskCompletionSource"/> is properly cleaned up in the case of a timeout either

@@ -2,10 +2,10 @@ using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
 {
-    public readonly struct DownloadCompletedEventArgs : IMcuMgrEventArgs
+    public readonly struct DownloadCompletedEventArgs : IMcuMgrEventArgs //hotpathish
     {
-        public byte[] Data { get; }
-        public string Resource { get; } //remote file path essentially
+        public readonly byte[] Data;
+        public readonly string Resource; //remote file path essentially
 
         public DownloadCompletedEventArgs(string resource, byte[] data)
         {

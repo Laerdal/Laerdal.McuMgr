@@ -10,6 +10,7 @@ using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploader.Contracts;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
@@ -120,11 +121,11 @@ namespace Laerdal.McuMgr.FileUploader
         
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<CancellingEventArgs> _cancelling;
-        private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<FileUploadedEventArgs> _fileUploaded;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
+        private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> _fileUploadProgressPercentageAndDataThroughputChanged;
 
         public event EventHandler<FatalErrorOccurredEventArgs> FatalErrorOccurred
@@ -137,7 +138,7 @@ namespace Laerdal.McuMgr.FileUploader
             remove => _fatalErrorOccurred -= value;
         }
 
-        public event EventHandler<LogEmittedEventArgs> LogEmitted
+        public event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted
         {
             add
             {
@@ -212,6 +213,7 @@ namespace Laerdal.McuMgr.FileUploader
             IDictionary<string, TData> remoteFilePathsAndTheirData,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            int sleepTimeBetweenUploadsInMs = 0,
             int sleepTimeBetweenRetriesInMs = 100,
             int timeoutPerUploadInMs = -1,
             int maxTriesPerUpload = 10,
@@ -229,41 +231,48 @@ namespace Laerdal.McuMgr.FileUploader
 
             if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
                 throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+            
+            if (sleepTimeBetweenUploadsInMs < 0)
+                throw new ArgumentOutOfRangeException(nameof(sleepTimeBetweenUploadsInMs), sleepTimeBetweenUploadsInMs, "Must be greater than or equal to zero");
 
             var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
 
-            var filesThatFailedToBeUploaded = new List<string>(2);
-            foreach (var x in sanitizedRemoteFilePathsAndTheirData)
+            var lastIndex = sanitizedRemoteFilePathsAndTheirData.Count - 1;
+            var filesThatFailedToBeUploaded = (List<string>) null;
+            foreach (var ((remoteFilePath, data), i) in sanitizedRemoteFilePathsAndTheirData.Select((x, i) => (x, i)))
             {
                 try
                 {
                     await UploadAsync(
-                        data: x.Value,
-                        remoteFilePath: x.Key,
+                        data: data,
+                        remoteFilePath: remoteFilePath,
 
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
 
-                        timeoutForUploadInMs: timeoutPerUploadInMs,
                         maxTriesCount: maxTriesPerUpload,
-
-                        autodisposeStream: autodisposeStreams,
+                        timeoutForUploadInMs: timeoutPerUploadInMs,
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
 
-                        initialMtuSize: initialMtuSize,
-
+                        autodisposeStream: autodisposeStreams,
+                        
                         pipelineDepth: pipelineDepth,
                         byteAlignment: byteAlignment,
-
+                        initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity,
                         memoryAlignment: memoryAlignment
                     );
+
+                    if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex) //we skip sleeping after the last upload
+                    {
+                        await Task.Delay(sleepTimeBetweenUploadsInMs);
+                    }
                 }
                 catch (UploadErroredOutException)
                 {
                     if (moveToNextUploadInCaseOfError) //00
                     {
-                        filesThatFailedToBeUploaded.Add(x.Key);
+                        (filesThatFailedToBeUploaded ??= new List<string>(4)).Add(remoteFilePath);
                         continue;
                     }
 
@@ -274,7 +283,7 @@ namespace Laerdal.McuMgr.FileUploader
             return filesThatFailedToBeUploaded;
 
             //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
-            //    tactic because failures are fairly common when uploading 50 files or more over to aed devices, and we wanted to ensure
+            //    tactic because failures are fairly common when uploading 50 files or more over to mcumgr devices, and we wanted to ensure
             //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
         }
         
@@ -302,6 +311,9 @@ namespace Laerdal.McuMgr.FileUploader
             if (maxTriesCount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxTriesCount), maxTriesCount, "Must be greater than zero");
 
+            if (sleepTimeBetweenRetriesInMs < 0)
+                throw new ArgumentOutOfRangeException(nameof(sleepTimeBetweenRetriesInMs), sleepTimeBetweenRetriesInMs, "Must be greater than or equal to zero");
+            
             if (string.IsNullOrWhiteSpace(hostDeviceModel))
                 throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
 
@@ -539,19 +551,18 @@ namespace Laerdal.McuMgr.FileUploader
             };
         }
 
-        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
+        void ILogEmittable.OnLogEmitted(in LogEmittedEventArgs ea) => OnLogEmitted(in ea);
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea);
         void IFileUploaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea);
-        void IFileUploaderEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => OnLogEmitted(ea);
         void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => OnFileUploaded(ea);
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileUploadProgressPercentageAndDataThroughputChanged(ea);
 
-        private void OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnCancelling(CancellingEventArgs ea) => _cancelling?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);

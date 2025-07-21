@@ -1,7 +1,5 @@
 ﻿using Laerdal.McuMgr.Common.Contracts;
-using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts
 {
@@ -10,7 +8,6 @@ namespace Laerdal.McuMgr.FileUploader.Contracts
     {
         void OnCancelled(CancelledEventArgs ea);
         void OnCancelling(CancellingEventArgs ea);
-        void OnLogEmitted(LogEmittedEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);
         void OnFileUploaded(FileUploadedEventArgs ea);
         void OnBusyStateChanged(BusyStateChangedEventArgs ea);

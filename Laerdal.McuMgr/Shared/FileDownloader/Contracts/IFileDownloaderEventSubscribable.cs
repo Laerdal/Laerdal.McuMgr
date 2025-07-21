@@ -1,5 +1,6 @@
 using System;
 using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts
@@ -13,7 +14,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
         event EventHandler<CancelledEventArgs> Cancelled;
 
         /// <summary>Event raised when a log gets emitted</summary>
-        event EventHandler<LogEmittedEventArgs> LogEmitted;
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
 
         /// <summary>Event raised when the state changes</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;
@@ -23,7 +24,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts
 
         /// <summary>Event raised when the download is complete</summary>
         event EventHandler<DownloadCompletedEventArgs> DownloadCompleted;
-        
+
         /// <summary>Event raised when the firmware-installation process progresses in terms of downloading the firmware files across</summary>
         event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> FileDownloadProgressPercentageAndDataThroughputChanged;
     }

@@ -8,6 +8,7 @@ using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
+using Laerdal.McuMgr.Common.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareEraser.Contracts;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
@@ -69,12 +70,12 @@ namespace Laerdal.McuMgr.FirmwareEraser
             return _nativeFirmwareEraserProxy.BeginErasure(imageIndex);
         }
 
-        private event EventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
+        private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
 
-        public event EventHandler<LogEmittedEventArgs> LogEmitted
+        public event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted
         {
             add
             {
@@ -184,9 +185,9 @@ namespace Laerdal.McuMgr.FirmwareEraser
             //    from missing libraries and symbols because we dont want the raw native exceptions to bubble up to the managed code
         }
 
-        void ILogEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
-        void IFirmwareEraserEventEmittable.OnLogEmitted(LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); //                       we are using explicit interface
-        void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); // implementations to avoid making these methods public
+        void ILogEmittable.OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
+
+        void IFirmwareEraserEventEmittable.OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); // we are using explicit interface implementations to avoid making these methods public
         void IFirmwareEraserEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         
         void IFirmwareEraserEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)

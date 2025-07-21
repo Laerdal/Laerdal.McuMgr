@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Laerdal.McuMgr.Common.Helpers
+namespace Laerdal.McuMgr.Common.Extensions
 {
     static internal class StreamExtensions
     {

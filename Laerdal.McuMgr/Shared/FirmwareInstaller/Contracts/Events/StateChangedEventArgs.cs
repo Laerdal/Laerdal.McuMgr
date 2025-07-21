@@ -8,8 +8,8 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
 {
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public EFirmwareInstallationState NewState { get; }
-        public EFirmwareInstallationState OldState { get; }
+        public EFirmwareInstallationState NewState { get; init; }
+        public EFirmwareInstallationState OldState { get; init; }
 
         public StateChangedEventArgs(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
         {

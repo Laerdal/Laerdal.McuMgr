@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
@@ -44,7 +45,7 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 
             using var eventsMonitor = fileUploader.Monitor();
             fileUploader.Cancelled += (_, _) => throw new Exception($"{nameof(fileUploader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
-            fileUploader.LogEmitted += (_, _) => throw new Exception($"{nameof(fileUploader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
+            fileUploader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileUploader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             fileUploader.StateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.StateChanged)} -> oops!");
             fileUploader.FileUploaded += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploaded)} -> oops!");
             fileUploader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.BusyStateChanged)} -> oops!");
