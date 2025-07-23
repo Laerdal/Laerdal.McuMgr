@@ -2,7 +2,7 @@ import Foundation
 
 // to future maintainers     keep this dummy class around so as to have it reference the exported classes
 // to future maintainers
-// to future maintainers     omitting this one causes the build environment of the azure pipelines to go completely smart-assinine and strip the
+// to future maintainers     omitting this one causes the build environment of our cicd to go completely smart-assinine striping the
 // to future maintainers     classes IOSDeviceResetter IOSFirmwareEraser and IOSFirmwareUpgrader thinking that they are not being used anywhere
 
 public class DummyPlaceholder {

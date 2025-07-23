@@ -76,8 +76,8 @@ public class IOSFirmwareInstaller: NSObject {
         }
  
         _transporter.mtu = initialMtuSize <= 0
-        ? Constants.DefaultMtuForAssetUploading
-        : initialMtuSize
+            ? Constants.DefaultMtuForAssetUploading
+            : initialMtuSize
 
         _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
         _manager.logDelegate = self
