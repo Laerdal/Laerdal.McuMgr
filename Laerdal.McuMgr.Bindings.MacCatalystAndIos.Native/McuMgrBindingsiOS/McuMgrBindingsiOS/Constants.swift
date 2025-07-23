@@ -12,5 +12,7 @@ internal struct Constants {
     //
     //  https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/pull/338#issuecomment-3095856384
     //
-    internal static let DefaultMtuForAssetUploading: Int = 73;
+    //  based on our own experiments though 73 sometimes causes the fw-upload process to hang and this is why we opted for a slightly higher value
+    //
+    internal static let DefaultMtuForAssetUploading: Int = 80;
 }
