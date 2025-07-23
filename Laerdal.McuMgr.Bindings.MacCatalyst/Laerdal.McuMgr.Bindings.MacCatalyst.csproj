@@ -166,15 +166,16 @@
         <!-- 1. build and generate the fat libs from the proxy swift project -->
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
 
-        <PropertyGroup>
-            <_CliCommand>$(_CliCommand)  SUPPORTS_MACCATALYST='YES'                                                    </_CliCommand>
-            <_CliCommand>$(_CliCommand)  SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                        </_CliCommand>
-            <_CliCommand>$(_CliCommand)  XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)'     </_CliCommand>
-            <_CliCommand>$(_CliCommand)  XCODEBUILD_TARGET_SDK='macosx'                                                </_CliCommand>
-            <_CliCommand>$(_CliCommand)  XCODEBUILD_TARGET_SDK_VERSION='$(Laerdal_Bindings_MacCatalyst___Sdk_Version)' </_CliCommand>
-            <_CliCommand>$(_CliCommand)  ./Laerdal.Mac.CompileAndGenerateFatLibs.sh                                    </_CliCommand>
-        </PropertyGroup>
-        
+        <PropertyGroup> <!-- @formatter:off -->
+            <_CliCommand>$(_CliCommand)                 SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                      </_CliCommand>
+            <_CliCommand>$(_CliCommand)                XCODE_IDE_DEV_PATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)'    </_CliCommand>
+            <_CliCommand>$(_CliCommand)              SUPPORTS_MACCATALYST='YES'                                                     </_CliCommand>
+            <_CliCommand>$(_CliCommand)             XCODEBUILD_TARGET_SDK='macosx'                                                  </_CliCommand>
+            <_CliCommand>$(_CliCommand)     XCODEBUILD_TARGET_SDK_VERSION='$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'           </_CliCommand>
+            <_CliCommand>$(_CliCommand)                                                                                             </_CliCommand>
+            <_CliCommand>$(_CliCommand)             ./Laerdal.Mac.CompileAndGenerateFatLibs.sh                                      </_CliCommand>
+        </PropertyGroup> <!-- @formatter:on -->
+
         <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" $(_CliCommand) "/>
 
         <!-- warning   its absolutely vital to remove any softlink files as they are causing -->
