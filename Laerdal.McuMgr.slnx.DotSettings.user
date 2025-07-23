@@ -9,18 +9,18 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=31de16c6_002D0df4_002D4775_002D9d4a_002D88a8348d407f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToUpload" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=131e5d65_002D002c_002D354a_002D58d9_002D743f2733d18b_0023Laerdal_002EMcuMgr_002EBindings_002EAndroid/@EntryIndexedValue">True</s:Boolean>
-	
-	
-	
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=1eebca17_002Dfd57_002Db6cc_002Dece8_002D1a5895cd083f_0023Laerdal_002EMcuMgr_002EBindings_002EMacCatalyst/@EntryIndexedValue">True</s:Boolean>
 	
 	
 	
 	
 	
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=962e09e8_002D0e53_002D1451_002D63b3_002D13d08deac464_0023Laerdal_002EMcuMgr_002EBindings_002ENetStandard/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=b3bb4f82_002D8427_002D49d7_002D5e69_002De0f8ffbb8be7_0023Laerdal_002EMcuMgr_002EBindings_002EiOS/@EntryIndexedValue">True</s:Boolean>
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
