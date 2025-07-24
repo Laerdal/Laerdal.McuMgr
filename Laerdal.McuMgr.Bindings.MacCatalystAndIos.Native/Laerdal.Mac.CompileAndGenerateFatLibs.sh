@@ -25,7 +25,7 @@ fi
 
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
-declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
+declare XCODEBUILD_SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST:-NO}"
 declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="${XCODEBUILD_TARGET_SDK}${XCODEBUILD_TARGET_SDK_VERSION}"
 
 declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
@@ -66,12 +66,11 @@ function print_setup() {
   echo "** OUTPUT_FOLDER_NAME                : '${OUTPUT_FOLDER_NAME}'                "
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '${OUTPUT_SHARPIE_HEADER_FILES_PATH}'  "
   echo
-  echo "** SUPPORTS_MACCATALYST                       : '${SUPPORTS_MACCATALYST}'     "
-  echo
   echo "** XCODE_IDE_DEV_FOLDERPATH                   : '${XCODE_IDE_DEV_FOLDERPATH:-(No path specified so the system-wide default xcode currently in effect will be used)}'"
   echo
   echo "** XCODEBUILD_TARGET_SDK                      : '${XCODEBUILD_TARGET_SDK}'                      "
   echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
+  echo "** XCODEBUILD_SUPPORTS_MACCATALYST            : '${XCODEBUILD_SUPPORTS_MACCATALYST}'            "
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'  "
   echo
   echo "** XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION         : '${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}'          "
@@ -114,7 +113,7 @@ function build() {
       -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                                    \
                 CODE_SIGN_IDENTITY=""                                                          \
               CODE_SIGNING_ALLOWED="NO"                                                        \
-              SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST}"                                   \
+              SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST}"                        \
              CODE_SIGNING_REQUIRED="NO"                                                        \
           MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
         IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
@@ -137,7 +136,7 @@ function build() {
       -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                                    \
                 CODE_SIGN_IDENTITY=""                                                          \
               CODE_SIGNING_ALLOWED="NO"                                                        \
-              SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST}"                                   \
+              SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST}"                        \
              CODE_SIGNING_REQUIRED="NO"                                                        \
           MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
         IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
