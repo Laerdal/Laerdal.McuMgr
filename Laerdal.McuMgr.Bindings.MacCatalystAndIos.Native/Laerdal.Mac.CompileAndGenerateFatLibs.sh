@@ -8,10 +8,13 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
-declare XCODE_IDE_DEV_PATH="${XCODE_IDE_DEV_PATH:-}"
+declare XCODE_IDE_DEV_FOLDERPATH="${XCODE_IDE_DEV_FOLDERPATH:-}"
 
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
+
+declare XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION:-14.5}" # the minimum supported iOS version for the McuMgrBindingsiOS framework
+declare XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION:-14.6}" # the minimum supported MacCatalyst version for the McuMgrBindingsiOS framework
 
 if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
   XCODEBUILD_TARGET_SDK_VERSION="18.2" # requires xcode 16.2
@@ -22,7 +25,7 @@ fi
 
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
 
-declare SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST:-NO}"
+declare XCODEBUILD_SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST:-NO}"
 declare XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="${XCODEBUILD_TARGET_SDK}${XCODEBUILD_TARGET_SDK_VERSION}"
 
 declare SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
@@ -65,26 +68,28 @@ function print_setup() {
   echo "** OUTPUT_FOLDER_NAME                : '${OUTPUT_FOLDER_NAME}'                "
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '${OUTPUT_SHARPIE_HEADER_FILES_PATH}'  "
   echo
-  echo "** SUPPORTS_MACCATALYST                       : '${SUPPORTS_MACCATALYST}'     "
-  echo
-  echo "** XCODE_IDE_DEV_PATH                         : '${XCODE_IDE_DEV_PATH:-(No path specified so the system-wide default xcode currently in effect will be used)}'"
+  echo "** XCODE_IDE_DEV_FOLDERPATH                   : '${XCODE_IDE_DEV_FOLDERPATH:-(No path specified so the system-wide default xcode currently in effect will be used)}'"
   echo
   echo "** XCODEBUILD_TARGET_SDK                      : '${XCODEBUILD_TARGET_SDK}'                      "
   echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
+  echo "** XCODEBUILD_SUPPORTS_MACCATALYST            : '${XCODEBUILD_SUPPORTS_MACCATALYST}'            "
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'  "
+  echo
+  echo "** XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION         : '${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}'          "
+  echo "** XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION : '${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}'  " 
   echo
 }
 
 function set_system_wide_default_xcode_ide() {
   declare -r currentXcodeDevPath=$( "xcode-select" --print-path )
-  if [ "${XCODE_IDE_DEV_PATH}" != "" ] && [ "${currentXcodeDevPath}" != "${XCODE_IDE_DEV_PATH}" ]; then
-      echo "** Setting Xcode IDE path to '${XCODE_IDE_DEV_PATH}' - remember to manually revert it back to '${currentXcodeDevPath}' after the build is done!"      
+  if [ "${XCODE_IDE_DEV_FOLDERPATH}" != "" ] && [ "${currentXcodeDevPath}" != "${XCODE_IDE_DEV_FOLDERPATH}" ]; then
+      echo "** Setting Xcode IDE path to '${XCODE_IDE_DEV_FOLDERPATH}' - remember to manually revert it back to '${currentXcodeDevPath}' after the build is done!"      
 
-      sudo xcode-select --switch "${XCODE_IDE_DEV_PATH}"
+      sudo xcode-select --switch "${XCODE_IDE_DEV_FOLDERPATH}"
       local exitCode=$?
 
       if [ ${exitCode} -ne 0 ]; then
-        echo "** [FAILED] Failed to set xcode-select to '${XCODE_IDE_DEV_PATH}'"
+        echo "** [FAILED] Failed to set xcode-select to '${XCODE_IDE_DEV_FOLDERPATH}'"
         exit 1
       fi
   fi
@@ -101,14 +106,20 @@ function build() {
 
   echo "**** (Build 2/3) Restore packages for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # @formatter:off
 
-  xcodebuild                                                                       \
-                            -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"    \
-                           -arch "arm64"                                           \
-                         -scheme "${SWIFT_BUILD_SCHEME}"                           \
-                        -project "${SWIFT_PROJECT_PATH}"                           \
-                  -configuration "${SWIFT_BUILD_CONFIGURATION}"                    \
-     -resolvePackageDependencies                                                   \
-    -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}" # @formatter:on
+  xcodebuild                                                                                   \
+                              -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
+                             -arch "arm64"                                                     \
+                           -scheme "${SWIFT_BUILD_SCHEME}"                                     \
+                          -project "${SWIFT_PROJECT_PATH}"                                     \
+                    -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
+       -resolvePackageDependencies                                                             \
+      -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                                    \
+                CODE_SIGN_IDENTITY=""                                                          \
+              CODE_SIGNING_ALLOWED="NO"                                                        \
+              SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST}"                        \
+             CODE_SIGNING_REQUIRED="NO"                                                        \
+          MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
+        IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
@@ -118,18 +129,20 @@ function build() {
 
   echo "**** (Build 3/3) Build for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # https://stackoverflow.com/a/74478244/863651  @formatter:off
 
-  xcodebuild                                                                          \
-                              -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"     \
-                             -arch "arm64"                                            \
-                           -scheme "${SWIFT_BUILD_SCHEME}"                            \
-                          -project "${SWIFT_PROJECT_PATH}"                            \
-                    -configuration "${SWIFT_BUILD_CONFIGURATION}"                     \
-                  -derivedDataPath "${SWIFT_BUILD_PATH}"                              \
-      -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                           \
-                CODE_SIGN_IDENTITY=""                                                 \
-              CODE_SIGNING_ALLOWED="NO"                                               \
-              SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST}"                          \
-             CODE_SIGNING_REQUIRED="NO" # @formatter:on
+  xcodebuild                                                                                   \
+                              -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
+                             -arch "arm64"                                                     \
+                           -scheme "${SWIFT_BUILD_SCHEME}"                                     \
+                          -project "${SWIFT_PROJECT_PATH}"                                     \
+                    -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
+                  -derivedDataPath "${SWIFT_BUILD_PATH}"                                       \
+      -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                                    \
+                CODE_SIGN_IDENTITY=""                                                          \
+              CODE_SIGNING_ALLOWED="NO"                                                        \
+              SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST}"                        \
+             CODE_SIGNING_REQUIRED="NO"                                                        \
+          MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
+        IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
