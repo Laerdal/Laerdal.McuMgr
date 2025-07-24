@@ -818,7 +818,7 @@ maui-windows               8.0.61/8.0.100         SDK 8.0.300, VS 17.10.35027.16
 
 #### 5) Set MSBuild version to ver.17
 
-#### 6) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select --switch /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 6) On Mac make sure to install XCode 16.2 (16.3 doesn't work atm - if you have multiple XCodes installed then make 16.2 the default by running 'sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer' assuming that xcode 16.2 is installed in that fs-path).
 
 #### 7) On Windows you will probably have to also enable in the OS (registry) 'Long Path Support' otherwise the build will most probably fail due to extremely long paths being involved during the build process.
 

@@ -14,10 +14,10 @@ declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
 
 if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
-  XCODEBUILD_TARGET_SDK_VERSION="18.1" # requires xcode 16.1
+  XCODEBUILD_TARGET_SDK_VERSION="18.2" # requires xcode 16.2
 
 elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # maccatalyst
-  XCODEBUILD_TARGET_SDK_VERSION="15.1" # requires xcode 16.1
+  XCODEBUILD_TARGET_SDK_VERSION="15.2" # requires xcode 16.2
 fi
 
 declare SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
@@ -199,14 +199,13 @@ function create_fat_binaries() {
 
   echo "**** (FatBinaries 5/8) Generating binding api definition and structs" # @formatter:off
   set -x
-  sharpie bind                                                                                    \
-                     -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"                          \
-                    -arch "arm64"                                                                 \
-                   -clang                                                                         \
-                   -scope "${SWIFT_OUTPUT_PATH}/${SWIFT_PROJECT_NAME}.framework/Headers/"         \
-                  -output "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"                                   \
-               -namespace "${SWIFT_PROJECT_NAME}"                                                 \
-    "${SWIFT_OUTPUT_PATH}/${SWIFT_PROJECT_NAME}.framework/Headers/${SWIFT_PROJECT_NAME}-Swift.h" # @formatter:on vital   needed for mac-catalyst
+  sharpie bind                                                                                       \
+                        -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"                          \
+                      -scope "${SWIFT_OUTPUT_PATH}/${SWIFT_PROJECT_NAME}.framework/Headers/"         \
+                     -output "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"                                   \
+                  -namespace "${SWIFT_PROJECT_NAME}"                                                 \
+       "${SWIFT_OUTPUT_PATH}/${SWIFT_PROJECT_NAME}.framework/Headers/${SWIFT_PROJECT_NAME}-Swift.h"  \
+                      -clang -arch "arm64" #vital   keep dead last in this exact fashion   needed for mac-catalyst    @formatter:on
   local exitCode=$?
   set +x
 
