@@ -54,15 +54,17 @@
         <Is_Core_Branch Condition="  '$(Laerdal_Source_Branch)' == 'refs/heads/main'  or  '$(Laerdal_Source_Branch)' == 'refs/heads/master'  or  '$(Laerdal_Source_Branch)' == 'refs/heads/develop' ">true</Is_Core_Branch>
         <Is_Pull_Request Condition=" '$(Laerdal_Source_Branch.StartsWith(refs/pull))' == 'true'  and  '$(Laerdal_Source_Branch.EndsWith(/merge))' == 'true' ">true</Is_Pull_Request>
 
-        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                            -->
-        <!--                                                                                                                                                                                                            -->
-        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="           '$(Laerdal_Bindings_iOS___Sdk_Version)'           == '' ">17.2</Laerdal_Bindings_iOS___Sdk_Version>                                              -->
-        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path Condition="    '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path)'    == '' ">/Applications/Xcode.app/Contents/Developer</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path> -->
+        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                                              -->
+        <!--                                                                                                                                                                                                                              -->
+        <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="               '$(Laerdal_Bindings_iOS___Sdk_Version)'              == '' ">17.2</Laerdal_Bindings_iOS___Sdk_Version>                                                         -->
+        <!-- <Laerdal_Bindings_iOS___Min_Supported_Version Condition="     '$(Laerdal_Bindings_iOS___Min_Supported_Version)'    == '' ">18</Laerdal_Bindings_iOS___Min_Supported_Version>                                                 -->
+        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath Condition="  '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath)' == '' ">/Applications/Xcode_16.1.app/Contents/Developer</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath> -->
 
-        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                                               -->
-        <!--                                                                                                                                                                                                                               -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="        '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                               -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path)' == '' ">/Applications/Xcode.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path>  -->
+        <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                                                                       -->
+        <!--                                                                                                                                                                                                                                                       -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="                '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'              == '' ">14.2</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                                         -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Min_Supported_Version Condition="      '$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version)'    == '' ">15</Laerdal_Bindings_MacCatalyst___Min_Supported_Version>                                                 -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath Condition="   '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath)' == '' ">/Applications/Xcode_16.1.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath> -->
 
         <Laerdal_Gradle_Path Condition="             '$(Laerdal_Gradle_Path)'            == '' ">gradle</Laerdal_Gradle_Path>
         <Laerdal_Source_Branch Condition="           '$(Laerdal_Source_Branch)'          == '' ">$(BUILD_SOURCEBRANCH)</Laerdal_Source_Branch>
@@ -241,14 +243,14 @@
         <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols   -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
+                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" Targets="Restore;Rebuild"/>
 
         <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main         -->
         <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols  -->
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
         <MSBuild Targets="Restore;Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
 
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"

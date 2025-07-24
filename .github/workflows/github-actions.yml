@@ -24,13 +24,15 @@ env:
 
   BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34" # for the csproj file
 
-  BINDINGS_IOS___SDK_VERSION: "18.1" # for xcodebuild
-  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
-  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "18.0" # for the csproj file
+  BINDINGS_IOS___SDK_VERSION: "18.1" #                                                            for xcodebuild
+  BINDINGS_IOS___MIN_SUPPORTED_VERSION: "14.5" #                                                  for xcodebuild
+  BINDINGS_IOS___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.1.app/Contents/Developer" #    for xcodebuild
+  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "18.0" #                                         for the csproj file
 
-  BINDINGS_MACCATALYST___SDK_VERSION: "15.1" # for xcodebuild
-  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
-  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "18.0" # for the csproj file
+  BINDINGS_MACCATALYST___SDK_VERSION: "15.1" #                                                         for xcodebuild
+  BINDINGS_MACCATALYST___MIN_SUPPORTED_VERSION: "14.6" #                                               for xcodebuild
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
+  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "18.0" #                                      for the csproj file
 
 on:
   workflow_call: #     so that other workflows can trigger this
@@ -102,11 +104,13 @@ jobs:
                    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion="${{env.BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION}}"                                          \
                                                                                                                                                                                    \
                                        -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"                                                                 \
-                                -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"                                                          \
+                             -p:Laerdal_Bindings_iOS___Min_Supported_Version="${{env.BINDINGS_IOS___MIN_SUPPORTED_VERSION}}"                                                       \
+                          -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath="${{env.BINDINGS_IOS___XCODE_IDE_DEV_FOLDERPATH}}"                                                    \
                        -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion="${{env.BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION}}"                                              \
                                                                                                                                                                                    \
                                -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"                                                         \
-                        -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"                                                  \
+                     -p:Laerdal_Bindings_MacCatalyst___Min_Supported_Version="${{env.BINDINGS_MACCATALYST___MIN_SUPPORTED_VERSION}}"                                               \
+                  -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_FOLDERPATH}}"                                            \
                -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion="${{env.BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION}}"                                      \
                                                                                                                                                                                    \
                                     -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"                                                          \
