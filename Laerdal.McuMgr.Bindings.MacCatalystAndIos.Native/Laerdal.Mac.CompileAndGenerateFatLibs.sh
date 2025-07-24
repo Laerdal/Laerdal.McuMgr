@@ -8,7 +8,7 @@
 #
 # Note that all parameters passed to xcodebuild must be in the form of -parameter value instead of --parameter
 
-declare XCODE_IDE_DEV_PATH="${XCODE_IDE_DEV_PATH:-}"
+declare XCODE_IDE_DEV_FOLDERPATH="${XCODE_IDE_DEV_FOLDERPATH:-}"
 
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
@@ -68,7 +68,7 @@ function print_setup() {
   echo
   echo "** SUPPORTS_MACCATALYST                       : '${SUPPORTS_MACCATALYST}'     "
   echo
-  echo "** XCODE_IDE_DEV_PATH                         : '${XCODE_IDE_DEV_PATH:-(No path specified so the system-wide default xcode currently in effect will be used)}'"
+  echo "** XCODE_IDE_DEV_FOLDERPATH                   : '${XCODE_IDE_DEV_FOLDERPATH:-(No path specified so the system-wide default xcode currently in effect will be used)}'"
   echo
   echo "** XCODEBUILD_TARGET_SDK                      : '${XCODEBUILD_TARGET_SDK}'                      "
   echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
@@ -81,13 +81,13 @@ function print_setup() {
 
 function set_system_wide_default_xcode_ide() {
   declare -r currentXcodeDevPath=$( "xcode-select" --print-path )
-  if [ "${XCODE_IDE_DEV_PATH}" != "" ] && [ "${currentXcodeDevPath}" != "${XCODE_IDE_DEV_PATH}" ]; then
-      echo "** Setting Xcode IDE path to '${XCODE_IDE_DEV_PATH}' - remember to manually revert it back to '${currentXcodeDevPath}' after the build is done!"      
-      sudo xcode-select --switch "${XCODE_IDE_DEV_PATH}"
+  if [ "${XCODE_IDE_DEV_FOLDERPATH}" != "" ] && [ "${currentXcodeDevPath}" != "${XCODE_IDE_DEV_FOLDERPATH}" ]; then
+      echo "** Setting Xcode IDE path to '${XCODE_IDE_DEV_FOLDERPATH}' - remember to manually revert it back to '${currentXcodeDevPath}' after the build is done!"      
+      sudo xcode-select --switch "${XCODE_IDE_DEV_FOLDERPATH}"
       local exitCode=$?
 
       if [ ${exitCode} -ne 0 ]; then
-        echo "** [FAILED] Failed to set xcode-select to '${XCODE_IDE_DEV_PATH}'"
+        echo "** [FAILED] Failed to set xcode-select to '${XCODE_IDE_DEV_FOLDERPATH}'"
         exit 1
       fi
   fi
