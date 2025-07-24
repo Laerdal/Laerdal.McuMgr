@@ -13,6 +13,9 @@ declare XCODE_IDE_DEV_PATH="${XCODE_IDE_DEV_PATH:-}"
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION}" # xcodebuild -showsdks
 
+declare XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION:-14.5}" # the minimum supported iOS version for the McuMgrBindingsiOS framework
+declare XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION:-14.6}" # the minimum supported MacCatalyst version for the McuMgrBindingsiOS framework
+
 if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
   XCODEBUILD_TARGET_SDK_VERSION="18.1" # requires xcode 16.1
 
@@ -71,6 +74,9 @@ function print_setup() {
   echo "** XCODEBUILD_TARGET_SDK_VERSION              : '${XCODEBUILD_TARGET_SDK_VERSION:-(No specific version specified so the latest version will be used)}'"
   echo "** XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY  : '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'  "
   echo
+  echo "** XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION         : '${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}'          "
+  echo "** XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION : '${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}'  " 
+  echo
 }
 
 function set_system_wide_default_xcode_ide() {
@@ -96,16 +102,22 @@ function build() {
   rm -Rf "${SWIFT_PACKAGES_PATH}"
   rm -Rf "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"
 
-  echo "**** (Build 2/3) Restore packages for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'"
+  echo "**** (Build 2/3) Restore packages for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # @formatter:off
 
-  xcodebuild \
-    -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}" \
-    -arch "arm64" \
-    -scheme "${SWIFT_BUILD_SCHEME}" \
-    -project "${SWIFT_PROJECT_PATH}" \
-    -configuration "${SWIFT_BUILD_CONFIGURATION}" \
-    -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}" \
-    -resolvePackageDependencies
+  xcodebuild                                                                                   \
+                              -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
+                             -arch "arm64"                                                     \
+                           -scheme "${SWIFT_BUILD_SCHEME}"                                     \
+                          -project "${SWIFT_PROJECT_PATH}"                                     \
+                    -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
+       -resolvePackageDependencies                                                             \
+      -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                                    \
+                CODE_SIGN_IDENTITY=""                                                          \
+              CODE_SIGNING_ALLOWED="NO"                                                        \
+              SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST}"                                   \
+             CODE_SIGNING_REQUIRED="NO"                                                        \
+          MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
+        IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
@@ -113,21 +125,22 @@ function build() {
     exit 1
   fi
 
-  echo "**** (Build 3/3) Build for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'"
+  echo "**** (Build 3/3) Build for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # https://stackoverflow.com/a/74478244/863651  @formatter:off
 
-  # https://stackoverflow.com/a/74478244/863651
-  xcodebuild \
-    -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}" \
-    -arch "arm64" \
-    -scheme "${SWIFT_BUILD_SCHEME}" \
-    -project "${SWIFT_PROJECT_PATH}" \
-    -configuration "${SWIFT_BUILD_CONFIGURATION}" \
-    -derivedDataPath "${SWIFT_BUILD_PATH}" \
-    -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}" \
-    CODE_SIGN_IDENTITY="" \
-    CODE_SIGNING_ALLOWED="NO" \
-    SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST}" \
-    CODE_SIGNING_REQUIRED="NO"
+  xcodebuild                                                                                   \
+                              -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
+                             -arch "arm64"                                                     \
+                           -scheme "${SWIFT_BUILD_SCHEME}"                                     \
+                          -project "${SWIFT_PROJECT_PATH}"                                     \
+                    -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
+                  -derivedDataPath "${SWIFT_BUILD_PATH}"                                       \
+      -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_PATH}"                                    \
+                CODE_SIGN_IDENTITY=""                                                          \
+              CODE_SIGNING_ALLOWED="NO"                                                        \
+              SUPPORTS_MACCATALYST="${SUPPORTS_MACCATALYST}"                                   \
+             CODE_SIGNING_REQUIRED="NO"                                                        \
+          MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
+        IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
