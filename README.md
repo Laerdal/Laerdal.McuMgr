@@ -62,6 +62,22 @@ The following types of operations are supported on devices running on Nordic's n
 |-----------|---------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------|   
 | DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 15.0 <br/> (api-levels: 20 / 30 / 35) | ✅ 14.5+ <br/> ( sdk: iphoneos-sdk 18.1 ) | ✅ 14.6+ <br/> ( MacOS: 14.6+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)       | 
 
+## ⚡ FW Installation Performance: File-Uploading Stage
+
+Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0) with a 495 byte MTU size and a 4 pipeline depth.
+
+| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
+|------------------|----------------|----------------------|--------------------------|-------------------------|
+| 495 (max)        | 2              | 2                    | ~60                      | Spikes above 100 kb/sec |
+| 495              | 3              | 2                    | ~63.5                    |                         |
+| 495              | 4              | 2                    | ~63.7                    |                         |
+| 495              | 4              | 4                    | ~75.6                    |                         |
+| 80               | 2              | -                    | ~33                      |                         |
+| 80               | 3              | 2                    | ~54.3                    |                         |
+| 80               | 4              | 4                    | ~66.5                    |                         |
+| 250              | 4              | 4                    | ~86                      | Best performance!       |
+
+
 ## ❗️ Salient Points
 
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
