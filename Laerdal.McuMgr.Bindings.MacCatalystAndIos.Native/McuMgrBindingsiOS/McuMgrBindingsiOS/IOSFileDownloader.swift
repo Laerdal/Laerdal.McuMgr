@@ -172,7 +172,7 @@ public class IOSFileDownloader: NSObject {
         }
 
         _transporter = McuMgrBleTransport(_cbPeripheral)
-        _transporter.mtu = properMtu
+        _transporter.mtu = properMtu // todo   experiment with leaving it to null if initialMtuSize==0 so that it will be set to  'targetPeripheral.maximumWriteValueLength(for: .withoutResponse)' by the mcumgr lib
 
         logMessageAdvertisement("[IOSFD.ETIIEO.010] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
     }

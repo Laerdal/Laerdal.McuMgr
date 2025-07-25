@@ -31,7 +31,7 @@ public class IOSFirmwareInstaller: NSObject {
             _ estimatedSwapTimeInMilliseconds: Int,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
-            _ initialMtuSize: Int //if zero or negative then it will be set to peripheralMaxWriteValueLengthForWithoutResponse
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForAssetUploading
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
             onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
