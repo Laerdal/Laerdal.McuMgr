@@ -57,7 +57,7 @@
 		E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFileDownloadingInitializationVerdict.swift; sourceTree = "<group>"; };
 		E769D8D446B42BE572E246D4 /* McuMgrExceptionHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrExceptionHelpers.swift; sourceTree = "<group>"; };
 		E769D93618819B3E676FE0EA /* IOSListenerForDeviceResetter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSListenerForDeviceResetter.swift; sourceTree = "<group>"; };
-		E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = McuMgrBindingsiOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E769D97697BB244952CDDF0E /* DefaultTarget.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DefaultTarget.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E769D9B93897FF4C9ABBAF94 /* IOSFileDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSFileDownloader.swift; sourceTree = "<group>"; };
 		E769D9D0270D6C4E5DF8E7CE /* EIOSFileUploaderState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFileUploaderState.swift; sourceTree = "<group>"; };
 		E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InvalidFirmwareInstallationModeError.swift; sourceTree = "<group>"; };
@@ -148,7 +148,7 @@
 		E769D749382EC6E62A93A5D0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */,
+				E769D97697BB244952CDDF0E /* DefaultTarget.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -167,9 +167,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		E769DF457B4C6D1BF21B955F /* McuMgrBindingsiOS */ = {
+		E769DF457B4C6D1BF21B955F /* DefaultTarget */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E769D1B85089AC865A02B0FA /* Build configuration list for PBXNativeTarget "McuMgrBindingsiOS" */;
+			buildConfigurationList = E769D1B85089AC865A02B0FA /* Build configuration list for PBXNativeTarget "DefaultTarget" */;
 			buildPhases = (
 				E769DC49808E666DDF5F4653 /* Headers */,
 				E769DA01841B83326C0A9B44 /* Sources */,
@@ -180,12 +180,12 @@
 			);
 			dependencies = (
 			);
-			name = McuMgrBindingsiOS;
+			name = DefaultTarget;
 			packageProductDependencies = (
 				B0CFA8122D8A053A007BC223 /* iOSMcuManagerLibrary */,
 			);
 			productName = McuMgrBindingsiOS;
-			productReference = E769D97697BB244952CDDF0E /* McuMgrBindingsiOS.framework */;
+			productReference = E769D97697BB244952CDDF0E /* DefaultTarget.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -210,7 +210,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E769DF457B4C6D1BF21B955F /* McuMgrBindingsiOS */,
+				E769DF457B4C6D1BF21B955F /* DefaultTarget */,
 			);
 		};
 /* End PBXProject section */
@@ -446,7 +446,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E769D1B85089AC865A02B0FA /* Build configuration list for PBXNativeTarget "McuMgrBindingsiOS" */ = {
+		E769D1B85089AC865A02B0FA /* Build configuration list for PBXNativeTarget "DefaultTarget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E769D0C1932B96597229667A /* Debug */,
