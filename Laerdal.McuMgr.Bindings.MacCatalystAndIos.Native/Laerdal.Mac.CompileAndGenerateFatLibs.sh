@@ -13,7 +13,7 @@ declare XCODE_IDE_DEV_FOLDERPATH="${XCODE_IDE_DEV_FOLDERPATH:-}"
 declare XCODEBUILD_TARGET_SDK="${XCODEBUILD_TARGET_SDK:-iphoneos}"
 declare XCODEBUILD_TARGET_SDK_VERSION="${XCODEBUILD_TARGET_SDK_VERSION:-}" # xcodebuild -showsdks
 
-declare SWIFT_BUILD_SCHEME_NAME="${SWIFT_BUILD_SCHEME_NAME:-DefaultScheme}"
+declare SWIFT_BUILD_SCHEME_NAME="${SWIFT_BUILD_SCHEME_NAME:-DefaultScheme}" # this is the way forward in xcode 16+ in terms of building stuff
 #declare SWIFT_BUILD_TARGET_NAME="${SWIFT_BUILD_TARGET_NAME:-DefaultTarget}" # apple sort of deprecated the -target option in xcode 16+ in favor of -scheme
 
 declare XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION:-14.5}" # the minimum supported iOS version for the McuMgrBindingsiOS framework
