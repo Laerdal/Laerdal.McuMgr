@@ -469,9 +469,9 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		B0CFA8112D8A053A007BC223 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Laerdal/IOS-nRF-Connect-Device-Manager.git";
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git";
 			requirement = {
-				branch = "ksidirop/337-fix-mcumgr-ble-transport-constructor-mtu-wise";
+				branch = main;
 				kind = branch;
 			};
 		};
