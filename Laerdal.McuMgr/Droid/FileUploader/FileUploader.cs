@@ -2,7 +2,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Net.Mime;
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;
@@ -109,11 +108,11 @@ namespace Laerdal.McuMgr.FileUploader
             public EFileUploaderVerdict BeginUpload(
                 string remoteFilePath,
                 byte[] data,
-                int? pipelineDepth,
-                int? byteAlignment,
                 int? initialMtuSize,
-                int? windowCapacity,
-                int? memoryAlignment
+                int? pipelineDepth, //   ios
+                int? byteAlignment, //   ios
+                int? windowCapacity, //  android
+                int? memoryAlignment //  android
             )
             {
                 return TranslateFileUploaderVerdict(base.BeginUpload(

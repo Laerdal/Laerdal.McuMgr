@@ -62,6 +62,22 @@ The following types of operations are supported on devices running on Nordic's n
 |-----------|---------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------|   
 | DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 15.0 <br/> (api-levels: 20 / 30 / 35) | ✅ 14.5+ <br/> ( sdk: iphoneos-sdk 18.1 ) | ✅ 14.6+ <br/> ( MacOS: 14.6+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)       | 
 
+## ⚡ FW Installation Performance: File-Uploading Stage
+
+Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0) with a 495 byte MTU size and a 4 pipeline depth.
+
+| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
+|------------------|----------------|----------------------|--------------------------|-------------------------|
+| 495 (max)        | 2              | 2                    | ~60                      | Spikes above 100 kb/sec |
+| 495              | 3              | 2                    | ~63.5                    |                         |
+| 495              | 4              | 2                    | ~63.7                    |                         |
+| 495              | 4              | 4                    | ~75.6                    |                         |
+| 80               | 2              | -                    | ~33                      |                         |
+| 80               | 3              | 2                    | ~54.3                    |                         |
+| 80               | 4              | 4                    | ~66.5                    |                         |
+| 250              | 4              | 4                    | ~86                      | Best performance!       |
+
+
 ## ❗️ Salient Points
 
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
@@ -817,7 +833,7 @@ maui-windows               8.0.61/8.0.100         SDK 8.0.300, VS 17.10.35027.16
 
 #### 5) Set MSBuild version to ver.17
 
-#### 6) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select --switch /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 6) On Mac make sure to install XCode 16.2 (16.3 doesn't work atm - if you have multiple XCodes installed then make 16.2 the default by running 'sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer' assuming that xcode 16.2 is installed in that fs-path).
 
 #### 7) On Windows you will probably have to also enable in the OS (registry) 'Long Path Support' otherwise the build will most probably fail due to extremely long paths being involved during the build process.
 

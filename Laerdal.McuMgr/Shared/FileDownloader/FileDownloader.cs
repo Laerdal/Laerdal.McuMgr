@@ -65,13 +65,12 @@ namespace Laerdal.McuMgr.FileDownloader
             if (failsafeConnectionSettings != null)
             {
                 initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
-                // windowCapacity = connectionSettings.Value.windowCapacity;
-                // memoryAlignment = connectionSettings.Value.memoryAlignment;
+                // windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                // memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
                 
                 OnLogEmitted(new LogEmittedEventArgs(
                     level: ELogLevel.Warning,
-                    message: $"[FD.BD.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
-                             $"(initialMtuSize={initialMtuSize})",
+                    message: $"[FD.BD.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings (initialMtuSize={initialMtuSize})",
                     resource: "File",
                     category: "FileDownloader"
                 ));

@@ -46,7 +46,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
-            int? initialMtuSize = null, //   android only    not applicable for ios
+            int? initialMtuSize = null,
             int? windowCapacity = null, //   android only    not applicable for ios
             int? memoryAlignment = null, //  android only    not applicable for ios
             int? pipelineDepth = null, //    ios only        not applicable for android
@@ -68,9 +68,10 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer,
 
+                initialMtuSize: initialMtuSize,
+
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
-                initialMtuSize: initialMtuSize,
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment
             );
@@ -94,11 +95,13 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
             var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
                 data: data,
+
                 mode: mode,
                 eraseSettings: eraseSettings,
+                initialMtuSize: initialMtuSize,
+                
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
-                initialMtuSize: initialMtuSize,
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment,
                 estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
@@ -197,7 +200,7 @@ namespace Laerdal.McuMgr.FirmwareInstaller
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
-            int? initialMtuSize = null, //    android only
+            int? initialMtuSize = null,
             int? windowCapacity = null, //    android only
             int? memoryAlignment = null, //   android only
             int? pipelineDepth = null, //     ios only
@@ -269,10 +272,11 @@ namespace Laerdal.McuMgr.FirmwareInstaller
                         eraseSettings: eraseSettings,
                         estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
                         
+                        initialMtuSize: initialMtuSize,
+
                         pipelineDepth: pipelineDepth, //      ios only
                         byteAlignment: byteAlignment, //      ios only
 
-                        initialMtuSize: initialMtuSize, //    android only
                         windowCapacity: windowCapacity, //    android only
                         memoryAlignment: memoryAlignment //   android only
                     );

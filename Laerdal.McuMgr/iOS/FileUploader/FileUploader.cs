@@ -110,10 +110,11 @@ namespace Laerdal.McuMgr.FileUploader
                 string remoteFilePath,
                 byte[] data,
 
+                int? initialMtuSize = null,
+
                 int? pipelineDepth = null, //    ios only
                 int? byteAlignment = null, //    ios only
 
-                int? initialMtuSize = null, //   android only
                 int? windowCapacity = null, //   android only
                 int? memoryAlignment = null //   android only
             )
@@ -125,7 +126,8 @@ namespace Laerdal.McuMgr.FileUploader
                     remoteFilePath: remoteFilePath,
 
                     pipelineDepth: pipelineDepth ?? -1,
-                    byteAlignment: byteAlignment ?? -1
+                    byteAlignment: byteAlignment ?? -1,
+                    initialMtuSize: initialMtuSize ?? -1
                 ));
                 if (verdict != EFileUploaderVerdict.Success)
                 {

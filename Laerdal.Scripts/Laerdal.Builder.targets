@@ -268,20 +268,20 @@
             Condition=" '$(Should_Skip_Tests)' == 'false' "
             AfterTargets="BuildProjects">
 
-        <PropertyGroup>
+        <PropertyGroup> <!-- @formatter:off -->
             <_DotnetTestCommand> </_DotnetTestCommand>
             <_DotnetTestCommand>$(_DotnetTestCommand) dotnet  test</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --logger &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity &quot;normal&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration &quot;$(Configuration)&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory &quot;$(Laerdal_Test_Results_Folderpath)&quot;</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -m:1</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</_DotnetTestCommand>
-        </PropertyGroup>
+            <_DotnetTestCommand>$(_DotnetTestCommand) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;                                                                   </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --logger               &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;                                            </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity            &quot;normal&quot;                                                                                             </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration        &quot;$(Configuration)&quot;                                                                                   </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory    &quot;$(Laerdal_Test_Results_Folderpath)&quot;                                                                 </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -m:1                                                                                                                        </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)                                                                       </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)                 </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)         </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion) </_DotnetTestCommand>
+        </PropertyGroup> <!-- @formatter:on -->
 
         <Exec Command=" bash  -c  '$(_DotnetTestCommand)' "
               ConsoleToMSBuild="true"
@@ -318,15 +318,15 @@
         <Error Condition=" '$(Laerdal_Repository_Path)'     == '' " Text="'Laerdal_Repository_Path' has to be set. Please call this script again with the argument '/p:Laerdal_Repository_Path=...'"/>
         <Error Condition=" '$(Laerdal_Github_Access_Token)' == '' " Text="'Laerdal_Github_Access_Token' has to be set. Please call this script again with the argument '/p:Laerdal_Github_Access_Token=...'"/>
 
-        <PropertyGroup>
+        <PropertyGroup> <!-- @formatter:off -->
             <Laerdal_Create_Github_Release_Script_Filepath Condition=" '$(Laerdal_Create_Github_Release_Script_Filepath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.CreateNewReleaseInGithub.sh`))</Laerdal_Create_Github_Release_Script_Filepath>
 
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --log</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch '$(Laerdal_Source_Branch)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version '$(Laerdal_Version_Base)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token '$(Laerdal_Github_Access_Token)'</_Laerdal_Create_Github_Release_Script_Parameters>
-            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository-path '$(Laerdal_Repository_Path)'</_Laerdal_Create_Github_Release_Script_Parameters>
-        </PropertyGroup>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --log                                           </_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --git-branch '$(Laerdal_Source_Branch)'         </_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --tag-version '$(Laerdal_Version_Base)'         </_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --access-token '$(Laerdal_Github_Access_Token)' </_Laerdal_Create_Github_Release_Script_Parameters>
+            <_Laerdal_Create_Github_Release_Script_Parameters>$(_Laerdal_Create_Github_Release_Script_Parameters) --repository-path '$(Laerdal_Repository_Path)'  </_Laerdal_Create_Github_Release_Script_Parameters>
+        </PropertyGroup> <!-- @formatter:on -->
 
         <Message Importance="High" Text="   bash    '$(Laerdal_Create_Github_Release_Script_Filepath)'    $(_Laerdal_Create_Github_Release_Script_Parameters) "/>
 
@@ -352,8 +352,7 @@
         <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)'      == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_MacCatalyst' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_MacCatalyst=...'"/>
         <Error Condition=" '$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)'      == '' " Text="'Laerdal_McuMgrBindings_ProjectFile_NetStandard' has to be set. Please call this script again with the argument '/p:Laerdal_McuMgrBindings_ProjectFile_NetStandard=...'"/>
 
-        <PropertyGroup>
-            <!-- @formatter:off -->
+        <PropertyGroup> <!-- @formatter:off -->            
             <_Laerdal_McuMgr_ProjectFile_Name             >$([System.IO.Path]::GetFileName('$(Laerdal_McuMgr_ProjectFile)')                     .Replace('.csproj', ''))</_Laerdal_McuMgr_ProjectFile_Name>
             <_Laerdal_McuMgr_ProjectFile_iOS_Name         >$([System.IO.Path]::GetFileName('$(Laerdal_McuMgrBindings_ProjectFile_iOS)')         .Replace('.csproj', ''))</_Laerdal_McuMgr_ProjectFile_iOS_Name>
             <_Laerdal_McuMgr_ProjectFile_Android_Name     >$([System.IO.Path]::GetFileName('$(Laerdal_McuMgrBindings_ProjectFile_Android)')     .Replace('.csproj', ''))</_Laerdal_McuMgr_ProjectFile_Android_Name>
@@ -380,8 +379,7 @@
             <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Laerdal_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_Android)&quot;      --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Android_Name)&quot;      --output-sbom-file-name &quot;sbom.laerdal.mcumgr.android.xml&quot;      --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
             <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Laerdal_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_MacCatalyst_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.maccatalyst.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
             <_Laerdal_Sbom_Scriptlet>$(_Laerdal_Sbom_Scriptlet)  $(_Laerdal_Logical_And)    ./Laerdal.GenerateSignAndUploadSbom.sh     $(_Laerdal_Sbom_Script_Parameters)  --csproj-file-path &quot;$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)&quot;  --project-name &quot;$(_Laerdal_McuMgr_ProjectFile_NetStandard_Name)&quot;  --output-sbom-file-name &quot;sbom.laerdal.mcumgr.netstandard.xml&quot;  --parent-project-name &quot;$(_Laerdal_McuMgr_ProjectFile_Name)&quot;  --parent-project-version &quot;$(Laerdal_Version_Assembly)&quot; --skip-installing-cyclonedx-cli-tool --skip-installing-cyclonedx-dotnet-extension</_Laerdal_Sbom_Scriptlet>
-            <!-- @formatter:on -->
-        </PropertyGroup>
+        </PropertyGroup> <!-- @formatter:on -->
 
         <!-- 1  we ignore suppress any errors and continue because sometimes the sbom mechanism spazzes out due to intermittent errors when installing cli tooling   go figure -->
         <!-- 2  also notice that we are forced to target /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server       -->

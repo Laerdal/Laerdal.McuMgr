@@ -2,7 +2,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Net.Mime;
 using Android.App;
 using Android.Bluetooth;
 using Android.Content;

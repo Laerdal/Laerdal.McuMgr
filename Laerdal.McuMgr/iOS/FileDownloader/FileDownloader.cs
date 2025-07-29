@@ -2,7 +2,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
-using System.Runtime.InteropServices;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -11,7 +10,6 @@ using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FileDownloader
@@ -116,10 +114,13 @@ namespace Laerdal.McuMgr.FileDownloader
 
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
-                int? initialMtuSize = null //  android only
+                int? initialMtuSize = null
             )
             {
-                return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(remoteFilePath: remoteFilePath));
+                return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(
+                    remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize ?? -1
+                ));
             }
 
             #endregion commands

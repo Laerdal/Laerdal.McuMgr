@@ -24,14 +24,14 @@ env:
 
   BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34" # for the csproj file
 
-  BINDINGS_IOS___SDK_VERSION: "18.1" #                                                            for xcodebuild
+  BINDINGS_IOS___SDK_VERSION: "18.2" #                                                            for xcodebuild
   BINDINGS_IOS___MIN_SUPPORTED_VERSION: "14.5" #                                                  for xcodebuild
-  BINDINGS_IOS___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.1.app/Contents/Developer" #    for xcodebuild
+  BINDINGS_IOS___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.2.app/Contents/Developer" #    for xcodebuild
   BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "18.0" #                                         for the csproj file
 
-  BINDINGS_MACCATALYST___SDK_VERSION: "15.1" #                                                         for xcodebuild
+  BINDINGS_MACCATALYST___SDK_VERSION: "15.2" #                                                         for xcodebuild
   BINDINGS_MACCATALYST___MIN_SUPPORTED_VERSION: "14.6" #                                               for xcodebuild
-  BINDINGS_MACCATALYST___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.2.app/Contents/Developer" # for xcodebuild
   BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "18.0" #                                      for the csproj file
 
 on:

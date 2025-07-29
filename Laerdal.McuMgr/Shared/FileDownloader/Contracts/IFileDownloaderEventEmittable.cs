@@ -1,7 +1,5 @@
 using Laerdal.McuMgr.Common.Contracts;
-using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Events;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 namespace Laerdal.McuMgr.FileDownloader.Contracts
 {

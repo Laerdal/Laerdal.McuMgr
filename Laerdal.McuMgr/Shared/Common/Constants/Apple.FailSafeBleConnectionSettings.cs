@@ -26,6 +26,7 @@ namespace Laerdal.McuMgr.Common.Constants
             {
                 static public int PipelineDepth { get; set; } = 1;
                 static public int ByteAlignment { get; set; } = 0; //dont set this to '1' because it must >= 2 up to 16 (as a power of 2)    
+                static public int InitialMtuSize { get; set; } = 200; //slow but stable   in 1.9.2+ we need a value > 130 to have a decent upload speed
             }
 
             // public readonly struct ForDownloading //there are currently no apple devices that have issues with BLE connection stability when downloading

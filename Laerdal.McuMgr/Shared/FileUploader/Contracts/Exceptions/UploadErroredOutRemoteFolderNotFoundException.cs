@@ -1,7 +1,6 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Exceptions
 {

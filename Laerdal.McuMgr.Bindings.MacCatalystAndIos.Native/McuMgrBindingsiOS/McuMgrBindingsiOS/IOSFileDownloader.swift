@@ -57,7 +57,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func beginDownload(_ remoteFilePath: String) -> EIOSFileDownloadingInitializationVerdict {
+    public func beginDownload(_ remoteFilePath: String, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
 
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("[IOSFD.BD.010] Another download is already in progress")
@@ -86,7 +86,7 @@ public class IOSFileDownloader: NSObject {
 
         resetUploadState() //order
         disposeFilesystemManager() //00 vital hack
-        ensureTransportIsInitializedExactlyOnce() //order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         let success = _fileSystemManager.download(name: _remoteFilePathSanitized, delegate: self)
@@ -151,7 +151,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
-        if _fileSystemManager != nil { //already initialized
+        if _fileSystemManager != nil { //already initialized?
             return
         }
 
@@ -161,12 +161,22 @@ public class IOSFileDownloader: NSObject {
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileDownloader: McuMgrLogDelegate
     }
 
-    private func ensureTransportIsInitializedExactlyOnce() {
-        if _transporter != nil {
-            return
-        }
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize <= 0 //            at the time of this writing the mtu doesnt play a major role whwn downloading
+            ? Constants.DefaultMtuForFileDownloads //     (it is mostly for when we are uploading) but we are applying it just in case
+            : initialMtuSize
 
-        _transporter = McuMgrBleTransport(_cbPeripheral)
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
+            _transporter.mtu = properMtu
+
+            logMessageAdvertisement("[IOSFD.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        } else {
+            logMessageAdvertisement("[IOSFD.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        }
     }
 
     private func disposeTransport() {

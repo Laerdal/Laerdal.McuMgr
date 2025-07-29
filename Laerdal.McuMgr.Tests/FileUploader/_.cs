@@ -32,11 +32,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public virtual EFileUploaderVerdict BeginUpload(
                 string remoteFilePath,
                 byte[] data,
-                int? pipelineDepth = null,
-                int? byteAlignment = null,
                 int? initialMtuSize = null,
-                int? windowCapacity = null,
-                int? memoryAlignment = null
+                int? pipelineDepth = null, //   ios
+                int? byteAlignment = null, //   ios
+                int? windowCapacity = null, //  android
+                int? memoryAlignment = null //  android
             )
             {
                 BeginUploadCalled = true;

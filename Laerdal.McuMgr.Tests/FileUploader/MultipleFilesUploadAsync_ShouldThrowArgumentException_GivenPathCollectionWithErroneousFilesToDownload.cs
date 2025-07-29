@@ -56,9 +56,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
             public override EFileUploaderVerdict BeginUpload(
                 string remoteFilePath,
                 byte[] data,
+                int? initialMtuSize = null,
+
                 int? pipelineDepth = null, //   ios only
                 int? byteAlignment = null, //   ios only
-                int? initialMtuSize = null, //  android only
+
                 int? windowCapacity = null, //  android only
                 int? memoryAlignment = null //  android only
             )
@@ -66,11 +68,11 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                 var verdict = base.BeginUpload(
                     data: data,
                     remoteFilePath: remoteFilePath,
+                    initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
                     byteAlignment: byteAlignment, //     ios only
 
-                    initialMtuSize: initialMtuSize, //   android only
                     windowCapacity: windowCapacity, //   android only
                     memoryAlignment: memoryAlignment //  android only
                 );

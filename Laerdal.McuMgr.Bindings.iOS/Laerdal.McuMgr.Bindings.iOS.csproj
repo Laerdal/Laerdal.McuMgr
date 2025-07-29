@@ -13,7 +13,7 @@
         <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'false' ">$(TargetFrameworks)netstandard2.1;</TargetFrameworks>
 
         <IsIOS Condition="          $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</IsIOS>
-        
+
         <IsNet8 Condition="         '$(TargetFramework.ToLower().StartsWith(net8))' == 'true'   ">true</IsNet8>
         <IsNetX Condition="         '$(IsNet8)'  ==  'true'                                     ">true</IsNetX>
         <IsNetXIos Condition="      '$(IsNetX)'  ==  'true'  and  '$(IsIOS)'  ==  'true'        ">true</IsNetXIos>
@@ -22,7 +22,7 @@
 
         <!-- this should must be kept in sync between this file and laerdal.mcumgr.csproj     notice that the ordering of the following evaluations is important! -->
         <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true'  and  '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TargetPlatformVersion>
-        <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true'  and  '$(TargetPlatformVersion)'                              == '' ">17.0</TargetPlatformVersion>
+        <TargetPlatformVersion       Condition=" '$(IsNetXIos)' == 'true'  and  '$(TargetPlatformVersion)'                              == '' ">18.0</TargetPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsNetXIos)' == 'true'                                                                     ">12.0</SupportedOSPlatformVersion>
 
         <!-- setting IsBindingProject to true is vital in order for the btouch tools to actually -->

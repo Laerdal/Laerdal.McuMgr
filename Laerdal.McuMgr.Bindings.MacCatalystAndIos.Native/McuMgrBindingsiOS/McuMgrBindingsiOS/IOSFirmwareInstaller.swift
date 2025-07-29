@@ -7,6 +7,7 @@ public class IOSFirmwareInstaller: NSObject {
     private var _manager: FirmwareUpgradeManager!
     private var _listener: IOSListenerForFirmwareInstaller!
     private var _transporter: McuMgrBleTransport!
+    private var _cbPeripheral: CBPeripheral!
     private var _currentState: EIOSFirmwareInstallationState
     private var _lastFatalErrorMessage: String = ""
 
@@ -16,11 +17,14 @@ public class IOSFirmwareInstaller: NSObject {
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
         _listener = listener
-        _transporter = McuMgrBleTransport(cbPeripheral)
+        _cbPeripheral = cbPeripheral
+
         _currentState = .none
         _lastFatalErrorMessage = ""
     }
 
+    private let EstimatedSwapTimeoutInMillisecondsWarningMinThreshold : Int16 = 1_000;
+    
     @objc
     public func beginInstallation(
             _ imageData: Data,
@@ -28,7 +32,8 @@ public class IOSFirmwareInstaller: NSObject {
             _ eraseSettings: Bool,
             _ estimatedSwapTimeInMilliseconds: Int,
             _ pipelineDepth: Int,
-            _ byteAlignment: Int
+            _ byteAlignment: Int,
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
             onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
@@ -58,42 +63,36 @@ public class IOSFirmwareInstaller: NSObject {
             return .failedInvalidSettings
         }
 
-        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
+        if (initialMtuSize > 5_000) { //negative or zero values are ok
+            onError(.invalidSettings, "[IOSFI.BI.035] Invalid mtu value '\(initialMtuSize)': Must be zero or positive and less than or equal to 5_000")
+
+            return .failedInvalidSettings
+        }
+
+        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= EstimatedSwapTimeoutInMillisecondsWarningMinThreshold) { //its better to just warn the calling environment instead of erroring out
             logMessageAdvertisement(
-                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
+                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1_000)' milliseconds instead?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             )
         }
 
-        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
-        _manager.logDelegate = self
+        setState(.idle) //                                         order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) // order
+        ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() //  order
 
-        var firmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(
-                eraseAppSettings: eraseSettings,
-                byteAlignment: byteAlignmentEnum!
+        let firmwareUpgradeConfiguration = spawnFirmwareUpgradeConfiguration( //order
+            mode,
+            eraseSettings,
+            pipelineDepth,
+            byteAlignmentEnum!,
+            estimatedSwapTimeInMilliseconds
         )
-
-        do {
-            firmwareUpgradeConfiguration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
-            
-            if (pipelineDepth >= 0) {
-                firmwareUpgradeConfiguration.pipelineDepth = pipelineDepth
-            }
-
-            if (estimatedSwapTimeInMilliseconds >= 0) {
-                firmwareUpgradeConfiguration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1000) //1 nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
-            }
-
-        } catch let ex {
-            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
-
-            return .failedInvalidSettings
+        if firmwareUpgradeConfiguration == nil {
+            return .failedInvalidSettings //no need to log here  the spawn method takes care of logging
         }
 
         do {
-            setState(.idle)
-
             try _manager.start(
                     images: [
                         ImageManager.Image( //2
@@ -103,7 +102,7 @@ public class IOSFirmwareInstaller: NSObject {
                                 data: imageData
                         )
                     ],
-                    using: firmwareUpgradeConfiguration
+                    using: firmwareUpgradeConfiguration!
             )
 
         } catch let ex {
@@ -121,23 +120,87 @@ public class IOSFirmwareInstaller: NSObject {
         //2 the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
     }
 
+    private func ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() {
+        if _manager != nil { //already initialized?
+            return
+        }
+
+        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) //00
+        _manager.logDelegate = self
+
+        //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below
+    }
+
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize <= 0
+                ? Constants.DefaultMtuForFirmwareInstallations //00
+                : initialMtuSize
+
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
+            _transporter.mtu = properMtu
+
+            logMessageAdvertisement("[IOSFI.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        } else {
+            logMessageAdvertisement("[IOSFI.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        }
+
+        //00  set to DefaultMtuForFirmwareInstallations as an explicit sturdy default-mtu for the special case of ios firmware installations
+        //    note that we had to resort to this because nordic 1.9.2 defaults to mtu=20(!) for some weird reason
+        //    which seems to be a bug ofcourse because it causes the fw installation to fail before it even begins
+    }
+
+    private func spawnFirmwareUpgradeConfiguration(
+        _ mode: EIOSFirmwareInstallationMode,
+        _ eraseSettings: Bool,
+        _ pipelineDepth: Int,
+        _ byteAlignmentEnum: ImageUploadAlignment,
+        _ estimatedSwapTimeInMilliseconds: Int
+    ) -> FirmwareUpgradeConfiguration? {
+        var configuration = FirmwareUpgradeConfiguration(eraseAppSettings: eraseSettings, byteAlignment: byteAlignmentEnum)
+
+        do {
+            configuration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
+
+            if (pipelineDepth >= 0) {
+                configuration.pipelineDepth = pipelineDepth
+            }
+
+            if (estimatedSwapTimeInMilliseconds >= 0) {
+                configuration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1_000) //1
+            }
+
+        } catch let ex {
+            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
+
+            return nil
+        }
+
+        return configuration
+        
+        //1  nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
+    }
+
     private func isCold() -> Bool {
         return _currentState == .none
                 || _currentState == .error
                 || _currentState == .complete
                 || _currentState == .cancelled
     }
-    
+
     private func calculateHashBytesOfData(_ data: Data) -> Data {
         var hasher = Hasher()
         hasher.combine(data)
 
         let hashNumeric = hasher.finalize()
-        
+
         let hashData = withUnsafeBytes(of: hashNumeric.littleEndian) { Data($0) } //00
 
         return hashData
-        
+
         //00   notice that we have to be explicit in terms of endianess to avoid nasty surprises when transmitting bytes over the air
         //     https://stackoverflow.com/a/28681106/863651
     }
@@ -196,10 +259,10 @@ public class IOSFirmwareInstaller: NSObject {
         let currentStateSnapshot = _currentState //00  order
         setState(.error) //                            order
         fatalErrorOccurredAdvertisement( //            order
-            currentStateSnapshot,
-            fatalErrorType,
-            errorMessage,
-            McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+                currentStateSnapshot,
+                fatalErrorType,
+                errorMessage,
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
         )
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
@@ -375,9 +438,9 @@ extension IOSFirmwareInstaller: McuMgrLogDelegate {
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
         logMessageAdvertisement(
-            msg,
-            category.rawValue,
-            level.name
+                msg,
+                category.rawValue,
+                level.name
         )
     }
 }

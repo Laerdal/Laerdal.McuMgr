@@ -62,7 +62,8 @@ public class IOSFileUploader: NSObject {
             _ remoteFilePath: String,
             _ data: Data?,
             _ pipelineDepth: Int,
-            _ byteAlignment: Int
+            _ byteAlignment: Int,
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
@@ -115,24 +116,39 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
+        if (initialMtuSize > 5_000) { //negative or zero value are ok however
+            onError("[IOSFU.BU.085] Invalid mtu value '\(initialMtuSize)': Must be zero or positive and less than or equal to 5_000")
+
+            return .failedInvalidSettings
+        }
+
         resetUploadState() //order
         disposeFilesystemManager() //00 vital hack
-        ensureTransportIsInitializedExactlyOnce() //order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
         if (pipelineDepth >= 0) {
             configuration.pipelineDepth = pipelineDepth
         }
-                
-        let success = _fileSystemManager.upload( //order
-            name: _remoteFilePathSanitized,
-            data: data!,
-            using: configuration,
-            delegate: self
-        )
-        if !success {
-            onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+
+        do
+        {
+            let success = _fileSystemManager.upload( //order
+                    name: _remoteFilePathSanitized,
+                    data: data!,
+                    using: configuration,
+                    delegate: self
+            )
+            if !success {
+                onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+
+                return .failedErrorUponCommencing
+            }
+        }
+        catch let error //even though static analysis claims that no exception can be thrown it is in fact possible for the .upload() method to crash due to mtu related errors!
+        {
+            onError("[IOSFU.BU.095] Failed to commence file-uploading (check logs for details)", error)
 
             return .failedErrorUponCommencing
         }
@@ -215,12 +231,22 @@ public class IOSFileUploader: NSObject {
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileUploader: McuMgrLogDelegate
     }
 
-    private func ensureTransportIsInitializedExactlyOnce() {
-        if _transporter != nil {
-            return
-        }
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize <= 0
+                ? Constants.DefaultMtuForFileUploads
+                : initialMtuSize
 
-        _transporter = McuMgrBleTransport(_cbPeripheral)
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
+            _transporter.mtu = properMtu
+
+            logMessageAdvertisement("[IOSFU.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        } else {
+            logMessageAdvertisement("[IOSFU.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        }
     }
 
     private func disposeTransport() {

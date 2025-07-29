@@ -18,7 +18,7 @@ namespace Laerdal.McuMgr.FileDownloader.Contracts.Events
                 value: currentThroughput,
                 digits: 1
             );
-
+            
             ProgressPercentage = progressPercentage;
         }
     }
