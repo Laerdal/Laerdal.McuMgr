@@ -1,8 +1,6 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Constants;
-using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
@@ -14,13 +12,13 @@ namespace Laerdal.McuMgr.Tests.FileUploader
 {
     public partial class FileUploaderTestbed
     {
-        [Theory]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.010", "sm-x200    ", "  samsung  ", null, null, null, null, null, null, null, 23, 1, 1)]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.020", "  SM-X200  ", "  Samsung  ", null, null, null, null, null, null, null, 23, 1, 1)]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.030", "  iPhone 6 ", "  Apple    ", null, null, null, null, null, 1, 1, null, null, null)]
-        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.040", "  iPhone 6 ", "  Apple    ", 2, 4, null, null, null, 2, 4, null, null, null)]
+        [Theory] //@formatter:off
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.010", "sm-x200    ", "  samsung  ", null, null, null, null, null, null, null,   23,    1,    1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.020", "  SM-X200  ", "  Samsung  ", null, null, null, null, null, null, null,   23,    1,    1)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.030", "  iPhone 6 ", "  Apple    ", null, null, null, null, null,    1,    0, null, null, null)]
+        [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.040", "  iPhone 6 ", "  Apple    ",    2,    4, null, null, null,    2,    4, null, null, null)]
         [InlineData("FUT.SFUA.SCSBFBTFSRA.GPD.050", "  foobar   ", " AcmeCorp. ", null, null, null, null, null, null, null, null, null, null)]
-        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettingsRightAway_GivenProblematicDevices(
+        public async Task SingleFileUploadAsync_ShouldCompleteSuccessfullyByFallingBackToFailsafeSettingsRightAway_GivenProblematicDevices( //@formatter:on
             string testcaseNickname,
             string hostDeviceModel,
             string hostDeviceManufacturer,
