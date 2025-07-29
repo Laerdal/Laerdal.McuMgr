@@ -244,6 +244,8 @@ public class IOSFileUploader: NSObject {
             _transporter.mtu = properMtu
 
             logMessageAdvertisement("[IOSFU.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        } else {
+            logMessageAdvertisement("[IOSFU.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
         }
     }
 
