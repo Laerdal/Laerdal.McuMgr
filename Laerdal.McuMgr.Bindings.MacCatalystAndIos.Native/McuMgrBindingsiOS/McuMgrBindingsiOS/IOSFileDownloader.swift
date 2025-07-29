@@ -151,7 +151,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
-        if _fileSystemManager != nil { //already initialized
+        if _fileSystemManager != nil { //already initialized?
             return
         }
 
@@ -162,19 +162,19 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
-        let properMtu = initialMtuSize <= 0 //             at the time of this writing the mtu doesnt play a major role whwn downloading
-            ? Constants.DefaultMtuForAssetUploading //     (it is mostly for when we are uploading) but we are applying it just in case
+        let properMtu = initialMtuSize <= 0 //                      at the time of this writing the mtu doesnt play a major role whwn downloading
+            ? Constants.DefaultMtuForFileUploadsAndDownloads //     (it is mostly for when we are uploading) but we are applying it just in case
             : initialMtuSize
 
-        if _transporter != nil {
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
             _transporter.mtu = properMtu
-            return
+
+            logMessageAdvertisement("[IOSFD.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
         }
-
-        _transporter = McuMgrBleTransport(_cbPeripheral)
-        _transporter.mtu = properMtu // todo   experiment with leaving it to null if initialMtuSize==0 so that it will be set to  'targetPeripheral.maximumWriteValueLength(for: .withoutResponse)' by the mcumgr lib
-
-        logMessageAdvertisement("[IOSFD.ETIIEO.010] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
     }
 
     private func disposeTransport() {

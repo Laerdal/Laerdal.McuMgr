@@ -63,7 +63,7 @@ public class IOSFileUploader: NSObject {
             _ data: Data?,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
-            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForAssetUploading
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploadsAndDownloads
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
@@ -233,18 +233,18 @@ public class IOSFileUploader: NSObject {
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
         let properMtu = initialMtuSize <= 0
-                ? Constants.DefaultMtuForAssetUploading
+                ? Constants.DefaultMtuForFileUploadsAndDownloads
                 : initialMtuSize
-        
-        if _transporter != nil {
+
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
             _transporter.mtu = properMtu
-            return
+
+            logMessageAdvertisement("[IOSFU.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
         }
-
-        _transporter = McuMgrBleTransport(_cbPeripheral)
-        _transporter.mtu = properMtu // todo   experiment with leaving it to null if initialMtuSize==0 so that it will be set to  'targetPeripheral.maximumWriteValueLength(for: .withoutResponse)' by the mcumgr lib
-
-        logMessageAdvertisement("[IOSFU.ETIIEO.010] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
     }
 
     private func disposeTransport() {

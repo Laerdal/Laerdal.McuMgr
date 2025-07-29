@@ -7,6 +7,7 @@ public class IOSFirmwareInstaller: NSObject {
     private var _manager: FirmwareUpgradeManager!
     private var _listener: IOSListenerForFirmwareInstaller!
     private var _transporter: McuMgrBleTransport!
+    private var _cbPeripheral: CBPeripheral!
     private var _currentState: EIOSFirmwareInstallationState
     private var _lastFatalErrorMessage: String = ""
 
@@ -16,7 +17,8 @@ public class IOSFirmwareInstaller: NSObject {
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
         _listener = listener
-        _transporter = McuMgrBleTransport(cbPeripheral)
+        _cbPeripheral = cbPeripheral
+
         _currentState = .none
         _lastFatalErrorMessage = ""
     }
@@ -31,7 +33,7 @@ public class IOSFirmwareInstaller: NSObject {
             _ estimatedSwapTimeInMilliseconds: Int,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
-            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForAssetUploading
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploadsAndDownloads
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
             onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
@@ -74,41 +76,23 @@ public class IOSFirmwareInstaller: NSObject {
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             )
         }
- 
-        _transporter.mtu = initialMtuSize <= 0
-            ? Constants.DefaultMtuForAssetUploading
-            : initialMtuSize
 
-        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
-        _manager.logDelegate = self
+        setState(.idle) //                                         order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) // order
+        ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() //  order
 
-        var firmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(
-                eraseAppSettings: eraseSettings,
-                byteAlignment: byteAlignmentEnum!
+        let firmwareUpgradeConfiguration = spawnFirmwareUpgradeConfiguration( //order
+            mode,
+            eraseSettings,
+            pipelineDepth,
+            byteAlignmentEnum!,
+            estimatedSwapTimeInMilliseconds
         )
-
-        do {
-            firmwareUpgradeConfiguration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
-
-            if (pipelineDepth >= 0) {
-                firmwareUpgradeConfiguration.pipelineDepth = pipelineDepth
-            }
-
-            if (estimatedSwapTimeInMilliseconds >= 0) {
-                firmwareUpgradeConfiguration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1_000) //1 nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
-            }
-
-        } catch let ex {
-            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
-
-            return .failedInvalidSettings
+        if firmwareUpgradeConfiguration == nil {
+            return .failedInvalidSettings //no need to log here  the spawn method takes care of logging
         }
 
         do {
-            setState(.idle)
-
-            logMessageAdvertisement("[IOSFI.BI.055] transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
-
             try _manager.start(
                     images: [
                         ImageManager.Image( //2
@@ -118,7 +102,7 @@ public class IOSFirmwareInstaller: NSObject {
                                 data: imageData
                         )
                     ],
-                    using: firmwareUpgradeConfiguration
+                    using: firmwareUpgradeConfiguration!
             )
 
         } catch let ex {
@@ -134,6 +118,64 @@ public class IOSFirmwareInstaller: NSObject {
         //1 rF52840 due to how the flash memory works requires ~20 sec to erase images
         //
         //2 the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+    }
+
+    private func ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() {
+        if _manager != nil { //already initialized?
+            return
+        }
+
+        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) //00
+        _manager.logDelegate = self
+
+        //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below
+    }
+
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize <= 0
+                ? Constants.DefaultMtuForFileUploadsAndDownloads //set to 0 (=autoconfigure) but we left it around just in case we need it again in the future
+                : initialMtuSize
+
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
+            _transporter.mtu = properMtu
+
+            logMessageAdvertisement("[IOSFI.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        }
+    }
+
+    private func spawnFirmwareUpgradeConfiguration(
+        _ mode: EIOSFirmwareInstallationMode,
+        _ eraseSettings: Bool,
+        _ pipelineDepth: Int,
+        _ byteAlignmentEnum: ImageUploadAlignment,
+        _ estimatedSwapTimeInMilliseconds: Int
+    ) -> FirmwareUpgradeConfiguration? {
+        var configuration = FirmwareUpgradeConfiguration(eraseAppSettings: eraseSettings, byteAlignment: byteAlignmentEnum)
+
+        do {
+            configuration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
+
+            if (pipelineDepth >= 0) {
+                configuration.pipelineDepth = pipelineDepth
+            }
+
+            if (estimatedSwapTimeInMilliseconds >= 0) {
+                configuration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1_000) //1
+            }
+
+        } catch let ex {
+            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
+
+            return nil
+        }
+
+        return configuration
+        
+        //1  nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
     }
 
     private func isCold() -> Bool {
