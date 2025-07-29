@@ -1,3 +1,4 @@
+using System;
 using Laerdal.McuMgr.Common.Constants;
 
 namespace Laerdal.McuMgr.Common.Helpers
@@ -8,10 +9,13 @@ namespace Laerdal.McuMgr.Common.Helpers
             bool uploadingNotDownloading,
             int triesCount,
             int maxTriesCount,
-            int suspiciousTransportFailuresCount
+            int suspiciousTransportFailuresCount,
+            int? resortToFailSafeSettingOnSuspiciousFailureCount = null //todo   we should consider making configurable via the options object!
         )
         {
-            var isConnectionTooUnstableForUploading = triesCount >= 2 && (triesCount == maxTriesCount || triesCount >= 3 && suspiciousTransportFailuresCount >= 2);
+            resortToFailSafeSettingOnSuspiciousFailureCount ??= Math.Min(10, maxTriesCount - 3); // last few tries reserved for the last-ditch effort to salvage the connection!
+            
+            var isConnectionTooUnstableForUploading = triesCount >= 2 && (triesCount == maxTriesCount || triesCount >= 3 && suspiciousTransportFailuresCount >= resortToFailSafeSettingOnSuspiciousFailureCount);
             if (!isConnectionTooUnstableForUploading)
                 return null;
             
