@@ -15,7 +15,6 @@ using Laerdal.McuMgr.FirmwareEraser.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Events;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareEraser.Contracts.Native;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
 
 [assembly: InternalsVisibleTo("Laerdal.McuMgr.Tests")]
 namespace Laerdal.McuMgr.FirmwareEraser

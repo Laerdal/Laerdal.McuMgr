@@ -2,7 +2,6 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
 using System;
-using System.Runtime.InteropServices;
 using Laerdal.McuMgr.Common.Events;
 
 namespace Laerdal.McuMgr.FileUploader.Contracts.Events
