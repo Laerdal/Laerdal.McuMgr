@@ -47,6 +47,8 @@ namespace Laerdal.McuMgr.Common.Constants
         {
             public readonly struct ForUploading
             {
+                //todo   once we upgrade to a nordic version that employs stricter security and imposes greater strain on the connection the initial-mtu
+                //todo   will have to probably be increased to around 130 or more for the uploading to be efficient   otherwise it will either fail or be very slow!
                 static public int InitialMtuSize { get; set; } = 23;
                 static public int WindowCapacity { get; set; } = 1;
                 static public int MemoryAlignment { get; set; } = 1;    
