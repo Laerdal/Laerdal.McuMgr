@@ -2,7 +2,6 @@
 using Laerdal.McuMgr.FileDownloader.Contracts;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloader.Contracts.Native;
-using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 
 namespace Laerdal.McuMgr.Tests.FileDownloader
 {

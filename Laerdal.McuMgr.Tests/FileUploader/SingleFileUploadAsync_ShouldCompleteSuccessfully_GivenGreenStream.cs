@@ -1,11 +1,9 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Enums;
 using Laerdal.McuMgr.FileUploader.Contracts.Events;
 using Laerdal.McuMgr.FileUploader.Contracts.Native;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploader.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
 #pragma warning disable xUnit1026

@@ -1,6 +1,5 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstaller.Contracts.Native;
