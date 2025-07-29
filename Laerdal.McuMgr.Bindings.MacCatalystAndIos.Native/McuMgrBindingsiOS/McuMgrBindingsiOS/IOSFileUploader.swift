@@ -63,7 +63,7 @@ public class IOSFileUploader: NSObject {
             _ data: Data?,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
-            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploadsAndDownloads
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
@@ -233,7 +233,7 @@ public class IOSFileUploader: NSObject {
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
         let properMtu = initialMtuSize <= 0
-                ? Constants.DefaultMtuForFileUploadsAndDownloads
+                ? Constants.DefaultMtuForFileUploads
                 : initialMtuSize
 
         _transporter = _transporter == nil

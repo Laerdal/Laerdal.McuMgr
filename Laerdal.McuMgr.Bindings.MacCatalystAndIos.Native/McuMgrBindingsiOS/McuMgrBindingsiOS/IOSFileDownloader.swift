@@ -162,8 +162,8 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
-        let properMtu = initialMtuSize <= 0 //                      at the time of this writing the mtu doesnt play a major role whwn downloading
-            ? Constants.DefaultMtuForFileUploadsAndDownloads //     (it is mostly for when we are uploading) but we are applying it just in case
+        let properMtu = initialMtuSize <= 0 //            at the time of this writing the mtu doesnt play a major role whwn downloading
+            ? Constants.DefaultMtuForFileDownloads //     (it is mostly for when we are uploading) but we are applying it just in case
             : initialMtuSize
 
         _transporter = _transporter == nil

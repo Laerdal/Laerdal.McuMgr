@@ -33,7 +33,7 @@ public class IOSFirmwareInstaller: NSObject {
             _ estimatedSwapTimeInMilliseconds: Int,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
-            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploadsAndDownloads
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
             onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
@@ -133,7 +133,7 @@ public class IOSFirmwareInstaller: NSObject {
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
         let properMtu = initialMtuSize <= 0
-                ? Constants.DefaultMtuForFileUploadsAndDownloads //set to 0 (=autoconfigure) but we left it around just in case we need it again in the future
+                ? Constants.DefaultMtuForFirmwareInstallations //00
                 : initialMtuSize
 
         _transporter = _transporter == nil
@@ -147,6 +147,10 @@ public class IOSFirmwareInstaller: NSObject {
         } else {
             logMessageAdvertisement("[IOSFI.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
         }
+
+        //00  set to DefaultMtuForFirmwareInstallations as an explicit sturdy default-mtu for the special case of ios firmware installations
+        //    note that we had to resort to this because nordic 1.9.2 defaults to mtu=20(!) for some weird reason
+        //    which seems to be a bug ofcourse because it causes the fw installation to fail before it even begins
     }
 
     private func spawnFirmwareUpgradeConfiguration(
