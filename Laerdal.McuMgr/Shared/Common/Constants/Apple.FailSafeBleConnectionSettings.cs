@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,13 +25,13 @@ namespace Laerdal.McuMgr.Common.Constants
             public readonly struct ForUploading
             {
                 static public int PipelineDepth { get; set; } = 1;
-                static public int ByteAlignment { get; set; } = 1;    
+                static public int ByteAlignment { get; set; } = 0; //dont set this to '1' because it must >= 2 up to 16 (as a power of 2)    
             }
 
             // public readonly struct ForDownloading //there are currently no apple devices that have issues with BLE connection stability when downloading
             // {
-            //     // static public int PipelineDepth { get; set; } = null; //not applicable to downloads
-            //     // static public int ByteAlignment { get; set; } = 1; //not applicable to downloads
+            //     static public int PipelineDepth { get; set; } = null; //not applicable to downloads
+            //     static public int ByteAlignment { get; set; } = 0; //not applicable to downloads
             // }
         }
     }
