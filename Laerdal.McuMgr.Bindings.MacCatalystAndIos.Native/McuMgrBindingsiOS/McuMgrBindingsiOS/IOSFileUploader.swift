@@ -12,6 +12,7 @@ public class IOSFileUploader: NSObject {
     private var _currentState: EIOSFileUploaderState = .none
     private var _lastBytesSend: Int = 0
     private var _cancellationReason: String = ""
+    private var _uploadStartTimestamp: Date? = nil
     private var _lastFatalErrorMessage: String = ""
     private var _lastBytesSendTimestamp: Date? = nil
     private var _remoteFilePathSanitized: String = ""
@@ -212,12 +213,14 @@ public class IOSFileUploader: NSObject {
     }
 
     private func resetUploadState() {
+        _uploadStartTimestamp = nil
+
         _lastBytesSend = 0
         _lastBytesSendTimestamp = nil
 
         setState(.idle)
         busyStateChangedAdvertisement(true)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -320,12 +323,14 @@ public class IOSFileUploader: NSObject {
     //@objc   dont
     private func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
-            _ averageThroughput: Float32
+            _ currentThroughputInKbps: Float32
+            _ averageCurrentThroughputInKbps: Float32
     ) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
             self._listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     progressPercentage,
-                    averageThroughput
+                    currentThroughputInKbps,
+                    averageCurrentThroughputInKbps
             )
         }
     }
@@ -343,7 +348,7 @@ public class IOSFileUploader: NSObject {
 
         if (oldState == .uploading && newState == .complete) //00
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -354,9 +359,12 @@ extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
         setState(.uploading)
-        let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
+
         let uploadProgressPercentage = (bytesSent * 100) / fileSize
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond)
+        let currentThroughputInKbps = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
+        let averageCurrentThroughputInKbps = calculateAverageThroughput(bytesSent: bytesSent, timestamp: timestamp)
+
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, averageCurrentThroughputInKbps)
     }
 
     public func uploadDidFail(with error: Error) {
@@ -367,7 +375,7 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadDidCancel() {
         setState(.cancelled)
         busyStateChangedAdvertisement(false)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0)
         cancelledAdvertisement(_cancellationReason)
     }
 
@@ -391,12 +399,26 @@ extension IOSFileUploader: FileUploadDelegate {
             return 0
         }
 
-        let throughputKilobytesPerSecond = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
 
         _lastBytesSend = bytesSent
         _lastBytesSendTimestamp = timestamp
 
-        return throughputKilobytesPerSecond
+        return currentThroughputInKbps
+    }
+
+    private func calculateAverageThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_uploadStartTimestamp == nil) {
+            _uploadStartTimestamp = timestamp
+            return 0
+        }
+
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!).truncatingRemainder(dividingBy: 1))
+        if (intervalInSeconds == 0) { //should be impossible but just in case
+            return 0
+        }
+
+        return Float32(bytesSent) / (intervalInSeconds * 1024)
     }
 
 }

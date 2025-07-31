@@ -263,9 +263,9 @@ public class IOSFileDownloader: NSObject {
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
         setState(.downloading)
-        let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
+        let currentThroughputInKbps = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let DownloadProgressPercentage = (bytesSent * 100) / fileSize
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, throughputKilobytesPerSecond)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, currentThroughputInKbps)
     }
 
     public func downloadDidFail(with error: Error) {
@@ -301,12 +301,12 @@ extension IOSFileDownloader: FileDownloadDelegate {
             return 0
         }
 
-        let throughputKilobytesPerSecond = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
 
         _lastBytesSend = bytesSent
         _lastBytesSendTimestamp = timestamp
 
-        return throughputKilobytesPerSecond
+        return currentThroughputInKbps
     }
 }
 
