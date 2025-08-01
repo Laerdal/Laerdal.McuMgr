@@ -27,12 +27,18 @@
 			<!-- which has incompatibility problems versus gradle7.6 which is what we need for smooth compilation -->
 			<GradlePath Condition=" '$(GradlePath)' == '' ">gradle</GradlePath>
 
-            <!-- OSX and Linux     azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default -->
-            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17')    ">/usr/local/opt/openjdk@17</JavaHome>
-            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17') ">/opt/homebrew/opt/openjdk@17</JavaHome>
+            <!-- OSX and Linux -->
+            <!-- microsoft-openjdk@17 installs itself here    we want to prioritize microsoft's flavor over all others -->
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin/java') ">/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home</JavaHome>
+            <!-- azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default  -->
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17/bin/java')    ">/usr/local/opt/openjdk@17</JavaHome>
+            <!-- temurin-openjdk@17 installs itself here -->
+            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17/bin/java') ">/opt/homebrew/opt/openjdk@17</JavaHome>
 
-            <!-- Windows -->
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2') ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
+            <!-- Windows this has to be adjusted accordingly depending on the flavor and version of the jdk -->
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-17.0.15.6-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.15.6-hotspot</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.15\bin\java.exe')             ">C:\\Program Files\\OpenJDK\\jdk-17.0.15</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2\bin\java.exe')              ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
 
             <!-- last ditch effort -->
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
@@ -80,7 +86,7 @@
 
         <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                                           "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6                            "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6.6                          "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsHostMachineUnix)' == 'true' "/>
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all                  "/>
 

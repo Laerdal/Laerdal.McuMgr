@@ -48,17 +48,39 @@ brew   reinstall     gradle@7
 #fi
 
 # in github ci gradle@7 is installed under    /opt/homebrew/opt/gradle@7/bin
-# but in azure devops it is installed under   /usr/local/opt/gradle@7/bin
-echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
-echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
+# (but in azure devops it is installed under   /usr/local/opt/gradle@7/bin)
+
+if [[ ! -d "/opt/homebrew/opt/gradle@7/bin" ]];then
+  echo "##vso[task.logissue type=error]Gradle doesn't appear to have been installed under '/opt/homebrew/opt/gradle@7/bin/' as expected - cannot proceed"
+  exit 25
+fi
+
+echo 'export PATH="/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export PATH="/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
 source /Users/runner/.bash_profile
 
-brew   install   openjdk@17
+brew  install  --cask   microsoft-openjdk@17  # brew   install   openjdk@17   this installs the temurin flavour of openjdk which is not that great  
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'openjdk@17'."
+  echo "##vso[task.logissue type=error]Failed to install java through 'openjdk@17'."
   exit 30
 fi
+
+if [[ ! -d "/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home" ]];then
+  echo "##vso[task.logissue type=error]Java doesn't appear to have been installed under '/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home' as expected - cannot proceed"
+  exit 35
+fi
+
+echo 'export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"     ' >> /Users/runner/.zprofile
+
+echo 'export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin:$PATH"' >> /Users/runner/.bash_profile
+echo 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"     ' >> /Users/runner/.bash_profile
+source /Users/runner/.bash_profile
+
+echo "** Path now is :"
+echo
+echo "$PATH"
 
 # we enforce this via global.json
 # curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 8.0 -Version 8.0.405
@@ -173,12 +195,20 @@ if [ $exitCode != 0 ]; then
 fi
 
 
+echo "** Default-Java Location:"
+which    java
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to find 'java'."
+  exit 100
+fi
+
 echo "** Java Version:"
 java               -version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'java'."
-  exit 100
+  exit 105
 fi
 
 echo

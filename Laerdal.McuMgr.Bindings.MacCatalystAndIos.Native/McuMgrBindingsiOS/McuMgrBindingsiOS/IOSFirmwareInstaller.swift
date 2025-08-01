@@ -402,10 +402,10 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
+        let currentThroughputInKbps = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let uploadProgressPercentage = (bytesSent * 100) / imageSize
 
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond);
+        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps);
     }
 
     private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
@@ -422,12 +422,12 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             return 0
         }
 
-        let throughputKilobytesPerSecond = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
 
         _lastBytesSend = bytesSent
         _lastBytesSendTimestamp = timestamp
 
-        return throughputKilobytesPerSecond
+        return currentThroughputInKbps
     }
 }
 

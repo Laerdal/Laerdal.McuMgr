@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="no.laerdal.mcumgr_laerdal_wrapper">
 
+<!-- dont set package="no.laerdal.mcumgr_laerdal_wrapper" considering that it has been deprecated -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 </manifest>

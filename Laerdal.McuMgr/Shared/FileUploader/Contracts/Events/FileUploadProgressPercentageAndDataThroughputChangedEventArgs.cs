@@ -10,17 +10,24 @@ namespace Laerdal.McuMgr.FileUploader.Contracts.Events
     public readonly struct FileUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
         public readonly int ProgressPercentage;
-        public readonly float CurrentThroughput; //kbs / sec
+        public readonly float CurrentThroughputInKbps; //kbs / sec
+        public readonly float TotalAverageThroughputInKbps; //kbs / sec
 
-        public FileUploadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughput)
+        public FileUploadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
         {
-            CurrentThroughput = (float)Math.Round( //14.1999 -> 14.2
+            ProgressPercentage = progressPercentage;
+            
+            CurrentThroughputInKbps = (float)Math.Round( //14.1999 -> 14.2
                 mode: MidpointRounding.AwayFromZero,
-                value: currentThroughput,
+                value: currentThroughputInKbps,
                 digits: 1
             );
 
-            ProgressPercentage = progressPercentage;
+            TotalAverageThroughputInKbps = (float) Math.Round( //14.1999 -> 14.2
+                mode: MidpointRounding.AwayFromZero,
+                value: totalAverageThroughputInKbps,
+                digits: 1
+            );
         }
     }
 }

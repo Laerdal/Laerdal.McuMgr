@@ -24,8 +24,10 @@ public class AndroidFileUploader
     private TransferController _uploadController;
     private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
 
-    private int _initialBytes;
-    private long _uploadStartTimestamp;
+
+    private int _lastBytesSent;
+    private long _uploadStartTimestampInMs;
+    private long _lastBytesSentTimestampInMs;
     private String _remoteFilePathSanitized = "";
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
@@ -195,12 +197,13 @@ public class AndroidFileUploader
 
     private void resetUploadState()
     {
-        _initialBytes = 0;
-        _uploadStartTimestamp = 0;
+        _lastBytesSent = 0;
+        _uploadStartTimestampInMs = 0;
+        _lastBytesSentTimestampInMs = 0;
 
         setState(EAndroidFileUploaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
@@ -266,7 +269,6 @@ public class AndroidFileUploader
         setState(EAndroidFileUploaderState.UPLOADING);
 
         busyStateChangedAdvertisement(true);
-        _initialBytes = 0;
 
         setLoggingEnabledOnTransport(false);
         transferController.resume();
@@ -358,7 +360,7 @@ public class AndroidFileUploader
 
         if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -444,7 +446,7 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, float totalAverageThroughputInKbps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -458,37 +460,62 @@ public class AndroidFileUploader
     private final class FileUploaderCallbackProxy implements UploadCallback
     {
         @Override
-        public void onUploadProgressChanged(final int bytesSent, final int fileSize, final long timestamp)
+        public void onUploadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
             setState(EAndroidFileUploaderState.UPLOADING);
 
-            float transferSpeed = 0;
-            int fileUploadProgressPercentage = 0;
-
-            if (_initialBytes == 0)
-            {
-                _initialBytes = bytesSent;
-                _uploadStartTimestamp = timestamp;
-            }
-            else
-            {
-                final int bytesSentSinceUploadStarted = bytesSent - _initialBytes;
-                final long timeSinceUploadStarted = timestamp - _uploadStartTimestamp; // bytes/ms = KB/s
-
-                transferSpeed = (float) bytesSentSinceUploadStarted / (float) timeSinceUploadStarted;
-                fileUploadProgressPercentage = (int) (bytesSent * 100.f / fileSize);
-            }
+            int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
+            float currentThroughputInKbps = calculateCurrentThroughputInKbps(totalBytesSentSoFar, timestampInMs);
+            float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(totalBytesSentSoFar, timestampInMs);
 
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
                     fileUploadProgressPercentage,
-                    transferSpeed
+                    currentThroughputInKbps,
+                    totalAverageThroughputInKbps
             );
         }
+
+        private float calculateCurrentThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_lastBytesSentTimestampInMs == 0) {
+                _lastBytesSent = totalBytesSentSoFar;
+                _lastBytesSentTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float intervalInSeconds = ((float)(timestampInMs - _lastBytesSentTimestampInMs)) / 1_000;
+            if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+                _lastBytesSent = totalBytesSentSoFar;
+                _lastBytesSentTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float currentThroughputInKbps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
+
+            _lastBytesSent = totalBytesSentSoFar; //order
+            _lastBytesSentTimestampInMs = timestampInMs; //order
+
+            return currentThroughputInKbps;
+        }
+
+        private float calculateTotalAverageThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_uploadStartTimestampInMs == 0) {
+                _uploadStartTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float intervalInSeconds = ((float)(timestampInMs - _uploadStartTimestampInMs)) / 1_000;
+            if (intervalInSeconds == 0) { //should be impossible but just in case
+                return 0;
+            }
+
+            return (float)(totalBytesSentSoFar) / (intervalInSeconds * 1_024);
+        }
+
 
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
             onError(error.getMessage(), error);
             setLoggingEnabledOnTransport(true);
             busyStateChangedAdvertisement(false);
@@ -499,7 +526,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadCanceled()
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
             setState(EAndroidFileUploaderState.CANCELLED);
             cancelledAdvertisement(_cancellationReason);
             setLoggingEnabledOnTransport(true);
@@ -511,7 +538,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadCompleted()
         {
-            //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
+            //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
             setState(EAndroidFileUploaderState.COMPLETE);
             fileUploadedAdvertisement(_remoteFilePathSanitized);
             setLoggingEnabledOnTransport(true);
