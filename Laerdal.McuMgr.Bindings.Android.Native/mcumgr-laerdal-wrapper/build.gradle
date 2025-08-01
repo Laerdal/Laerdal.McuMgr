@@ -2,8 +2,11 @@ plugins {
     id 'com.android.library'
 }
 
+task prepareKotlinBuildScriptModel { //keep this to dodge a stupid error
+}
+
 tasks.register('wrapper', Wrapper) {
-    gradleVersion = '7.6'
+    gradleVersion = '7.6.6'
 }
 
 android {
