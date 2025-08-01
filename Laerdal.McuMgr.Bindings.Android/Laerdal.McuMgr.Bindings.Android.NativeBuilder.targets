@@ -36,9 +36,9 @@
             <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17/bin/java') ">/opt/homebrew/opt/openjdk@17</JavaHome>
 
             <!-- Windows this has to be adjusted accordingly depending on the flavor and version of the jdk -->
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-17.0.15.6-hotspot\bin\java') ">C:\\Program Files\\Microsoft\\jdk-17.0.15.6-hotspot</JavaHome>
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.15\bin\java')             ">C:\\Program Files\\OpenJDK\\jdk-17.0.15</JavaHome>
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2\bin\java')              ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-17.0.15.6-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.15.6-hotspot</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.15\bin\java.exe')             ">C:\\Program Files\\OpenJDK\\jdk-17.0.15</JavaHome>
+            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2\bin\java.exe')              ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
 
             <!-- last ditch effort -->
             <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
