@@ -10,11 +10,11 @@ public class IOSFileUploader: NSObject {
     private var _fileSystemManager: FileSystemManager!
 
     private var _currentState: EIOSFileUploaderState = .none
-    private var _lastBytesSend: Int = 0
+    private var _lastBytesSent: Int = 0
     private var _cancellationReason: String = ""
     private var _uploadStartTimestamp: Date? = nil
     private var _lastFatalErrorMessage: String = ""
-    private var _lastBytesSendTimestamp: Date? = nil
+    private var _lastBytesSentTimestamp: Date? = nil
     private var _remoteFilePathSanitized: String = ""
 
     @objc
@@ -215,8 +215,8 @@ public class IOSFileUploader: NSObject {
     private func resetUploadState() {
         _uploadStartTimestamp = nil
 
-        _lastBytesSend = 0
-        _lastBytesSendTimestamp = nil
+        _lastBytesSent = 0
+        _lastBytesSentTimestamp = nil
 
         setState(.idle)
         busyStateChangedAdvertisement(true)
@@ -323,14 +323,14 @@ public class IOSFileUploader: NSObject {
     //@objc   dont
     private func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
-            _ currentThroughputInKbps: Float32
-            _ averageCurrentThroughputInKbps: Float32
+            _ currentThroughputInKbps: Float32,
+            _ totalAverageThroughputInKbps: Float32
     ) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
             self._listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     progressPercentage,
                     currentThroughputInKbps,
-                    averageCurrentThroughputInKbps
+                    totalAverageThroughputInKbps
             )
         }
     }
@@ -361,10 +361,10 @@ extension IOSFileUploader: FileUploadDelegate {
         setState(.uploading)
 
         let uploadProgressPercentage = (bytesSent * 100) / fileSize
-        let currentThroughputInKbps = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
-        let averageCurrentThroughputInKbps = calculateAverageThroughput(bytesSent: bytesSent, timestamp: timestamp)
+        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, averageCurrentThroughputInKbps)
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
     }
 
     public func uploadDidFail(with error: Error) {
@@ -385,29 +385,29 @@ extension IOSFileUploader: FileUploadDelegate {
         busyStateChangedAdvertisement(false)
     }
 
-    private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
-        if (_lastBytesSendTimestamp == nil) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+    private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_lastBytesSentTimestamp == nil) {
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSendTimestamp!).truncatingRemainder(dividingBy: 1))
-        if (intervalInSeconds == 0) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!).truncatingRemainder(dividingBy: 1))
+        if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSent) / (intervalInSeconds * 1024) //order
 
-        _lastBytesSend = bytesSent
-        _lastBytesSendTimestamp = timestamp
+        _lastBytesSent = bytesSent //order
+        _lastBytesSentTimestamp = timestamp //order
 
         return currentThroughputInKbps
     }
 
-    private func calculateAverageThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
+    private func calculateTotalAverageThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
         if (_uploadStartTimestamp == nil) {
             _uploadStartTimestamp = timestamp
             return 0

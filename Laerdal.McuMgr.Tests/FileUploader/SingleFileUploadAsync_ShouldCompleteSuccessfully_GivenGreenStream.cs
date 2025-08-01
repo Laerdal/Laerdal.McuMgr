@@ -122,15 +122,15 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                     await Task.Delay(10);
 
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00, 00);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10, 10);
                     await Task.Delay(5);
                     
                     if (_tryCounter < _maxTriesCount)
@@ -141,17 +141,17 @@ namespace Laerdal.McuMgr.Tests.FileUploader
                         return;
                     }
                     
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10, 10);
 
                     StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
                     FileUploadedAdvertisement(remoteFilePath); //                                                            order

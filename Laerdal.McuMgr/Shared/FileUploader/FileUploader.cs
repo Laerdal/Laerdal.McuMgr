@@ -636,10 +636,12 @@ namespace Laerdal.McuMgr.FileUploader
 
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                 int progressPercentage,
-                float currentThroughput
+                float currentThroughputInKbps,
+                float totalAverageThroughputInKbps
             ) => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
-                currentThroughput: currentThroughput,
-                progressPercentage: progressPercentage
+                progressPercentage: progressPercentage,
+                currentThroughputInKbps: currentThroughputInKbps,
+                totalAverageThroughputInKbps: totalAverageThroughputInKbps
             ));
         }
     }
