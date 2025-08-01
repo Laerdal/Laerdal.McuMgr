@@ -72,7 +72,10 @@ if [[ ! -d "/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home" ]]
 fi
 
 echo 'export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"     ' >> /Users/runner/.zprofile
+
 echo 'export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin:$PATH"' >> /Users/runner/.bash_profile
+echo 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"     ' >> /Users/runner/.bash_profile
 source /Users/runner/.bash_profile
 
 echo "** Path now is :"
