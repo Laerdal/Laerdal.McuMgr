@@ -269,7 +269,6 @@ public class AndroidFileUploader
         setState(EAndroidFileUploaderState.UPLOADING);
 
         busyStateChangedAdvertisement(true);
-        _initialBytes = 0;
 
         setLoggingEnabledOnTransport(false);
         transferController.resume();
