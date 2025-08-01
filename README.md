@@ -67,15 +67,15 @@ The following types of operations are supported on devices running on Nordic's n
 Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0) with a 495 byte MTU size and a 4 pipeline depth.
 
 | Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
-|------------------|----------------|----------------------|--------------------------|-------------------------|
-| 495 (max)        | 2              | 2                    | ~60                      | Spikes above 100 kb/sec |
-| 495              | 3              | 2                    | ~63.5                    |                         |
-| 495              | 4              | 2                    | ~63.7                    |                         |
-| 495              | 4              | 4                    | ~75.6                    |                         |
-| 80               | 2              | -                    | ~33                      |                         |
-| 80               | 3              | 2                    | ~54.3                    |                         |
-| 80               | 4              | 4                    | ~66.5                    |                         |
-| 250              | 4              | 4                    | ~86                      | Best performance!       |
+|------------------|----------------|-----------------------|--------------------------|-------------------------|
+| 495 (max)        | 2              | 2                     | ~60                      | Spikes above 100 kb/sec |
+| 495              | 3              | 2                     | ~63.5                    |                         |
+| 495              | 4              | 2                     | ~63.7                    |                         |
+| 495              | 4              | 4                     | ~75.6                    |                         |
+| 80               | 2              | -                     | ~33                      |                         |
+| 80               | 3              | 2                     | ~54.3                    |                         |
+| 80               | 4              | 4                     | ~66.5                    |                         |
+| 250              | 4              | 4                     | ~86                      | Best performance!       |
 
 
 ## ❗️ Salient Points
@@ -829,9 +829,16 @@ maui-windows               8.0.61/8.0.100         SDK 8.0.300, VS 17.10.35027.16
 
 #### 3) Make sure that Java17 is installed on your machine along with Gradle 7.6 (Gradle 8.x or above will NOT work!)
 
+On a MacOS you can install Java17 and Gradle 7.6 using 'brew' like so:
+
+```bash
+brew install --cask microsoft-openjdk17 # this will install the JDK17 under /Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home
+brew install gradle@7
+````
+
 #### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
 
-#### 5) Set MSBuild version to ver.17
+#### 5) Set MSBuild version to ver.17+
 
 #### 6) On Mac make sure to install XCode 16.2 (16.3 doesn't work atm - if you have multiple XCodes installed then make 16.2 the default by running 'sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer' assuming that xcode 16.2 is installed in that fs-path).
 
