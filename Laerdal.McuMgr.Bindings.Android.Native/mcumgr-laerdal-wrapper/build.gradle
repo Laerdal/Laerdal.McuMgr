@@ -2,7 +2,7 @@ plugins {
     id 'com.android.library'
 }
 
-task prepareKotlinBuildScriptModel { //keep this to dodge a stupid error
+tasks.register('prepareKotlinBuildScriptModel') { //keep this to dodge a stupid error with the latest versions of kotlin and android-plugin
 }
 
 tasks.register('wrapper', Wrapper) {
@@ -10,6 +10,8 @@ tasks.register('wrapper', Wrapper) {
 }
 
 android {
+    namespace "no.laerdal.mcumgr_laerdal_wrapper" // per https://developer.android.com/studio/build/configure-app-module#set-namespace
+
     compileSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file 
 
     defaultConfig {
