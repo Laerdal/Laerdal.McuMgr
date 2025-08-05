@@ -9,13 +9,20 @@ namespace Laerdal.McuMgr.FirmwareInstaller.Contracts.Events
     public readonly struct FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
         public readonly int ProgressPercentage;
-        public readonly float CurrentThroughput; //kbs / sec
+        public readonly float CurrentThroughputInKbps; //kbs / sec
+        public readonly float TotalAverageThroughputInKbps; //kbs / sec
 
-        public FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughput)
+        public FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
         {
-            CurrentThroughput = (float)Math.Round( //14.1999 -> 14.2
+            CurrentThroughputInKbps = (float)Math.Round( //14.1999 -> 14.2
                 mode: MidpointRounding.AwayFromZero,
-                value: currentThroughput,
+                value: currentThroughputInKbps,
+                digits: 1
+            );
+            
+            TotalAverageThroughputInKbps = (float)Math.Round( //14.1999 -> 14.2
+                mode: MidpointRounding.AwayFromZero,
+                value: totalAverageThroughputInKbps,
                 digits: 1
             );
 

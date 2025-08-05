@@ -37,10 +37,12 @@ public class AndroidFirmwareInstaller
     private FirmwareUpgradeManager _manager;
 
     private int _imageSize;
-    private int _bytesSent;
+    private long _uploadStartTimestampInMs;
+
     private int _lastProgress;
-    private int _bytesSentSinceUploadStated;
-    private long _uploadStartTimestamp;
+    private int _lastBytesSent;
+    private int _totalBytesSentSoFar;
+    private long _lastBytesSentTimestampInMs;
 
     private static final int NOT_STARTED = -1; // a value indicating that the upload has not been started before
     private static final long REFRESH_RATE = 100L; // ms how often the throughput data should be sent to the graph
@@ -244,7 +246,7 @@ public class AndroidFirmwareInstaller
 
         if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00   order
         {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
         }
 
         stateChangedAdvertisement(oldState, newState); //order
@@ -315,7 +317,7 @@ public class AndroidFirmwareInstaller
     }
 
     @Contract(pure = true)
-    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -343,7 +345,7 @@ public class AndroidFirmwareInstaller
         setState(EAndroidFirmwareInstallationState.UPLOADING);
 
         // Timber.i("Upload resumed");
-        _bytesSentSinceUploadStated = NOT_STARTED;
+        _totalBytesSentSoFar = NOT_STARTED;
         setLoggingEnabled(false);
         _manager.resume();
     }
@@ -380,7 +382,7 @@ public class AndroidFirmwareInstaller
                     break;
                 case UPLOAD:
                     //Timber.i("Uploading firmware..."); //todo    logging
-                    _bytesSentSinceUploadStated = NOT_STARTED;
+                    _totalBytesSentSoFar = NOT_STARTED;
                     setState(EAndroidFirmwareInstallationState.UPLOADING);
                     break;
                 case TEST:
@@ -448,15 +450,15 @@ public class AndroidFirmwareInstaller
         public void onUploadProgressChanged(final int bytesSent, final int imageSize, final long timestamp)
         {
             _imageSize = imageSize;
-            _bytesSent = bytesSent;
+            _lastBytesSent = bytesSent;
 
             final long uptimeMillis = SystemClock.uptimeMillis();
-            if (_bytesSentSinceUploadStated == NOT_STARTED) //00
+            if (_totalBytesSentSoFar == NOT_STARTED) //00
             {
                 _lastProgress = NOT_STARTED;
 
-                _uploadStartTimestamp = uptimeMillis; //20
-                _bytesSentSinceUploadStated = bytesSent;
+                _totalBytesSentSoFar = bytesSent;
+                _uploadStartTimestampInMs = uptimeMillis; //20
 
                 _handler.removeCallbacks(_graphUpdater);
                 _handler.postAtTime(_graphUpdater, uptimeMillis + REFRESH_RATE); //30
@@ -469,7 +471,7 @@ public class AndroidFirmwareInstaller
             //Timber.i("Image (%d bytes) sent in %d ms (avg speed: %f kB/s)", imageSize - bytesSentSinceUploadStated, uptimeMillis - uploadStartTimestamp, (float) (imageSize - bytesSentSinceUploadStated) / (float) (uptimeMillis - uploadStartTimestamp));
 
             _graphUpdater.run(); //50
-            _bytesSentSinceUploadStated = NOT_STARTED; //60
+            _totalBytesSentSoFar = NOT_STARTED; //60
 
             //00 check if this is the first time this method is called since:
             //
@@ -524,17 +526,15 @@ public class AndroidFirmwareInstaller
                 return;
 
             final long timestamp = SystemClock.uptimeMillis();
-            final int progressPercentage = (int) (_bytesSent * 100.f /* % */ / _imageSize); //0
+            final int progressPercentage = (int) (_lastBytesSent * 100.f /* % */ / _imageSize); //0
             if (_lastProgress != progressPercentage)
             {
                 _lastProgress = progressPercentage;
 
-                final float timeSinceUploadStarted = timestamp - _uploadStartTimestamp;
-                final float bytesSentSinceUploadStarted = _bytesSent - _bytesSentSinceUploadStated; //1
+                float currentThroughputInKbps = calculateCurrentThroughputInKbps(_lastBytesSent, timestamp);
+                float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(_totalBytesSentSoFar, timestamp);
 
-                final float averageThroughput = bytesSentSinceUploadStarted / timeSinceUploadStarted; //2
-
-                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput);
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps);
             }
 
             if (_manager.getState() == FirmwareUpgradeManager.State.UPLOAD && !_manager.isPaused())
@@ -543,11 +543,44 @@ public class AndroidFirmwareInstaller
             }
 
             //0 calculate the current upload progress
-            //
-            //1 calculate the average throughout   this is done by diving number of bytes sent since upload has been started (or resumed) by the time
-            //  since that moment   the minimum time of MIN_INTERVAL ms prevents from graph peaks that may happen under certain conditions
-            //
-            //2 bytes / ms = KB/s
+        }
+
+        @SuppressWarnings("DuplicatedCode")
+        private float calculateCurrentThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_lastBytesSentTimestampInMs == 0) {
+                _lastBytesSent = totalBytesSentSoFar;
+                _lastBytesSentTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float intervalInSeconds = ((float)(timestampInMs - _lastBytesSentTimestampInMs)) / 1_000;
+            if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+                _lastBytesSent = totalBytesSentSoFar;
+                _lastBytesSentTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float currentThroughputInKbps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
+
+            _lastBytesSent = totalBytesSentSoFar; //order
+            _lastBytesSentTimestampInMs = timestampInMs; //order
+
+            return currentThroughputInKbps;
+        }
+
+        @SuppressWarnings("DuplicatedCode")
+        private float calculateTotalAverageThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_uploadStartTimestampInMs == 0) { //           in the particular mechanism of the firmware-installer the
+                _uploadStartTimestampInMs = timestampInMs; //  start-timestamp is probably already set but just in case
+                return 0;
+            }
+
+            float elapsedSecondSinceUploadStart = ((float)(timestampInMs - _uploadStartTimestampInMs)) / 1_000;
+            if (elapsedSecondSinceUploadStart == 0) { //should be impossible but just in case
+                return 0;
+            }
+
+            return (float)(totalBytesSentSoFar) / (elapsedSecondSinceUploadStart * 1_024);
         }
     };
 }

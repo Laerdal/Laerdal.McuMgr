@@ -26,8 +26,10 @@ public class AndroidFileDownloader
     private TransferController _downloadingController;
     private FileDownloaderCallbackProxy _fileDownloaderCallbackProxy;
 
-    private int _initialBytes;
-    private long _downloadStartTimestamp;
+    private int _lastBytesSent;
+    private long _lastBytesSentTimestampInMs;
+    private long _downloadStartTimestampInMs;
+
     private String _remoteFilePathSanitized = "";
     private EAndroidFileDownloaderState _currentState = EAndroidFileDownloaderState.NONE;
 
@@ -193,7 +195,6 @@ public class AndroidFileDownloader
         setState(EAndroidFileDownloaderState.DOWNLOADING);
 
         busyStateChangedAdvertisement(true);
-        _initialBytes = 0;
 
         setLoggingEnabledOnConnection(false);
         transferController.resume();
@@ -224,12 +225,13 @@ public class AndroidFileDownloader
 
     private void resetDownloadState()
     {
-        _initialBytes = 0;
-        _downloadStartTimestamp = 0;
+        _lastBytesSent = 0;
+        _lastBytesSentTimestampInMs = 0;
+        _downloadStartTimestampInMs = 0;
 
         setState(EAndroidFileDownloaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
@@ -331,7 +333,7 @@ public class AndroidFileDownloader
 
         if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
@@ -421,7 +423,7 @@ public class AndroidFileDownloader
     }
 
     @Contract(pure = true)
-    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float averageThroughput)
+    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -447,37 +449,63 @@ public class AndroidFileDownloader
     private final class FileDownloaderCallbackProxy implements DownloadCallback
     {
         @Override
-        public void onDownloadProgressChanged(final int bytesSent, final int fileSize, final long timestamp)
+        public void onDownloadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
             setState(EAndroidFileDownloaderState.DOWNLOADING);
 
-            float transferSpeed = 0;
-            int fileDownloadProgressPercentage = 0;
-
-            if (_initialBytes == 0)
-            {
-                _initialBytes = bytesSent;
-                _downloadStartTimestamp = timestamp;
-            }
-            else
-            {
-                final int bytesSentSinceDownloadStarted = bytesSent - _initialBytes;
-                final long timeSinceDownloadStarted = timestamp - _downloadStartTimestamp; // bytes/ms = KB/s
-
-                transferSpeed = (float) bytesSentSinceDownloadStarted / (float) timeSinceDownloadStarted;
-                fileDownloadProgressPercentage = (int) (bytesSent * 100.f / fileSize);
-            }
+            int fileDownloadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
+            float currentThroughputInKbps = calculateCurrentThroughputInKbps(totalBytesSentSoFar, timestampInMs);
+            float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(totalBytesSentSoFar, timestampInMs);
 
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
                     fileDownloadProgressPercentage,
-                    transferSpeed
+                    currentThroughputInKbps,
+                    totalAverageThroughputInKbps
             );
+        }
+
+        @SuppressWarnings("DuplicatedCode")
+        private float calculateCurrentThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_lastBytesSentTimestampInMs == 0) {
+                _lastBytesSent = totalBytesSentSoFar;
+                _lastBytesSentTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float intervalInSeconds = ((float)(timestampInMs - _lastBytesSentTimestampInMs)) / 1_000;
+            if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+                _lastBytesSent = totalBytesSentSoFar;
+                _lastBytesSentTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float currentThroughputInKbps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
+
+            _lastBytesSent = totalBytesSentSoFar; //order
+            _lastBytesSentTimestampInMs = timestampInMs; //order
+
+            return currentThroughputInKbps;
+        }
+
+        @SuppressWarnings("DuplicatedCode")
+        private float calculateTotalAverageThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_downloadStartTimestampInMs == 0) {
+                _downloadStartTimestampInMs = timestampInMs;
+                return 0;
+            }
+
+            float elapsedSecondSinceUploadStart = ((float)(timestampInMs - _downloadStartTimestampInMs)) / 1_000;
+            if (elapsedSecondSinceUploadStart == 0) { //should be impossible but just in case
+                return 0;
+            }
+
+            return (float)(totalBytesSentSoFar) / (elapsedSecondSinceUploadStart * 1_024);
         }
 
         @Override
         public void onDownloadFailed(@NonNull final McuMgrException exception)
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
             onError(exception.getMessage(), exception);
             setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
@@ -488,7 +516,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCanceled()
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
             setLoggingEnabledOnConnection(true);
@@ -500,7 +528,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCompleted(byte @NotNull [] data)
         {
-            //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0); //no need this is taken care of inside setState()
+            //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
 
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
             downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital

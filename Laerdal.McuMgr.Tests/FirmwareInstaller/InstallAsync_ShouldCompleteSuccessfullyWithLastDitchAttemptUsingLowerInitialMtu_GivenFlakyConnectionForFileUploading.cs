@@ -200,7 +200,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
 
                         {
                             //file uploading simulation
-                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 00, currentThroughput: 00);
+                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 00, currentThroughputInKbps: 00, totalAverageThroughputInKbps: 00);
                             await Task.Delay(10);
 
                             if (_tryCounter == _maxTriesCount && initialMtuSize == null)
@@ -250,15 +250,15 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
                                 return;
                             }
 
-                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 20, currentThroughput: 10);
+                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 20, currentThroughputInKbps: 10, totalAverageThroughputInKbps: 10);
                             await Task.Delay(10);
-                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 40, currentThroughput: 10);
+                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 40, currentThroughputInKbps: 10, totalAverageThroughputInKbps: 10);
                             await Task.Delay(10);
-                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 60, currentThroughput: 10);
+                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 60, currentThroughputInKbps: 10, totalAverageThroughputInKbps: 10);
                             await Task.Delay(10);
-                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 80, currentThroughput: 10);
+                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 80, currentThroughputInKbps: 10, totalAverageThroughputInKbps: 10);
                             await Task.Delay(10);
-                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 100, currentThroughput: 10);
+                            FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: 100, currentThroughputInKbps: 10, totalAverageThroughputInKbps: 10);
                             await Task.Delay(10);
                         }
 

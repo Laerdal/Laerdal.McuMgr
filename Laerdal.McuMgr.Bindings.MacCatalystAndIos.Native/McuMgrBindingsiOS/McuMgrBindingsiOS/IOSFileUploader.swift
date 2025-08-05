@@ -10,11 +10,13 @@ public class IOSFileUploader: NSObject {
     private var _fileSystemManager: FileSystemManager!
 
     private var _currentState: EIOSFileUploaderState = .none
-    private var _lastBytesSent: Int = 0
     private var _cancellationReason: String = ""
-    private var _uploadStartTimestamp: Date? = nil
     private var _lastFatalErrorMessage: String = ""
+
+    private var _lastBytesSent: Int = 0
+    private var _uploadStartTimestamp: Date? = nil
     private var _lastBytesSentTimestamp: Date? = nil
+
     private var _remoteFilePathSanitized: String = ""
 
     @objc
@@ -123,7 +125,7 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
-        resetUploadState() //order
+        resetState() //order
         disposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
@@ -212,7 +214,7 @@ public class IOSFileUploader: NSObject {
         disposeTransport()
     }
 
-    private func resetUploadState() {
+    private func resetState() {
         _uploadStartTimestamp = nil
 
         _lastBytesSent = 0
@@ -413,12 +415,12 @@ extension IOSFileUploader: FileUploadDelegate {
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
-        if (intervalInSeconds == 0) { //should be impossible but just in case
+        let secondsSinceUploadStart = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
+        if (secondsSinceUploadStart == 0) { //should be impossible but just in case
             return 0
         }
 
-        return Float32(bytesSent) / (intervalInSeconds * 1024)
+        return Float32(bytesSent) / (secondsSinceUploadStart * 1024)
     }
 
 }
