@@ -1,7 +1,7 @@
 internal struct Constants {
     @available(*, unavailable) private init() {}
 
-    // [in versions >=1.9.2]
+    // [in versions >=1.9.3]
     // we intentionally reverted this to zero to disable it because as it turns out nordic somehow addressed this in versions 1.9.2 and
     // now the initial-mtu-size is being set automatically to a working value (450) in iPhones
     internal static let DefaultMtuForFileUploads: Int = 0; //80;
@@ -23,7 +23,7 @@ internal struct Constants {
     //
     //  based on our own experiments though 73 sometimes causes the fw-upload process to hang and this is why we opted for a slightly higher value
     //
-    // [in versions >=1.9.2]
+    // [in versions >=1.9.3]
     // we increased the value to 250 because of the above and also because even though Nordic claims to have fixed this issue, somehow the
     // default initial-mtu-value in 1.9.2+ is still just 20(!) for firmware installations which of course dooms the firmware installation altogether!
     //
