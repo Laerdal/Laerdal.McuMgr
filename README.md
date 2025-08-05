@@ -832,7 +832,12 @@ maui-windows               8.0.61/8.0.100         SDK 8.0.300, VS 17.10.35027.16
 On a MacOS you can install Java17 and Gradle 7.6 using 'brew' like so:
 
 ```bash
-brew install --cask microsoft-openjdk@17 # this will install the JDK17 under /Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home
+# brew will install the latest version of jdk17 under '/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home'
+# 
+# export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin/:$PATH"
+# export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"
+#
+brew install --cask microsoft-openjdk@17
 brew install gradle@7
 ```
 
