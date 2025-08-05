@@ -832,9 +832,9 @@ maui-windows               8.0.61/8.0.100         SDK 8.0.300, VS 17.10.35027.16
 On a MacOS you can install Java17 and Gradle 7.6 using 'brew' like so:
 
 ```bash
-brew install --cask microsoft-openjdk17 # this will install the JDK17 under /Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home
+brew install --cask microsoft-openjdk@17 # this will install the JDK17 under /Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home
 brew install gradle@7
-````
+```
 
 #### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
 
@@ -879,9 +879,8 @@ dotnet                                              \
 - Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
-- Trying to use the iOS/Android flavours of this library in desktop-simulators for iOS/Android will probably result in compilation errors. If you want to perform general purpose
-
-  UI-testing on your desktop using such simulators you need to tweak your nuget references to use the `-force-dud` nuget of `Laerdal.McuMgr` like so:
+- Trying to use the iOS/Android flavours of this library in desktop-simulators for iOS/Android will probably result in compilation errors.
+  If you want to perform general purpose UI-testing on your desktop using such simulators you need to tweak your nuget references to use the `-force-dud` nuget of `Laerdal.McuMgr` like so:
 
 ```xml
 <PackageReference Include="Laerdal.McuMgr" Version="2.3.4-force-dud">

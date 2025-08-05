@@ -472,7 +472,7 @@
 			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git";
 			requirement = {
 				kind = revision;
-				revision = f777c267fb712a1675d868ca6e7e4caf64c3917b;
+				revision = a30fc0b6d205d86e07a7f86f076064998131c94f;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

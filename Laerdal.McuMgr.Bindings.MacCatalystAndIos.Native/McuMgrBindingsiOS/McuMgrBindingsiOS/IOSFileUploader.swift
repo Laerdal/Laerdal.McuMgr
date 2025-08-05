@@ -392,7 +392,7 @@ extension IOSFileUploader: FileUploadDelegate {
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!).truncatingRemainder(dividingBy: 1))
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!))
         if (intervalInSeconds == 0) { //almost impossible to happen but just in case
             _lastBytesSent = bytesSent
             _lastBytesSentTimestamp = timestamp
@@ -413,7 +413,7 @@ extension IOSFileUploader: FileUploadDelegate {
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!).truncatingRemainder(dividingBy: 1))
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
         if (intervalInSeconds == 0) { //should be impossible but just in case
             return 0
         }
