@@ -413,12 +413,12 @@ extension IOSFileUploader: FileUploadDelegate {
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
-        if (intervalInSeconds == 0) { //should be impossible but just in case
+        let secondsSinceUploadStart = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
+        if (secondsSinceUploadStart == 0) { //should be impossible but just in case
             return 0
         }
 
-        return Float32(bytesSent) / (intervalInSeconds * 1024)
+        return Float32(bytesSent) / (secondsSinceUploadStart * 1024)
     }
 
 }

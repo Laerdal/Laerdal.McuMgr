@@ -11,8 +11,9 @@ public class IOSFirmwareInstaller: NSObject {
     private var _currentState: EIOSFirmwareInstallationState
     private var _lastFatalErrorMessage: String = ""
 
-    private var _lastBytesSend: Int = -1;
-    private var _lastBytesSendTimestamp: Date? = nil;
+    private var _lastBytesSent: Int = -1
+    private var _uploadStartTimestamp: Date? = nil
+    private var _lastBytesSentTimestamp: Date? = nil
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
@@ -41,8 +42,9 @@ public class IOSFirmwareInstaller: NSObject {
             return .failedInstallationAlreadyInProgress
         }
 
-        _lastBytesSend = -1
-        _lastBytesSendTimestamp = nil
+        _lastBytesSent = -1
+        _uploadStartTimestamp = nil
+        _lastBytesSentTimestamp = nil
 
         if (imageData.isEmpty) {
             onError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud")
@@ -308,10 +310,15 @@ public class IOSFirmwareInstaller: NSObject {
 
     private func firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
-            _ averageThroughput: Float32
+            _ averageThroughput: Float32,
+            _ totalAverageThroughputInKbps: Float32
     ) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
+            self._listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    progressPercentage,
+                    averageThroughput,
+                    totalAverageThroughputInKbps
+            )
         }
     }
 
@@ -326,7 +333,7 @@ public class IOSFirmwareInstaller: NSObject {
 
         if (oldState == .uploading && newState == .testing) //00  order
         {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
         }
 
         stateChangedAdvertisement(oldState, newState); //order
@@ -402,32 +409,47 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        let currentThroughputInKbps = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
         let uploadProgressPercentage = (bytesSent * 100) / imageSize
+        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps);
+        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps);
     }
 
-    private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
-        if (_lastBytesSendTimestamp == nil) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+    private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_lastBytesSentTimestamp == nil) {
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSendTimestamp!).truncatingRemainder(dividingBy: 1))
-        if (intervalInSeconds == 0) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!))
+        if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSent) / (intervalInSeconds * 1024) //order
 
-        _lastBytesSend = bytesSent
-        _lastBytesSendTimestamp = timestamp
+        _lastBytesSent = bytesSent //          order
+        _lastBytesSentTimestamp = timestamp // order
 
         return currentThroughputInKbps
+    }
+
+    private func calculateTotalAverageThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_uploadStartTimestamp == nil) {
+            _uploadStartTimestamp = timestamp
+            return 0
+        }
+
+        let secondsSinceUploadStart = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
+        if (secondsSinceUploadStart == 0) { //should be impossible but just in case
+            return 0
+        }
+
+        return Float32(bytesSent) / (secondsSinceUploadStart * 1024)
     }
 }
 

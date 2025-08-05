@@ -72,8 +72,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstaller
             public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => _firmwareInstallerCallbacksProxy.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage, globalErrorCode); //raises the actual event
             
-            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput)
-                => _firmwareInstallerCallbacksProxy.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughput); //raises the actual event
+            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+                => _firmwareInstallerCallbacksProxy.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
 
             public void CleanupResourcesOfLastInstallation()
             {

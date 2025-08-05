@@ -28,6 +28,7 @@ public class AndroidFileUploader
     private int _lastBytesSent;
     private long _uploadStartTimestampInMs;
     private long _lastBytesSentTimestampInMs;
+
     private String _remoteFilePathSanitized = "";
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
@@ -446,7 +447,7 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, float totalAverageThroughputInKbps)
+    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -475,6 +476,7 @@ public class AndroidFileUploader
             );
         }
 
+        @SuppressWarnings("DuplicatedCode")
         private float calculateCurrentThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
             if (_lastBytesSentTimestampInMs == 0) {
                 _lastBytesSent = totalBytesSentSoFar;
@@ -497,20 +499,20 @@ public class AndroidFileUploader
             return currentThroughputInKbps;
         }
 
+        @SuppressWarnings("DuplicatedCode")
         private float calculateTotalAverageThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
             if (_uploadStartTimestampInMs == 0) {
                 _uploadStartTimestampInMs = timestampInMs;
                 return 0;
             }
 
-            float intervalInSeconds = ((float)(timestampInMs - _uploadStartTimestampInMs)) / 1_000;
-            if (intervalInSeconds == 0) { //should be impossible but just in case
+            float elapsedSecondSinceUploadStart = ((float)(timestampInMs - _uploadStartTimestampInMs)) / 1_000;
+            if (elapsedSecondSinceUploadStart == 0) { //should be impossible but just in case
                 return 0;
             }
 
-            return (float)(totalBytesSentSoFar) / (intervalInSeconds * 1_024);
+            return (float)(totalBytesSentSoFar) / (elapsedSecondSinceUploadStart * 1_024);
         }
-
 
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)

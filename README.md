@@ -837,6 +837,8 @@ On a MacOS you can install Java17 and Gradle 7.6 using 'brew' like so:
 # export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin/:$PATH"
 # export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"
 #
+# also note that if you use a flaky antivirus then your openjdk installation might get silently deleted by it behind your back!
+#
 brew install --cask microsoft-openjdk@17
 brew install gradle@7
 ```
