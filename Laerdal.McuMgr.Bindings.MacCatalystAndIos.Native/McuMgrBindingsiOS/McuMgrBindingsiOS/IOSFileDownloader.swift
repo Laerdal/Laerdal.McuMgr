@@ -10,10 +10,12 @@ public class IOSFileDownloader: NSObject {
     private var _fileSystemManager: FileSystemManager!
 
     private var _currentState: EIOSFileDownloaderState = .none
-    private var _lastBytesSend: Int = -1
     private var _lastFatalErrorMessage: String = ""
-    private var _lastBytesSendTimestamp: Date? = nil
     private var _remoteFilePathSanitized: String = ""
+
+    private var _lastBytesSent: Int = 0
+    private var _lastBytesSentTimestamp: Date? = nil
+    private var _downloadStartTimestamp: Date? = nil
 
     @objc
     public init(_ listener: IOSListenerForFileDownloader!) {
@@ -46,7 +48,7 @@ public class IOSFileDownloader: NSObject {
             return true
         }
 
-        if !isIdleOrCold() { //if the upload is already in progress we bail out
+        if !isIdleOrCold() { //if the download is already in progress we bail out
             return false
         }
 
@@ -84,7 +86,7 @@ public class IOSFileDownloader: NSObject {
             return .failedInvalidSettings
         }
 
-        resetUploadState() //order
+        resetState() //order
         disposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
@@ -141,13 +143,13 @@ public class IOSFileDownloader: NSObject {
                 || _currentState == .cancelled
     }
 
-    private func resetUploadState() {
-        _lastBytesSend = -1
-        _lastBytesSendTimestamp = nil
+    private func resetState() {
+        _lastBytesSent = -1
+        _lastBytesSentTimestamp = nil
 
         setState(.idle)
         busyStateChangedAdvertisement(true)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -228,10 +230,11 @@ public class IOSFileDownloader: NSObject {
     //@objc   dont
     private func fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
-            _ averageThroughput: Float32
+            _ averageThroughput: Float32,
+            _ totalAverageThroughputInKbps: Float32
     ) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
+            self._listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput, totalAverageThroughputInKbps)
         }
     }
 
@@ -253,7 +256,7 @@ public class IOSFileDownloader: NSObject {
 
         if (oldState == .downloading && newState == .complete) //00
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
         }
 
         //00 trivial hotfix to deal with the fact that the file-download progress% doesn't fill up to 100%
@@ -263,9 +266,12 @@ public class IOSFileDownloader: NSObject {
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
         setState(.downloading)
-        let currentThroughputInKbps = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
-        let DownloadProgressPercentage = (bytesSent * 100) / fileSize
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(DownloadProgressPercentage, currentThroughputInKbps)
+
+        let downloadProgressPercentage = (bytesSent * 100) / fileSize
+        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(downloadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
     }
 
     public func downloadDidFail(with error: Error) {
@@ -277,7 +283,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadDidCancel() {
         setState(.cancelled)
         busyStateChangedAdvertisement(false)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0)
         cancelledAdvertisement()
     }
 
@@ -287,26 +293,40 @@ extension IOSFileDownloader: FileDownloadDelegate {
         busyStateChangedAdvertisement(false)
     }
 
-    private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
-        if (_lastBytesSendTimestamp == nil) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+    private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_lastBytesSentTimestamp == nil) {
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSendTimestamp!).truncatingRemainder(dividingBy: 1))
-        if (intervalInSeconds == 0) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!))
+        if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSent) / (intervalInSeconds * 1024) //order
 
-        _lastBytesSend = bytesSent
-        _lastBytesSendTimestamp = timestamp
+        _lastBytesSent = bytesSent //order
+        _lastBytesSentTimestamp = timestamp //order
 
         return currentThroughputInKbps
+    }
+
+    private func calculateTotalAverageThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_downloadStartTimestamp == nil) {
+            _downloadStartTimestamp = timestamp
+            return 0
+        }
+
+        let secondsSinceDownloadStart = Float32(timestamp.timeIntervalSince(_downloadStartTimestamp!))
+        if (secondsSinceDownloadStart == 0) { //should be impossible but just in case
+            return 0
+        }
+
+        return Float32(bytesSent) / (secondsSinceDownloadStart * 1024)
     }
 }
 

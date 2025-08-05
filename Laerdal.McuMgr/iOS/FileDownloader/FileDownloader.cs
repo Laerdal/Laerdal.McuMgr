@@ -195,16 +195,10 @@ namespace Laerdal.McuMgr.FileDownloader
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
 
-            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float currentThroughput)
-                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    currentThroughput: currentThroughput,
-                    progressPercentage: (int)progressPercentage
-                );
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughput) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    currentThroughput: currentThroughput,
-                    progressPercentage: progressPercentage
-                );
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: (int)progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
             
             #endregion
 

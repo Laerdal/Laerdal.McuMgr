@@ -24,7 +24,6 @@ public class AndroidFileUploader
     private TransferController _uploadController;
     private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
 
-
     private int _lastBytesSent;
     private long _uploadStartTimestampInMs;
     private long _lastBytesSentTimestampInMs;

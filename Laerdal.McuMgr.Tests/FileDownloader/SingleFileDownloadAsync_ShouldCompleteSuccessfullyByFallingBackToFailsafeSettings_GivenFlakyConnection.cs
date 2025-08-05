@@ -1,6 +1,5 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
-using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileDownloader.Contracts.Enums;
@@ -89,7 +88,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileDownloaderProxySpy120 : FileDownloader.FileDownloaderTestbed.MockedNativeFileDownloaderProxySpy
+        private class MockedGreenNativeFileDownloaderProxySpy120 : MockedNativeFileDownloaderProxySpy
         {
             private readonly int _maxTriesCount;
             private readonly byte[] _expectedData;
@@ -121,19 +120,19 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
 
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00, 00);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10, 10);
 
                     if (_tryCounter == _maxTriesCount && initialMtuSize == null)
                     {
@@ -152,13 +151,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloader
                     }
 
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10, 10);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
                     DownloadCompletedAdvertisement(remoteFilePath, _expectedData); //                                              order
