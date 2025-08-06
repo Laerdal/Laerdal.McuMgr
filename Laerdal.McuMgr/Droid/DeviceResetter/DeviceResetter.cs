@@ -54,7 +54,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 set => _deviceResetterCallbacksProxy!.DeviceResetter = value;
             }
 
-            public EDeviceResetterState State => TranslateEAndroidDeviceResetterState(base.State ?? EAndroidDeviceResetterState.None);
+            public new EDeviceResetterState State => TranslateEAndroidDeviceResetterState(base.State ?? EAndroidDeviceResetterState.None);
 
             // ReSharper disable once UnusedMember.Local
             private AndroidNativeDeviceResetterAdapterProxy(IntPtr javaReference, JniHandleOwnership transfer)
@@ -68,7 +68,7 @@ namespace Laerdal.McuMgr.DeviceResetter
                 _deviceResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy));
             }
 
-            public EDeviceResetterInitializationVerdict BeginReset()
+            public new EDeviceResetterInitializationVerdict BeginReset()
             {
                 return TranslateEAndroidDeviceResetterInitializationVerdict(base.BeginReset());
             }
