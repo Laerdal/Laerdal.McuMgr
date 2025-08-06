@@ -118,7 +118,7 @@ Make sure to always get the latest versions of the above packages.
 
 ```c#
 
-private Laerdal.McuMgr.FirmwareInstaller.IFirmwareInstaller _firmwareInstaller;
+private Laerdal.McuMgr.FirmwareInstallation.IFirmwareInstaller _firmwareInstaller;
 
 public async Task InstallFirmwareAsync()
 {
@@ -359,7 +359,7 @@ private void ResetDevice()
 {
     var desiredBluetoothDevice = /*... grab your ble-device your device's ble-scanner ... */; 
 
-    _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
+    _deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
 
     ToggleSubscriptionsOnDeviceResetterEvents(subscribeNotUnsubscribe: true);
 
@@ -659,11 +659,11 @@ private void CleanupDeviceResetter()
 Same as in Android. Just make sure to pass a CBPeripheral to the constructors change a bit:
 
 ```c#
-_fileUploader = new Laerdal.McuMgr.FileUploader.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
-_firmwareEraser   = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
-_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
+_fileUploader = new Laerdal.McuMgr.FileUploading.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareEraser   = new Laerdal.McuMgr.FirmwareErasure.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
 
-_deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice); // must be a CBPeripheral
+_deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluetoothDevice); // must be a CBPeripheral
 ```
 
 Note that the constructors support passing both a native device (CBPeripheral on iOS and BluetoothDevice on Android) or simply an 'object' that is castable to either of these types.
@@ -671,11 +671,11 @@ This is done to help you write more uniform code across platforms. You might wan
 
 ```c#
 using Laerdal.Ble.Abstraction;
-using Laerdal.McuMgr.DeviceResetter.Contracts;
-using Laerdal.McuMgr.FileDownloader.Contracts;
-using Laerdal.McuMgr.FileUploader.Contracts;
-using Laerdal.McuMgr.FirmwareEraser.Contracts;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.DeviceResetting.Contracts;
+using Laerdal.McuMgr.FileDownloading.Contracts;
+using Laerdal.McuMgr.FileUploading.Contracts;
+using Laerdal.McuMgr.FirmwareErasure.Contracts;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts;
 using YourApp.Contracts;
 
 namespace YourApp.Services;
