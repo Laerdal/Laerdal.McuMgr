@@ -65,25 +65,46 @@ namespace Laerdal.McuMgr.FileDownloading
                 _fileDownloaderCallbacksProxy = fileDownloaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileDownloaderCallbacksProxy));
             }
             
-            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+            public new void Dispose()
+            {
+                if (_alreadyDisposed)
+                    return;
+
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
 
             private bool _alreadyDisposed;
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {                   
-                    CleanupInfrastructure();
-                }
-
+                if (!disposing)
+                    return;
+                
+                CleanupInfrastructure();
+                
                 _alreadyDisposed = true;
 
-                base.Dispose(disposing);
+                try
+                {
+                    base.Dispose(disposing: true);
+                }
+                catch
+                {
+                    //ignored
+                }
             }
             
             private void CleanupInfrastructure()
@@ -94,10 +115,9 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
                 catch
                 {
-                    // ignored
+                    //ignored
                 }
             }
-
 
             #region commands
 

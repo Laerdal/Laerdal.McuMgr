@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.FileDownloading
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileDownloaderProxy : IOSListenerForFileDownloader, INativeFileDownloaderProxy
         {
-            private IOSFileDownloader _nativeFileDownloader;
+            private readonly IOSFileDownloader _nativeFileDownloader;
             private readonly INativeFileDownloaderCallbacksProxy _nativeFileDownloaderCallbacksProxy;
 
             internal IOSNativeFileDownloaderProxy(CBPeripheral bluetoothDevice, INativeFileDownloaderCallbacksProxy nativeFileDownloaderCallbacksProxy)
@@ -50,41 +50,37 @@ namespace Laerdal.McuMgr.FileDownloading
                 _nativeFileDownloader = new IOSFileDownloader(listener: this, cbPeripheral: bluetoothDevice);
                 _nativeFileDownloaderCallbacksProxy = nativeFileDownloaderCallbacksProxy; //composition-over-inheritance
             }
-            
-            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
 
             private bool _alreadyDisposed;
+
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {
-                    CleanupInfrastructure();
-                }
+                if (!disposing)
+                    return;
+
+                CleanupInfrastructure();
 
                 _alreadyDisposed = true;
-                
-                base.Dispose(disposing);
-            }
 
-            private void CleanupInfrastructure()
-            {
                 try
                 {
-                    Disconnect();
+                    base.Dispose(disposing);
                 }
                 catch
                 {
                     // ignored
                 }
+            }
 
-                _nativeFileDownloader?.Dispose();
-                _nativeFileDownloader = null;
+            private void CleanupInfrastructure() // @formatter:off
+            {
+                try { Disconnect();                     } catch { /*ignored*/ }
+                try { _nativeFileDownloader?.Dispose(); } catch { /*ignored*/ }
+                
+                //_nativeFileDownloader = null;     @formatter:on
             }
             
             public bool TrySetContext(object context)

@@ -31,6 +31,7 @@ namespace Laerdal.McuMgr.FileDownloading
             _nativeFileDownloaderProxy.FileDownloader = this; //vital
         }
 
+        private bool _disposed;
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -40,10 +41,22 @@ namespace Laerdal.McuMgr.FileDownloading
 
         protected virtual void Dispose(bool isDisposing)
         {
+            if (_disposed)
+                return;
+
             if (!isDisposing)
                 return;
-            
-            _nativeFileDownloaderProxy?.Dispose();
+
+            try
+            {
+                _nativeFileDownloaderProxy?.Dispose();
+            }
+            catch
+            {
+                //ignored
+            }
+
+            _disposed = true;
         }
 
         public string LastFatalErrorMessage => _nativeFileDownloaderProxy?.LastFatalErrorMessage;
