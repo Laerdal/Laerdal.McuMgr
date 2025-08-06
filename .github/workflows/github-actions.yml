@@ -67,6 +67,7 @@ jobs:
           fetch-depth: 0
 
       - name: '🗂️ Cache Dotnet NuGets'
+        id: 'cache-dotnet-nugets'
         uses: 'actions/cache@v4'
         with:
           path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
@@ -77,6 +78,7 @@ jobs:
             dotnet-nugets-${{ runner.os }}-
 
       - name: '🗂️ Cache Dotnet Workloads'
+        id: 'cache-dotnet-workloads'
         uses: 'actions/cache@v4'
         with:
           path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
@@ -96,7 +98,8 @@ jobs:
                              "https://nuget.pkg.github.com/Laerdal/index.json"                                \
                              "${{env.SCL_GITHUB_NUGET_FEED_USERNAME}}"                                        \
                              "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                               \
-                             "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"
+                             "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                 \
+                             "${{steps.cache-dotnet-workloads.outputs.cache-hit == 'true' && 'false' || 'true' }}" # if the cache was hit, we do not need to install the workloads again
 
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: 'bash'

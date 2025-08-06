@@ -8,6 +8,8 @@ declare -r NUGET_FEED_ACCESSTOKEN="$4"
 
 declare -r ARTIFACTS_FOLDER_PATH="$5"
 
+declare -r SHOULD_RESTORE_WORKLOADS="${6:-true}"  # this is a boolean parameter that defaults to true
+
 if [ -z "${DOTNET_TARGET_WORKLOAD_VERSION}" ]; then
   echo "##vso[task.logissue type=error]Missing 'DOTNET_TARGET_WORKLOAD_VERSION' which was expected to be parameter #1."
   exit 1
@@ -106,22 +108,31 @@ fi
 # also note that issuing a 'dotnet workload restore' doesnt work reliably and this is why resorted
 # to being so explicit about the workloads we need 
 #
-sudo    dotnet                                           \
-             workload                                    \
-             install                                     \
-                 ios                                     \
-                 android                                 \
-                 maccatalyst                             \
-                 maui                                    \
-                 maui-ios                                \
-                 maui-tizen                              \
-                 maui-android                            \
-                 maui-maccatalyst    --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 60
+
+if [ "${SHOULD_RESTORE_WORKLOADS}" != "true" ]; then
+  echo "** Skipping dotnet workload restoration per 'SHOULD_RESTORE_WORKLOADS=${SHOULD_RESTORE_WORKLOADS}'!=true (meaning we had a happy cache-hit in this run)."
+
+else
+  echo "** Restoring dotnet-workloads ver. '${DOTNET_TARGET_WORKLOAD_VERSION}' because it seems we had a cache-miss in this run ..."
+  
+  sudo    dotnet                                           \
+               workload                                    \
+               install                                     \
+                   ios                                     \
+                   android                                 \
+                   maccatalyst                             \
+                   maui                                    \
+                   maui-ios                                \
+                   maui-tizen                              \
+                   maui-android                            \
+                   maui-maccatalyst    --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
+    exit 60
+  fi
 fi
+
 
 cd "Laerdal.McuMgr.Bindings.iOS"
 declare exitCode=$?
