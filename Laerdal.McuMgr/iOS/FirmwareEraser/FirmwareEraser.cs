@@ -63,8 +63,6 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 
                 return TranslateEIOSFirmwareErasureInitializationVerdict(_nativeFirmwareEraser.BeginErasure(imageIndex));
             }
-            
-            public void Disconnect() => _nativeFirmwareEraser?.Disconnect();
 
             // public new void Dispose() { ... }    dont   there is no need to override the base implementation
 
