@@ -34,11 +34,19 @@ namespace Laerdal.McuMgr.FirmwareInstaller
 
         public void Dispose()
         {
-            _nativeFirmwareInstallerProxy?.Dispose();
+            Dispose(isDisposing: true);
 
             GC.SuppressFinalize(this);
         }
-        
+
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (!isDisposing)
+                return;
+
+            _nativeFirmwareInstallerProxy?.Dispose();
+        }
+
         public EFirmwareInstallationVerdict BeginInstallation(
             byte[] data,
             string hostDeviceModel,
