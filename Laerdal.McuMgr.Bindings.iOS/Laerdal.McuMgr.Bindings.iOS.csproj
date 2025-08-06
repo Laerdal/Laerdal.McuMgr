@@ -34,7 +34,7 @@
         <LangVersion>10.0</LangVersion>        
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
-        <NoWarn>$(NoWarn);CS0114;NETSDK1202</NoWarn>
+        <NoWarn>$(NoWarn);CS0114;NETSDK1202;CA1008;</NoWarn>
 
         <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
@@ -137,18 +137,18 @@
         <Message Importance="High" Text="PackageVersion:         '$(PackageVersion)'   "/>
         <Message Importance="High" Text="TargetFramework:        '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
+        <Message Importance="High" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)' "/>
         
-        <Message Importance="high" Text="IsIOS:                  '$(IsIOS)'                    "/>
-        <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                   "/>
-        <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                   "/>
-        <Message Importance="high" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
+        <Message Importance="High" Text="IsIOS:                  '$(IsIOS)'                    "/>
+        <Message Importance="High" Text="IsNet8:                 '$(IsNet8)'                   "/>
+        <Message Importance="High" Text="IsNetX:                 '$(IsNetX)'                   "/>
+        <Message Importance="High" Text="IsNetXIos:              '$(IsNetXIos)'                "/>
 
-        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
-        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
+        <Message Importance="High" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
+        <Message Importance="High" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)' "/>
-        <Message Importance="high" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
+        <Message Importance="High" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)' "/>
+        <Message Importance="High" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->

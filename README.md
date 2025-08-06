@@ -118,7 +118,7 @@ Make sure to always get the latest versions of the above packages.
 
 ```c#
 
-private Laerdal.McuMgr.FirmwareInstaller.IFirmwareInstaller _firmwareInstaller;
+private Laerdal.McuMgr.FirmwareInstallation.IFirmwareInstaller _firmwareInstaller;
 
 public async Task InstallFirmwareAsync()
 {
@@ -128,15 +128,19 @@ public async Task InstallFirmwareAsync()
     try
     {
         _firmwareInstaller = new FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice);
-    
+
         ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: true);
-    
+
         await _firmwareInstaller.InstallAsync(
-            data: firmwareRawBytes,
-            pipelineDepth: FirmwareInstallationPipelineDepth, //ios only
-            byteAlignment: FirmwareInstallationByteAlignment, //ios only
-            windowCapacity: FirmwareInstallationWindowCapacity, //android only
-            memoryAlignment: FirmwareInstallationMemoryAlignment, //android only
+            data: rawFirmwareBytes,
+            hostDeviceModel: DeviceInfo.Model,
+            hostDeviceManufacturer: DeviceInfo.Manufacturer,
+            maxTriesCount: FirmwareInstallationMaxTries,
+            initialMtuSize: FirmwareInstallationInitialMtuSize <= 0 ? null : FirmwareInstallationInitialMtuSize, // both for android and ios
+            pipelineDepth: FirmwareInstallationPipelineDepth <= 0 ? null : FirmwareInstallationPipelineDepth, //       ios only
+            byteAlignment: FirmwareInstallationByteAlignment <= 0 ? null : FirmwareInstallationByteAlignment, //       ios only
+            windowCapacity: FirmwareInstallationWindowCapacity <= 0 ? null : FirmwareInstallationWindowCapacity, //    android only
+            memoryAlignment: FirmwareInstallationMemoryAlignment <= 0 ? null : FirmwareInstallationMemoryAlignment, // android only
             estimatedSwapTimeInMilliseconds: FirmwareInstallationEstimatedSwapTimeInSecs * 1000
         );
     }
@@ -353,9 +357,9 @@ private IDeviceResetter _deviceResetter;
 
 private void ResetDevice()
 {
-    var desiredBluetoothDevice = await Laerdal.Ble.Scanner.Instance.WaitForDeviceToAppearAsync(/*device id here*/); 
+    var desiredBluetoothDevice = /*... grab your ble-device your device's ble-scanner ... */; 
 
-    _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
+    _deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
 
     ToggleSubscriptionsOnDeviceResetterEvents(subscribeNotUnsubscribe: true);
 
@@ -478,7 +482,7 @@ private void CleanupDeviceResetter()
 
         try
         {            
-            _massFileUploader = new FileUploader.FileUploader(/*Android device*/);
+            _massFileUploader = new FileUploader.FileUploader(/*native ble-device*/);
 
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: true);
 
@@ -490,12 +494,18 @@ private void CleanupDeviceResetter()
             );
             
             await _massFileUploader.UploadAsync(
+                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData,
+                
                 hostDeviceModel: DeviceInfo.Model,
                 hostDeviceManufacturer: DeviceInfo.Manufacturer,
-                maxTriesPerUpload: MassFileUploadingMaxTriesPerUpload,
-                timeoutPerUploadInMs: 4 * 60 * 1_000, //4mins per upload
+                
+                initialMtuSize: MassFileUploaderInitialMtuSize <= 0 ? null : MassFileUploaderInitialMtuSize,
+                maxTriesPerUpload: MassFileUploadingMaxRetriesPerUpload,
+                timeoutPerUploadInMs: MassFileUploadingTimeoutPerUploadInSeconds * 1_000,
+                sleepTimeBetweenUploadsInMs: MassFileUploadingSleepTimeBetweenUploadsInMs,
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
-                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData
+
+                moveToNextUploadInCaseOfError: MassFileUploadingMoveToNextUploadInCaseOfError
             );
         }
         catch (UploadCancelledException) //order
@@ -541,7 +551,6 @@ private void CleanupDeviceResetter()
         }
         finally
         {
-            await Device.DisconnectAsync();
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: false); //     order
             CleanupFileUploader(); //                                                           order    
         }
@@ -650,11 +659,11 @@ private void CleanupDeviceResetter()
 Same as in Android. Just make sure to pass a CBPeripheral to the constructors change a bit:
 
 ```c#
-_fileUploader = new Laerdal.McuMgr.FileUploader.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
-_firmwareEraser   = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
-_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
+_fileUploader = new Laerdal.McuMgr.FileUploading.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareEraser   = new Laerdal.McuMgr.FirmwareErasure.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
 
-_deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice); // must be a CBPeripheral
+_deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluetoothDevice); // must be a CBPeripheral
 ```
 
 Note that the constructors support passing both a native device (CBPeripheral on iOS and BluetoothDevice on Android) or simply an 'object' that is castable to either of these types.
@@ -662,11 +671,11 @@ This is done to help you write more uniform code across platforms. You might wan
 
 ```c#
 using Laerdal.Ble.Abstraction;
-using Laerdal.McuMgr.DeviceResetter.Contracts;
-using Laerdal.McuMgr.FileDownloader.Contracts;
-using Laerdal.McuMgr.FileUploader.Contracts;
-using Laerdal.McuMgr.FirmwareEraser.Contracts;
-using Laerdal.McuMgr.FirmwareInstaller.Contracts;
+using Laerdal.McuMgr.DeviceResetting.Contracts;
+using Laerdal.McuMgr.FileDownloading.Contracts;
+using Laerdal.McuMgr.FileUploading.Contracts;
+using Laerdal.McuMgr.FirmwareErasure.Contracts;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts;
 using YourApp.Contracts;
 
 namespace YourApp.Services;

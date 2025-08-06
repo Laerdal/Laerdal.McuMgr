@@ -27,32 +27,49 @@
 			<!-- which has incompatibility problems versus gradle7.6 which is what we need for smooth compilation -->
 			<GradlePath Condition=" '$(GradlePath)' == '' ">gradle</GradlePath>
 
-            <!-- OSX and Linux -->
-            <!-- microsoft-openjdk@17 installs itself here    we want to prioritize microsoft's flavor over all others -->
-            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin/java') ">/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home</JavaHome>
-            <!-- azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default  -->
-            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/usr/local/opt/openjdk@17/bin/java')    ">/usr/local/opt/openjdk@17</JavaHome>
-            <!-- temurin-openjdk@17 installs itself here -->
-            <JavaHome Condition=" '$(IsHostMachineUnix)' == 'true' AND '$(JavaHome)' == '' AND Exists('/opt/homebrew/opt/openjdk@17/bin/java') ">/opt/homebrew/opt/openjdk@17</JavaHome>
-
-            <!-- Windows this has to be adjusted accordingly depending on the flavor and version of the jdk -->
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\Microsoft\jdk-17.0.15.6-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.15.6-hotspot</JavaHome>
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.15\bin\java.exe')             ">C:\\Program Files\\OpenJDK\\jdk-17.0.15</JavaHome>
-            <JavaHome Condition=" '$(IsHostMachineWindows)' == 'true' AND '$(JavaHome)' == '' AND Exists('C:\Program Files\OpenJDK\jdk-17.0.2\bin\java.exe')              ">C:\\Program Files\\OpenJDK\\jdk-17.0.2</JavaHome>
-
-            <!-- last ditch effort -->
-            <JavaHome Condition=" '$(JavaHome)' == '' AND Exists($(JAVA_HOME)) ">$(JAVA_HOME)</JavaHome>
-
             <McuMgrLaerdalWrapperLibSourceDirectory>../Laerdal.McuMgr.Bindings.Android.Native</McuMgrLaerdalWrapperLibSourceDirectory>
             <McuMgrLaerdalWrapperLibSourceDirectory>$([System.IO.Path]::GetFullPath($(McuMgrLaerdalWrapperLibSourceDirectory)))</McuMgrLaerdalWrapperLibSourceDirectory>
 
             <GradlePropertiesFilePath>$(McuMgrLaerdalWrapperLibSourceDirectory)/gradle.properties</GradlePropertiesFilePath>
         </PropertyGroup>
 
-        <Error Condition=" '$(JavaHome)' == ''  " Text="** [ERROR] Failed to deduce the JavaHome for this platform!"/>
-        <Error Condition=" !Exists($(JavaHome)) " Text="** [ERROR] Java17 not found in '$(JavaHome)' - make sure you have Java17 installed!"/>
+        <!-- JAVA_HOME [OSX / *NIX] -->
+        <PropertyGroup Condition=" '$(JavaHome)' == '' and '$(IsHostMachineUnix)' == 'true' ">
+            <!-- [note] our cicd uses microsoft-openjdk@17 and we would love to use that on localdev but unfortunately in our corporate env the antivirus     -->
+            <!-- [note] is misconfigured and treats microsoft-openjdk@17 as malware thus ripping it off   this is why we still support falling back to        -->
+            <!-- [note] temurin-openjdk@17 because it is the only one available on localdev macos machines    its stupid but we have to live with all of this -->
+            
+            <!-- [GITHUB-ACTIONS-MACOS] microsoft-openjdk@17 installs itself here    we want to prioritize microsoft's flavor over all others -->
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin/java') ">/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home</JavaHome>
+            <!-- [AZURE] azure pipelines install java under /usr/local/opt/openjdk@17 or /opt/homebrew/opt/openjdk@17 by default  -->
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('/usr/local/opt/openjdk@17/bin/java')    ">/usr/local/opt/openjdk@17</JavaHome>
+            <!-- [MACOS-LOCALDEV] temurin-openjdk@17 installs itself here -->
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('/opt/homebrew/opt/openjdk@17/bin/java') ">/opt/homebrew/opt/openjdk@17</JavaHome>
+        </PropertyGroup>
 
-        <!-- Read all lines from the input file -->
+        <!-- JAVA_HOME [WINDOWS] -->
+        <PropertyGroup Condition=" '$(JavaHome)' == '' and '$(IsHostMachineWindows)' == 'true' ">
+            <!-- this is completely stupid but as long as we dont use a bash script for something more intelligent we are stuck with this heuristic -->
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.12-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.16.12-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.11-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.16.11-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.10-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.16.10-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.9-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.9-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.8-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.8-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.7-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.7-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.6-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.6-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.5-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.5-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.4-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.4-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.3-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.3-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.2-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.2-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.1-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.1-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.0-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.16.0-hotspot</JavaHome>
+        </PropertyGroup>
+
+        <Error Condition=" '$(JavaHome)' == ''  " Text="** [ERROR] Failed to deduce the OpenJdk17 installation for this platform!"/>
+        
+        <Message Importance="High" Text="** Using $JavaHome: '$(JavaHome)'"/>
+
+        <!-- read all lines from the input file -->
         <ReadLinesFromFile File="$(GradlePropertiesFilePath)">
             <Output TaskParameter="Lines" ItemName="FileLines"/>
         </ReadLinesFromFile>
@@ -84,11 +101,12 @@
 
         <Delete Files="$(CoreAarLibrary)"/>
 
-        <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it -->
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     --version                                                                           "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   $(GradlePath)     wrapper    --distribution-type=BIN  --gradle-version=7.6.6                          "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="   chmod   +x   ./gradlew                                                                                " Condition=" '$(IsHostMachineUnix)' == 'true' "/>
-        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command=" ./gradlew    wrapper    clean   assembleRelease   --console plain   --warning-mode all                  "/>
+        <!-- this builds mcumgr-laerdal-wrapper-release.aar     to make life easier we set +x permission on gradlew right before invoking it    note that in windows -->
+        <!-- its absolutely vital to invoke gradle inside bash and only after we have explicitly set the JAVA_HOME="..." env-var because otherwise nothing will work -->
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="  bash  -c  ' JAVA_HOME=&quot;$(JavaHome)&quot; ; $(GradlePath)             --version '                                                   "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="  bash  -c  ' JAVA_HOME=&quot;$(JavaHome)&quot; ; $(GradlePath)   wrapper   --distribution-type=BIN  --gradle-version=7.6.6 '             " Condition=" '$(IsHostMachineWindows)' != 'true' "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="  bash  -c  ' chmod   +x   ./gradlew'                                                                                                     " Condition=" '$(IsHostMachineUnix)'    == 'true' "/>
+        <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="  bash  -c  ' JAVA_HOME=&quot;$(JavaHome)&quot; ; ./gradlew    wrapper    clean   assembleRelease  --console plain   --warning-mode all ' "/>
 
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
     </Target>

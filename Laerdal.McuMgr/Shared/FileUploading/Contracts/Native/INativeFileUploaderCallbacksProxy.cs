@@ -1,0 +1,20 @@
+﻿using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FileUploading.Contracts.Enums;
+
+namespace Laerdal.McuMgr.FileUploading.Contracts.Native
+{
+    internal interface INativeFileUploaderCallbacksProxy
+    {
+        public IFileUploaderEventEmittable FileUploader { get; set; }
+
+        void CancelledAdvertisement(string reason = "");
+        void CancellingAdvertisement(string reason = "");
+
+        void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
+        void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState);
+        void BusyStateChangedAdvertisement(bool busyNotIdle);
+        void FileUploadedAdvertisement(string resource);
+        void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode);
+        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps);
+    }
+}
