@@ -33,9 +33,17 @@ namespace Laerdal.McuMgr.FileDownloader
 
         public void Dispose()
         {
-            _nativeFileDownloaderProxy?.Dispose();
+            Dispose(isDisposing: true);
 
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (!isDisposing)
+                return;
+            
+            _nativeFileDownloaderProxy?.Dispose();
         }
 
         public string LastFatalErrorMessage => _nativeFileDownloaderProxy?.LastFatalErrorMessage;
