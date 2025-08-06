@@ -64,7 +64,9 @@ namespace Laerdal.McuMgr.Common.Helpers
             if (remoteFilePath.EndsWith('/')) //00
                 throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
 
-            if (remoteFilePath.Contains('\r') || remoteFilePath.Contains('\n') || remoteFilePath.Contains('\f')) //order
+            if (remoteFilePath.Contains('\r', StringComparison.InvariantCultureIgnoreCase)
+                || remoteFilePath.Contains('\n', StringComparison.InvariantCultureIgnoreCase)
+                || remoteFilePath.Contains('\f', StringComparison.InvariantCultureIgnoreCase)) //order
                 throw new ArgumentException($"The given {nameof(remoteFilePath)} contains newline characters!");
 
             //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
