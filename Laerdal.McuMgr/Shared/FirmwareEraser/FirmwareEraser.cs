@@ -57,6 +57,21 @@ namespace Laerdal.McuMgr.FirmwareEraser
             _nativeFirmwareEraserProxy.FirmwareEraser = this; //vital
         }
         
+        public void Dispose()
+        {
+            Dispose(isDisposing: true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (!isDisposing)
+                return;
+            
+            _nativeFirmwareEraserProxy?.Dispose();
+        }
+        
         public string LastFatalErrorMessage => _nativeFirmwareEraserProxy?.LastFatalErrorMessage;
 
         public void Disconnect() => _nativeFirmwareEraserProxy?.Disconnect();

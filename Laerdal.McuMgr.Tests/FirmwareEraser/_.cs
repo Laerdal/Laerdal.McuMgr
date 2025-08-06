@@ -50,6 +50,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareEraser
 
             public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
                 => _eraserCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode); //raises the actual event
+
+            public void Dispose()
+            {
+                // nothing to do
+            }
         }
     }
 }

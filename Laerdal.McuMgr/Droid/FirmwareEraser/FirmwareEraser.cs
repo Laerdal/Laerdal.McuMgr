@@ -68,13 +68,44 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 _nativeEraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
 
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                {
+                    base.Dispose(disposing); //vital
+                    return;
+                }
+
+                if (disposing)
+                {                   
+                    CleanupInfrastructure();
+                }
+
+                _alreadyDisposed = true;
+
+                base.Dispose(disposing);
+            }
+            
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
             public IFirmwareEraserEventEmittable FirmwareEraser //keep this to conform to the interface
             {
                 get => _nativeEraserCallbacksProxy!.FirmwareEraser;
                 set => _nativeEraserCallbacksProxy!.FirmwareEraser = value;
             }
 
-            public EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
+            public new EFirmwareErasureInitializationVerdict BeginErasure(int imageIndex)
             {
                 if (_nativeEraserCallbacksProxy == null)
                     throw new InvalidOperationException("The native firmware eraser is not initialized");
