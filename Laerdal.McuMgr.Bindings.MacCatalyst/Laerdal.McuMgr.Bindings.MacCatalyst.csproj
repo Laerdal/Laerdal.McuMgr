@@ -125,23 +125,25 @@
 
     <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
         <Message Importance="High" Text="OS:                     '$(OS)'                                                     "/>
-        <Message Importance="high" Text="IsNet8:                 '$(IsNet8)'                                                 "/>
-        <Message Importance="high" Text="IsNetX:                 '$(IsNetX)'                                                 "/>
-        <Message Importance="high" Text="IsMacCatalyst:          '$(IsMacCatalyst)'                                          "/>
-        <Message Importance="high" Text="                                                                                    "/>
+        <Message Importance="High" Text="IsNet8:                 '$(IsNet8)'                                                 "/>
+        <Message Importance="High" Text="IsNetX:                 '$(IsNetX)'                                                 "/>
+        <Message Importance="High" Text="IsMacCatalyst:          '$(IsMacCatalyst)'                                          "/>
+        <Message Importance="High" Text="                                                                                    "/>
         <Message Importance="High" Text="Platform:               '$(Platform)'                                               "/>
         <Message Importance="High" Text="PackageId:              '$(PackageId)'                                              "/>
         <Message Importance="High" Text="Configuration:          '$(Configuration)'                                          "/>
         <Message Importance="High" Text="PackageVersion:         '$(PackageVersion)'                                         "/>
         <Message Importance="High" Text="TargetFramework:        '$(TargetFramework)'                                        "/>
         <Message Importance="High" Text="DefineConstants:        '$(DefineConstants)'                                        "/>
-        <Message Importance="high" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)'                                       "/>
-        <Message Importance="high" Text="                                                                                    "/>
-        <Message Importance="high" Text="TargetPlatformVersion:                   '$(TargetPlatformVersion)'                 "/>
-        <Message Importance="high" Text="SupportedOSPlatformVersion:              '$(SupportedOSPlatformVersion)'            "/>
+        <Message Importance="High" Text="MSBuildNodeCount:       '$(MSBuildNodeCount)'                                       "/>
+        <Message Importance="High" Text="                                                                                    "/>
+        <Message Importance="High" Text="TargetPlatformVersion:                   '$(TargetPlatformVersion)'                 "/>
+        <Message Importance="High" Text="SupportedOSPlatformVersion:              '$(SupportedOSPlatformVersion)'            "/>
 
         <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)'       "/>
         <Message Importance="high" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
+        <Message Importance="High" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)'       "/>
+        <Message Importance="High" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->

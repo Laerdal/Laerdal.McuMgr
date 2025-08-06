@@ -99,18 +99,18 @@
         <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
         <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
-        <Message Importance="high" Text="BuildingProject:  '$(BuildingProject)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+        <Message Importance="High" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
+        <Message Importance="High" Text="BuildingProject:  '$(BuildingProject)'  "/>
+        <Message Importance="High" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet8:             '$(IsNet8)'             "/>
-        <Message Importance="high" Text="IsNetX:             '$(IsNetX)'             "/>
-        <Message Importance="high" Text="AndroidApplication: '$(AndroidApplication)' "/>
+        <Message Importance="High" Text="IsNet8:             '$(IsNet8)'             "/>
+        <Message Importance="High" Text="IsNetX:             '$(IsNetX)'             "/>
+        <Message Importance="High" Text="AndroidApplication: '$(AndroidApplication)' "/>
 
-        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
-        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
+        <Message Importance="High" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
+        <Message Importance="High" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="ShouldBuildNativeLibraries:   '$(ShouldBuildNativeLibraries)' "/>
+        <Message Importance="High" Text="ShouldBuildNativeLibraries:   '$(ShouldBuildNativeLibraries)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
