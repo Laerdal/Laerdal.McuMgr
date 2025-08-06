@@ -59,41 +59,52 @@ namespace Laerdal.McuMgr.FileUploading
             public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
             public void Disconnect() => _nativeFileUploader?.Disconnect();
 
-            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+            public new void Dispose()
+            {
+                Dispose(disposing: true); //doesnt throw
 
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
+            
             private bool _alreadyDisposed;
+
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {                   
-                    CleanupInfrastructure();
-                    CleanupResourcesOfLastUpload(); // shouldnt be necessary   but just in case
-                }
+                if (!disposing)
+                    return;
+
+                CleanupInfrastructure();
 
                 _alreadyDisposed = true;
 
-                base.Dispose(disposing);
-            }
-            
-            private void CleanupInfrastructure()
-            {
                 try
                 {
-                    Disconnect();
+                    base.Dispose(disposing);
                 }
                 catch
                 {
                     // ignored
                 }
+            }
 
-                _nativeFileUploader?.Dispose(); //order
-                _nativeFileUploader = null;
+            private void CleanupInfrastructure() // @formatter:off
+            {
+                try { Disconnect();                   } catch { /*ignored*/ }
+                try { _nativeFileUploader?.Dispose(); } catch { /*ignored*/ }
+                
+                //_nativeFileUploader = null;       @formatter:on
             }
 
             public void CleanupResourcesOfLastUpload() //00

@@ -53,23 +53,34 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 _nativeFirmwareInstallerCallbacksProxy = nativeFirmwareInstallerCallbacksProxy; //composition-over-inheritance
             }
 
-            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+            public new void Dispose()
+            {
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
 
             private bool _alreadyDisposed;
             private NSData _nsDataForFirmwareOfCurrentlyActiveInstallation;
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {
-                    CleanupInfrastructure();
-                    CleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
-                }
+                if (!disposing)
+                    return;
+                
+                CleanupInfrastructure();
+                CleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
 
                 _alreadyDisposed = true;
                 

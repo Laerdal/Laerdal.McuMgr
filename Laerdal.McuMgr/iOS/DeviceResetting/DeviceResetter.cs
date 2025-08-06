@@ -57,6 +57,22 @@ namespace Laerdal.McuMgr.DeviceResetting
 
             public void Disconnect() => _nativeDeviceResetter?.Disconnect();
 
+            public new void Dispose()
+            {
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
+            
             private bool _alreadyDisposed;
 
             protected override void Dispose(bool disposing)

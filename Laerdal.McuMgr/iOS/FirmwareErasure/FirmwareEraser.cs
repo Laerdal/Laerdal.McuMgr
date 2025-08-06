@@ -64,21 +64,32 @@ namespace Laerdal.McuMgr.FirmwareErasure
                 return TranslateEIOSFirmwareErasureInitializationVerdict(_nativeFirmwareEraser.BeginErasure(imageIndex));
             }
 
-            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+            public new void Dispose()
+            {
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
 
             private bool _alreadyDisposed;
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {                   
-                    CleanupInfrastructure();
-                }
+                if (!disposing)
+                    return;
+                
+                CleanupInfrastructure();
 
                 _alreadyDisposed = true;
 

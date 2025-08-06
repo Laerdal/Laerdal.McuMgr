@@ -67,9 +67,6 @@ namespace Laerdal.McuMgr.FileDownloading
             
             public new void Dispose()
             {
-                if (_alreadyDisposed)
-                    return;
-
                 Dispose(disposing: true); //doesnt throw
 
                 try

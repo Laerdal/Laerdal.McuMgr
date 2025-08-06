@@ -33,6 +33,7 @@ namespace Laerdal.McuMgr.FileUploading
             _nativeFileUploaderProxy.FileUploader = this; //vital
         }
         
+        private bool _disposed;
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -42,10 +43,22 @@ namespace Laerdal.McuMgr.FileUploading
 
         protected virtual void Dispose(bool isDisposing)
         {
+            if (_disposed)
+                return;
+
             if (!isDisposing)
                 return;
-            
-            _nativeFileUploaderProxy?.Dispose();
+
+            try
+            {
+                _nativeFileUploaderProxy?.Dispose();
+            }
+            catch
+            {
+                //ignored
+            }
+
+            _disposed = true;
         }
         
         public bool TrySetContext(object context) => _nativeFileUploaderProxy?.TrySetContext(context) ?? false;

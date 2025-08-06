@@ -68,23 +68,43 @@ namespace Laerdal.McuMgr.FirmwareErasure
                 _nativeEraserCallbacksProxy = eraserCallbacksProxy ?? throw new ArgumentNullException(nameof(eraserCallbacksProxy)); //composition-over-inheritance
             }
 
+            public new void Dispose()
+            {
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
+
             private bool _alreadyDisposed;
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {                   
-                    CleanupInfrastructure();
-                }
-
+                if (!disposing)
+                    return;
+                
+                CleanupInfrastructure();
+                
                 _alreadyDisposed = true;
 
-                base.Dispose(disposing);
+                try
+                {
+                    base.Dispose(disposing: true);
+                }
+                catch
+                {
+                    //ignored
+                }
             }
             
             private void CleanupInfrastructure()

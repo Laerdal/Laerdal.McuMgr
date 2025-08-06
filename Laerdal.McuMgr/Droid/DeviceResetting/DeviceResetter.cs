@@ -70,9 +70,6 @@ namespace Laerdal.McuMgr.DeviceResetting
 
             public new void Dispose()
             {
-                if (_alreadyDisposed)
-                    return;
-
                 Dispose(disposing: true); //doesnt throw
 
                 try

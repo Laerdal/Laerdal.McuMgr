@@ -64,26 +64,44 @@ namespace Laerdal.McuMgr.FileUploading
             {
                 _fileUploaderCallbacksProxy = fileUploaderCallbacksProxy ?? throw new ArgumentNullException(nameof(fileUploaderCallbacksProxy));
             }
-            
-            // public new void Dispose() { ... }    dont   there is no need to override the base implementation
+
+            public new void Dispose()
+            {
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
 
             private bool _alreadyDisposed;
             protected override void Dispose(bool disposing)
             {
                 if (_alreadyDisposed)
-                {
-                    base.Dispose(disposing); //vital
                     return;
-                }
 
-                if (disposing)
-                {                   
-                    CleanupInfrastructure();
-                }
-
+                if (!disposing)
+                    return;
+                
+                CleanupInfrastructure();
+                
                 _alreadyDisposed = true;
 
-                base.Dispose(disposing);
+                try
+                {
+                    base.Dispose(disposing: true);
+                }
+                catch
+                {
+                    //ignored
+                }
             }
             
             private void CleanupInfrastructure()

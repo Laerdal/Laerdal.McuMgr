@@ -32,6 +32,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             _nativeFirmwareInstallerProxy.FirmwareInstaller = this; //vital
         }
 
+        private bool _disposed;
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -41,10 +42,22 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 
         protected virtual void Dispose(bool isDisposing)
         {
+            if (_disposed)
+                return;
+
             if (!isDisposing)
                 return;
 
-            _nativeFirmwareInstallerProxy?.Dispose();
+            try
+            {
+                _nativeFirmwareInstallerProxy?.Dispose();
+            }
+            catch
+            {
+                //ignored
+            }
+
+            _disposed = true;
         }
 
         public EFirmwareInstallationVerdict BeginInstallation(
