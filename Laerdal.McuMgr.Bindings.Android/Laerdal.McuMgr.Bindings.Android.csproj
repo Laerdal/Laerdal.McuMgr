@@ -24,7 +24,7 @@
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
 
-        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;BG8605;BG8606;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;BG8605;BG8606;NETSDK1202;CA1008;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
