@@ -52,6 +52,34 @@ namespace Laerdal.McuMgr.DeviceResetting
             _nativeDeviceResetterProxy.DeviceResetter = this; //vital
         }
 
+        private bool _disposed;
+        public void Dispose()
+        {
+            Dispose(isDisposing: true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (_disposed)
+                return;
+            
+            if (!isDisposing)
+                return;
+
+            try
+            {
+                _nativeDeviceResetterProxy?.Dispose();
+            }
+            catch
+            {
+                //ignored
+            }
+            
+            _disposed = true;
+        }
+
         public EDeviceResetterState State => _nativeDeviceResetterProxy?.State ?? EDeviceResetterState.None;
         public string LastFatalErrorMessage => _nativeDeviceResetterProxy?.LastFatalErrorMessage;
 

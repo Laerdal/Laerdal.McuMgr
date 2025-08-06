@@ -52,6 +52,11 @@ namespace Laerdal.McuMgr.Tests.DeviceResettingTestbed
 
             public void FatalErrorOccurredAdvertisement(string errorMessage, EGlobalErrorCode globalErrorCode)
                 => _resetterCallbacksProxy?.FatalErrorOccurredAdvertisement(errorMessage, globalErrorCode); //raises the actual event
+
+            public void Dispose()
+            {
+                // dud
+            }
         }
     }
 }

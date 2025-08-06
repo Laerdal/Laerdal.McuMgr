@@ -68,6 +68,60 @@ namespace Laerdal.McuMgr.DeviceResetting
                 _deviceResetterCallbacksProxy = deviceResetterCallbacksProxy ?? throw new ArgumentNullException(nameof(deviceResetterCallbacksProxy));
             }
 
+            public new void Dispose()
+            {
+                if (_alreadyDisposed)
+                    return;
+
+                Dispose(disposing: true); //doesnt throw
+
+                try
+                {
+                    base.Dispose();
+                }
+                catch
+                {
+                    //ignored
+                }
+                
+                GC.SuppressFinalize(this);
+            }
+
+            private bool _alreadyDisposed;
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                    return;
+
+                if (!disposing)
+                    return;
+                
+                CleanupInfrastructure();
+                
+                _alreadyDisposed = true;
+
+                try
+                {
+                    base.Dispose(disposing: true);
+                }
+                catch
+                {
+                    //ignored
+                }
+            }
+            
+            private void CleanupInfrastructure()
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    //ignored
+                }
+            }
+
             public new EDeviceResetterInitializationVerdict BeginReset()
             {
                 return TranslateEAndroidDeviceResetterInitializationVerdict(base.BeginReset());

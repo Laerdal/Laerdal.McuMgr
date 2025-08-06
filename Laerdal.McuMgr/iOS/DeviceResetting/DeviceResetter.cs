@@ -57,6 +57,38 @@ namespace Laerdal.McuMgr.DeviceResetting
 
             public void Disconnect() => _nativeDeviceResetter?.Disconnect();
 
+            private bool _alreadyDisposed;
+
+            protected override void Dispose(bool disposing)
+            {
+                if (_alreadyDisposed)
+                    return;
+
+                if (!disposing)
+                    return;
+
+                CleanupInfrastructure();
+
+                _alreadyDisposed = true;
+
+                try
+                {
+                    base.Dispose(disposing);
+                }
+                catch
+                {
+                    /*ignored*/
+                }
+            }
+
+            private void CleanupInfrastructure() // @formatter:off
+            {
+                try { Disconnect();                     } catch { /*ignored*/ }
+                try { _nativeDeviceResetter?.Dispose(); } catch { /*ignored*/ }
+                
+                //_nativeFileDownloader = null;     @formatter:on
+            }
+
             public EDeviceResetterInitializationVerdict BeginReset()
             {
                 if (_nativeDeviceResetter == null)
