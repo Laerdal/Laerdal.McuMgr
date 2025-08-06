@@ -97,7 +97,7 @@ namespace Laerdal.McuMgr.FirmwareEraser
                 }
 
                 _nativeFirmwareEraser?.Dispose(); //order
-                _nativeFirmwareEraser = null;
+                //_nativeFirmwareEraser = null;
             }
 
             #endregion
