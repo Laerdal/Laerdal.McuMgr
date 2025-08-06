@@ -20,7 +20,7 @@ env:
   SCL_DEPENDENCY_TRACKER_SERVER_URL: ${{          secrets.SCL_DEPENDENCY_TRACKER_SERVER_URL          }}
   SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY: ${{ secrets.SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY }}
 
-  DOTNET_TARGET_WORKLOAD_VERSION: "8.0.405" # dont upgrade this lightheartedly   the workload snapshot implicitly defines which versions of Android/iOS/MacCatalyst SDKs are supported
+  DOTNET_TARGET_WORKLOAD_VERSION: "8.0.405" #   dont upgrade this lightheartedly   the workload snapshot implicitly defines which versions of Android/iOS/MacCatalyst SDKs are supported
 
   BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34" # for the csproj file
 
@@ -66,6 +66,28 @@ jobs:
           fetch-tags: true # https://github.com/actions/checkout/issues/1471#issuecomment-1771231294
           fetch-depth: 0
 
+      - name: '🗂️ Cache Dotnet NuGets'
+        id: 'cache-dotnet-nugets'
+        uses: 'actions/cache@v4'
+        with:
+          path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
+            ~/.nuget/packages
+            %USERPROFILE%\.nuget\packages
+          key: dotnet-nugets-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.fsproj') }}-${{ env.DOTNET_TARGET_WORKLOAD_VERSION }}
+          restore-keys: |
+            dotnet-nugets-${{ runner.os }}-
+
+      - name: '🗂️ Cache Dotnet Workloads'
+        id: 'cache-dotnet-workloads'
+        uses: 'actions/cache@v4'
+        with:
+          path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
+            ~/.dotnet
+            %USERPROFILE%\.dotnet
+          key: dotnet-workloads-${{ runner.os }}-${{ env.DOTNET_TARGET_WORKLOAD_VERSION }}
+          restore-keys: |
+            dotnet-workloads-${{ runner.os }}-
+
       - name: '🛠 Setup Build Environment'
         shell: 'bash'
         run: |
@@ -76,7 +98,8 @@ jobs:
                              "https://nuget.pkg.github.com/Laerdal/index.json"                                \
                              "${{env.SCL_GITHUB_NUGET_FEED_USERNAME}}"                                        \
                              "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                               \
-                             "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"
+                             "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                 \
+                             "${{steps.cache-dotnet-workloads.outputs.cache-hit == 'true' && 'false' || 'true' }}" # if the cache was hit, we do not need to install the workloads again
 
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: 'bash'
