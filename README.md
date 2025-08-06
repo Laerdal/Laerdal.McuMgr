@@ -128,15 +128,19 @@ public async Task InstallFirmwareAsync()
     try
     {
         _firmwareInstaller = new FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice);
-    
+
         ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: true);
-    
+
         await _firmwareInstaller.InstallAsync(
-            data: firmwareRawBytes,
-            pipelineDepth: FirmwareInstallationPipelineDepth, //ios only
-            byteAlignment: FirmwareInstallationByteAlignment, //ios only
-            windowCapacity: FirmwareInstallationWindowCapacity, //android only
-            memoryAlignment: FirmwareInstallationMemoryAlignment, //android only
+            data: rawFirmwareBytes,
+            hostDeviceModel: DeviceInfo.Model,
+            hostDeviceManufacturer: DeviceInfo.Manufacturer,
+            maxTriesCount: FirmwareInstallationMaxTries,
+            initialMtuSize: FirmwareInstallationInitialMtuSize <= 0 ? null : FirmwareInstallationInitialMtuSize, // both for android and ios
+            pipelineDepth: FirmwareInstallationPipelineDepth <= 0 ? null : FirmwareInstallationPipelineDepth, //       ios only
+            byteAlignment: FirmwareInstallationByteAlignment <= 0 ? null : FirmwareInstallationByteAlignment, //       ios only
+            windowCapacity: FirmwareInstallationWindowCapacity <= 0 ? null : FirmwareInstallationWindowCapacity, //    android only
+            memoryAlignment: FirmwareInstallationMemoryAlignment <= 0 ? null : FirmwareInstallationMemoryAlignment, // android only
             estimatedSwapTimeInMilliseconds: FirmwareInstallationEstimatedSwapTimeInSecs * 1000
         );
     }
@@ -353,7 +357,7 @@ private IDeviceResetter _deviceResetter;
 
 private void ResetDevice()
 {
-    var desiredBluetoothDevice = await Laerdal.Ble.Scanner.Instance.WaitForDeviceToAppearAsync(/*device id here*/); 
+    var desiredBluetoothDevice = /*... grab your ble-device your device's ble-scanner ... */; 
 
     _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
 
@@ -478,7 +482,7 @@ private void CleanupDeviceResetter()
 
         try
         {            
-            _massFileUploader = new FileUploader.FileUploader(/*Android device*/);
+            _massFileUploader = new FileUploader.FileUploader(/*native ble-device*/);
 
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: true);
 
@@ -490,12 +494,18 @@ private void CleanupDeviceResetter()
             );
             
             await _massFileUploader.UploadAsync(
+                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData,
+                
                 hostDeviceModel: DeviceInfo.Model,
                 hostDeviceManufacturer: DeviceInfo.Manufacturer,
-                maxTriesPerUpload: MassFileUploadingMaxTriesPerUpload,
-                timeoutPerUploadInMs: 4 * 60 * 1_000, //4mins per upload
+                
+                initialMtuSize: MassFileUploaderInitialMtuSize <= 0 ? null : MassFileUploaderInitialMtuSize,
+                maxTriesPerUpload: MassFileUploadingMaxRetriesPerUpload,
+                timeoutPerUploadInMs: MassFileUploadingTimeoutPerUploadInSeconds * 1_000,
+                sleepTimeBetweenUploadsInMs: MassFileUploadingSleepTimeBetweenUploadsInMs,
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
-                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData
+
+                moveToNextUploadInCaseOfError: MassFileUploadingMoveToNextUploadInCaseOfError
             );
         }
         catch (UploadCancelledException) //order
@@ -541,7 +551,6 @@ private void CleanupDeviceResetter()
         }
         finally
         {
-            await Device.DisconnectAsync();
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: false); //     order
             CleanupFileUploader(); //                                                           order    
         }
