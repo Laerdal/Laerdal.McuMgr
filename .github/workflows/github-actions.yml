@@ -66,7 +66,7 @@ jobs:
           fetch-tags: true # https://github.com/actions/checkout/issues/1471#issuecomment-1771231294
           fetch-depth: 0
 
-      - name: '🗂️ Cache Dotnet NuGets'
+      - name: '🗂️ Try Restore Dotnet NuGets from Cache'
         id: 'cache-dotnet-nugets'
         uses: 'actions/cache@v4'
         with:
@@ -77,7 +77,7 @@ jobs:
           restore-keys: |
             dotnet-nugets-${{ runner.os }}-
 
-      - name: '🗂️ Cache Dotnet Workloads'
+      - name: '🗂️ Try Restore Dotnet Workloads from Cache'
         id: 'cache-dotnet-workloads'
         uses: 'actions/cache@v4'
         with:

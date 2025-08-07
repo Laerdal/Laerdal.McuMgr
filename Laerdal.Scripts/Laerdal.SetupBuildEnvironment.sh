@@ -1,12 +1,12 @@
 #!/bin/bash
 
-declare -r DOTNET_TARGET_WORKLOAD_VERSION="$1"
+declare -r DOTNET_TARGET_WORKLOAD_VERSION="${1}"
 
-declare -r NUGET_FEED_URL="$2"
-declare -r NUGET_FEED_USERNAME="$3"
-declare -r NUGET_FEED_ACCESSTOKEN="$4"
+declare -r NUGET_FEED_URL="${2}"
+declare -r NUGET_FEED_USERNAME="${3}"
+declare -r NUGET_FEED_ACCESSTOKEN="${4}"
 
-declare -r ARTIFACTS_FOLDER_PATH="$5"
+declare -r ARTIFACTS_FOLDER_PATH="${5}"
 
 declare -r SHOULD_RESTORE_WORKLOADS="${6:-true}"  # this is a boolean parameter that defaults to true
 
