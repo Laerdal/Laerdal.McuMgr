@@ -83,7 +83,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
                 try
                 {
-                    base.Dispose(disposing);
+                    base.Dispose(disposing: true);
                 }
                 catch
                 {

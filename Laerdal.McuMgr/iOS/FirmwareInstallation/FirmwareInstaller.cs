@@ -84,7 +84,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 
                 _alreadyDisposed = true;
                 
-                base.Dispose(disposing);
+                base.Dispose(disposing: true);
             }
 
             private void CleanupInfrastructure()
@@ -104,8 +104,15 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 
             public void CleanupResourcesOfLastInstallation() //00
             {
-                _nsDataForFirmwareOfCurrentlyActiveInstallation?.Dispose();
-                _nsDataForFirmwareOfCurrentlyActiveInstallation = null;
+                try
+                {
+                    _nsDataForFirmwareOfCurrentlyActiveInstallation?.Dispose();
+                    _nsDataForFirmwareOfCurrentlyActiveInstallation = null;
+                }
+                catch
+                {
+                    // ignored
+                }
                 
                 //00 the method needs to be public so that it can be called manually when someone uses BeginUpload() instead of UploadAsync()!
             }

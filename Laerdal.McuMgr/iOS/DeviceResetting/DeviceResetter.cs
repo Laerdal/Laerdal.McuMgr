@@ -89,7 +89,7 @@ namespace Laerdal.McuMgr.DeviceResetting
 
                 try
                 {
-                    base.Dispose(disposing);
+                    base.Dispose(disposing: true);
                 }
                 catch
                 {

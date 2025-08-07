@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.FileUploading
         //ReSharper disable once InconsistentNaming
         private sealed class IOSNativeFileUploaderProxy : IOSListenerForFileUploader, INativeFileUploaderProxy
         {
-            private IOSFileUploader _nativeFileUploader;
+            private readonly IOSFileUploader _nativeFileUploader;
             private readonly INativeFileUploaderCallbacksProxy _nativeFileUploaderCallbacksProxy;
             
             internal IOSNativeFileUploaderProxy(CBPeripheral bluetoothDevice, INativeFileUploaderCallbacksProxy nativeFileUploaderCallbacksProxy)
@@ -86,12 +86,13 @@ namespace Laerdal.McuMgr.FileUploading
                     return;
 
                 CleanupInfrastructure();
+                CleanupResourcesOfLastUpload();
 
                 _alreadyDisposed = true;
 
                 try
                 {
-                    base.Dispose(disposing);
+                    base.Dispose(disposing: true);
                 }
                 catch
                 {
@@ -109,8 +110,15 @@ namespace Laerdal.McuMgr.FileUploading
 
             public void CleanupResourcesOfLastUpload() //00
             {
-                _nsDataOfFileInCurrentlyActiveUpload?.Dispose();
-                _nsDataOfFileInCurrentlyActiveUpload = null;
+                try
+                {
+                    _nsDataOfFileInCurrentlyActiveUpload?.Dispose();
+                    _nsDataOfFileInCurrentlyActiveUpload = null;
+                }
+                catch
+                {
+                    //ignored
+                }
                 
                 //00 the method needs to be public so that it can be called manually when someone uses BeginUpload() instead of UploadAsync()!
             }
