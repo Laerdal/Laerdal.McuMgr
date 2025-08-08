@@ -8,8 +8,9 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         void Disconnect();
 
         EFileUploaderVerdict BeginUpload(
-            string remoteFilePath,
             byte[] data,
+            string resourceId,
+            string remoteFilePath,
             int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,

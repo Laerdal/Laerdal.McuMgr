@@ -4,11 +4,13 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Events
 {
     public readonly struct FileUploadedEventArgs : IMcuMgrEventArgs //hotpathish
     {
-        public readonly string Resource;
+        public readonly string ResourceId;
+        public readonly string RemoteFilePath;
 
-        public FileUploadedEventArgs(string resource)
+        public FileUploadedEventArgs(string resourceId, string remoteFilePath)
         {
-            Resource = resource;
+            ResourceId = resourceId;
+            RemoteFilePath = remoteFilePath;
         }
     }
 }

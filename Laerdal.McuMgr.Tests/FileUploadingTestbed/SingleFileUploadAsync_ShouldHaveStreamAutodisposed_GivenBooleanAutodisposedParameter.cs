@@ -25,6 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
+            var resourceId = "some_resource.txt";
             var streamProvider = streamType switch
             {
                 "stream" => (object)stream,
@@ -47,8 +48,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 hostDeviceManufacturer: "acme corp.",
                 
                 data: streamProvider,
-                maxTriesCount: 1,
+                resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
+                
+                maxTriesCount: 1,
                 autodisposeStream: shouldAutodisposeStream
             ));
 
@@ -66,17 +69,17 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploaded))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.Resource == remoteFilePath);
+                .WithArgs<FileUploadedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
             
             stream.CanRead.Should().Be(!shouldAutodisposeStream); //10
 
@@ -91,8 +94,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -104,7 +108,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -117,34 +123,34 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00, 00);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 00, 00, 00);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 10, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 20, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 30, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 40, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 50, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 60, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 70, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 80, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 90, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 100, 10, 10);
 
                     await Task.Delay(20);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadedAdvertisement(remoteFilePath); //                                                            order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
+                    FileUploadedAdvertisement(resourceId, remoteFilePath); //                                                            order
                 });
 
                 return verdict;

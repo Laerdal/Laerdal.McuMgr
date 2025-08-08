@@ -20,6 +20,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         public async Task SingleFileUploadAsync_ShouldThrowAllUploadAttemptsFailedException_GivenRogueNativeErrorMessage(string testcaseNickname, string nativeRogueErrorMessage, int maxTriesCount)
         {
             // Arrange
+            var resourceId = "some_resource.txt";
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/non-existent/file.bin";
 
@@ -37,8 +38,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 hostDeviceManufacturer: "acme corp.",
                 
                 data: mockedFileData, //doesnt really matter   we just want to ensure that the method fails early and doesnt retry
-                maxTriesCount: maxTriesCount,
+                resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
+                
+                maxTriesCount: maxTriesCount,
                 sleepTimeBetweenRetriesInMs: 10
             ));
 
@@ -64,12 +67,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Error);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Error);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -84,8 +87,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
+                
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -97,7 +102,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -111,12 +118,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(100);
 
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //   order
-                    FatalErrorOccurredAdvertisement(remoteFilePath, _nativeRogueErrorMessage, EGlobalErrorCode.Generic); // order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //   order
+                    FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, _nativeRogueErrorMessage, EGlobalErrorCode.Generic); // order
                 });
 
                 return verdict;

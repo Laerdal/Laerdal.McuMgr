@@ -123,18 +123,21 @@ namespace Laerdal.McuMgr.FileUploading
 
             #region commands
 
+            // ReSharper disable UnusedParameter.Local
             public EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
-                int? initialMtuSize,
+                string resourceId,
+                string remoteFilePath,
+                int? initialMtuSize, //both ios and android
                 int? pipelineDepth, //   ios
                 int? byteAlignment, //   ios
                 int? windowCapacity, //  android
                 int? memoryAlignment //  android
-            )
+            ) // ReSharper enable UnusedParameter.Local
             {
                 return TranslateFileUploaderVerdict(base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize ?? -1,
                     windowCapacity: windowCapacity ?? -1,
@@ -172,38 +175,43 @@ namespace Laerdal.McuMgr.FileUploading
 
             #region android callbacks -> csharp event emitters
 
-            public override void FatalErrorOccurredAdvertisement(string resource, string errorMessage, int globalErrorCode)
+            public override void FatalErrorOccurredAdvertisement(string resourceId, string remoteFilePath, string errorMessage, int globalErrorCode)
             {
-                base.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //just in case
+                base.FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, errorMessage, globalErrorCode); //just in case
 
-                FatalErrorOccurredAdvertisement(resource, errorMessage, (EGlobalErrorCode) globalErrorCode);
+                FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, errorMessage, (EGlobalErrorCode) globalErrorCode);
             }
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
+            public void FatalErrorOccurredAdvertisement(string resourceId, string remoteFilePath, string errorMessage, EGlobalErrorCode globalErrorCode)
             {
-                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
+                _fileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
+                    errorMessage: errorMessage,
+                    globalErrorCode: globalErrorCode
+                );
             }
             
-            public override void LogMessageAdvertisement(string message, string category, string level, string resource)
+            public override void LogMessageAdvertisement(string message, string category, string level, string resourceId)
             {
-                base.LogMessageAdvertisement(message, category, level, resource);
+                base.LogMessageAdvertisement(message, category, level, resourceId);
 
                 LogMessageAdvertisement(
                     level: HelpersAndroid.TranslateEAndroidLogLevel(level),
                     message: message,
                     category: category,
-                    resource: resource //this is the remote-file-path essentially
+                    resourceId: resourceId //this is the remote-file-path essentially
                 );
             }
 
             // keep this around to conform to the interface
-            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resourceId)
             {
                 _fileUploaderCallbacksProxy?.LogMessageAdvertisement(
                     level: level,
                     message: message,
                     category: category,
-                    resource: resource //essentially the remote filepath
+                    resourceId: resourceId //essentially the remote filepath
                 );
             }
             
@@ -221,11 +229,11 @@ namespace Laerdal.McuMgr.FileUploading
                 _fileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
 
-            public override void FileUploadedAdvertisement(string resource)
+            public override void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
             {
-                base.FileUploadedAdvertisement(resource); //just in case
+                base.FileUploadedAdvertisement(resourceId, remoteFilePath); //just in case
 
-                _fileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
+                _fileUploaderCallbacksProxy?.FileUploadedAdvertisement(resourceId, remoteFilePath);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
@@ -235,31 +243,35 @@ namespace Laerdal.McuMgr.FileUploading
                 _fileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(string resource, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
+            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
             {
-                base.StateChangedAdvertisement(resource, oldState, newState); //just in case
+                base.StateChangedAdvertisement(resourceId, remoteFilePath, oldState, newState); //just in case
 
                 StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
                     oldState: TranslateEAndroidFileUploaderState(oldState),
-                    newState: TranslateEAndroidFileUploaderState(newState)
+                    newState: TranslateEAndroidFileUploaderState(newState),
+                    resourceId: resourceId, //essentially the remote filepath
+                    remoteFilePath: remoteFilePath
                 );
             }
 
-            public void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState)
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
             {
                 _fileUploaderCallbacksProxy?.StateChangedAdvertisement(
-                    resource: resource,
                     oldState: oldState,
-                    newState: newState
+                    newState: newState,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath
                 );
             }
 
-            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
             {
-                base.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //just in case
+                base.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //just in case
 
                 _fileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
                     progressPercentage: progressPercentage,
                     currentThroughputInKbps: currentThroughputInKbps,
                     totalAverageThroughputInKbps: totalAverageThroughputInKbps

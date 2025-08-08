@@ -28,6 +28,7 @@ public class AndroidFileUploader
     private long _uploadStartTimestampInMs;
     private long _lastBytesSentTimestampInMs;
 
+    private String _resourceId = "";
     private String _remoteFilePathSanitized = "";
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
@@ -57,19 +58,19 @@ public class AndroidFileUploader
     {
         if (!IsIdleOrCold())
         {
-            logMessageAdvertisement("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _remoteFilePathSanitized);
+            logMessageAdvertisement("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _resourceId);
             return false;
         }
 
         if (!tryInvalidateCachedTransport()) //order
         {
-            logMessageAdvertisement("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR", _remoteFilePathSanitized);
+            logMessageAdvertisement("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR", _resourceId);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        logMessageAdvertisement("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _remoteFilePathSanitized);
+        logMessageAdvertisement("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _resourceId);
 
         return true;
     }
@@ -93,6 +94,7 @@ public class AndroidFileUploader
      * Initiates a file upload asynchronously. The progress is advertised through the callbacks provided by this class.
      * Setup interceptors for them to get informed about the status of the firmware-installation.
      *
+     * @param resourceId      the resource-id/nickname/local-file-path of the resource/data that is being
      * @param remoteFilePath  the remote-file-path to save the given data to on the remote device
      * @param data            the bytes to upload
      * @param initialMtuSize  sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
@@ -102,6 +104,7 @@ public class AndroidFileUploader
      * @return a verdict indicating whether the file uploading was started successfully or not
      */
     public EAndroidFileUploaderVerdict beginUpload(
+            final String resourceId,
             final String remoteFilePath,
             final byte[] data,
             final int initialMtuSize,
@@ -109,11 +112,18 @@ public class AndroidFileUploader
             final int memoryAlignment
     )
     {
-        if (!IsCold())
-        { //keep first
+        if (!IsCold()) //keep first
+        {
             onError("Another upload is already in progress");
 
             return EAndroidFileUploaderVerdict.FAILED__OTHER_UPLOAD_ALREADY_IN_PROGRESS;
+        }
+
+        if (resourceId == null) //can be dud but not null
+        {
+            onError("Provided resource-id is null", null);
+
+            return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         if (remoteFilePath == null || remoteFilePath.isEmpty())
@@ -123,6 +133,7 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
+        _resourceId = resourceId;
         _remoteFilePathSanitized = remoteFilePath.trim();
         if (_remoteFilePathSanitized.endsWith("/")) //the path must point to a file not a directory
         {
@@ -203,7 +214,7 @@ public class AndroidFileUploader
 
         setState(EAndroidFileUploaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
+        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
@@ -232,7 +243,7 @@ public class AndroidFileUploader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
-        logMessageAdvertisement("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileUploader", "TRACE", _remoteFilePathSanitized);
+        logMessageAdvertisement("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "FileUploader", "TRACE", _resourceId);
 
         try
         {
@@ -356,11 +367,11 @@ public class AndroidFileUploader
 
         _currentState = newState; //order
 
-        stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState); //order
+        stateChangedAdvertisement(_resourceId, _remoteFilePathSanitized, oldState, newState); //order
 
         if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 100, 0, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
@@ -375,7 +386,7 @@ public class AndroidFileUploader
     @Contract(pure = true)
     private boolean IsCold()
     {
-        return _currentState == EAndroidFileUploaderState.NONE
+        return _currentState == EAndroidFileUploaderState.NONE // we intentionally omitted the 'idle' state here
                 || _currentState == EAndroidFileUploaderState.ERROR
                 || _currentState == EAndroidFileUploaderState.COMPLETE
                 || _currentState == EAndroidFileUploaderState.CANCELLED;
@@ -400,6 +411,7 @@ public class AndroidFileUploader
         setState(EAndroidFileUploaderState.ERROR);
 
         fatalErrorOccurredAdvertisement(
+                _resourceId,
                 _remoteFilePathSanitized,
                 errorMessage,
                 McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
@@ -407,6 +419,7 @@ public class AndroidFileUploader
     }
 
     public void fatalErrorOccurredAdvertisement(
+            final String resourceId,
             final String remoteFilePath,
             final String errorMessage,
             final int globalErrorCode // have a look at EGlobalErrorCode.cs in csharp
@@ -422,7 +435,7 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadedAdvertisement(final String remoteFilePath)
+    public void fileUploadedAdvertisement(final String resourceId, final String remoteFilePath)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -440,19 +453,19 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void stateChangedAdvertisement(final String remoteFilePath, final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState) // (final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState)
+    public void stateChangedAdvertisement(final String resourceId, final String remoteFilePath, final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState) // (final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     @Contract(pure = true)
-    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
+    public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final String remoteFilePath, final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     @Contract(pure = true)
-    public void logMessageAdvertisement(final String message, final String category, final String level, final String resource)
+    public void logMessageAdvertisement(final String message, final String category, final String level, final String resourceId)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -469,6 +482,8 @@ public class AndroidFileUploader
             float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(totalBytesSentSoFar, timestampInMs);
 
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
+                    _resourceId,
+                    _remoteFilePathSanitized,
                     fileUploadProgressPercentage,
                     currentThroughputInKbps,
                     totalAverageThroughputInKbps
@@ -516,7 +531,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
             onError(error.getMessage(), error);
             setLoggingEnabledOnTransport(true);
             busyStateChangedAdvertisement(false);
@@ -527,7 +542,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadCanceled()
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
+            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
             setState(EAndroidFileUploaderState.CANCELLED);
             cancelledAdvertisement(_cancellationReason);
             setLoggingEnabledOnTransport(true);
@@ -541,7 +556,7 @@ public class AndroidFileUploader
         {
             //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
             setState(EAndroidFileUploaderState.COMPLETE);
-            fileUploadedAdvertisement(_remoteFilePathSanitized);
+            fileUploadedAdvertisement(_resourceId, _remoteFilePathSanitized);
             setLoggingEnabledOnTransport(true);
             busyStateChangedAdvertisement(false);
 

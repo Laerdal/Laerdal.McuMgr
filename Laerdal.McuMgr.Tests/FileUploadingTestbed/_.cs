@@ -30,8 +30,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             public virtual EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
                 int? pipelineDepth = null, //   ios
                 int? byteAlignment = null, //   ios
@@ -64,23 +65,24 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _uploaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
-            public void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState)
-                => _uploaderCallbacksProxy.StateChangedAdvertisement(resource: resource, newState: newState, oldState: oldState); //raises the actual event
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
+                => _uploaderCallbacksProxy.StateChangedAdvertisement(resourceId: resourceId, remoteFilePath: remoteFilePath, newState: newState, oldState: oldState); //raises the actual event
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _uploaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
             
-            public void FileUploadedAdvertisement(string resource)
-                => _uploaderCallbacksProxy.FileUploadedAdvertisement(resource); //raises the actual event
+            public void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
+                => _uploaderCallbacksProxy.FileUploadedAdvertisement(resourceId, remoteFilePath); //raises the actual event
 
             public void FatalErrorOccurredAdvertisement(
-                string resource,
+                string resourceId,
+                string remoteFilePath,
                 string errorMessage,
                 EGlobalErrorCode globalErrorCode
-            ) => _uploaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //raises the actual event
+            ) => _uploaderCallbacksProxy.FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, errorMessage, globalErrorCode); //raises the actual event
             
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
-                => _uploaderCallbacksProxy.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+                => _uploaderCallbacksProxy.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
             
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();

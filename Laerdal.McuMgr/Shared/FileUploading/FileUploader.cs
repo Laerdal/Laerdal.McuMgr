@@ -66,14 +66,12 @@ namespace Laerdal.McuMgr.FileUploading
         public bool TryInvalidateCachedTransport() => _nativeFileUploaderProxy?.TryInvalidateCachedTransport() ?? false;
 
         public EFileUploaderVerdict BeginUpload(
-            string remoteFilePath,
             byte[] data,
-
+            string resourceId,
+            string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-
             int? initialMtuSize = null,
-
             int? pipelineDepth = null, //  ios
             int? byteAlignment = null, //  ios
             int? windowCapacity = null, // android
@@ -121,12 +119,12 @@ namespace Laerdal.McuMgr.FileUploading
 
             var verdict = _nativeFileUploaderProxy.BeginUpload(
                 data: data,
+                resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
-                initialMtuSize: initialMtuSize,
 
+                initialMtuSize: initialMtuSize,
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
-
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment
             );
@@ -264,6 +262,7 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     await UploadAsync(
                         data: data,
+                        resourceId: "", //todo   we must refactor the dict to get it from there
                         remoteFilePath: remoteFilePath,
 
                         hostDeviceModel: hostDeviceModel,
@@ -274,13 +273,10 @@ namespace Laerdal.McuMgr.FileUploading
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
 
                         autodisposeStream: autodisposeStreams,
-                        
-                        pipelineDepth: pipelineDepth,
-                        byteAlignment: byteAlignment,
-                        initialMtuSize: initialMtuSize,
-                        windowCapacity: windowCapacity,
-                        memoryAlignment: memoryAlignment
-                    );
+                        initialMtuSize: pipelineDepth,
+                        pipelineDepth: byteAlignment,
+                        byteAlignment: initialMtuSize,
+                        windowCapacity: windowCapacity, memoryAlignment: memoryAlignment);
 
                     if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex) //we skip sleeping after the last upload
                     {
@@ -309,6 +305,7 @@ namespace Laerdal.McuMgr.FileUploading
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
         public async Task UploadAsync<TData>(
             TData data,
+            string resourceId,
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
@@ -391,6 +388,7 @@ namespace Laerdal.McuMgr.FileUploading
 
                     var verdict = BeginUpload( //00 dont use task.run here for now
                         data: dataArray,
+                        resourceId: resourceId,
                         remoteFilePath: remoteFilePath,
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
@@ -399,7 +397,6 @@ namespace Laerdal.McuMgr.FileUploading
 
                         pipelineDepth: pipelineDepth, //      ios only
                         windowCapacity: windowCapacity, //    ios only
-
                         byteAlignment: byteAlignment, //      android only
                         memoryAlignment: memoryAlignment //   android only
                     );
@@ -414,9 +411,10 @@ namespace Laerdal.McuMgr.FileUploading
                     //todo   silently cancel the upload here on best effort basis
                     
                     OnStateChanged(new StateChangedEventArgs( //for consistency
-                        resource: remoteFilePath,
                         oldState: EFileUploaderState.None, //better not use this.State here because the native call might fail
-                        newState: EFileUploaderState.Error
+                        newState: EFileUploaderState.Error,
+                        resourceId: resourceId, 
+                        remoteFilePath: remoteFilePath
                     ));
 
                     throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
@@ -448,9 +446,10 @@ namespace Laerdal.McuMgr.FileUploading
                 )
                 {
                     OnStateChanged(new StateChangedEventArgs( //for consistency
-                        resource: remoteFilePath,
                         oldState: EFileUploaderState.None,
-                        newState: EFileUploaderState.Error
+                        newState: EFileUploaderState.Error,
+                        resourceId: resourceId,
+                        remoteFilePath: remoteFilePath
                     ));
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
@@ -616,42 +615,43 @@ namespace Laerdal.McuMgr.FileUploading
             public void CancellingAdvertisement(string reason = "")
                 => FileUploader?.OnCancelling(new CancellingEventArgs(reason));
 
-            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resourceId)
                 => FileUploader?.OnLogEmitted(new LogEmittedEventArgs(
                     level: level,
                     message: message,
                     category: category,
-                    resource: resource
+                    resource: resourceId
                 ));
 
-            public void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState)
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
                 => FileUploader?.OnStateChanged(new StateChangedEventArgs(
-                    resource: resource,
                     newState: newState,
-                    oldState: oldState
+                    oldState: oldState,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath
                 ));
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FileUploadedAdvertisement(string resource)
-                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resource));
+            public void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
+                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resourceId, remoteFilePath));
 
-            public void FatalErrorOccurredAdvertisement(
-                string resource,
+            public void FatalErrorOccurredAdvertisement(string resourceId,
+                string remoteFilePath,
                 string errorMessage,
-                EGlobalErrorCode globalErrorCode
-            ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
-                resource,
+                EGlobalErrorCode globalErrorCode) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
+                resourceId,
                 errorMessage,
                 globalErrorCode
             ));
 
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId,
+                string remoteFilePath,
                 int progressPercentage,
                 float currentThroughputInKbps,
-                float totalAverageThroughputInKbps
-            ) => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
+                float totalAverageThroughputInKbps) => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
+                localResource: resourceId,
                 progressPercentage: progressPercentage,
                 currentThroughputInKbps: currentThroughputInKbps,
                 totalAverageThroughputInKbps: totalAverageThroughputInKbps

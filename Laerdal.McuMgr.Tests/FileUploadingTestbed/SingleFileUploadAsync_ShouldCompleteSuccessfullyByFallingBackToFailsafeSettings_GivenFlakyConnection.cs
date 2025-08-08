@@ -22,6 +22,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
+            var resourceId = "some_resource.txt";
             var allLogEas = new List<LogEmittedEventArgs>(8);
             
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy120(
@@ -40,9 +41,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 return fileUploader.UploadAsync(
                     hostDeviceModel: "foobar",
                     hostDeviceManufacturer: "acme corp.",
+                    
                     data: stream,
-                    maxTriesCount: maxTriesCount,
-                    remoteFilePath: remoteFilePath
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
+                    
+                    maxTriesCount: maxTriesCount
                 );
             });
 
@@ -62,7 +66,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             // eventsMonitor
             //     .OccurredEvents
@@ -78,12 +82,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploaded))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.Resource == remoteFilePath);
+                .WithArgs<FileUploadedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -101,8 +105,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             private int _tryCounter;
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -116,7 +121,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -129,82 +136,82 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00, 00);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 00, 00, 00);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 10, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 20, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 30, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 40, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 50, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 60, 10, 10);
 
                     if (_tryCounter == _maxTriesCount && initialMtuSize == null)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //             order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //             order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && windowCapacity == null)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(windowCapacity)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //             order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //             order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && memoryAlignment == null)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(memoryAlignment)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && pipelineDepth == null)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(pipelineDepth)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
                         return;
                     }
 
                     if (_tryCounter == _maxTriesCount && byteAlignment == null)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(byteAlignment)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //            order
                         return;
                     }
 
                     if (_tryCounter < _maxTriesCount)
                     {
                         await Task.Delay(20);
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); // order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); // order
                         return;
                     }
 
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 70, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 80, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 90, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 100, 10, 10);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadedAdvertisement(remoteFilePath); //                                                            order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
+                    FileUploadedAdvertisement(resourceId, remoteFilePath); //                                                            order
                 });
 
                 return verdict;

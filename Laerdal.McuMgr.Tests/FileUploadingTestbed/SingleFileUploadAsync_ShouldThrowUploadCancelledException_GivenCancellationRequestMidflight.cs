@@ -18,11 +18,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         public async Task SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding)
         {
             // Arrange
+            var resourceId = "foobar";
             var mockedFileData = new byte[] { 1, 2, 3 };
             const string remoteFilePath = "/path/to/file.bin";
             const string cancellationReason = "blah blah foobar";
 
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(new GenericNativeFileUploaderCallbacksProxy_(), isCancellationLeadingToSoftLanding);
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy3(resourceId, new GenericNativeFileUploaderCallbacksProxy_(), isCancellationLeadingToSoftLanding);
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
@@ -39,6 +40,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 hostDeviceManufacturer: "acme corp.",
 
                 data: mockedFileData,
+                resourceId: resourceId,
                 remoteFilePath: remoteFilePath
             ));
 
@@ -56,7 +58,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should()
@@ -68,11 +70,15 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
         {
             private string _currentRemoteFilePath;
+
             private readonly bool _isCancellationLeadingToSoftLanding;
+            private readonly string _resourceId;
+
             private CancellationTokenSource _cancellationTokenSource;
             
-            public MockedGreenNativeFileUploaderProxySpy3(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, bool isCancellationLeadingToSoftLanding) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy3(string resourceId, INativeFileUploaderCallbacksProxy uploaderCallbacksProxy, bool isCancellationLeadingToSoftLanding) : base(uploaderCallbacksProxy)
             {
+                _resourceId = resourceId;
                 _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
             
@@ -83,12 +89,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
                     CancellingAdvertisement(reason); //                                                                                                order
-                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
+                    StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
-                        StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
+                        StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
                         CancelledAdvertisement(reason); //                                                                                                 order    
                     }
                 });
@@ -99,8 +105,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
             
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
+
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -120,7 +128,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: _resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -136,14 +146,14 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
 
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
-                    FileUploadedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                    FileUploadedAdvertisement(_resourceId, remoteFilePath);
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

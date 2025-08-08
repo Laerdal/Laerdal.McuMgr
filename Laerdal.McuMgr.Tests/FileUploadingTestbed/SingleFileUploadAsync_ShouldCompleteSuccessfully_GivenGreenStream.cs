@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         {
             // Arrange
             var stream = new MemoryStream([1, 2, 3]);
-
+            var resourceId = "some_resource.txt";
             var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
@@ -44,8 +44,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 hostDeviceManufacturer: "acme corp.",
                 
                 data: stream,
-                maxTriesCount: maxTriesCount,
+                resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
+                
+                maxTriesCount: maxTriesCount,
                 sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs
             ));
 
@@ -63,17 +65,17 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileUploaderState.Uploading);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileUploaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploaded))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.Resource == expectedRemoteFilepath);
+                .WithArgs<FileUploadedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -89,8 +91,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             private int _tryCounter;
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -104,7 +107,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -116,46 +121,46 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                 Task.Run(async () => //00 vital
                 {
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle);
                     await Task.Delay(10);
 
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
                     await Task.Delay(10);
 
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00, 00);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,00, 00, 00);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,10, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,20, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,30, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,40, 10, 10);
                     await Task.Delay(5);
                     
                     if (_tryCounter < _maxTriesCount)
                     {
                         await Task.Delay(20);
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); // order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); // order
                         return;
                     }
                     
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,50, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,60, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,70, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,80, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,90, 10, 10);
                     await Task.Delay(5);
-                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10, 10);
+                    FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,100, 10, 10);
 
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadedAdvertisement(remoteFilePath); //                                                            order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
+                    FileUploadedAdvertisement(resourceId, remoteFilePath); //                                                            order
                 });
 
                 return verdict;
