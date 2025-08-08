@@ -635,15 +635,19 @@ namespace Laerdal.McuMgr.FileUploading
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
             public void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
-                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resourceId, remoteFilePath));
+                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));
 
-            public void FatalErrorOccurredAdvertisement(string resourceId,
+            public void FatalErrorOccurredAdvertisement(
+                string resourceId,
                 string remoteFilePath,
                 string errorMessage,
-                EGlobalErrorCode globalErrorCode) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
-                resourceId,
-                errorMessage,
-                globalErrorCode
+                EGlobalErrorCode globalErrorCode
+            ) => FileUploader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(
+                resourceId: resourceId,
+                remoteFilePath: remoteFilePath,
+
+                errorMessage: errorMessage,
+                globalErrorCode: globalErrorCode
             ));
 
             public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
