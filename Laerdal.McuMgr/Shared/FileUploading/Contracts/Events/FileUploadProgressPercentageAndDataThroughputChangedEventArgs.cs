@@ -10,13 +10,15 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Events
     public readonly struct FileUploadProgressPercentageAndDataThroughputChangedEventArgs : IMcuMgrEventArgs //hotpath
     {
         public readonly string LocalResource; //filepath or similar   dud if not applicable
+        public readonly string RemoteFilePath;
         
         public readonly int ProgressPercentage;
         public readonly float CurrentThroughputInKbps; //kbs / sec
         public readonly float TotalAverageThroughputInKbps; //kbs / sec
 
         public FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
-            string localResource,
+            string resourceId,
+            string remoteFilePath,
             int progressPercentage,
             float currentThroughputInKbps,
             float totalAverageThroughputInKbps
@@ -25,7 +27,8 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Events
             // ArgumentOutOfRangeException.ThrowIfLessThan(0, progressPercentage, nameof(progressPercentage)); //nah  would just add overhead
             // ArgumentOutOfRangeException.ThrowIfGreaterThan(100, progressPercentage, nameof(progressPercentage));
             
-            LocalResource = localResource ?? throw new ArgumentNullException(nameof(localResource));
+            LocalResource = resourceId ?? throw new ArgumentNullException(nameof(resourceId));
+            RemoteFilePath = remoteFilePath ?? throw new ArgumentNullException(nameof(remoteFilePath));
             
             ProgressPercentage = progressPercentage;
             
