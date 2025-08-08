@@ -134,7 +134,7 @@ public class IOSFirmwareInstaller: NSObject {
     }
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
-        let properMtu = initialMtuSize <= 0
+        let properMtu = initialMtuSize < 0 // -1=laerdal-mtu-default, 0=mtu-autoconfigured-by-nordic-libs, 1-and-above=user-mtu-custom-value
                 ? Constants.DefaultMtuForFirmwareInstallations //00
                 : initialMtuSize
 
