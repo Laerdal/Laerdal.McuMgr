@@ -27,22 +27,22 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy6(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
-            var remoteFilePathsToTest = new Dictionary<string, byte[]>
+            var remoteFilePathsToTest = new Dictionary<string, (string, byte[])> //@formatter:off
             {
-                { "\r some/file/path.bin  ", [0] },
-                { "  /some/file/path.bin  ", [0] },
-                { "\t/some/file/path.bin  ", [0] },
-                { "   some/file/path.bin  ", [1] }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once 
-                { "   Some/File/Path.bin  ", [0] },
-                { "\t/Some/File/Path.bin  ", [0] },
-                { "  /Some/File/Path.bin  ", [1] }, //intentionally included multiple times to test that we handle case sensitivity correctly
-                { "\t/some/file/that/succeeds/after/a/couple/of/attempts.bin       ", [0] },
-                { "  /some/file/that/succeeds/after/a/couple/of/attempts.bin       ", [1] }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
+                { "\r some/file/path.bin  ",                                          ("./path.bin", [0]) },
+                { "  /some/file/path.bin  ",                                          ("./path.bin", [0]) },
+                { "\t/some/file/path.bin  ",                                          ("./path.bin", [0]) },
+                { "   some/file/path.bin  ",                                          ("./path.bin", [1]) }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once 
+                { "   Some/File/Path.bin  ",                                          ("./path.bin", [0]) },
+                { "\t/Some/File/Path.bin  ",                                          ("./path.bin", [0]) },
+                { "  /Some/File/Path.bin  ",                                          ("./path.bin", [1]) }, //intentionally included multiple times to test that we handle case sensitivity correctly
+                { "\t/some/file/that/succeeds/after/a/couple/of/attempts.bin       ", ("./path.bin", [0]) },
+                { "  /some/file/that/succeeds/after/a/couple/of/attempts.bin       ", ("./path.bin", [1]) }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
 
-                { "  /some/file/to/a/folder/that/doesnt/exist.bin                  ", [0] },
-                { "\n some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", [0] },
-                { "\r/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", [1] }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
-            };
+                { "  /some/file/to/a/folder/that/doesnt/exist.bin                  ", ("./path.bin", [0]) },
+                { "\n some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", ("./path.bin", [0]) },
+                { "\r/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", ("./path.bin", [1]) }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
+            }; //@formatter:off
 
             using var eventsMonitor = fileUploader.Monitor();
             fileUploader.Cancelled += (_, _) => throw new Exception($"{nameof(fileUploader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor

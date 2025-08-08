@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var work = new Func<Task>(async () => await fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
-                remoteFilePathsAndTheirData: new Dictionary<string, byte[]> { { "/foo/bar.bin", [1, 2, 3] } },
+                remoteFilePathsAndTheirData: new Dictionary<string, (string, byte[])> { { "/foo/bar.bin", ("/xyz/bar.bin", [1, 2, 3]) } },
 
                 sleepTimeBetweenUploadsInMs: sleepTimeBetweenUploadsInMs,
                 sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs

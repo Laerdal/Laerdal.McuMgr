@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var work = new Func<Task>(async () => await fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
-                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, _ => new byte[] { 1 })
+                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, x => (ResourceId: x, Data: new byte[] { 1 }))
             ));
 
             // Assert

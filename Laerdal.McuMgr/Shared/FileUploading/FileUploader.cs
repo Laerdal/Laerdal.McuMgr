@@ -227,7 +227,7 @@ namespace Laerdal.McuMgr.FileUploading
         }
 
         public async Task<IEnumerable<string>> UploadAsync<TData>(
-            IDictionary<string, TData> remoteFilePathsAndTheirData,
+            IDictionary<string, (string ResourceId, TData Data)> remoteFilePathsAndTheirData,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int sleepTimeBetweenUploadsInMs = 0,
@@ -256,13 +256,13 @@ namespace Laerdal.McuMgr.FileUploading
 
             var lastIndex = sanitizedRemoteFilePathsAndTheirData.Count - 1;
             var filesThatFailedToBeUploaded = (List<string>) null;
-            foreach (var ((remoteFilePath, data), i) in sanitizedRemoteFilePathsAndTheirData.Select((x, i) => (x, i)))
+            foreach (var ((remoteFilePath, (resourceId, data)), i) in sanitizedRemoteFilePathsAndTheirData.Select((x, i) => (x, i)))
             {
                 try
                 {
                     await UploadAsync(
                         data: data,
-                        resourceId: "", //todo   we must refactor the dict to get it from there
+                        resourceId: resourceId,
                         remoteFilePath: remoteFilePath,
 
                         hostDeviceModel: hostDeviceModel,
