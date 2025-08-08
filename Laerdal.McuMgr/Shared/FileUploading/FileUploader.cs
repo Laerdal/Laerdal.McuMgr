@@ -646,12 +646,15 @@ namespace Laerdal.McuMgr.FileUploading
                 globalErrorCode
             ));
 
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId,
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                string resourceId,
                 string remoteFilePath,
                 int progressPercentage,
                 float currentThroughputInKbps,
-                float totalAverageThroughputInKbps) => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
-                localResource: resourceId,
+                float totalAverageThroughputInKbps
+            ) => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
+                resourceId: resourceId,
+                remoteFilePath: remoteFilePath,
                 progressPercentage: progressPercentage,
                 currentThroughputInKbps: currentThroughputInKbps,
                 totalAverageThroughputInKbps: totalAverageThroughputInKbps
