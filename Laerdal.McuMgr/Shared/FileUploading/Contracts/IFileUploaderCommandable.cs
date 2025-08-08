@@ -18,9 +18,9 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// </remarks>
         /// <param name="remoteFilePathsAndTheirData">The files to upload.</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
+        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="sleepTimeBetweenUploadsInMs">The time to sleep, in milliseconds, between successful uploads. Defaults to zero.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep, in milliseconds, between each retry after a failed try. Defaults to 100ms.</param>
-        /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
@@ -43,7 +43,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         Task<IEnumerable<string>> UploadAsync<TData>(
-            IDictionary<string, TData> remoteFilePathsAndTheirData,
+            IDictionary<string, (string ResourceId, TData Data)> remoteFilePathsAndTheirData,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int sleepTimeBetweenUploadsInMs = 0,
@@ -69,6 +69,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// Allowed types for TData are 'Stream', 'Func&lt;Stream&gt;', 'Func&lt;Task&lt;Stream&gt;&gt;', 'Func&lt;ValueTask&lt;Stream&gt;&gt;', 'byte[]' and 'IEnumerable&lt;byte&gt;'.
         /// </remarks>
         /// <param name="localData">The local data to upload.</param>
+        /// <param name="resourceId">The id/nickname/filepath of the resource being uploaded</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to.</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
@@ -94,8 +95,8 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
-        Task UploadAsync<TData>(
-            TData localData,
+        Task UploadAsync<TData>(TData localData,
+            string resourceId,
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
@@ -108,13 +109,13 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int? pipelineDepth = null,
             int? byteAlignment = null,
             int? windowCapacity = null,
-            int? memoryAlignment = null
-        );
+            int? memoryAlignment = null);
 
         /// <summary>
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
         /// </summary>
         /// <param name="data">The file-data</param>
+        /// <param name="resourceId">The id/nickname/filepath of the resource being uploaded</param>
         /// <param name="remoteFilePath">The remote file-path to upload the data to</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
@@ -136,15 +137,18 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         EFileUploaderVerdict BeginUpload(
-            string remoteFilePath,
             byte[] data,
+            string resourceId,
+            string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int? initialMtuSize = null,
             int? pipelineDepth = null, //  ios
             int? byteAlignment = null, //  ios
             int? windowCapacity = null, // android
-            int? memoryAlignment = null // android
+            int? memoryAlignment = null
+
+            // android
         );
         
         /// <summary>

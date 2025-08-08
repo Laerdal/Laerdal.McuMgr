@@ -17,6 +17,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             // Arrange
             const string remoteFilePath = "/path/to/file.bin";
 
+            var resourceId = "foobar";
             var mockedNativeFileUploaderProxy = new MockedGreenButSlowNativeFileUploaderProxySpy(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
@@ -28,7 +29,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 hostDeviceManufacturer: "acme corp.",
                 
                 data: new byte[] { 1 },
+                resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
+                
                 timeoutForUploadInMs: 100
             ));
 
@@ -42,12 +45,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
                 .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileUploaderState.Error);
+                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Error);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -59,8 +62,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
+                
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -72,7 +77,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -85,11 +92,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Uploading);
 
                     await Task.Delay(1_000);
-                    StateChangedAdvertisement(resource: remoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Complete);
-                    FileUploadedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Complete);
+                    FileUploadedAdvertisement(resourceId, remoteFilePath);
                 });
 
                 return verdict;

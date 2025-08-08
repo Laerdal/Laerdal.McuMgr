@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var work = new Func<Task>(async () => await fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
-                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, _ => new byte[] { 1 })
+                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, x => (ResourceId: x, Data: new byte[] { 1 }))
             ));
 
             // Assert
@@ -55,8 +55,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -68,7 +69,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -81,11 +84,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
                     
                     await Task.Delay(20);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
-                    FileUploadedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
+                    FileUploadedAdvertisement(resourceId, remoteFilePath);
                 });
 
                 return verdict;

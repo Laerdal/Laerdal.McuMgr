@@ -13,6 +13,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         public async Task SingleFileUploadAsync_ShouldThrowUploadInternalErrorException_GivenErroneousNativeFileUploader()
         {
             // Arrange
+            var resourceId = "foobar";
             var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
@@ -22,6 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 hostDeviceManufacturer: "acme corp.",
                 
                 data: new byte[] { 1 },
+                resourceId: "foobar",
                 remoteFilePath: "/path/to/file.bin"
             ));
 
@@ -42,8 +44,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -55,6 +58,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize,
 

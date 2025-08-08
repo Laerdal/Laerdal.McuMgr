@@ -27,22 +27,22 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy6(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
-            var remoteFilePathsToTest = new Dictionary<string, byte[]>
+            var remoteFilePathsToTest = new Dictionary<string, (string, byte[])> //@formatter:off
             {
-                { "\r some/file/path.bin  ", [0] },
-                { "  /some/file/path.bin  ", [0] },
-                { "\t/some/file/path.bin  ", [0] },
-                { "   some/file/path.bin  ", [1] }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once 
-                { "   Some/File/Path.bin  ", [0] },
-                { "\t/Some/File/Path.bin  ", [0] },
-                { "  /Some/File/Path.bin  ", [1] }, //intentionally included multiple times to test that we handle case sensitivity correctly
-                { "\t/some/file/that/succeeds/after/a/couple/of/attempts.bin       ", [0] },
-                { "  /some/file/that/succeeds/after/a/couple/of/attempts.bin       ", [1] }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
+                { "\r some/file/path.bin  ",                                          ("./path.bin", [0]) },
+                { "  /some/file/path.bin  ",                                          ("./path.bin", [0]) },
+                { "\t/some/file/path.bin  ",                                          ("./path.bin", [0]) },
+                { "   some/file/path.bin  ",                                          ("./path.bin", [1]) }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once 
+                { "   Some/File/Path.bin  ",                                          ("./path.bin", [0]) },
+                { "\t/Some/File/Path.bin  ",                                          ("./path.bin", [0]) },
+                { "  /Some/File/Path.bin  ",                                          ("./path.bin", [1]) }, //intentionally included multiple times to test that we handle case sensitivity correctly
+                { "\t/some/file/that/succeeds/after/a/couple/of/attempts.bin       ", ("./path.bin", [0]) },
+                { "  /some/file/that/succeeds/after/a/couple/of/attempts.bin       ", ("./path.bin", [1]) }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
 
-                { "  /some/file/to/a/folder/that/doesnt/exist.bin                  ", [0] },
-                { "\n some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", [0] },
-                { "\r/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", [1] }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
-            };
+                { "  /some/file/to/a/folder/that/doesnt/exist.bin                  ", ("./path.bin", [0]) },
+                { "\n some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", ("./path.bin", [0]) },
+                { "\r/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin  ", ("./path.bin", [1]) }, //intentionally included multiple times to test whether the mechanism will attempt to upload the file only once
+            }; //@formatter:off
 
             using var eventsMonitor = fileUploader.Monitor();
             fileUploader.Cancelled += (_, _) => throw new Exception($"{nameof(fileUploader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
@@ -72,7 +72,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             eventsMonitor.OccurredEvents
                 .Where(args => args.EventName == nameof(fileUploader.FileUploaded))
-                .Select(x => x.Parameters.OfType<FileUploadedEventArgs>().FirstOrDefault().Resource)
+                .Select(x => x.Parameters.OfType<FileUploadedEventArgs>().FirstOrDefault().RemoteFilePath)
                 .Should()
                 .BeEquivalentTo(filesThatShouldBeSuccessfullyUploaded);
 
@@ -95,8 +95,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             private int _retryCountForProblematicFile;
             public override EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
+                string resourceId,
+                string remoteFilePath,
+
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -108,7 +110,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 var verdict = base.BeginUpload(
                     data: data,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     initialMtuSize: initialMtuSize,
 
                     pipelineDepth: pipelineDepth, //     ios only
@@ -121,31 +125,31 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
 
                     await Task.Delay(20);
 
                     var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
-                    if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin".ToUpperInvariant()))
+                    if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "FOOBAR (3)", EGlobalErrorCode.SubSystemFilesystem_NotFound);
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "FOOBAR (3)", EGlobalErrorCode.SubSystemFilesystem_NotFound);
                     }
-                    else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin".ToUpperInvariant())
+                    else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin", StringComparison.InvariantCultureIgnoreCase)
                              && _retryCountForProblematicFile++ < 3)
                     {
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EGlobalErrorCode.Generic);
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "ping pong", EGlobalErrorCode.Generic);
                     }
-                    else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin".ToUpperInvariant()))
+                    else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "native symbols not loaded blah blah", EGlobalErrorCode.Generic);
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                        FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "native symbols not loaded blah blah", EGlobalErrorCode.Generic);
                     }
                     else
                     {
-                        StateChangedAdvertisement(remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); //order
-                        FileUploadedAdvertisement(remoteFilePath); //order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); //order
+                        FileUploadedAdvertisement(resourceId, remoteFilePath); //order
                     }
                 });
 

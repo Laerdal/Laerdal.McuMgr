@@ -17,6 +17,7 @@ public class IOSFileUploader: NSObject {
     private var _uploadStartTimestamp: Date? = nil
     private var _lastBytesSentTimestamp: Date? = nil
 
+    private var _resourceId: String = ""
     private var _remoteFilePathSanitized: String = ""
 
     @objc
@@ -62,6 +63,7 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func beginUpload(
+            _ resourceId: String,
             _ remoteFilePath: String,
             _ data: Data?,
             _ pipelineDepth: Int,
@@ -75,6 +77,7 @@ public class IOSFileUploader: NSObject {
             return .failedOtherUploadAlreadyInProgress
         }
 
+        _resourceId = resourceId //it is ok if it is dud
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
             onError("[IOSFU.BU.020] Target-file provided is dud")
@@ -101,7 +104,7 @@ public class IOSFileUploader: NSObject {
         }
 
         if _cbPeripheral == nil {
-            onError("[IOSFU.BU.060] No bluetooth-device specified - call trySetBluetoothDevice() first");
+            onError("[IOSFU.BU.060] No bluetooth-device specified - call trySetBluetoothDevice() first")
 
             return .failedInvalidSettings;
         }
@@ -237,7 +240,7 @@ public class IOSFileUploader: NSObject {
     }
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
-        let properMtu = initialMtuSize <= 0
+        let properMtu = initialMtuSize < 0 // -1=laerdal-mtu-default, 0=mtu-autoconfigured-by-nordic-libs, 1-and-above=user-mtu-custom-value
                 ? Constants.DefaultMtuForFileUploads
                 : initialMtuSize
 
@@ -281,6 +284,7 @@ public class IOSFileUploader: NSObject {
 
         setState(.error) //                           order
         _listener.fatalErrorOccurredAdvertisement( // order
+                _resourceId,
                 _remoteFilePathSanitized,
                 errorMessage,
                 McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
@@ -290,7 +294,7 @@ public class IOSFileUploader: NSObject {
     //@objc   dont
     private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.logMessageAdvertisement(message, category, level, self._remoteFilePathSanitized)
+            self._listener.logMessageAdvertisement(message, category, level, self._resourceId)
         }
     }
 
@@ -306,7 +310,7 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func fileUploadedAdvertisement() {
-        _listener.fileUploadedAdvertisement(_remoteFilePathSanitized)
+        _listener.fileUploadedAdvertisement(_resourceId, _remoteFilePathSanitized)
     }
 
     //@objc   dont
@@ -319,7 +323,7 @@ public class IOSFileUploader: NSObject {
             _ oldState: EIOSFileUploaderState,
             _ newState: EIOSFileUploaderState
     ) {
-        _listener.stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState)
+        _listener.stateChangedAdvertisement(_resourceId, _remoteFilePathSanitized, oldState, newState)
     }
 
     //@objc   dont
@@ -330,6 +334,8 @@ public class IOSFileUploader: NSObject {
     ) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
             self._listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    self._resourceId,
+                    self._remoteFilePathSanitized,
                     progressPercentage,
                     currentThroughputInKbps,
                     totalAverageThroughputInKbps

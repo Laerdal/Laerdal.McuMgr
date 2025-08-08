@@ -126,14 +126,12 @@ namespace Laerdal.McuMgr.FileUploading
             private NSData _nsDataOfFileInCurrentlyActiveUpload;
             
             public EFileUploaderVerdict BeginUpload(
-                string remoteFilePath,
                 byte[] data,
-
+                string resourceId,
+                string remoteFilePath,
                 int? initialMtuSize = null,
-
                 int? pipelineDepth = null, //    ios only
                 int? byteAlignment = null, //    ios only
-
                 int? windowCapacity = null, //   android only
                 int? memoryAlignment = null //   android only
             )
@@ -142,6 +140,7 @@ namespace Laerdal.McuMgr.FileUploading
 
                 var verdict = TranslateFileUploaderVerdict(_nativeFileUploader.BeginUpload(
                     data: nsDataOfFileToUpload,
+                    resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
 
                     pipelineDepth: pipelineDepth ?? -1,
@@ -206,55 +205,67 @@ namespace Laerdal.McuMgr.FileUploading
                     level: level,
                     message: message,
                     category: category,
-                    resource: resource
+                    resourceId: resource
                 );
 
-            public override void StateChangedAdvertisement(string resource, EIOSFileUploaderState oldState, EIOSFileUploaderState newState)
+            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EIOSFileUploaderState oldState, EIOSFileUploaderState newState)
                 => StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
                     newState: TranslateEIOSFileUploaderState(newState),
-                    oldState: TranslateEIOSFileUploaderState(oldState)
-                );
-            public void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState) //conformance to the interface
-                => _nativeFileUploaderCallbacksProxy?.StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
-                    newState: newState,
-                    oldState: oldState
+                    oldState: TranslateEIOSFileUploaderState(oldState),
+                    resourceId: resourceId, //essentially the local filepath most of the times
+                    remoteFilePath: remoteFilePath //essentially the remote filepath
                 );
 
-            public override void FileUploadedAdvertisement(string resource)
-                => _nativeFileUploaderCallbacksProxy?.FileUploadedAdvertisement(resource);
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState) //conformance to the interface
+                => _nativeFileUploaderCallbacksProxy?.StateChangedAdvertisement(
+                    oldState: oldState,
+                    newState: newState,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath
+                );
+
+            public override void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
+                => _nativeFileUploaderCallbacksProxy?.FileUploadedAdvertisement(resourceId, remoteFilePath);
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
 
             public override void FatalErrorOccurredAdvertisement(
-                string resource,
+                string resourceId,
+                string remoteFilePath,
                 string errorMessage,
                 nint globalErrorCode
             ) => FatalErrorOccurredAdvertisement(
-                resource,
+                resourceId,
+                remoteFilePath,
                 errorMessage,
                 (EGlobalErrorCode)(int)globalErrorCode
             );
+
             public void FatalErrorOccurredAdvertisement( //conformance to the interface
-                string resource,
+                string resourceId,
+                string remoteFilePath,
                 string errorMessage,
                 EGlobalErrorCode globalErrorCode
             ) => _nativeFileUploaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
-                resource,
+                resourceId,
+                remoteFilePath,
                 errorMessage,
                 globalErrorCode
             );
 
-            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
                 => FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
                     progressPercentage: (int)progressPercentage,
                     currentThroughputInKbps: currentThroughputInKbps,
                     totalAverageThroughputInKbps: totalAverageThroughputInKbps
                 );
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
                 => _nativeFileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
                     progressPercentage: progressPercentage,
                     currentThroughputInKbps: currentThroughputInKbps,
                     totalAverageThroughputInKbps: totalAverageThroughputInKbps

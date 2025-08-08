@@ -164,9 +164,9 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
-        let properMtu = initialMtuSize <= 0 //            at the time of this writing the mtu doesnt play a major role whwn downloading
-            ? Constants.DefaultMtuForFileDownloads //     (it is mostly for when we are uploading) but we are applying it just in case
-            : initialMtuSize
+        let properMtu = initialMtuSize < 0 //                    -1=laerdal-mtu-default, 0=mtu-autoconfigured-by-nordic-libs, 1-and-above=user-mtu-custom-value
+            ? Constants.DefaultMtuForFileDownloads //            at the time of this writing the mtu doesnt play a major role whwn downloading
+            : initialMtuSize //                                  (it is mostly for when we are uploading) but we are applying it just in case
 
         _transporter = _transporter == nil
                 ? McuMgrBleTransport(_cbPeripheral)

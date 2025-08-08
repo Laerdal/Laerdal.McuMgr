@@ -10,15 +10,17 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Events
     [StructLayout(LayoutKind.Auto)]
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public string Resource { get; init; }
+        public string ResourceId { get; init; }
+        public string RemoteFilePath { get; init; }
         public EFileUploaderState NewState { get; init; }
         public EFileUploaderState OldState { get; init; }
 
-        public StateChangedEventArgs(string resource, EFileUploaderState oldState, EFileUploaderState newState)
+        public StateChangedEventArgs(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
         {
-            Resource = resource;
             NewState = newState;
             OldState = oldState;
+            ResourceId = resourceId;
+            RemoteFilePath = remoteFilePath;
         }
     }
 }

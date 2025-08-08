@@ -10,11 +10,11 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         void CancelledAdvertisement(string reason = "");
         void CancellingAdvertisement(string reason = "");
 
-        void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
-        void StateChangedAdvertisement(string resource, EFileUploaderState oldState, EFileUploaderState newState);
+        void LogMessageAdvertisement(string message, string category, ELogLevel level, string resourceId);
+        void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
-        void FileUploadedAdvertisement(string resource);
-        void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode);
-        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps);
+        void FileUploadedAdvertisement(string resourceId, string remoteFilePath);
+        void FatalErrorOccurredAdvertisement(string resourceId, string remoteFilePath, string errorMessage, EGlobalErrorCode globalErrorCode);
+        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps);
     }
 }
