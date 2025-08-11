@@ -520,9 +520,9 @@ namespace Laerdal.McuMgr.FileDownloading
                     resource: resource
                 ));
 
-            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
+            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState)
                 => FileDownloader?.OnStateChanged(new StateChangedEventArgs(
-                    resource: resource,
+                    resource: resourceId,
                     newState: newState,
                     oldState: oldState
                 ));
@@ -530,14 +530,15 @@ namespace Laerdal.McuMgr.FileDownloading
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void DownloadCompletedAdvertisement(string resource, byte[] data)
-                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resource, data));
+            public void DownloadCompletedAdvertisement(string resourceId, byte[] data)
+                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resourceId, data));
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
-                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resource, errorMessage, globalErrorCode));
+            public void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resourceId, errorMessage, globalErrorCode));
 
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
+                    resourceId: resourceId,
                     progressPercentage: progressPercentage,
                     currentThroughputInKbps: currentThroughputInKbps,
                     totalAverageThroughputInKbps: totalAverageThroughputInKbps

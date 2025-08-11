@@ -164,15 +164,15 @@ namespace Laerdal.McuMgr.FileDownloading
                     resource: resource
                 );
 
-            public override void StateChangedAdvertisement(string resource, EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
+            public override void StateChangedAdvertisement(string resourceId, EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
                 => StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
+                    resourceId: resourceId, //essentially the remote filepath
                     newState: TranslateEIOSFileDownloaderState(newState),
                     oldState: TranslateEIOSFileDownloaderState(oldState)
                 );
-            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
+            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
+                    resourceId: resourceId, //essentially the remote filepath
                     newState: newState,
                     oldState: oldState
                 );
@@ -180,7 +180,7 @@ namespace Laerdal.McuMgr.FileDownloading
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             
-            public override void DownloadCompletedAdvertisement(string resource, NSNumber[] data)
+            public override void DownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
             {
                 var dataBytes = new byte[data.Length];
                 for (var i = 0; i < data.Length; i++)
@@ -188,29 +188,29 @@ namespace Laerdal.McuMgr.FileDownloading
                     dataBytes[i] = data[i].ByteValue;
                 }
 
-                DownloadCompletedAdvertisement(resource, dataBytes);
+                DownloadCompletedAdvertisement(resourceId, dataBytes);
             }
 
-            public void DownloadCompletedAdvertisement(string resource, byte[] data) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resource, data);
+            public void DownloadCompletedAdvertisement(string resourceId, byte[] data) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resourceId, data);
 
             public override void FatalErrorOccurredAdvertisement(
-                string resource,
+                string resourceId,
                 string errorMessage,
                 nint globalErrorCode
             ) => FatalErrorOccurredAdvertisement(
-                resource,
+                resourceId,
                 errorMessage,
                 (EGlobalErrorCode)(int)globalErrorCode
             );
 
-            public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
-                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode);
+            public void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resourceId, errorMessage, globalErrorCode);
 
-            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
-                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: (int)progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage: progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId: resourceId, progressPercentage: (int)progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId: resourceId, progressPercentage: progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
             
             #endregion
 
