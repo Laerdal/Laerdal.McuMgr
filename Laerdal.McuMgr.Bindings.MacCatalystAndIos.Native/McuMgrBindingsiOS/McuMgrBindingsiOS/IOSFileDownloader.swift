@@ -11,6 +11,7 @@ public class IOSFileDownloader: NSObject {
 
     private var _currentState: EIOSFileDownloaderState = .none
     private var _lastFatalErrorMessage: String = ""
+    
     private var _remoteFilePathSanitized: String = ""
 
     private var _lastBytesSent: Int = 0
@@ -149,7 +150,7 @@ public class IOSFileDownloader: NSObject {
 
         setState(.idle)
         busyStateChangedAdvertisement(true)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -229,12 +230,13 @@ public class IOSFileDownloader: NSObject {
 
     //@objc   dont
     private func fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
+            _ resourceId: String,
             _ progressPercentage: Int,
             _ averageThroughput: Float32,
             _ totalAverageThroughputInKbps: Float32
     ) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput, totalAverageThroughputInKbps)
+            self._listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, averageThroughput, totalAverageThroughputInKbps)
         }
     }
 
@@ -256,7 +258,7 @@ public class IOSFileDownloader: NSObject {
 
         if (oldState == .downloading && newState == .complete) //00
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0)
         }
 
         //00 trivial hotfix to deal with the fact that the file-download progress% doesn't fill up to 100%
@@ -271,7 +273,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
         let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
         let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(downloadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, downloadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
     }
 
     public func downloadDidFail(with error: Error) {
@@ -283,7 +285,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadDidCancel() {
         setState(.cancelled)
         busyStateChangedAdvertisement(false)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0)
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0)
         cancelledAdvertisement()
     }
 

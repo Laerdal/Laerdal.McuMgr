@@ -121,19 +121,19 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
 
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(00, 00, 00);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 00, 00, 00);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(10, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 10, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(20, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 20, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(30, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 30, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(40, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 40, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(50, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 50, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(60, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 60, 10, 10);
 
                     if (_tryCounter == _maxTriesCount && initialMtuSize == null)
                     {
@@ -152,13 +152,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     }
 
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(70, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 70, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(80, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 80, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(90, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 90, 10, 10);
                     await Task.Delay(5);
-                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 10, 10);
+                    FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 100, 10, 10);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
                     DownloadCompletedAdvertisement(remoteFilePath, _expectedData); //                                              order

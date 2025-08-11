@@ -227,16 +227,17 @@ namespace Laerdal.McuMgr.FileDownloading
             public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
             {
                 _fileDownloaderCallbacksProxy?.StateChangedAdvertisement(
-                    resource: resource,
+                    resourceId: resource,
                     oldState: oldState,
                     newState: newState);
             }
 
-            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
             {
-                base.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //just in case
+                base.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //just in case
 
                 _fileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    resourceId: resourceId,
                     progressPercentage: progressPercentage,
                     currentThroughputInKbps: currentThroughputInKbps,
                     totalAverageThroughputInKbps: totalAverageThroughputInKbps

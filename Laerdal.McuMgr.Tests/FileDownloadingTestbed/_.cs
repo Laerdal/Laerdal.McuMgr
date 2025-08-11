@@ -55,7 +55,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 => _downloaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
             public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
-                => _downloaderCallbacksProxy.StateChangedAdvertisement(resource: resource, newState: newState, oldState: oldState); //raises the actual event
+                => _downloaderCallbacksProxy.StateChangedAdvertisement(resourceId: resource, newState: newState, oldState: oldState); //raises the actual event
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _downloaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
@@ -66,8 +66,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode) 
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //raises the actual event
             
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
-                => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+                => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
             
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();

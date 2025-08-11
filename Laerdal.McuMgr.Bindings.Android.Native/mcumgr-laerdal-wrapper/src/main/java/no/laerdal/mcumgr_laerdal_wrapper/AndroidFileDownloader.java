@@ -231,7 +231,7 @@ public class AndroidFileDownloader
 
         setState(EAndroidFileDownloaderState.IDLE);
         busyStateChangedAdvertisement(true);
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
+        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
@@ -333,7 +333,7 @@ public class AndroidFileDownloader
 
         if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0);
         }
 
         //00 trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
@@ -423,7 +423,7 @@ public class AndroidFileDownloader
     }
 
     @Contract(pure = true)
-    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
+    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -458,6 +458,7 @@ public class AndroidFileDownloader
             float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(totalBytesSentSoFar, timestampInMs);
 
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
+                    _remoteFilePathSanitized,
                     fileDownloadProgressPercentage,
                     currentThroughputInKbps,
                     totalAverageThroughputInKbps
@@ -505,7 +506,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadFailed(@NonNull final McuMgrException exception)
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
             onError(exception.getMessage(), exception);
             setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);
@@ -516,7 +517,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCanceled()
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0, 0);
+            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
             setLoggingEnabledOnConnection(true);
@@ -528,7 +529,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCompleted(byte @NotNull [] data)
         {
-            //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
+            //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0); //no need this is taken care of inside setState()
 
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
             downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
