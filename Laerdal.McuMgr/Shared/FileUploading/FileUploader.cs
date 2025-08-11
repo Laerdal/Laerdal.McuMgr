@@ -139,9 +139,10 @@ namespace Laerdal.McuMgr.FileUploading
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<CancellingEventArgs> _cancelling;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
-        private event EventHandler<FileUploadedEventArgs> _fileUploaded;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
+        private event EventHandler<FileUploadStartedEventArgs> _fileUploadStarted;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
+        private event EventHandler<FileUploadCompletedEventArgs> _fileUploadCompleted;
         private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> _fileUploadProgressPercentageAndDataThroughputChanged;
 
@@ -205,15 +206,24 @@ namespace Laerdal.McuMgr.FileUploading
             remove => _stateChanged -= value;
         }
         
-        /// <summary>Event raised when a specific file gets uploaded successfully</summary>
-        public event EventHandler<FileUploadedEventArgs> FileUploaded
+        public event EventHandler<FileUploadStartedEventArgs> FileUploadStarted
         {
             add
             {
-                _fileUploaded -= value;
-                _fileUploaded += value;
+                _fileUploadStarted -= value;
+                _fileUploadStarted += value;
             }
-            remove => _fileUploaded -= value;
+            remove => _fileUploadStarted -= value;
+        }
+        
+        public event EventHandler<FileUploadCompletedEventArgs> FileUploadCompleted
+        {
+            add
+            {
+                _fileUploadCompleted -= value;
+                _fileUploadCompleted += value;
+            }
+            remove => _fileUploadCompleted -= value;
         }
 
         public event EventHandler<FileUploadProgressPercentageAndDataThroughputChangedEventArgs> FileUploadProgressPercentageAndDataThroughputChanged
@@ -354,7 +364,7 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     Cancelled += FileUploader_Cancelled_;
                     Cancelling += FileUploader_Cancelling_;
-                    FileUploaded += FileUploader_FileUploaded_;
+                    FileUploadCompleted += FileUploader_FileUploadCompleted_;
                     StateChanged += FileUploader_StateChanged_;
                     FatalErrorOccurred += FileUploader_FatalErrorOccurred_;
                     FileUploadProgressPercentageAndDataThroughputChanged += FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_;
@@ -460,7 +470,7 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     Cancelled -= FileUploader_Cancelled_;
                     Cancelling -= FileUploader_Cancelling_;
-                    FileUploaded -= FileUploader_FileUploaded_;
+                    FileUploadCompleted -= FileUploader_FileUploadCompleted_;
                     StateChanged -= FileUploader_StateChanged_;
                     FatalErrorOccurred -= FileUploader_FatalErrorOccurred_;
                     FileUploadProgressPercentageAndDataThroughputChanged -= FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_;
@@ -473,7 +483,7 @@ namespace Laerdal.McuMgr.FileUploading
                     taskCompletionSource.TrySetException(new UploadCancelledException(ea_.Reason));
                 }
                 
-                void FileUploader_FileUploaded_(object _, FileUploadedEventArgs ea_)
+                void FileUploader_FileUploadCompleted_(object _, FileUploadCompletedEventArgs ea_)
                 {
                     taskCompletionSource.TrySetResult(true);
                 }
@@ -516,7 +526,7 @@ namespace Laerdal.McuMgr.FileUploading
                             return;
                         
                         case EFileUploaderState.Complete:
-                            //taskCompletionSource.TrySetResult(true); //dont   we want to wait for the FileUploaded event
+                            //taskCompletionSource.TrySetResult(true); //dont   we want to wait for the FileUploadCompleted event
                             return;
                     }
                 } // ReSharper restore AccessToModifiedClosure
@@ -573,17 +583,19 @@ namespace Laerdal.McuMgr.FileUploading
         void IFileUploaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea);
         void IFileUploaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea);
         void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
-        void IFileUploaderEventEmittable.OnFileUploaded(FileUploadedEventArgs ea) => OnFileUploaded(ea);
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
+        void IFileUploaderEventEmittable.OnFileUploadStarted(FileUploadStartedEventArgs ea) => OnFileUploadStarted(ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFileUploaderEventEmittable.OnFileUploadCompleted(FileUploadCompletedEventArgs ea) => OnFileUploadCompleted(ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileUploadProgressPercentageAndDataThroughputChanged(ea);
 
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnCancelling(CancellingEventArgs ea) => _cancelling?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
-        private void OnFileUploaded(FileUploadedEventArgs ea) => _fileUploaded?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileUploadStarted(FileUploadStartedEventArgs ea) => _fileUploadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileUploadCompleted(FileUploadCompletedEventArgs ea) => _fileUploadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
         
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
@@ -634,8 +646,11 @@ namespace Laerdal.McuMgr.FileUploading
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
-                => FileUploader?.OnFileUploaded(new FileUploadedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));
+            public void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath)
+                => FileUploader?.OnFileUploadStarted(new FileUploadStartedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));
+            
+            public void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
+                => FileUploader?.OnFileUploadCompleted(new FileUploadCompletedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));
 
             public void FatalErrorOccurredAdvertisement(
                 string resourceId,

@@ -363,13 +363,20 @@ public class AndroidFileUploader
 
     private void setState(final EAndroidFileUploaderState newState)
     {
+        if (_currentState == newState)
+            return;
+
         final EAndroidFileUploaderState oldState = _currentState; //order
 
         _currentState = newState; //order
 
         stateChangedAdvertisement(_resourceId, _remoteFilePathSanitized, oldState, newState); //order
 
-        if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
+        if (oldState == EAndroidFileUploaderState.IDLE && newState == EAndroidFileUploaderState.UPLOADING)
+        {
+            fileUploadingStartedAdvertisement(_resourceId, _remoteFilePathSanitized);
+        }
+        else if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 100, 0, 0);
         }
@@ -435,7 +442,13 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadedAdvertisement(final String resourceId, final String remoteFilePath)
+    public void fileUploadingStartedAdvertisement(final String resourceId, final String remoteFilePath)
+    {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    @Contract(pure = true)
+    public void fileUploadCompletedAdvertisement(final String resourceId, final String remoteFilePath)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -556,7 +569,7 @@ public class AndroidFileUploader
         {
             //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
             setState(EAndroidFileUploaderState.COMPLETE);
-            fileUploadedAdvertisement(_resourceId, _remoteFilePathSanitized);
+            fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized);
             setLoggingEnabledOnTransport(true);
             busyStateChangedAdvertisement(false);
 

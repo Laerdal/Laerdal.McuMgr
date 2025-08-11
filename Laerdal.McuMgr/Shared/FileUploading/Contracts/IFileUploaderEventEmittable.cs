@@ -9,9 +9,10 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         void OnCancelled(CancelledEventArgs ea);
         void OnCancelling(CancellingEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);
-        void OnFileUploaded(FileUploadedEventArgs ea);
         void OnBusyStateChanged(BusyStateChangedEventArgs ea);
+        void OnFileUploadStarted(FileUploadStartedEventArgs ea);
         void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea);
+        void OnFileUploadCompleted(FileUploadCompletedEventArgs ea);
         void OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea);
     }
 }

@@ -8,8 +8,9 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         void OnCancelled(CancelledEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);
         void OnBusyStateChanged(BusyStateChangedEventArgs ea);
-        void OnDownloadCompleted(DownloadCompletedEventArgs ea);
         void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea);
-        void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea);        
+        void OnFileDownloadStarted(FileDownloadStartedEventArgs ea);
+        void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea);
+        void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea);
     }
 }

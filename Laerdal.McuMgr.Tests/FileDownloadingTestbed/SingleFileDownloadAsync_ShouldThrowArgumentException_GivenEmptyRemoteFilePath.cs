@@ -37,7 +37,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeFalse();
 
             eventsMonitor.Should().NotRaise(nameof(fileDownloader.StateChanged));
-            eventsMonitor.Should().NotRaise(nameof(fileDownloader.DownloadCompleted));
+            eventsMonitor.Should().NotRaise(nameof(fileDownloader.FileDownloadCompleted));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }

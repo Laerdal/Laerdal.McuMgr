@@ -11,8 +11,9 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
         void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
-        void DownloadCompletedAdvertisement(string resourceId, byte[] data);
         void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode);
+        void FileDownloadStartedAdvertisement(string resourceId);
+        void FileDownloadCompletedAdvertisement(string resourceId, byte[] data);
         void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps);
     }
 }

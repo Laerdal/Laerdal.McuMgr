@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             fileDownloader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileDownloader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             fileDownloader.StateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.StateChanged)} -> oops!");
             fileDownloader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.BusyStateChanged)} -> oops!");
-            fileDownloader.DownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.DownloadCompleted)} -> oops!");
+            fileDownloader.FileDownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadCompleted)} -> oops!");
             fileDownloader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileDownloader.FatalErrorOccurred)} -> oops!");
             fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged)} -> oops!");
 
@@ -64,7 +64,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
             eventsMonitor
                 .Should()
-                .NotRaise(nameof(fileDownloader.DownloadCompleted));
+                .NotRaise(nameof(fileDownloader.FileDownloadCompleted));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }

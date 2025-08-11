@@ -159,7 +159,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
                 FatalErrorOccurredAdvertisement(resource, errorMessage, (EGlobalErrorCode) globalErrorCode);
             }
-            
+
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode)
             {
                 _fileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(
@@ -199,11 +199,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 _fileDownloaderCallbacksProxy?.CancelledAdvertisement();
             }
 
-            public override void DownloadCompletedAdvertisement(string resource, byte[] data)
+            public override void FileDownloadCompletedAdvertisement(string resource, byte[] data)
             {
-                base.DownloadCompletedAdvertisement(resource, data); //just in case
+                base.FileDownloadCompletedAdvertisement(resource, data); //just in case
 
-                _fileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resource, data);
+                _fileDownloaderCallbacksProxy?.FileDownloadCompletedAdvertisement(resource, data);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)

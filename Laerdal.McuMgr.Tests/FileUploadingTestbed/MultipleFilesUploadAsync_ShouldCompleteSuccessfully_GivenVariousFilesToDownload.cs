@@ -48,7 +48,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             fileUploader.Cancelled += (_, _) => throw new Exception($"{nameof(fileUploader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
             fileUploader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileUploader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             fileUploader.StateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.StateChanged)} -> oops!");
-            fileUploader.FileUploaded += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploaded)} -> oops!");
+            fileUploader.FileUploadCompleted += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadCompleted)} -> oops!");
             fileUploader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.BusyStateChanged)} -> oops!");
             fileUploader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
             fileUploader.FileUploadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadProgressPercentageAndDataThroughputChanged)} -> oops!");
@@ -71,8 +71,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ]);
 
             eventsMonitor.OccurredEvents
-                .Where(args => args.EventName == nameof(fileUploader.FileUploaded))
-                .Select(x => x.Parameters.OfType<FileUploadedEventArgs>().FirstOrDefault().RemoteFilePath)
+                .Where(args => args.EventName == nameof(fileUploader.FileUploadCompleted))
+                .Select(x => x.Parameters.OfType<FileUploadCompletedEventArgs>().FirstOrDefault().RemoteFilePath)
                 .Should()
                 .BeEquivalentTo(filesThatShouldBeSuccessfullyUploaded);
 
@@ -149,7 +149,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     else
                     {
                         StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); //order
-                        FileUploadedAdvertisement(resourceId, remoteFilePath); //order
+                        FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //order
                     }
                 });
 

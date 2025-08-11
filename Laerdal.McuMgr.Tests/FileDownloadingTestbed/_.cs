@@ -61,11 +61,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 => _downloaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
             
             public void DownloadCompletedAdvertisement(string resource, byte[] data)
-                => _downloaderCallbacksProxy.DownloadCompletedAdvertisement(resource, data); //raises the actual event
+                => _downloaderCallbacksProxy.FileDownloadCompletedAdvertisement(resource, data); //raises the actual event
             
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode) 
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //raises the actual event
-            
+
+            public void FileDownloadStartedAdvertisement(string resourceId)
+                => _downloaderCallbacksProxy.FileDownloadStartedAdvertisement(resourceId);
+
+            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data)
+                => _downloaderCallbacksProxy.FileDownloadCompletedAdvertisement(resourceId, data);
+
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
                 => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
             

@@ -224,8 +224,8 @@ namespace Laerdal.McuMgr.FileUploading
                     remoteFilePath: remoteFilePath
                 );
 
-            public override void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
-                => _nativeFileUploaderCallbacksProxy?.FileUploadedAdvertisement(resourceId, remoteFilePath);
+            public override void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
+                => _nativeFileUploaderCallbacksProxy?.FileUploadCompletedAdvertisement(resourceId, remoteFilePath);
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);

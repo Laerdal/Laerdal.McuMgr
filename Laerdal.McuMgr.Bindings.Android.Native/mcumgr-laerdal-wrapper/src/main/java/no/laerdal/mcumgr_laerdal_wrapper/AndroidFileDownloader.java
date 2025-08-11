@@ -325,13 +325,20 @@ public class AndroidFileDownloader
 
     private void setState(final EAndroidFileDownloaderState newState)
     {
+        if (_currentState == newState)
+            return;
+
         final EAndroidFileDownloaderState oldState = _currentState; //order
 
         _currentState = newState; //order
 
         stateChangedAdvertisement(oldState, newState); //order
 
-        if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
+        if (oldState == EAndroidFileDownloaderState.IDLE && newState == EAndroidFileDownloaderState.DOWNLOADING)
+        {
+            fileDownloadStartedAdvertisement(_remoteFilePathSanitized);
+        }
+        else if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0);
         }
@@ -429,7 +436,13 @@ public class AndroidFileDownloader
     }
 
     @Contract(pure = true)
-    public void downloadCompletedAdvertisement(final String resource, final byte[] data)
+    public void fileDownloadStartedAdvertisement(final String resourceId)
+    {
+        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    @Contract(pure = true)
+    public void fileDownloadCompletedAdvertisement(final String resourceId, final byte[] data)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -532,7 +545,7 @@ public class AndroidFileDownloader
             //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0); //no need this is taken care of inside setState()
 
             setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
-            downloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
+            fileDownloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
 
             setLoggingEnabledOnConnection(true);
             busyStateChangedAdvertisement(false);

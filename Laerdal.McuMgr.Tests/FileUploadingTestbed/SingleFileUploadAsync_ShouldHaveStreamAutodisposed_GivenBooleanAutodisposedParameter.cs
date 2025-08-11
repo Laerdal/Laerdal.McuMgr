@@ -77,9 +77,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
-                .Should().Raise(nameof(fileUploader.FileUploaded))
+                .Should().Raise(nameof(fileUploader.FileUploadCompleted))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
+                .WithArgs<FileUploadCompletedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
             
             stream.CanRead.Should().Be(!shouldAutodisposeStream); //10
 
@@ -150,7 +150,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                     await Task.Delay(20);
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadedAdvertisement(resourceId, remoteFilePath); //                                                            order
+                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //                                                            order
                 });
 
                 return verdict;
