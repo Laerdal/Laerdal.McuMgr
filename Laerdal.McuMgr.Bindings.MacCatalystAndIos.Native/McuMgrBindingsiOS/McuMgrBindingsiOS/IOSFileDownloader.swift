@@ -230,7 +230,7 @@ public class IOSFileDownloader: NSObject {
 
     //@objc   dont
     private func fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
-            _ resourceId: String,
+            _ resourceId: String?,
             _ progressPercentage: Int,
             _ averageThroughput: Float32,
             _ totalAverageThroughputInKbps: Float32
@@ -241,8 +241,13 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func downloadCompletedAdvertisement(_ resource: String, _ data: [UInt8]) {
-        _listener.downloadCompletedAdvertisement(resource, data)
+    private func fileDownloadStartedAdvertisement(_ resourceId: String?) {
+        _listener.fileDownloadStartedAdvertisement(resourceId)
+    }
+
+    //@objc   dont
+    private func fileDownloadCompletedAdvertisement(_ resourceId: String?, _ data: [UInt8]) {
+        _listener.fileDownloadCompletedAdvertisement(resourceId, data)
     }
 
     private func setState(_ newState: EIOSFileDownloaderState) {
@@ -251,12 +256,14 @@ public class IOSFileDownloader: NSObject {
         }
 
         let oldState = _currentState //order
-
         _currentState = newState //order
-
         stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == .downloading && newState == .complete) //00
+        if (oldState == .idle && newState == .downloading) //00
+        {
+            fileDownloadStartedAdvertisement(_remoteFilePathSanitized)
+        }
+        else if (oldState == .downloading && newState == .complete) //00
         {
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0)
         }
@@ -291,7 +298,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
 
     public func download(of name: String, didFinish data: Data) {
         setState(.complete)
-        downloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
+        fileDownloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
         busyStateChangedAdvertisement(false)
     }
 

@@ -73,9 +73,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
-                .Should().Raise(nameof(fileUploader.FileUploaded))
+                .Should().Raise(nameof(fileUploader.FileUploadCompleted))
                 .WithSender(fileUploader)
-                .WithArgs<FileUploadedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath);
+                .WithArgs<FileUploadCompletedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -160,7 +160,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,100, 10, 10);
 
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadedAdvertisement(resourceId, remoteFilePath); //                                                            order
+                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //                                                            order
                 });
 
                 return verdict;

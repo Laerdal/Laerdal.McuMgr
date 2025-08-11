@@ -71,8 +71,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _uploaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
             
-            public void FileUploadedAdvertisement(string resourceId, string remoteFilePath)
-                => _uploaderCallbacksProxy.FileUploadedAdvertisement(resourceId, remoteFilePath); //raises the actual event
+            public void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
+                => _uploaderCallbacksProxy.FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //raises the actual event
 
             public void FatalErrorOccurredAdvertisement(
                 string resourceId,

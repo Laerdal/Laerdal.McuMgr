@@ -9,6 +9,7 @@ public protocol IOSListenerForFileDownloader {
 
     func stateChangedAdvertisement(_ resourceId: String?, _ oldState: EIOSFileDownloaderState, _ newState: EIOSFileDownloaderState)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
-    func downloadCompletedAdvertisement(_ resourceId: String?, _ data: [UInt8])
+    func fileDownloadStartedAdvertisement(_ resourceId: String?)
+    func fileDownloadCompletedAdvertisement(_ resourceId: String?, _ data: [UInt8])
     func fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_ resourceId: String?, _ progressPercentage: Int, _ averageThroughput: Float32, _ totalAverageThroughputInKbps: Float32)
 }

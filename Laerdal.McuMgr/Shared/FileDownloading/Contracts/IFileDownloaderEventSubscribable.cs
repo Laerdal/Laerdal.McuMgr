@@ -22,8 +22,11 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <summary>Event raised when the firmware-installation busy-state changes which happens when data start or stop being transmitted</summary>
         event EventHandler<BusyStateChangedEventArgs> BusyStateChanged;
 
-        /// <summary>Event raised when the download is complete</summary>
-        event EventHandler<DownloadCompletedEventArgs> DownloadCompleted;
+        /// <summary>Event raised when the file-download has just started</summary>
+        event EventHandler<FileDownloadStartedEventArgs> FileDownloadStarted;
+        
+        /// <summary>Event raised when the file-download is complete</summary>
+        event EventHandler<FileDownloadCompletedEventArgs> FileDownloadCompleted;
 
         /// <summary>Event raised when the firmware-installation process progresses in terms of downloading the firmware files across</summary>
         event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> FileDownloadProgressPercentageAndDataThroughputChanged;

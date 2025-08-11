@@ -53,7 +53,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
 
             eventsMonitor.Should().NotRaise(nameof(fileDownloader.Cancelled));
-            eventsMonitor.Should().NotRaise(nameof(fileDownloader.DownloadCompleted));
+            eventsMonitor.Should().NotRaise(nameof(fileDownloader.FileDownloadCompleted));
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FatalErrorOccurred))

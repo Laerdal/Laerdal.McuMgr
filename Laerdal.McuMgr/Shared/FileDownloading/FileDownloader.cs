@@ -110,8 +110,9 @@ namespace Laerdal.McuMgr.FileDownloading
 
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
+        private event EventHandler<FileDownloadStartedEventArgs> _downloadStarted;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
-        private event EventHandler<DownloadCompletedEventArgs> _downloadCompleted;
+        private event EventHandler<FileDownloadCompletedEventArgs> _downloadCompleted;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
         private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> _fileDownloadProgressPercentageAndDataThroughputChanged;
@@ -166,7 +167,17 @@ namespace Laerdal.McuMgr.FileDownloading
             remove => _stateChanged -= value;
         }
 
-        public event EventHandler<DownloadCompletedEventArgs> DownloadCompleted
+        public event EventHandler<FileDownloadStartedEventArgs> FileDownloadStarted
+        {
+            add
+            {
+                _downloadStarted -= value;
+                _downloadStarted += value;
+            }
+            remove => _downloadStarted -= value;
+        }
+
+        public event EventHandler<FileDownloadCompletedEventArgs> FileDownloadCompleted
         {
             add
             {
@@ -282,7 +293,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 {
                     Cancelled += FileDownloader_Cancelled_;
                     StateChanged += FileDownloader_StateChanged_;
-                    DownloadCompleted += FileDownloader_DownloadCompleted_;
+                    FileDownloadCompleted += FileDownloader_DownloadCompleted_;
                     FatalErrorOccurred += FileDownloader_FatalErrorOccurred_;
                     FileDownloadProgressPercentageAndDataThroughputChanged += FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                     
@@ -384,7 +395,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     
                     Cancelled -= FileDownloader_Cancelled_;
                     StateChanged -= FileDownloader_StateChanged_;
-                    DownloadCompleted -= FileDownloader_DownloadCompleted_;
+                    FileDownloadCompleted -= FileDownloader_DownloadCompleted_;
                     FatalErrorOccurred -= FileDownloader_FatalErrorOccurred_;
                     FileDownloadProgressPercentageAndDataThroughputChanged -= FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                 }
@@ -436,7 +447,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     fileDownloadProgressEventsCount++;
                 }
 
-                void FileDownloader_DownloadCompleted_(object _, DownloadCompletedEventArgs ea_)
+                void FileDownloader_DownloadCompleted_(object _, FileDownloadCompletedEventArgs ea_)
                 {
                     taskCompletionSource.TrySetResult(ea_.Data);
                 }
@@ -475,15 +486,17 @@ namespace Laerdal.McuMgr.FileDownloading
         void IFileDownloaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
         void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
-        void IFileDownloaderEventEmittable.OnDownloadCompleted(DownloadCompletedEventArgs ea) => OnDownloadCompleted(ea);
         void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => OnFileDownloadStarted(ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => OnFileDownloadCompleted(ea);
         void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileDownloadProgressPercentageAndDataThroughputChanged(ea);
         
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnDownloadCompleted(DownloadCompletedEventArgs ea) => _downloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => _downloadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => _downloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
         
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
@@ -530,8 +543,11 @@ namespace Laerdal.McuMgr.FileDownloading
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void DownloadCompletedAdvertisement(string resourceId, byte[] data)
-                => FileDownloader?.OnDownloadCompleted(new DownloadCompletedEventArgs(resourceId, data));
+            public void FileDownloadStartedAdvertisement(string resourceId)
+                => FileDownloader?.OnFileDownloadStarted(new FileDownloadStartedEventArgs(resourceId));
+
+            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data)
+                => FileDownloader?.OnFileDownloadCompleted(new FileDownloadCompletedEventArgs(resourceId, data));
 
             public void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resourceId, errorMessage, globalErrorCode));

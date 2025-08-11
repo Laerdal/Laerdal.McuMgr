@@ -179,8 +179,11 @@ namespace Laerdal.McuMgr.FileDownloading
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
-            
-            public override void DownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
+
+            public override void FileDownloadStartedAdvertisement(string resourceId)
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId);
+
+            public override void FileDownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
             {
                 var dataBytes = new byte[data.Length];
                 for (var i = 0; i < data.Length; i++)
@@ -188,11 +191,11 @@ namespace Laerdal.McuMgr.FileDownloading
                     dataBytes[i] = data[i].ByteValue;
                 }
 
-                DownloadCompletedAdvertisement(resourceId, dataBytes);
+                FileDownloadCompletedAdvertisement(resourceId, dataBytes);
             }
 
-            public void DownloadCompletedAdvertisement(string resourceId, byte[] data) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.DownloadCompletedAdvertisement(resourceId, data);
+            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadCompletedAdvertisement(resourceId, data);
 
             public override void FatalErrorOccurredAdvertisement(
                 string resourceId,

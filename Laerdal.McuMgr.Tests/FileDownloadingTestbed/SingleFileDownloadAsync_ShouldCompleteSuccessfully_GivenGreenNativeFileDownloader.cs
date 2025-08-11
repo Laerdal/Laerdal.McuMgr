@@ -70,9 +70,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Complete);
 
             eventsMonitor
-                .Should().Raise(nameof(fileDownloader.DownloadCompleted))
+                .Should().Raise(nameof(fileDownloader.FileDownloadCompleted))
                 .WithSender(fileDownloader)
-                .WithArgs<DownloadCompletedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.Data.SequenceEqual(mockedFileData));
+                .WithArgs<FileDownloadCompletedEventArgs>(args => args.ResourceId == expectedRemoteFilepath && args.Data.SequenceEqual(mockedFileData));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }

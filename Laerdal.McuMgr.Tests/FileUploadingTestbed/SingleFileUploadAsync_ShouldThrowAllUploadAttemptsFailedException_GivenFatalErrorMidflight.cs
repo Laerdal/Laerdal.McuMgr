@@ -58,7 +58,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             eventsMonitor.Should().NotRaise(nameof(fileUploader.Cancelled));
-            eventsMonitor.Should().NotRaise(nameof(fileUploader.FileUploaded));
+            eventsMonitor.Should().NotRaise(nameof(fileUploader.FileUploadCompleted));
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.FatalErrorOccurred))
