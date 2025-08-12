@@ -57,6 +57,7 @@ permissions: # dependabot needs these explicit permissions placed here
   deployments: 'write'
   discussions: 'write'
   attestations: 'write'
+  pull-requests: 'read'
 
 jobs:
   
