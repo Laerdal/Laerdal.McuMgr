@@ -113,8 +113,8 @@ if [ "${SHOULD_RESTORE_WORKLOADS}" != "true" ]; then
   echo "** Skipping dotnet workload restoration per 'SHOULD_RESTORE_WORKLOADS=${SHOULD_RESTORE_WORKLOADS}'!=true (meaning we had a happy cache-hit in this run)."
 
 else
+
   echo "** Restoring dotnet-workloads ver. '${DOTNET_TARGET_WORKLOAD_VERSION}' because it seems we had a cache-miss in this run ..."
-  
   sudo    dotnet                                           \
                workload                                    \
                install                                     \
@@ -131,25 +131,24 @@ else
     echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
     exit 60
   fi
-fi
+  
+  cd "Laerdal.McuMgr.Bindings.iOS"
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS"
+    exit 65
+  fi
 
-
-cd "Laerdal.McuMgr.Bindings.iOS"
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS"
-  exit 65
+  sudo         dotnet                                      \
+               workload                                    \
+               restore  --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
+    exit 70
+  fi
+  cd - || exit 71
 fi
-sudo         dotnet                                      \
-             workload                                    \
-             restore
-
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 70
-fi
-cd - || exit 71
 
 cd "Laerdal.McuMgr.Bindings.Android"
 declare exitCode=$?
