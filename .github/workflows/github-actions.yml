@@ -46,19 +46,6 @@ on:
     branches:
       - '**'
 
-permissions: # dependabot needs these explicit permissions placed here
-  pages: 'write'
-  checks: 'write'
-  issues: 'write'
-  actions: 'write'
-  contents: 'write'
-  packages: 'write'
-  statuses: 'write'
-  deployments: 'write'
-  discussions: 'write'
-  attestations: 'write'
-  pull-requests: 'read'
-
 jobs:
   
   build:
@@ -178,7 +165,7 @@ jobs:
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
         uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
         continue-on-error: true # sometimes this action spazes out and fails   we ignore such hiccups because they are not really critical
-        if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
+        if: always() && github.actor != 'dependabot[bot]' # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed   we skip this for dependabot triggered runs because they have permissions issues
         with:
           files: |
             TestResults/**/*.xml
