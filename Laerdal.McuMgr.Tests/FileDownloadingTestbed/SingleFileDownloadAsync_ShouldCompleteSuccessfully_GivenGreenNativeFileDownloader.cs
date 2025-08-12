@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-            var expectedRemoteFilepath = remoteFilePath.StartsWith('/')
+            var expectedRemoteFilepath = remoteFilePath!.StartsWith('/')
                 ? remoteFilePath
                 : $"/{remoteFilePath}";
 
@@ -70,6 +70,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Complete);
 
             eventsMonitor
+                .Should().Raise(nameof(fileDownloader.FileDownloadStarted))
+                .WithSender(fileDownloader)
+                .WithArgs<FileDownloadStartedEventArgs>(args => args.ResourceId == expectedRemoteFilepath);
+            
+            eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadCompleted))
                 .WithSender(fileDownloader)
                 .WithArgs<FileDownloadCompletedEventArgs>(args => args.ResourceId == expectedRemoteFilepath && args.Data.SequenceEqual(mockedFileData));
@@ -102,6 +107,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
+                    FileDownloadStartedAdvertisement(remoteFilePath);
                     
                     await Task.Delay(20);
                     if (_tryCount < _maxNumberOfTriesForSuccess)
@@ -112,7 +118,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     }
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //   order
-                    DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
+                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
                 });
 
                 return verdict;

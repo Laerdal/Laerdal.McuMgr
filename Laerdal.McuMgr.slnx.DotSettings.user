@@ -10,6 +10,7 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ATask_00601_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003FUsers_003FDominic_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F243a037ca7a04510a506adfdd94befbac90930_003F74_003F5841babc_003FTask_00601_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003ADeviceResetting_002Ff_003ADeviceResetter_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003AFileDownloader_002Ff_003AFileDownloader_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003AFileUploading_002Ff_003AFileUploader_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CustomTools/CustomToolsData/@EntryValue"></s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/ksidirop/Library/Caches/JetBrains/Rider2025.1/resharper-host/temp/Rider/vAny/CoverageData/_Laerdal.McuMgr.1984391548/Snapshot/snapshot.utdcvr</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=31de16c6_002D0df4_002D4775_002D9d4a_002D88a8348d407f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToUpload" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
@@ -21,8 +22,12 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7bd08370_002D199b_002D47c8_002D80f5_002Db779b7929f2e/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e583d7b2_002Dae30_002D4a16_002Da84a_002D8a75183820c9/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Solution /&gt;
+&lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=131e5d65_002D002c_002D354a_002D58d9_002D743f2733d18b_0023Laerdal_002EMcuMgr_002EBindings_002EAndroid/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=1eebca17_002Dfd57_002Db6cc_002Dece8_002D1a5895cd083f_0023Laerdal_002EMcuMgr_002EBindings_002EMacCatalyst/@EntryIndexedValue">True</s:Boolean>
+	
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=962e09e8_002D0e53_002D1451_002D63b3_002D13d08deac464_0023Laerdal_002EMcuMgr_002EBindings_002ENetStandard/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=b3bb4f82_002D8427_002D49d7_002D5e69_002De0f8ffbb8be7_0023Laerdal_002EMcuMgr_002EBindings_002EiOS/@EntryIndexedValue">True</s:Boolean>
 	

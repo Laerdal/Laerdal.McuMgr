@@ -78,6 +78,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
+                .Should().Raise(nameof(fileUploader.FileUploadStarted))
+                .WithSender(fileUploader)
+                .WithArgs<FileUploadStartedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath);
+           
+            eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploadCompleted))
                 .WithSender(fileUploader)
                 .WithArgs<FileUploadCompletedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == expectedRemoteFilepath);
@@ -128,6 +133,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
                     
                     await Task.Delay(20);
                     if (_tryCount < _maxNumberOfTriesForSuccess)

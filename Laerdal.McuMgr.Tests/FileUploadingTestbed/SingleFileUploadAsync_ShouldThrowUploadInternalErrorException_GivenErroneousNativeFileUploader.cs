@@ -13,7 +13,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         public async Task SingleFileUploadAsync_ShouldThrowUploadInternalErrorException_GivenErroneousNativeFileUploader()
         {
             // Arrange
-            var resourceId = "foobar";
             var mockedNativeFileUploaderProxy = new MockedErroneousNativeFileUploaderProxySpy(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 

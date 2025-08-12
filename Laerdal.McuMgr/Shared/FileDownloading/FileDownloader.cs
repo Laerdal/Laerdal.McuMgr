@@ -110,10 +110,10 @@ namespace Laerdal.McuMgr.FileDownloading
 
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
-        private event EventHandler<FileDownloadStartedEventArgs> _downloadStarted;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
-        private event EventHandler<FileDownloadCompletedEventArgs> _downloadCompleted;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
+        private event EventHandler<FileDownloadStartedEventArgs> _fileDownloadStarted;
+        private event EventHandler<FileDownloadCompletedEventArgs> _fileDownloadCompleted;
         private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
         private event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> _fileDownloadProgressPercentageAndDataThroughputChanged;
 
@@ -171,20 +171,20 @@ namespace Laerdal.McuMgr.FileDownloading
         {
             add
             {
-                _downloadStarted -= value;
-                _downloadStarted += value;
+                _fileDownloadStarted -= value;
+                _fileDownloadStarted += value;
             }
-            remove => _downloadStarted -= value;
+            remove => _fileDownloadStarted -= value;
         }
 
         public event EventHandler<FileDownloadCompletedEventArgs> FileDownloadCompleted
         {
             add
             {
-                _downloadCompleted -= value;
-                _downloadCompleted += value;
+                _fileDownloadCompleted -= value;
+                _fileDownloadCompleted += value;
             }
-            remove => _downloadCompleted -= value;
+            remove => _fileDownloadCompleted -= value;
         }
 
         public event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> FileDownloadProgressPercentageAndDataThroughputChanged
@@ -293,8 +293,8 @@ namespace Laerdal.McuMgr.FileDownloading
                 {
                     Cancelled += FileDownloader_Cancelled_;
                     StateChanged += FileDownloader_StateChanged_;
-                    FileDownloadCompleted += FileDownloader_DownloadCompleted_;
                     FatalErrorOccurred += FileDownloader_FatalErrorOccurred_;
+                    FileDownloadCompleted += FileDownloader_FileDownloadCompleted_;
                     FileDownloadProgressPercentageAndDataThroughputChanged += FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                     
                     var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
@@ -395,8 +395,8 @@ namespace Laerdal.McuMgr.FileDownloading
                     
                     Cancelled -= FileDownloader_Cancelled_;
                     StateChanged -= FileDownloader_StateChanged_;
-                    FileDownloadCompleted -= FileDownloader_DownloadCompleted_;
                     FatalErrorOccurred -= FileDownloader_FatalErrorOccurred_;
+                    FileDownloadCompleted -= FileDownloader_FileDownloadCompleted_;
                     FileDownloadProgressPercentageAndDataThroughputChanged -= FileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged_;
                 }
 
@@ -447,7 +447,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     fileDownloadProgressEventsCount++;
                 }
 
-                void FileDownloader_DownloadCompleted_(object _, FileDownloadCompletedEventArgs ea_)
+                void FileDownloader_FileDownloadCompleted_(object _, FileDownloadCompletedEventArgs ea_)
                 {
                     taskCompletionSource.TrySetResult(ea_.Data);
                 }
@@ -495,8 +495,8 @@ namespace Laerdal.McuMgr.FileDownloading
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => _downloadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => _downloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => _fileDownloadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => _fileDownloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
         
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)

@@ -69,11 +69,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
+                    FileDownloadStartedAdvertisement(remoteFilePath);
 
                     await Task.Delay(20);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
-                    DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                            order
+                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                        order
                 });
 
                 return verdict;

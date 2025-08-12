@@ -95,7 +95,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
                         StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                        CancelledAdvertisement(reason); //                                                                                                 order    
+                        CancelledAdvertisement(reason); //                                                                                                              order    
                     }
                 });
                 
@@ -147,6 +147,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                         return;
 
                     StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
