@@ -52,6 +52,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
 
+            eventsMonitor.Should().Raise(nameof(fileDownloader.FileDownloadStarted));
             eventsMonitor.Should().NotRaise(nameof(fileDownloader.Cancelled));
             eventsMonitor.Should().NotRaise(nameof(fileDownloader.FileDownloadCompleted));
 
@@ -103,6 +104,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     await Task.Delay(100);
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
+                    FileDownloadStartedAdvertisement(remoteFilePath);
 
                     await Task.Delay(2_000);
                     

@@ -52,6 +52,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
+            eventsMonitor.Should().Raise(nameof(fileUploader.FileUploadStarted));
             eventsMonitor.Should().NotRaise(nameof(fileUploader.Cancelled));
             eventsMonitor.Should().NotRaise(nameof(fileUploader.FileUploadCompleted));
 
@@ -119,6 +120,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     await Task.Delay(100);
 
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
 
                     await Task.Delay(100);
                     

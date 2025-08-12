@@ -30,8 +30,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             fileDownloader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileDownloader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             fileDownloader.StateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.StateChanged)} -> oops!");
             fileDownloader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.BusyStateChanged)} -> oops!");
-            fileDownloader.FileDownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadCompleted)} -> oops!");
             fileDownloader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileDownloader.FatalErrorOccurred)} -> oops!");
+            fileDownloader.FileDownloadStarted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadStarted)} -> oops!");
+            fileDownloader.FileDownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadCompleted)} -> oops!");
             fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged)} -> oops!");
 
             // Act
@@ -126,13 +127,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                         return;
 
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
+                    FileDownloadStartedAdvertisement(remoteFilePath);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //   order
-                    DownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
+                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

@@ -48,9 +48,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             fileUploader.Cancelled += (_, _) => throw new Exception($"{nameof(fileUploader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
             fileUploader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileUploader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             fileUploader.StateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.StateChanged)} -> oops!");
-            fileUploader.FileUploadCompleted += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadCompleted)} -> oops!");
             fileUploader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileUploader.BusyStateChanged)} -> oops!");
+            fileUploader.FileUploadStarted += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!");
             fileUploader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
+            fileUploader.FileUploadCompleted += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadCompleted)} -> oops!");
             fileUploader.FileUploadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadProgressPercentageAndDataThroughputChanged)} -> oops!");
 
             // Act
@@ -70,6 +71,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 "/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin"
             ]);
 
+            eventsMonitor.OccurredEvents
+                .Where(args => args.EventName == nameof(fileUploader.FileUploadStarted))
+                .Select(x => x.Parameters.OfType<FileUploadStartedEventArgs>().FirstOrDefault().RemoteFilePath)
+                .Count()
+                .Should()
+                .Be(11);
+            
             eventsMonitor.OccurredEvents
                 .Where(args => args.EventName == nameof(fileUploader.FileUploadCompleted))
                 .Select(x => x.Parameters.OfType<FileUploadCompletedEventArgs>().FirstOrDefault().RemoteFilePath)
@@ -126,6 +134,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
 
                     await Task.Delay(20);
 

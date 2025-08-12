@@ -13,9 +13,6 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <summary>Event raised when the operation gets cancelled</summary>
         event EventHandler<CancelledEventArgs> Cancelled;
 
-        /// <summary>Event raised when a log gets emitted</summary>
-        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
-
         /// <summary>Event raised when the state changes</summary>
         event EventHandler<StateChangedEventArgs> StateChanged;
 
@@ -28,6 +25,9 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <summary>Event raised when the file-download is complete</summary>
         event EventHandler<FileDownloadCompletedEventArgs> FileDownloadCompleted;
 
+        /// <summary>Event raised when a log gets emitted</summary>
+        event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> LogEmitted;
+        
         /// <summary>Event raised when the firmware-installation process progresses in terms of downloading the firmware files across</summary>
         event EventHandler<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs> FileDownloadProgressPercentageAndDataThroughputChanged;
     }

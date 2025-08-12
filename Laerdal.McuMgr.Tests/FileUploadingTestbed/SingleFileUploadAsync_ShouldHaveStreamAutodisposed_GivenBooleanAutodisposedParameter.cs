@@ -77,6 +77,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Complete);
 
             eventsMonitor
+                .Should().Raise(nameof(fileUploader.FileUploadStarted))
+                .WithSender(fileUploader)
+                .WithArgs<FileUploadStartedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
+            
+            eventsMonitor
                 .Should().Raise(nameof(fileUploader.FileUploadCompleted))
                 .WithSender(fileUploader)
                 .WithArgs<FileUploadCompletedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
@@ -124,6 +129,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
 
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 00, 00, 00);

@@ -374,7 +374,7 @@ public class AndroidFileUploader
 
         if (oldState == EAndroidFileUploaderState.IDLE && newState == EAndroidFileUploaderState.UPLOADING)
         {
-            fileUploadingStartedAdvertisement(_resourceId, _remoteFilePathSanitized);
+            fileUploadStartedAdvertisement(_resourceId, _remoteFilePathSanitized);
         }
         else if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
         {
@@ -442,7 +442,7 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadingStartedAdvertisement(final String resourceId, final String remoteFilePath)
+    public void fileUploadStartedAdvertisement(final String resourceId, final String remoteFilePath)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

@@ -82,6 +82,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Complete);
 
             eventsMonitor
+                .Should().Raise(nameof(fileDownloader.FileDownloadStarted))
+                .WithSender(fileDownloader)
+                .WithArgs<FileDownloadStartedEventArgs>(args => args.ResourceId == remoteFilePath);
+            
+            eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadCompleted))
                 .WithSender(fileDownloader)
                 .WithArgs<FileDownloadCompletedEventArgs>(args => args.ResourceId == remoteFilePath);
@@ -119,6 +124,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
+                    FileDownloadStartedAdvertisement(remoteFilePath);
 
                     await Task.Delay(5);
                     FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 00, 00, 00);
@@ -161,7 +167,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 100, 10, 10);
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
-                    DownloadCompletedAdvertisement(remoteFilePath, _expectedData); //                                              order
+                    FileDownloadCompletedAdvertisement(remoteFilePath, _expectedData); //                                              order
                 });
 
                 return verdict;

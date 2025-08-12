@@ -198,6 +198,13 @@ namespace Laerdal.McuMgr.FileDownloading
                 
                 _fileDownloaderCallbacksProxy?.CancelledAdvertisement();
             }
+            
+            public override void FileDownloadStartedAdvertisement(string resource)
+            {
+                base.FileDownloadStartedAdvertisement(resource); //just in case
+
+                _fileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resource);
+            }
 
             public override void FileDownloadCompletedAdvertisement(string resource, byte[] data)
             {

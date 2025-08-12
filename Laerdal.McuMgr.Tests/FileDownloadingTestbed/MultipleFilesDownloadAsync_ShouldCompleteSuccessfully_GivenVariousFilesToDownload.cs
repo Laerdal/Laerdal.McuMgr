@@ -56,8 +56,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             fileDownloader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileDownloader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
             fileDownloader.StateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.StateChanged)} -> oops!");
             fileDownloader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.BusyStateChanged)} -> oops!");
-            fileDownloader.FileDownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadCompleted)} -> oops!");
             fileDownloader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileDownloader.FatalErrorOccurred)} -> oops!");
+            fileDownloader.FileDownloadStarted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadStarted)} -> oops!");
+            fileDownloader.FileDownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadCompleted)} -> oops!");
             fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged)} -> oops!");
 
             // Act
@@ -74,6 +75,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
             results.Should().BeEquivalentTo(expectedResults);
 
+            eventsMonitor.OccurredEvents
+                .Count(args => args.EventName == nameof(fileDownloader.FileDownloadStarted))
+                .Should()
+                .Be(13); //7 files to download with multiple attempts for some of them
+            
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileDownloader.FileDownloadCompleted))
                 .Should()
@@ -112,6 +118,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
+                    FileDownloadStartedAdvertisement(remoteFilePath);
 
                     await Task.Delay(20);
 
@@ -142,7 +149,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                         _expectedResults.TryGetValue(remoteFilePath, out var expectedFileContent);
 
                         StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //  order
-                        DownloadCompletedAdvertisement(remoteFilePath, expectedFileContent); //                                         order
+                        FileDownloadCompletedAdvertisement(remoteFilePath, expectedFileContent); //                                     order
                     }
                 });
 
