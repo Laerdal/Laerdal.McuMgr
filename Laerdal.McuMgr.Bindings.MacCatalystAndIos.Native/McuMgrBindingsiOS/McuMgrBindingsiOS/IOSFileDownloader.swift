@@ -145,6 +145,8 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func resetState() {
+        _downloadStartTimestamp = nil
+
         _lastBytesSent = -1
         _lastBytesSentTimestamp = nil
 
