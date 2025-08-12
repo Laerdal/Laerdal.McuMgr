@@ -208,8 +208,9 @@ public class AndroidFileUploader
 
     private void resetUploadState()
     {
-        _lastBytesSent = 0;
         _uploadStartTimestampInMs = 0;
+
+        _lastBytesSent = 0;
         _lastBytesSentTimestampInMs = 0;
 
         setState(EAndroidFileUploaderState.IDLE);

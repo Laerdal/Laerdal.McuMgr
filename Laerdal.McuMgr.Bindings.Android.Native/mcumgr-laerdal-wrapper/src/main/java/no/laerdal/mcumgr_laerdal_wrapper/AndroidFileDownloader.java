@@ -225,9 +225,10 @@ public class AndroidFileDownloader
 
     private void resetDownloadState()
     {
+        _downloadStartTimestampInMs = 0;
+
         _lastBytesSent = 0;
         _lastBytesSentTimestampInMs = 0;
-        _downloadStartTimestampInMs = 0;
 
         setState(EAndroidFileDownloaderState.IDLE);
         busyStateChangedAdvertisement(true);
