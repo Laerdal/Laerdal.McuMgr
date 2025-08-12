@@ -46,6 +46,17 @@ on:
     branches:
       - '**'
 
+permissions: # dependabot needs these explicit permissions placed here
+  pages: 'write'
+  checks: 'write'
+  issues: 'write'
+  actions: 'write'
+  contents: 'write'
+  packages: 'write'
+  statuses: 'write'
+  deployments: 'write'
+  discussions: 'write'
+  attestations: 'write'
 
 jobs:
   
