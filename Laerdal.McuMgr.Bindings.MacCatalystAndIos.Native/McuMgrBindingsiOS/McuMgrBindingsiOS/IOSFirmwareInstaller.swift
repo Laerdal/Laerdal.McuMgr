@@ -9,6 +9,7 @@ public class IOSFirmwareInstaller: NSObject {
     private var _transporter: McuMgrBleTransport!
     private var _cbPeripheral: CBPeripheral!
     private var _currentState: EIOSFirmwareInstallationState
+    private var _currentBusyState: Bool = false
     private var _lastFatalErrorMessage: String = ""
 
     private var _lastBytesSent: Int = -1
@@ -79,7 +80,8 @@ public class IOSFirmwareInstaller: NSObject {
             )
         }
 
-        setState(.idle) //                                         order
+        setState(.none) //                                         order
+        setBusyState(false) //                                     order
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) // order
         ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() //  order
 
@@ -95,6 +97,7 @@ public class IOSFirmwareInstaller: NSObject {
         }
 
         do {
+            setState(.idle)
             try _manager.start(
                     images: [
                         ImageManager.Image( //2
@@ -260,6 +263,7 @@ public class IOSFirmwareInstaller: NSObject {
     private func onError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ error: Error? = nil) {
         let currentStateSnapshot = _currentState //00  order
         setState(.error) //                            order
+        setBusyState(false) //                         order
         fatalErrorOccurredAdvertisement( //            order
                 currentStateSnapshot,
                 fatalErrorType,
@@ -322,21 +326,29 @@ public class IOSFirmwareInstaller: NSObject {
         }
     }
 
-    private func setState(_ newState: EIOSFirmwareInstallationState) {
-        if (_currentState == newState) {
-            return;
+    private func setBusyState(_ newBusyState: Bool) {
+        if (_currentBusyState == newBusyState) {
+            return
         }
 
-        let oldState = _currentState; //order
+        busyStateChangedAdvertisement(newBusyState)
+    }
 
-        _currentState = newState; //order
+    private func setState(_ newState: EIOSFirmwareInstallationState) {
+        if (_currentState == newState) {
+            return
+        }
+
+        let oldState = _currentState //order
+
+        _currentState = newState //order
 
         if (oldState == .uploading && newState == .testing) //00  order
         {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
         }
 
-        stateChangedAdvertisement(oldState, newState); //order
+        stateChangedAdvertisement(oldState, newState) //order
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
@@ -360,8 +372,8 @@ public class IOSFirmwareInstaller: NSObject {
 extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate throughput too!
 
     public func upgradeDidStart(controller: FirmwareUpgradeController) {
-        busyStateChangedAdvertisement(true);
         setState(.validating);
+        setBusyState(true);
     }
 
     public func upgradeStateDidChange(from oldState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
@@ -386,7 +398,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
 
     public func upgradeDidComplete() {
         setState(.complete)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
@@ -399,12 +411,12 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
         }
 
         onError(fatalErrorType, error.localizedDescription, error)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
     public func upgradeDidCancel(state: FirmwareUpgradeState) {
         setState(.cancelled)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
         cancelledAdvertisement()
     }
 

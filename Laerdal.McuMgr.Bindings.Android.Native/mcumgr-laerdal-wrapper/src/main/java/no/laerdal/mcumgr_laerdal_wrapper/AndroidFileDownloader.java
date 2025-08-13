@@ -31,6 +31,7 @@ public class AndroidFileDownloader
     private long _downloadStartTimestampInMs;
 
     private String _remoteFilePathSanitized = "";
+    private Boolean _currentBusyState = false;
     private EAndroidFileDownloaderState _currentState = EAndroidFileDownloaderState.NONE;
 
     public AndroidFileDownloader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
@@ -162,7 +163,8 @@ public class AndroidFileDownloader
             tryEnsureConnectionPriorityOnTransport(); //order
             ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
 
-            _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy);
+            setState(EAndroidFileDownloaderState.IDLE); //order
+            _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy); //order
         }
         catch (final Exception ex)
         {
@@ -183,7 +185,7 @@ public class AndroidFileDownloader
         setState(EAndroidFileDownloaderState.PAUSED);
         setLoggingEnabledOnConnection(true);
         transferController.pause();
-        busyStateChangedAdvertisement(false);
+        setBusyState(false);
     }
 
     public void resume()
@@ -194,7 +196,7 @@ public class AndroidFileDownloader
 
         setState(EAndroidFileDownloaderState.DOWNLOADING);
 
-        busyStateChangedAdvertisement(true);
+        setBusyState(true);
 
         setLoggingEnabledOnConnection(false);
         transferController.resume();
@@ -230,8 +232,8 @@ public class AndroidFileDownloader
         _lastBytesSent = 0;
         _lastBytesSentTimestampInMs = 0;
 
-        setState(EAndroidFileDownloaderState.IDLE);
-        busyStateChangedAdvertisement(true);
+        setState(EAndroidFileDownloaderState.NONE);
+        setBusyState(false);
         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
     }
 
@@ -322,6 +324,16 @@ public class AndroidFileDownloader
     private void setLoggingEnabledOnConnection(final boolean enabled)
     {
         _transport.setLoggingEnabled(enabled);
+    }
+
+    private void setBusyState(final boolean newBusyState)
+    {
+        if (_currentBusyState == newBusyState)
+            return;
+
+        _currentBusyState = newBusyState;
+        
+        busyStateChangedAdvertisement(newBusyState);
     }
 
     private void setState(final EAndroidFileDownloaderState newState)
@@ -466,6 +478,7 @@ public class AndroidFileDownloader
         public void onDownloadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
             setState(EAndroidFileDownloaderState.DOWNLOADING);
+            setBusyState(true);
 
             int fileDownloadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
             float currentThroughputInKbps = calculateCurrentThroughputInKbps(totalBytesSentSoFar, timestampInMs);
@@ -523,7 +536,7 @@ public class AndroidFileDownloader
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
             onError(exception.getMessage(), exception);
             setLoggingEnabledOnConnection(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
 
             _downloadingController = null; //game over
         }
@@ -535,7 +548,7 @@ public class AndroidFileDownloader
             setState(EAndroidFileDownloaderState.CANCELLED);
             cancelledAdvertisement();
             setLoggingEnabledOnConnection(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
 
             _downloadingController = null; //game over
         }
@@ -545,11 +558,11 @@ public class AndroidFileDownloader
         {
             //fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0); //no need this is taken care of inside setState()
 
-            setState(EAndroidFileDownloaderState.COMPLETE); //                    order  vital
+            setState(EAndroidFileDownloaderState.COMPLETE); //                        order  vital
             fileDownloadCompletedAdvertisement(_remoteFilePathSanitized, data); //    order  vital
 
             setLoggingEnabledOnConnection(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
 
             _downloadingController = null; //game over
         }

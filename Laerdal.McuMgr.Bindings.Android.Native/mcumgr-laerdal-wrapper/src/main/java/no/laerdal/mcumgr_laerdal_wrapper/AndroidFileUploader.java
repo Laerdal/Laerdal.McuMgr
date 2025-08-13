@@ -30,6 +30,7 @@ public class AndroidFileUploader
 
     private String _resourceId = "";
     private String _remoteFilePathSanitized = "";
+    private Boolean _currentBusyState = false;
     private EAndroidFileUploaderState _currentState = EAndroidFileUploaderState.NONE;
 
     public AndroidFileUploader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
@@ -183,7 +184,8 @@ public class AndroidFileUploader
             requestHighConnectionPriorityOnTransport(); //order
             ensureFileUploaderCallbackProxyIsInitializedExactlyOnce(); //order
 
-            FileUploader fileUploader = new FileUploader( //00
+            setState(EAndroidFileUploaderState.IDLE); //order
+            FileUploader fileUploader = new FileUploader( //00  order
                     _fileSystemManager,
                     _remoteFilePathSanitized,
                     data,
@@ -213,8 +215,8 @@ public class AndroidFileUploader
         _lastBytesSent = 0;
         _lastBytesSentTimestampInMs = 0;
 
-        setState(EAndroidFileUploaderState.IDLE);
-        busyStateChangedAdvertisement(true);
+        setState(EAndroidFileUploaderState.NONE);
+        setBusyState(false);
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
     }
 
@@ -266,10 +268,10 @@ public class AndroidFileUploader
         if (transferController == null)
             return;
 
+        transferController.pause();
         setState(EAndroidFileUploaderState.PAUSED);
         setLoggingEnabledOnTransport(true);
-        transferController.pause();
-        busyStateChangedAdvertisement(false);
+        setBusyState(false);
     }
 
     public void resume()
@@ -280,7 +282,7 @@ public class AndroidFileUploader
 
         setState(EAndroidFileUploaderState.UPLOADING);
 
-        busyStateChangedAdvertisement(true);
+        setBusyState(true);
 
         setLoggingEnabledOnTransport(false);
         transferController.resume();
@@ -362,6 +364,16 @@ public class AndroidFileUploader
         _transport.setLoggingEnabled(enabled);
     }
 
+    private void setBusyState(final boolean newBusyState)
+    {
+        if (_currentBusyState == newBusyState)
+            return;
+
+        _currentBusyState = newBusyState;
+
+        busyStateChangedAdvertisement(newBusyState);
+    }
+    
     private void setState(final EAndroidFileUploaderState newState)
     {
         if (_currentState == newState)
@@ -489,6 +501,7 @@ public class AndroidFileUploader
         @Override
         public void onUploadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
+            setBusyState(true);
             setState(EAndroidFileUploaderState.UPLOADING);
 
             int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
@@ -548,7 +561,7 @@ public class AndroidFileUploader
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
             onError(error.getMessage(), error);
             setLoggingEnabledOnTransport(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
 
             _uploadController = null; //order
         }
@@ -560,7 +573,7 @@ public class AndroidFileUploader
             setState(EAndroidFileUploaderState.CANCELLED);
             cancelledAdvertisement(_cancellationReason);
             setLoggingEnabledOnTransport(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
 
             _uploadController = null; //order
         }
@@ -572,7 +585,7 @@ public class AndroidFileUploader
             setState(EAndroidFileUploaderState.COMPLETE);
             fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized);
             setLoggingEnabledOnTransport(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
 
             _uploadController = null; //order
         }
