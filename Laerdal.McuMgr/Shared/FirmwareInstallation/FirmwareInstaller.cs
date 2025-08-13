@@ -541,7 +541,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
         static private readonly int UploadingPhaseProgressMilestonePercentStart = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading)!.Value;
         static private readonly int UploadingPhaseProgressMilestonePercentFinish = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Testing)!.Value;
         
-        static private int? GetProgressMilestonePercentageForState(EFirmwareInstallationState state) => state switch //@formatter:off
+        static internal int? GetProgressMilestonePercentageForState(EFirmwareInstallationState state) => state switch //@formatter:off
         {
             EFirmwareInstallationState.None         => 0,
             EFirmwareInstallationState.Idle         => 1,

@@ -36,7 +36,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
 
-            eventsMonitor.OccurredEvents.Length.Should().Be(25);
+            eventsMonitor.OccurredEvents.Length.Should().Be(26);
 
             eventsMonitor
                 .Should()
@@ -66,9 +66,20 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             
             overallProgressPercentages.Min().Should().Be(0);
             overallProgressPercentages.Max().Should().Be(100);
-            overallProgressPercentages.Length.Should().Be(11);
+            overallProgressPercentages.Length.Should().Be(12);
             overallProgressPercentages.Should().BeInAscendingOrder();
-            
+
+            overallProgressPercentages.Should().ContainInOrder( //@formatter:off
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.None       )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Idle       )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Validating )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading  )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Testing    )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Resetting  )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Confirming )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Complete   )!.Value
+            ); //@formatter:on
+
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
@@ -132,14 +143,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Testing);
                     await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Testing, newState: EFirmwareInstallationState.Confirming);
+
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Testing, newState: EFirmwareInstallationState.Resetting);
                     await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Confirming, newState: EFirmwareInstallationState.Resetting);
+
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Resetting, newState: EFirmwareInstallationState.Confirming);
                     await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Resetting, newState: EFirmwareInstallationState.Complete);
+
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Confirming, newState: EFirmwareInstallationState.Complete);
                 });
 
                 return verdict;
