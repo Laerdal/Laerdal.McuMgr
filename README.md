@@ -192,14 +192,12 @@ private void ToggleSubscriptionsOnFirmwareInstallerEvents(bool subscribeNotUnsub
     if (subscribeNotUnsubscribe)
     {
         _firmwareInstaller.LogEmitted += FirmwareInstaller_LogEmitted;
-        _firmwareInstaller.StateChanged += FirmwareInstaller_StateChanged;
-        _firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged += FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged;
+        _firmwareInstaller.OverallProgressPercentageChanged += FirmwareInstaller_OverallProgressPercentageChanged;
     }
     else
     {
         _firmwareInstaller.LogEmitted -= FirmwareInstaller_LogEmitted;
-        _firmwareInstaller.StateChanged -= FirmwareInstaller_StateChanged;
-        _firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged -= FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged;
+        _firmwareInstaller.OverallProgressPercentageChanged -= FirmwareInstaller_OverallProgressPercentageChanged;
     }
 }
 
@@ -217,51 +215,10 @@ private static void FirmwareInstaller_IdenticalFirmwareCachedOnTargetDeviceDetec
     }
 }
 
-private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs ea)
+private void FirmwareInstaller_OverallProgressPercentageChanged(object sender, OverallProgressPercentageChangedEventArgs ea)
 {
-    Console.Error.WriteLineAsync($"** {nameof(FirmwareInstaller_StateChanged)}: OldState='{ea.OldState}' NewState='{ea.NewState}'");
-
-    if (ea.NewState == EFirmwareInstallationState.Idle) {
-        FirmwareInstallationAttemptCount += 1; //00
-    }
-
-    FirmwareInstallationStage = ea.NewState.ToString();
-    FirmwareInstallationOverallProgressPercentage = GetProgressMilestonePercentageForState(ea.NewState) ?? FirmwareInstallationOverallProgressPercentage;
-    
-    //00  if a firmware installation fails then we retry up to 10 times     each time we
-    //    reattempt we start from scratch so the state will be reset back to being none again etc
+    FirmwareInstallationOverallProgressPercentage = ea.ProgressPercentage;
 }
-
-private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(EventPattern<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> eventPattern)
-{
-    var ea = eventPattern.EventArgs; //00
-    FirmwareUploadCurrentThroughputInKilobytes = ea.CurrentThroughput;
-
-    if (FirmwareInstallationOverallProgressPercentage < 50) //10  hack
-    {
-        FirmwareInstallationOverallProgressPercentage = UploadingPhaseProgressMilestonePercent + (int)(ea.ProgressPercentage * 0.4f); //10% to 50%
-    }
-
-    //00  we could use a background task here per https://stackoverflow.com/a/15957165/863651 but we wouldnt notice a dramatic difference in performance
-    //10  we noticed that there is a small race condition between state changes and the progress% updates   we first get a state change to 'resetting' (70%)
-    //    and then a file-upload progress% update to 100%   we would like to fix this inside the native firmware installer library but its quite hard to do so
-}
-
-private static readonly int UploadingPhaseProgressMilestonePercent = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading)!.Value;
-private static int? GetProgressMilestonePercentageForState(EFirmwareInstallationState state) => state switch
-{
-    EFirmwareInstallationState.None => 0,
-    EFirmwareInstallationState.Idle => 1,
-    EFirmwareInstallationState.Validating => 2,
-    EFirmwareInstallationState.Uploading => 10, //00
-    EFirmwareInstallationState.Testing => 50,
-    EFirmwareInstallationState.Resetting => 70,
-    EFirmwareInstallationState.Confirming => 80,
-    EFirmwareInstallationState.Complete => 100,
-    _ => null // .error .paused .cancelled .cancelling    we shouldnt throw an exception here
-    
-    //00   note that the progress% is further updated from 10% to 50% by the upload process via the event FirmwareUploadProgressPercentageAndDataThroughputChanged
-};
 
 private void CleanupFirmwareInstaller()
 {
