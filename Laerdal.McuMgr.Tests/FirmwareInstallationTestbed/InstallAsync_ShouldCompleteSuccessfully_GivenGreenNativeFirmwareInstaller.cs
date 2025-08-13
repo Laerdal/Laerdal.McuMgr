@@ -36,7 +36,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
 
-            eventsMonitor.OccurredEvents.Length.Should().Be(13);
+            eventsMonitor.OccurredEvents.Length.Should().Be(26);
 
             eventsMonitor
                 .Should()
@@ -56,7 +56,30 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Complete);
+
+            var overallProgressPercentages = eventsMonitor.OccurredEvents
+                .Where(args => args.EventName == nameof(firmwareInstaller.OverallProgressPercentageChanged))
+                .SelectMany(x => x.Parameters)
+                .OfType<OverallProgressPercentageChangedEventArgs>()
+                .Select(x => x.ProgressPercentage)
+                .ToArray();
             
+            overallProgressPercentages.Min().Should().Be(0);
+            overallProgressPercentages.Max().Should().Be(100);
+            overallProgressPercentages.Length.Should().Be(12);
+            overallProgressPercentages.Should().BeInAscendingOrder();
+
+            overallProgressPercentages.Should().ContainInOrder( //@formatter:off
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.None       )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Idle       )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Validating )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading  )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Testing    )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Resetting  )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Confirming )!.Value,
+                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Complete   )!.Value
+            ); //@formatter:on
+
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
@@ -93,7 +116,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 
                 Task.Run(function: async () => //00 vital
                 {
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None);
+                    await Task.Delay(10);
+                    
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle);
                     await Task.Delay(10);
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);
@@ -117,14 +143,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Uploading, newState: EFirmwareInstallationState.Testing);
                     await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Testing, newState: EFirmwareInstallationState.Confirming);
+
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Testing, newState: EFirmwareInstallationState.Resetting);
                     await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Confirming, newState: EFirmwareInstallationState.Resetting);
+
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Resetting, newState: EFirmwareInstallationState.Confirming);
                     await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Resetting, newState: EFirmwareInstallationState.Complete);
+
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Confirming, newState: EFirmwareInstallationState.Complete);
                 });
 
                 return verdict;

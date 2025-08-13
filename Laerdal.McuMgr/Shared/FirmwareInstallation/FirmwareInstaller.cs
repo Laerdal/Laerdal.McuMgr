@@ -140,6 +140,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
         private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
+        private event EventHandler<OverallProgressPercentageChangedEventArgs> _overallProgressPercentageChanged;
         private event EventHandler<IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs> _identicalFirmwareCachedOnTargetDeviceDetected;
         private event EventHandler<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> _firmwareUploadProgressPercentageAndDataThroughputChanged;
 
@@ -211,6 +212,16 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 _firmwareUploadProgressPercentageAndDataThroughputChanged += value;
             }
             remove => _firmwareUploadProgressPercentageAndDataThroughputChanged -= value;
+        }
+        
+        public event EventHandler<OverallProgressPercentageChangedEventArgs> OverallProgressPercentageChanged
+        {
+            add
+            {
+                _overallProgressPercentageChanged -= value;
+                _overallProgressPercentageChanged += value;
+            }
+            remove => _overallProgressPercentageChanged -= value;
         }
 
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
@@ -429,6 +440,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
         void IFirmwareInstallerEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFirmwareInstallerEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
         void IFirmwareInstallerEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFirmwareInstallerEventEmittable.OnOverallProgressPercentageChanged(OverallProgressPercentageChangedEventArgs ea) => OnOverallProgressPercentageChanged(ea);
         void IFirmwareInstallerEventEmittable.OnIdenticalFirmwareCachedOnTargetDeviceDetected(IdenticalFirmwareCachedOnTargetDeviceDetectedEventArgs ea) => OnIdenticalFirmwareCachedOnTargetDeviceDetected(ea);
         void IFirmwareInstallerEventEmittable.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFirmwareUploadProgressPercentageAndDataThroughputChanged(ea);
 
@@ -460,11 +472,51 @@ namespace Laerdal.McuMgr.FirmwareInstallation
         {
             _fileUploadProgressEventsCount++; //order
             _firmwareUploadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea); //order   typically there is only one subscriber to this event so we can use the simple .invoke() flavour here
+            
+            if (FirmwareInstallationOverallProgressPercentage < UploadingPhaseProgressMilestonePercentFinish) //10  hack
+            {
+                FirmwareInstallationOverallProgressPercentage = UploadingPhaseProgressMilestonePercentStart + (int)(ea.ProgressPercentage * 0.4f); //10% to 50%
+            }
+
+            //10  we noticed that there is a small race condition between state changes and the progress% updates   we first get a state change to 'resetting' (70%)
+            //    and then a file-upload progress% update to 100%   we would like to fix this inside the native firmware installer library but it is quite hard to do so
+        }
+
+        private int _firmwareInstallationOverallProgressPercentage;
+        private int FirmwareInstallationOverallProgressPercentage
+        {
+            get => _firmwareInstallationOverallProgressPercentage;
+            set
+            {
+                if (value >= 1 && _firmwareInstallationOverallProgressPercentage >= value) //fend off out-of-order progress updates except for the initial 1% value
+                    return;
+
+                _firmwareInstallationOverallProgressPercentage = value;
+                OnOverallProgressPercentageChanged(new OverallProgressPercentageChangedEventArgs(value));
+            }
+        }
+
+        private void OnOverallProgressPercentageChanged(OverallProgressPercentageChangedEventArgs ea)
+        {
+            _overallProgressPercentageChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         }
 
         private void OnStateChanged(StateChangedEventArgs ea)
         {
             try
+            {
+                FirmwareInstallationOverallProgressPercentage = GetProgressMilestonePercentageForState(ea.NewState) ?? FirmwareInstallationOverallProgressPercentage;
+
+                TacklePossibleStateSideEffects_();
+            }
+            finally
+            {
+                _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //00 must be dead last
+            }
+
+            return;
+
+            void TacklePossibleStateSideEffects_()
             {
                 switch (ea)
                 {
@@ -481,14 +533,28 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                         break;
                 }
             }
-            finally
-            {
-                _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea); //00 must be dead last
-            }
-
+            
             //00  if we raise the state-changed event before the switch statement then the calling environment will unwire the event handlers of
             //    the identical-firmware-cached-on-target-device-detected event before it gets fired and the event will be ignored altogether
         }
+        
+        static private readonly int UploadingPhaseProgressMilestonePercentStart = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading)!.Value;
+        static private readonly int UploadingPhaseProgressMilestonePercentFinish = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Testing)!.Value;
+        
+        static internal int? GetProgressMilestonePercentageForState(EFirmwareInstallationState state) => state switch //@formatter:off
+        {
+            EFirmwareInstallationState.None         => 0,
+            EFirmwareInstallationState.Idle         => 1,
+            EFirmwareInstallationState.Validating   => 2,
+            EFirmwareInstallationState.Uploading    => 10, //00
+            EFirmwareInstallationState.Testing      => 50,
+            EFirmwareInstallationState.Resetting    => 70,
+            EFirmwareInstallationState.Confirming   => 80,
+            EFirmwareInstallationState.Complete     => 100,
+            _ => null // .error .paused .cancelled .cancelling    we shouldnt throw an exception here   @formatter:on
+        
+            //00   note that the progress% is further updated from 10% to 50% by the upload process via the event FirmwareUploadProgressPercentageAndDataThroughputChanged
+        };
         
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFirmwareInstallerProxy
         internal class GenericNativeFirmwareInstallerCallbacksProxy : INativeFirmwareInstallerCallbacksProxy

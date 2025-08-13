@@ -44,6 +44,9 @@ public class AndroidFirmwareInstaller
     private int _totalBytesSentSoFar;
     private long _lastBytesSentTimestampInMs;
 
+    private Boolean _currentBusyState = false;
+    private EAndroidFirmwareInstallationState _currentState = EAndroidFirmwareInstallationState.NONE;
+
     private static final int NOT_STARTED = -1; // a value indicating that the upload has not been started before
     private static final long REFRESH_RATE = 100L; // ms how often the throughput data should be sent to the graph
 
@@ -89,6 +92,9 @@ public class AndroidFirmwareInstaller
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_ALREADY_IN_PROGRESS;
         }
+
+        setBusyState(false);
+        setState(EAndroidFirmwareInstallationState.NONE); //resetting to account for multiple attempts
 
         ImageSet images = new ImageSet();
         try
@@ -149,9 +155,9 @@ public class AndroidFirmwareInstaller
 
         try
         {
-            setState(EAndroidFirmwareInstallationState.IDLE);
-
-            _manager.start(images, settings);
+            setBusyState(false); //order
+            setState(EAndroidFirmwareInstallationState.IDLE); //order
+            _manager.start(images, settings); //order
         }
         catch (final Exception ex)
         {
@@ -236,7 +242,15 @@ public class AndroidFirmwareInstaller
         }
     }
 
-    private EAndroidFirmwareInstallationState _currentState = EAndroidFirmwareInstallationState.NONE;
+    private void setBusyState(final boolean newBusyState)
+    {
+        if (_currentBusyState == newBusyState)
+            return;
+
+        _currentBusyState = newBusyState;
+
+        busyStateChangedAdvertisement(newBusyState);
+    }
 
     private void setState(final EAndroidFirmwareInstallationState newState)
     {
@@ -333,7 +347,7 @@ public class AndroidFirmwareInstaller
 
         // Timber.i("Upload paused"); //todo  logging
         setLoggingEnabled(true);
-        busyStateChangedAdvertisement(false);
+        setBusyState(false);
     }
 
     public void resume()
@@ -341,7 +355,7 @@ public class AndroidFirmwareInstaller
         if (!_manager.isPaused())
             return;
 
-        busyStateChangedAdvertisement(true);
+        setBusyState(true);
         setState(EAndroidFirmwareInstallationState.UPLOADING);
 
         // Timber.i("Upload resumed");
@@ -363,7 +377,7 @@ public class AndroidFirmwareInstaller
         @Override
         public void onUpgradeStarted(final FirmwareUpgradeController controller)
         {
-            busyStateChangedAdvertisement(true);
+            setBusyState(true);
             setState(EAndroidFirmwareInstallationState.VALIDATING);
         }
 
@@ -410,7 +424,7 @@ public class AndroidFirmwareInstaller
             setState(EAndroidFirmwareInstallationState.COMPLETE);
             // Timber.i("Install complete");
             setLoggingEnabled(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
         }
 
         @Override
@@ -431,7 +445,7 @@ public class AndroidFirmwareInstaller
             onError(fatalErrorType, ex.getMessage(), ex);
             setLoggingEnabled(true);
             // Timber.e(error, "Install failed");
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
         }
 
         @Override
@@ -443,7 +457,7 @@ public class AndroidFirmwareInstaller
             cancelledAdvertisement();
             // Timber.w("Install cancelled");
             setLoggingEnabled(true);
-            busyStateChangedAdvertisement(false);
+            setBusyState(false);
         }
 
         @Override

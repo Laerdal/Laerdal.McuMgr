@@ -10,6 +10,8 @@ public class IOSFileUploader: NSObject {
     private var _fileSystemManager: FileSystemManager!
 
     private var _currentState: EIOSFileUploaderState = .none
+    private var _currentBusyState: Bool = false
+
     private var _cancellationReason: String = ""
     private var _lastFatalErrorMessage: String = ""
 
@@ -140,6 +142,7 @@ public class IOSFileUploader: NSObject {
 
         do
         {
+            setState(.idle)
             let success = _fileSystemManager.upload( //order
                     name: _remoteFilePathSanitized,
                     data: data!,
@@ -193,6 +196,7 @@ public class IOSFileUploader: NSObject {
         _fileSystemManager?.pauseTransfer()
 
         setState(.paused)
+        setBusyState(false)
     }
 
     @objc
@@ -200,6 +204,7 @@ public class IOSFileUploader: NSObject {
         _fileSystemManager?.continueTransfer()
 
         setState(.uploading)
+        setBusyState(true)
     }
 
     @objc
@@ -223,8 +228,8 @@ public class IOSFileUploader: NSObject {
         _lastBytesSent = 0
         _lastBytesSentTimestamp = nil
 
-        setState(.idle)
-        busyStateChangedAdvertisement(true)
+        setState(.none)
+        setBusyState(false)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0)
     }
 
@@ -283,6 +288,7 @@ public class IOSFileUploader: NSObject {
         _lastFatalErrorMessage = errorMessage
 
         setState(.error) //                           order
+        setBusyState(false) //                        order
         _listener.fatalErrorOccurredAdvertisement( // order
                 _resourceId,
                 _remoteFilePathSanitized,
@@ -357,6 +363,14 @@ public class IOSFileUploader: NSObject {
         }
     }
 
+    private func setBusyState(_ newBusyState: Bool) {
+        if (_currentBusyState == newBusyState) {
+            return
+        }
+
+        busyStateChangedAdvertisement(newBusyState)
+    }
+
     private func setState(_ newState: EIOSFileUploaderState) {
         if (_currentState == newState) {
             return
@@ -385,6 +399,7 @@ extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
         setState(.uploading)
+        setBusyState(true)
 
         let uploadProgressPercentage = (bytesSent * 100) / fileSize
         let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
@@ -395,12 +410,12 @@ extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadDidFail(with error: Error) {
         onError(error.localizedDescription, error)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
     public func uploadDidCancel() {
         setState(.cancelled)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
         fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0)
         cancelledAdvertisement(_cancellationReason)
     }
@@ -408,7 +423,7 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadDidFinish() {
         setState(.complete)
         fileUploadCompletedAdvertisement()
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
     private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
