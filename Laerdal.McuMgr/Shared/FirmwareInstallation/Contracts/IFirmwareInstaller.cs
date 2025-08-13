@@ -8,8 +8,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
     /// <summary>Upgrades the firmware on a specific Nordic-chip-based BLE device</summary>
     public interface IFirmwareInstaller :
         IFirmwareInstallerQueryable,
-        IFirmwareInstallerEventSubscribable,
         IFirmwareInstallerCommandable,
+        IFirmwareInstallerEventSubscribable,
         IDisposable
     {
     }

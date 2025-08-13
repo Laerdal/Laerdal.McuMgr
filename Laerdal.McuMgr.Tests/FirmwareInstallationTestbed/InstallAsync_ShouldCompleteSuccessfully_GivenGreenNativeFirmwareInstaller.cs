@@ -36,7 +36,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
 
-            eventsMonitor.OccurredEvents.Length.Should().Be(13);
+            eventsMonitor.OccurredEvents.Length.Should().Be(25);
 
             eventsMonitor
                 .Should()
@@ -56,6 +56,18 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 .Should().Raise(nameof(firmwareInstaller.StateChanged))
                 .WithSender(firmwareInstaller)
                 .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Complete);
+
+            var overallProgressPercentages = eventsMonitor.OccurredEvents
+                .Where(args => args.EventName == nameof(firmwareInstaller.OverallProgressPercentageChanged))
+                .SelectMany(x => x.Parameters)
+                .OfType<OverallProgressPercentageChangedEventArgs>()
+                .Select(x => x.ProgressPercentage)
+                .ToArray();
+            
+            overallProgressPercentages.Min().Should().Be(0);
+            overallProgressPercentages.Max().Should().Be(100);
+            overallProgressPercentages.Length.Should().Be(11);
+            overallProgressPercentages.Should().BeInAscendingOrder();
             
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -93,7 +105,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 
                 Task.Run(function: async () => //00 vital
                 {
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None);
+                    await Task.Delay(10);
+                    
+                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle);
                     await Task.Delay(10);
                     
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);

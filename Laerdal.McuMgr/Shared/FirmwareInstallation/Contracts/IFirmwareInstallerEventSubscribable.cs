@@ -27,5 +27,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
 
         /// <summary>Event raised when the firmware-upgrade process progresses in terms of uploading the firmware files across</summary>
         event EventHandler<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> FirmwareUploadProgressPercentageAndDataThroughputChanged;
+
+        /// <summary>Event raised when the overall progress report changes</summary>
+        event EventHandler<OverallProgressPercentageChangedEventArgs> OverallProgressPercentageChanged;
     }
 }
