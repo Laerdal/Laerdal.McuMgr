@@ -401,3 +401,5 @@ version.txt
 
 # the cyclonedx cli executable
 cyclonedx
+
+*.marker
