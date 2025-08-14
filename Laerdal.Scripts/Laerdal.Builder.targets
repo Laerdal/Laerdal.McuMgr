@@ -227,10 +227,14 @@
         </PropertyGroup>
 
         <Message Importance="High" Text="** Building NetStandard Bindings"/>
+
+        <!-- NETSTANDARD PHONY BINDINGS -->
         
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_NetStandard)"
                  Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
 
+        <!-- ANDROID BINDINGS -->
+        
         <Message Importance="High" Text="** Building Android Bindings"/>
         
         <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
@@ -243,6 +247,8 @@
         <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)"
                  Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;Skip_CompileMcuMgrLaerdalWrapper=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
 
+        <!-- IOS BINDINGS -->
+        
         <Message Importance="High" Text="** Building iOS Bindings"/>
         
         <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main          -->
@@ -260,6 +266,8 @@
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
                  Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" />
 
+        <!-- MACCATALYST BINDINGS -->
+        
         <Message Importance="High" Text="** Building MacCatalyst Bindings"/>
         
         <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main         -->
@@ -276,6 +284,8 @@
         <MSBuild Targets="Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
                  Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
                  Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+
+        <!-- MCUMGR CORE -->
         
         <!-- notice that we are actually rebuilding mcumgr   merely building the project doesnt really cut it -->
         <Message Importance="High" Text="** Building McuMgr Core"/>
@@ -283,6 +293,8 @@
                  Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr/;"
                  Targets="Restore;Rebuild"/>
 
+        <!-- MCUMGR CORE -force-dud FLAVOR -->
+        
         <!-- -force-dud build aiming just pure net8 without bindings   this is meant for desktop simulators of android and ios for ui testing purposes of apps -->
         <Message Importance="High" Text="** Building McuMgr Core as *-force-dud nuget"/>        
         <MSBuild Projects="$(Laerdal_McuMgr_ProjectFile)"
