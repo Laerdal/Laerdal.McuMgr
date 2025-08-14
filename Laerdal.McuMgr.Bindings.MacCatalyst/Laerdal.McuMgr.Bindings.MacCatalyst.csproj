@@ -39,6 +39,7 @@
 
         <NoWarn>$(NoWarn);CS0114;NETSDK1202</NoWarn>
 
+        <NativeLibsBuiltMarkerFile>../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/native_libs_built.maccatalyst.marker</NativeLibsBuiltMarkerFile>
         <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
@@ -123,7 +124,7 @@
         <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
     </ItemGroup>
 
-    <Target Name="PrintBuildInfo" BeforeTargets="PrepareForBuild">
+    <Target Name="PrintBuildInfo">
         <Message Importance="High" Text="OS:                     '$(OS)'                                                     "/>
         <Message Importance="High" Text="IsNet8:                 '$(IsNet8)'                                                 "/>
         <Message Importance="High" Text="IsNetX:                 '$(IsNetX)'                                                 "/>
@@ -160,15 +161,21 @@
     <!-- 1  its important to ensure that we only build the native libs once and only once otherwise we will get them build twice in parallel       -->
     <!--                                                                                                                                           -->
     <!-- 2  also note that we hook onto the PrepareForBuild task    if we target the task CoreCompile then this task will be invoked on localdev   -->
-    <!--    but on in the azure pipelines for some weird reason                                                                                    -->
+    <!--    but not on in the azure pipelines for some weird reason                                                                                -->
+    <!--                                                                                                                                           -->
+    <!-- 3  around q3 2025 some weird update in dotnet8 started causing 'PrepareForBuild' to be invoked 2 times thus causing us to rebuild the     -->
+    <!--    native libs multiple times   we fend this off by                                                                                       -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
-            Condition=" '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
+            Condition=" !Exists($(NativeLibsBuiltMarkerFile)) and '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
+
+        <!-- 0. its vital to create a marker-file instead of setting a property -->
+        <Exec Command=" bash -c &quot; touch '$(NativeLibsBuiltMarkerFile)' &quot; "/>
+
+        <CallTarget Targets="PrintBuildInfo" />
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
-        <Exec WorkingDirectory="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native" Command=" bash -c &quot; chmod +x ./Laerdal.Mac.CompileAndGenerateFatLibs.sh &quot; "/>
-
-        <PropertyGroup> <!-- @formatter:off -->
+        <PropertyGroup> <!-- @formatter:off -->            
             <_CliCommand>$(_CliCommand)                          XCODE_IDE_DEV_FOLDERPATH='$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath)'  </_CliCommand>
             <_CliCommand>$(_CliCommand)                                                                                                                 </_CliCommand>
             <_CliCommand>$(_CliCommand)                                 SWIFT_OUTPUT_PATH='$(NativeFrameworkParentFolderpath)'                          </_CliCommand>
@@ -217,8 +224,10 @@
     <!-- this is meant to be invoked by the builder script separately and before the main build kicks in -->
     <Target Name="EnsureFrameworkFolderIsCreated">
         <MakeDir Directories="$(NativeFrameworkActualTargetFolderpath)" Condition=" !Exists('$(NativeFrameworkActualTargetFolderpath)') "  />
+
+        <Delete Files="$(NativeLibsBuiltMarkerFile)" />
     </Target>
-    
+
     <Target Name="CreateKeepMeFileUnderFrameworkFolder" AfterTargets="CoreBuild">
         <!-- to future maintainers     we need to keep this dummy file around in order to ensure that the folder Frameworks/McuMgrBindingsiOS.framework -->
         <!-- to future maintainers     will always be automatically created upon git checkout in the azure pipelines  if we dont do this then the azure -->

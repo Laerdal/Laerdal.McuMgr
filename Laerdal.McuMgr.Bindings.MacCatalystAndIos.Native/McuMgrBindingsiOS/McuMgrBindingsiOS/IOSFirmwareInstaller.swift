@@ -26,7 +26,7 @@ public class IOSFirmwareInstaller: NSObject {
     }
 
     private let EstimatedSwapTimeoutInMillisecondsWarningMinThreshold : Int16 = 1_000;
-    
+
     @objc
     public func beginInstallation(
             _ imageData: Data,
@@ -96,27 +96,32 @@ public class IOSFirmwareInstaller: NSObject {
             return .failedInvalidSettings //no need to log here  the spawn method takes care of logging
         }
 
-        do {
-            setState(.idle)
-            try _manager.start(
-                    images: [
-                        ImageManager.Image( //2
-                                image: 0,
-                                slot: 1,
-                                hash: try McuMgrImage(data: imageData).hash,
-                                data: imageData
-                        )
-                    ],
-                    using: firmwareUpgradeConfiguration!
-            )
+        setState(.idle)
 
-        } catch let ex {
-            onError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
+        let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: {
+            do {
+                try _manager.start(
+                        images: [
+                            ImageManager.Image( //2
+                                    image: 0,
+                                    slot: 1,
+                                    hash: try McuMgrImage(data: imageData).hash,
+                                    data: imageData
+                            )
+                        ],
+                        using: firmwareUpgradeConfiguration!
+                )
 
-            return .failedDeploymentError
-        }
+                return .success
 
-        return .success
+            } catch let ex {
+                onError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
+
+                return .failedDeploymentError
+            }
+        })
+
+        return verdict
 
         //0 set the installation mode
         //
