@@ -36,6 +36,7 @@
 
         <NoWarn>$(NoWarn);CS0114;NETSDK1202;CA1008;</NoWarn>
 
+        <NativeLibsBuiltMarkerFile>../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/native_libs_built.ios.marker</NativeLibsBuiltMarkerFile>
         <NativeFrameworkParentFolderpath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), 'Frameworks'))</NativeFrameworkParentFolderpath>
         <NativeFrameworkActualTargetFolderpath>$(NativeFrameworkParentFolderpath)/McuMgrBindingsiOS.framework</NativeFrameworkActualTargetFolderpath>
 
@@ -171,10 +172,10 @@
     <!--    native libs multiple times   we fend this off by                                                                                       -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
-            Condition=" !Exists('../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/native_libs_built.marker') and '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
+            Condition=" !Exists($(NativeLibsBuiltMarkerFile)) and '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
 
         <!-- 0. its vital to create a marker-file instead of setting a property -->
-        <Exec Command=" bash -c &quot; touch '../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/native_libs_built.marker' &quot; "/>
+        <Exec Command=" bash -c &quot; touch '$(NativeLibsBuiltMarkerFile)' &quot; "/>
         
         <CallTarget Targets="PrintBuildInfo" />
 
@@ -231,7 +232,7 @@
     <Target Name="EnsureFrameworkFolderIsCreated">
         <MakeDir Directories="$(NativeFrameworkActualTargetFolderpath)" Condition=" !Exists('$(NativeFrameworkActualTargetFolderpath)') "  />
         
-        <Delete Files="../Laerdal.McuMgr.Bindings.MacCatalystAndIos.Native/native_libs_built.marker" />
+        <Delete Files="$(NativeLibsBuiltMarkerFile)" />
     </Target>
 
     <Target Name="CreateKeepMeFileUnderFrameworkFolder" AfterTargets="CoreBuild">
