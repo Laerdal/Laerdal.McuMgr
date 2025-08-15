@@ -443,7 +443,7 @@ public class AndroidFileDownloader
     }
 
     @Contract(pure = true)
-     public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps)
+    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
