@@ -36,19 +36,19 @@ declare -r XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY="${XCODEBUILD_TARGET_SDK}${
 declare -r SWIFT_OUTPUT_PATH="${SWIFT_OUTPUT_PATH:-./VendorFrameworks/swift-framework-proxy/}"
 
 declare -r SWIFT_PROJECT_NAME="McuMgrBindingsiOS" # order
-declare -r SWIFT_BUILD_FOLDERPATH="./${SWIFT_PROJECT_NAME}/build" # order
 declare -r SWIFT_PROJECT_FOLDERPATH="./McuMgrBindingsiOS/${SWIFT_PROJECT_NAME}.xcodeproj" # order
 declare -r SWIFT_PACKAGES_FOLDERPATH="./packages"
+declare -r SWIFT_BUILD_BASE_FOLDERPATH="./${SWIFT_PROJECT_NAME}/build"
 
-declare OUTPUT_FOLDER_POSTFIX=""
+declare EXPECTED_OUTPUT_FOLDER_POSTFIX=""
 if [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ]; then
-  OUTPUT_FOLDER_POSTFIX="-maccatalyst" # special case for mac catalyst
+  EXPECTED_OUTPUT_FOLDER_POSTFIX="-maccatalyst" # special case for mac catalyst
 else
-  OUTPUT_FOLDER_POSTFIX="-${XCODEBUILD_TARGET_SDK}"
+  EXPECTED_OUTPUT_FOLDER_POSTFIX="-${XCODEBUILD_TARGET_SDK}"
 fi
 
-declare OUTPUT_FOLDER_NAME="${SWIFT_BUILD_CONFIGURATION}${OUTPUT_FOLDER_POSTFIX}" #        Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version 
-declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  #    from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
+declare OUTPUT_FOLDER_NAME="${SWIFT_BUILD_CONFIGURATION}${EXPECTED_OUTPUT_FOLDER_POSTFIX}" #     Release-iphoneos or Release-maccatalyst       note that we intentionally *omitted* the sdk-version 
+declare OUTPUT_SHARPIE_HEADER_FILES_PATH="SharpieOutput/SwiftFrameworkProxy.Binding"  #          from the folder name contains the resulting files ApiDefinitions.cs and StructsAndEnums.cs  
 
 function print_setup() {
   echo "** xcode path    : '$( "xcode-select" --print-path  )'"
@@ -65,10 +65,10 @@ function print_setup() {
   echo
   echo "** SWIFT_PROJECT_NAME          : '${SWIFT_PROJECT_NAME}'          "
   echo "** SWIFT_BUILD_SCHEME_NAME     : '${SWIFT_BUILD_SCHEME_NAME}'     "
-  echo "** SWIFT_BUILD_FOLDERPATH      : '${SWIFT_BUILD_FOLDERPATH}'      "
   echo "** SWIFT_PROJECT_FOLDERPATH    : '${SWIFT_PROJECT_FOLDERPATH}'    "
   echo "** SWIFT_PACKAGES_FOLDERPATH   : '${SWIFT_PACKAGES_FOLDERPATH}'   "
   echo "** SWIFT_BUILD_CONFIGURATION   : '${SWIFT_BUILD_CONFIGURATION}'   "
+  echo "** SWIFT_BUILD_BASE_FOLDERPATH : '${SWIFT_BUILD_BASE_FOLDERPATH}' "
   echo
   echo "** OUTPUT_FOLDER_NAME                : '${OUTPUT_FOLDER_NAME}'                "
   echo "** OUTPUT_SHARPIE_HEADER_FILES_PATH  : '${OUTPUT_SHARPIE_HEADER_FILES_PATH}'  "
@@ -105,13 +105,13 @@ function build() {
 
   echo "**** (Build 1/3) Cleanup any possible traces of previous builds"
 
-  rm -Rf "${SWIFT_BUILD_FOLDERPATH}"
+  rm -Rf "${SWIFT_BUILD_BASE_FOLDERPATH}"
   rm -Rf "${SWIFT_PACKAGES_FOLDERPATH}"
   rm -Rf "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"
 
   xcodebuild  clean                                      \
-      -scheme          "${SWIFT_BUILD_SCHEME_NAME}"      \
-      -project         "${SWIFT_PROJECT_FOLDERPATH}"     \
+             -scheme   "${SWIFT_BUILD_SCHEME_NAME}"      \
+            -project   "${SWIFT_PROJECT_FOLDERPATH}"     \
       -configuration   "${SWIFT_BUILD_CONFIGURATION}"
 
   echo "**** (Build 2/3) Restore packages for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # @formatter:off
@@ -135,6 +135,7 @@ function build() {
               CODE_SIGNING_ALLOWED="NO"                                                        \
               SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST}"                        \
              CODE_SIGNING_REQUIRED="NO"                                                        \
+           EFFECTIVE_PLATFORM_NAME="${EXPECTED_OUTPUT_FOLDER_POSTFIX}"                         \
           MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
         IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
   local exitCode=$?
@@ -158,13 +159,14 @@ function build() {
                            -scheme "${SWIFT_BUILD_SCHEME_NAME}"                                \
                           -project "${SWIFT_PROJECT_FOLDERPATH}"                               \
                     -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
-                  -derivedDataPath "${SWIFT_BUILD_FOLDERPATH}"                                 \
+                  -derivedDataPath "${SWIFT_BUILD_BASE_FOLDERPATH}"                            \
       -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_FOLDERPATH}"                              \
                       PRODUCT_NAME=${SWIFT_PROJECT_NAME}                                       \
                 CODE_SIGN_IDENTITY=""                                                          \
               CODE_SIGNING_ALLOWED="NO"                                                        \
               SUPPORTS_MACCATALYST="${XCODEBUILD_SUPPORTS_MACCATALYST}"                        \
              CODE_SIGNING_REQUIRED="NO"                                                        \
+           EFFECTIVE_PLATFORM_NAME="${EXPECTED_OUTPUT_FOLDER_POSTFIX}"                         \
           MACOSX_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}"       \
         IPHONEOS_DEPLOYMENT_TARGET="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION}" # @formatter:on
   local exitCode=$?
@@ -179,10 +181,10 @@ function create_fat_binaries() {
   echo "** Create fat binaries for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}-${SWIFT_BUILD_CONFIGURATION}'"
 
   echo "**** (FatBinaries 1/8) Copy '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}' build as a fat framework" # @formatter:off
-  cp                                                                  \
-    -R                                                                \
-    "${SWIFT_BUILD_FOLDERPATH}/Build/Products/${OUTPUT_FOLDER_NAME}"  \
-    "${SWIFT_BUILD_FOLDERPATH}/fat" # @formatter:on
+  cp                                                                       \
+    -R                                                                     \
+    "${SWIFT_BUILD_BASE_FOLDERPATH}/Build/Products/${OUTPUT_FOLDER_NAME}"  \
+    "${SWIFT_BUILD_BASE_FOLDERPATH}/fat" # @formatter:on
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
@@ -191,16 +193,16 @@ function create_fat_binaries() {
   fi
 
   echo "**** LISTING 'PRODUCTS' FILES"
-  ls -lR "${SWIFT_BUILD_FOLDERPATH}/Build/Products/"
+  ls -lR "${SWIFT_BUILD_BASE_FOLDERPATH}/Build/Products/"
 
   echo "**** LISTING LIPO INPUT FILES"
-  ls -lR "${SWIFT_BUILD_FOLDERPATH}/Build/Products/${OUTPUT_FOLDER_NAME}/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"
+  ls -lR "${SWIFT_BUILD_BASE_FOLDERPATH}/Build/Products/${OUTPUT_FOLDER_NAME}/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"
 
   echo "**** (FatBinaries 2/8) Turn artifacts in '${OUTPUT_FOLDER_NAME}' into fat libraries" # @formatter:off
   lipo                                                                                                                          \
           -create                                                                                                               \
-          -output "${SWIFT_BUILD_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"                         \
-          "${SWIFT_BUILD_FOLDERPATH}/Build/Products/${OUTPUT_FOLDER_NAME}/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}" # @formatter:on
+          -output "${SWIFT_BUILD_BASE_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"                         \
+          "${SWIFT_BUILD_BASE_FOLDERPATH}/Build/Products/${OUTPUT_FOLDER_NAME}/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}" # @formatter:on
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
@@ -209,11 +211,11 @@ function create_fat_binaries() {
   fi
 
   echo "**** LISTING LIPO OUTPUT FILES"
-  ls -lR "${SWIFT_BUILD_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"
+  ls -lR "${SWIFT_BUILD_BASE_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"
 
   echo "**** (FatBinaries 3/8) Verify results"
   
-  lipo -info "${SWIFT_BUILD_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"
+  lipo -info "${SWIFT_BUILD_BASE_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework/${SWIFT_PROJECT_NAME}"
   local exitCode=$?
 
   if [ ${exitCode} -ne 0 ]; then
@@ -222,10 +224,10 @@ function create_fat_binaries() {
   fi
 
   echo "**** (FatBinaries 4/8) Copy fat frameworks to the output folder" # @formatter:off
-  rm    -Rf "${SWIFT_OUTPUT_PATH}"         &&                         \
-  mkdir -p "${SWIFT_OUTPUT_PATH}"          &&                         \
-  cp    -Rf                                                           \
-      "${SWIFT_BUILD_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework" \
+  rm    -Rf "${SWIFT_OUTPUT_PATH}"         &&                              \
+  mkdir -p "${SWIFT_OUTPUT_PATH}"          &&                              \
+  cp    -Rf                                                                \
+      "${SWIFT_BUILD_BASE_FOLDERPATH}/fat/${SWIFT_PROJECT_NAME}.framework" \
       "${SWIFT_OUTPUT_PATH}" # @formatter:on
   local exitCode=$?
 
