@@ -130,6 +130,10 @@
         <PackageReference Condition=" '$(IsXamarinIos)' == 'true' " Include="Xamarin.iOS.SwiftRuntimeSupport" Version="0.2.1"/>
     </ItemGroup>
 
+    <Target Name="SpicNSpan" AfterTargets="Clean">
+        <Delete Files="$(NativeLibsBuiltMarkerFile)" Condition="Exists('$(NativeLibsBuiltMarkerFile)')"/>
+    </Target>
+
     <Target Name="PrintBuildInfo">
         <Message Importance="High" Text="OS:                     '$(OS)'                                                     "/>
         <Message Importance="High" Text="IsNet8:                 '$(IsNet8)'                                                 "/>
@@ -149,8 +153,6 @@
 
         <Message Importance="high" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)'       "/>
         <Message Importance="high" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
-        <Message Importance="High" Text="NativeFrameworkParentFolderpath:         '$(NativeFrameworkParentFolderpath)'       "/>
-        <Message Importance="High" Text="NativeFrameworkActualTargetFolderpath:   '$(NativeFrameworkActualTargetFolderpath)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
@@ -168,15 +170,12 @@
     <!-- 2  also note that we hook onto the PrepareForBuild task    if we target the task CoreCompile then this task will be invoked on localdev   -->
     <!--    but not on in the azure pipelines for some weird reason                                                                                -->
     <!--                                                                                                                                           -->
-    <!-- 3  around q3 2025 some weird update in dotnet8 started causing 'PrepareForBuild' to be invoked 2 times thus causing us to rebuild the     -->
+    <!-- 3  around q1 2025 some weird update in dotnet8 started causing 'PrepareForBuild' to be invoked 2 times thus causing us to rebuild the     -->
     <!--    native libs multiple times   we fend this off by                                                                                       -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
-            Condition=" !Exists($(NativeLibsBuiltMarkerFile)) and '$(ShouldBuildNativeLibraries)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
+            Condition=" !Exists($(NativeLibsBuiltMarkerFile)) and '$(ShouldBuildNativeLibraries)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
 
-        <!-- 0. its vital to create a marker-file instead of setting a property -->
-        <Exec Command=" bash -c &quot; touch '$(NativeLibsBuiltMarkerFile)' &quot; "/>
-        
         <CallTarget Targets="PrintBuildInfo" />
 
         <!-- 1. build and generate the fat libs from the proxy swift project -->
@@ -226,13 +225,14 @@
                 SourceFiles="@(SharpieGeneratedFiles)"
                 DestinationFolder="$(SharpieTargetFolder)"
         />
+
+        <!-- its vital to create a marker-file instead of setting a property -->
+        <Touch Files="$(NativeLibsBuiltMarkerFile)" AlwaysCreate="true"/>
     </Target>
 
     <!-- this is meant to be invoked by the builder script separately and before the main build kicks in -->
     <Target Name="EnsureFrameworkFolderIsCreated">
         <MakeDir Directories="$(NativeFrameworkActualTargetFolderpath)" Condition=" !Exists('$(NativeFrameworkActualTargetFolderpath)') "  />
-        
-        <Delete Files="$(NativeLibsBuiltMarkerFile)" />
     </Target>
 
     <Target Name="CreateKeepMeFileUnderFrameworkFolder" AfterTargets="CoreBuild">

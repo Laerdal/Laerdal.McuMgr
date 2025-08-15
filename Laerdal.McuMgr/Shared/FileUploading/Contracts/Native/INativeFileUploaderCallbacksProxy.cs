@@ -16,6 +16,6 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath);
         void FatalErrorOccurredAdvertisement(string resourceId, string remoteFilePath, string errorMessage, EGlobalErrorCode globalErrorCode);
         void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath);
-        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps);
+        void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps);
     }
 }

@@ -586,11 +586,11 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => FirmwareInstaller?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(state, fatalErrorType, errorMessage, globalErrorCode));
 
-            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
                 => FirmwareInstaller?.OnFirmwareUploadProgressPercentageAndDataThroughputChanged(new FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs(
                     progressPercentage: progressPercentage,
-                    currentThroughputInKbps: currentThroughputInKbps,
-                    totalAverageThroughputInKbps: totalAverageThroughputInKbps
+                    currentThroughputInKBps: currentThroughputInKBps,
+                    totalAverageThroughputInKBps: totalAverageThroughputInKBps
                 ));
         }
     }

@@ -257,21 +257,21 @@ namespace Laerdal.McuMgr.FileUploading
                 globalErrorCode
             );
 
-            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public override void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, nint progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
                 => FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
                     progressPercentage: (int)progressPercentage,
-                    currentThroughputInKbps: currentThroughputInKbps,
-                    totalAverageThroughputInKbps: totalAverageThroughputInKbps
+                    currentThroughputInKBps: currentThroughputInKBps,
+                    totalAverageThroughputInKBps: totalAverageThroughputInKBps
                 );
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps) //conformance to the interface
                 => _nativeFileUploaderCallbacksProxy?.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
                     progressPercentage: progressPercentage,
-                    currentThroughputInKbps: currentThroughputInKbps,
-                    totalAverageThroughputInKbps: totalAverageThroughputInKbps
+                    currentThroughputInKBps: currentThroughputInKBps,
+                    totalAverageThroughputInKBps: totalAverageThroughputInKBps
                 );
             
             #endregion

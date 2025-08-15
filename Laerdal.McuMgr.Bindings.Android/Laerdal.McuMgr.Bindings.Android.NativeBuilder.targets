@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <Project>
+    
+    <PropertyGroup>
+        <NativeLibsBuiltMarkerFile>../Laerdal.McuMgr.Bindings.Android.Native/native_libs_built.android.marker</NativeLibsBuiltMarkerFile>
+    </PropertyGroup>
 
     <Target Name="SpicNSpan" AfterTargets="Clean">
         <!-- when performing a cleanup its vital to also clean any and all pre-existing .jar and .aar artifacts -->
@@ -9,6 +13,8 @@
         
         <MakeDir Directories="Libraries" />
         <MakeDir Directories="Libraries/Dependencies" />
+
+        <Delete Files="$(NativeLibsBuiltMarkerFile)" Condition="Exists('$(NativeLibsBuiltMarkerFile)')"/>
     </Target>
     
     <Target Name="CheckAndroidLibraryFilesExist"
@@ -20,7 +26,8 @@
     <Target Name="CompileMcuMgrLaerdalWrapper"
             AfterTargets="TackleJarDependencies"
             BeforeTargets="PrepareForBuild"
-            Condition=" '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
+            Condition=" !Exists($(NativeLibsBuiltMarkerFile)) and '$(ShouldBuildNativeLibraries)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' ">
+
         <!-- on windows we need to make sure that the org.gradle.java.home property is set properly to java17 otherwise the build will fail -->
         <PropertyGroup>
 			<!-- in azure we specify the gradlepath explicitly because by default macos13 uses gradle8.6          -->
@@ -109,12 +116,15 @@
         <Exec WorkingDirectory="$(McuMgrLaerdalWrapperLibSourceDirectory)" Command="  bash  -c  ' JAVA_HOME=&quot;$(JavaHome)&quot; ; ./gradlew    wrapper    clean   assembleRelease  --console plain   --warning-mode all ' "/>
 
         <Copy SourceFiles="$(McuMgrLaerdalWrapperAarFilePath)" DestinationFiles="$(CoreAarLibrary)"/>
+
+        <!-- its vital to create a marker-file instead of setting a property -->
+        <Touch Files="$(NativeLibsBuiltMarkerFile)" AlwaysCreate="true"/>
     </Target>
 
     <!-- android    download the jar and aar dependencies from maven -->
     <Target Name="TackleJarDependencies"
             BeforeTargets="CompileMcuMgrLaerdalWrapper;PrepareForBuild"
-            Condition=" '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
+            Condition=" !Exists($(NativeLibsBuiltMarkerFile)) and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true' and '$(Skip_CompileMcuMgrLaerdalWrapper)' != 'true' ">
         <!-- 1. jars go here - notice the :jar postfix    to pick the right versions have a look at the folder Laerdal.McuMgr.Bindings.Android.Native/lib which contains all .jar files listed below -->
 
         <!-- we dont really need these anymore   they cause problems with duplicate symbols -->

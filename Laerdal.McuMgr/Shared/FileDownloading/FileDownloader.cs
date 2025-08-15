@@ -552,12 +552,12 @@ namespace Laerdal.McuMgr.FileDownloading
             public void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resourceId, errorMessage, globalErrorCode));
 
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
                     resourceId: resourceId,
                     progressPercentage: progressPercentage,
-                    currentThroughputInKbps: currentThroughputInKbps,
-                    totalAverageThroughputInKbps: totalAverageThroughputInKbps
+                    currentThroughputInKBps: currentThroughputInKBps,
+                    totalAverageThroughputInKBps: totalAverageThroughputInKBps
                 ));
         }
     }

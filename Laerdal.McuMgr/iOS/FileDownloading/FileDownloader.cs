@@ -210,10 +210,10 @@ namespace Laerdal.McuMgr.FileDownloading
             public void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => _nativeFileDownloaderCallbacksProxy?.FatalErrorOccurredAdvertisement(resourceId, errorMessage, globalErrorCode);
 
-            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, nint progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
-                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId: resourceId, progressPercentage: (int)progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId: resourceId, progressPercentage: progressPercentage, currentThroughputInKbps: currentThroughputInKbps, totalAverageThroughputInKbps: totalAverageThroughputInKbps);
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, nint progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
+                => FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId: resourceId, progressPercentage: (int)progressPercentage, currentThroughputInKBps: currentThroughputInKBps, totalAverageThroughputInKBps: totalAverageThroughputInKBps);
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId: resourceId, progressPercentage: progressPercentage, currentThroughputInKBps: currentThroughputInKBps, totalAverageThroughputInKBps: totalAverageThroughputInKBps);
             
             #endregion
 

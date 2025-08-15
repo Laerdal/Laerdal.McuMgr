@@ -84,8 +84,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 EGlobalErrorCode globalErrorCode
             ) => _uploaderCallbacksProxy.FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, errorMessage, globalErrorCode); //raises the actual event
             
-            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
-                => _uploaderCallbacksProxy.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
+            public void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
+                => _uploaderCallbacksProxy.FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, progressPercentage, currentThroughputInKBps, totalAverageThroughputInKBps); //raises the actual event
             
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();

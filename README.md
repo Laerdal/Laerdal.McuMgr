@@ -523,7 +523,7 @@ private void CleanupDeviceResetter()
         MassFileUploaderStage = "";
         MassFileUploadProgressPercentage = 0;
         MassFileUploadCurrentlyUploadedFile = "";
-        MassFileUploadCurrentThroughputInKilobytes = 0;
+        MassFileUploadCurrentThroughputInKBps = 0;
         MassFileUploaderNumberOfFilesUploadedSuccessfully = 0;
         MassFileUploaderNumberOfFailuresToUploadCurrentFile = 0;
     }
@@ -570,7 +570,7 @@ private void CleanupDeviceResetter()
     private void CleanupFileUploader()
     {
         MassFileUploadProgressPercentage = 0;
-        MassFileUploadCurrentThroughputInKilobytes = 0;
+        MassFileUploadCurrentThroughputInKBps = 0;
 
         _massFileUploader?.Disconnect();
         _massFileUploader = null;
@@ -605,7 +605,7 @@ private void CleanupDeviceResetter()
     {
         MassFileUploadProgressPercentage = ea.ProgressPercentage;
         MassFileUploadCurrentlyUploadedFile = Path.GetFileName(ea.RemoteFilePath);
-        MassFileUploadCurrentThroughputInKilobytes = ea.CurrentThroughput;
+        MassFileUploadCurrentThroughputInKBps = ea.CurrentThroughputInKBps;
     }
 ```
 
