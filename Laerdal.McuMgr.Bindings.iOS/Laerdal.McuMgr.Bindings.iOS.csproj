@@ -170,7 +170,7 @@
     <!-- 2  also note that we hook onto the PrepareForBuild task    if we target the task CoreCompile then this task will be invoked on localdev   -->
     <!--    but not on in the azure pipelines for some weird reason                                                                                -->
     <!--                                                                                                                                           -->
-    <!-- 3  around q3 2025 some weird update in dotnet8 started causing 'PrepareForBuild' to be invoked 2 times thus causing us to rebuild the     -->
+    <!-- 3  around q1 2025 some weird update in dotnet8 started causing 'PrepareForBuild' to be invoked 2 times thus causing us to rebuild the     -->
     <!--    native libs multiple times   we fend this off by                                                                                       -->
     <Target Name="CompileProxyProjectAndGenerateFatLibs"
             BeforeTargets="PrepareForBuild"
