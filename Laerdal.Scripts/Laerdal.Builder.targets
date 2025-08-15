@@ -241,11 +241,10 @@
         <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
         <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
         <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Clean"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters)" Targets="Restore"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" Targets="CompileMcuMgrLaerdalWrapper"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)"
-                 Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;Skip_CompileMcuMgrLaerdalWrapper=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" Targets="Build"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Clean" Properties="$(_Laerdal_Build_Parameters)" />
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Restore" Properties="$(_Laerdal_Build_Parameters)" />
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="CompileMcuMgrLaerdalWrapper" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" />
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Build" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;Skip_CompileMcuMgrLaerdalWrapper=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" />
 
         <!-- IOS BINDINGS -->
         
