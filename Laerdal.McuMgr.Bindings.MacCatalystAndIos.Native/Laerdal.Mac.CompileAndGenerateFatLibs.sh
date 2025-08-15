@@ -109,6 +109,11 @@ function build() {
   rm -Rf "${SWIFT_PACKAGES_FOLDERPATH}"
   rm -Rf "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"
 
+  xcodebuild  clean                                      \
+      -scheme          "${SWIFT_BUILD_SCHEME_NAME}"      \
+      -project         "${SWIFT_PROJECT_FOLDERPATH}"     \
+      -configuration   "${SWIFT_BUILD_CONFIGURATION}"
+
   echo "**** (Build 2/3) Restore packages for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # @formatter:off
 
   # starting from xcode 16+ xcodebuild doesnt allow using -target along with -scheme    in fact -scheme is the
