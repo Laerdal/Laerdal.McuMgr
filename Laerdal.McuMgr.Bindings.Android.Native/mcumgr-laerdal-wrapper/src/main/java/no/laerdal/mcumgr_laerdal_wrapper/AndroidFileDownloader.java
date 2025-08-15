@@ -443,7 +443,7 @@ public class AndroidFileDownloader
     }
 
     @Contract(pure = true)
-    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
+     public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -481,19 +481,19 @@ public class AndroidFileDownloader
             setBusyState(true);
 
             int fileDownloadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
-            float currentThroughputInKbps = calculateCurrentThroughputInKbps(totalBytesSentSoFar, timestampInMs);
-            float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(totalBytesSentSoFar, timestampInMs);
+            float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
+            float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 
             fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
                     _remoteFilePathSanitized,
                     fileDownloadProgressPercentage,
-                    currentThroughputInKbps,
-                    totalAverageThroughputInKbps
+                    currentThroughputInKBps,
+                    totalAverageThroughputInKBps
             );
         }
 
         @SuppressWarnings("DuplicatedCode")
-        private float calculateCurrentThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+        private float calculateCurrentThroughputInKBps(final int totalBytesSentSoFar, final long timestampInMs) {
             if (_lastBytesSentTimestampInMs == 0) {
                 _lastBytesSent = totalBytesSentSoFar;
                 _lastBytesSentTimestampInMs = timestampInMs;
@@ -507,16 +507,16 @@ public class AndroidFileDownloader
                 return 0;
             }
 
-            float currentThroughputInKbps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
+            float currentThroughputInKBps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
 
             _lastBytesSent = totalBytesSentSoFar; //order
             _lastBytesSentTimestampInMs = timestampInMs; //order
 
-            return currentThroughputInKbps;
+            return currentThroughputInKBps;
         }
 
         @SuppressWarnings("DuplicatedCode")
-        private float calculateTotalAverageThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+        private float calculateTotalAverageThroughputInKBps(final int totalBytesSentSoFar, final long timestampInMs) {
             if (_downloadStartTimestampInMs == 0) {
                 _downloadStartTimestampInMs = timestampInMs;
                 return 0;

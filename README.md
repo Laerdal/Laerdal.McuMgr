@@ -605,7 +605,7 @@ private void CleanupDeviceResetter()
     {
         MassFileUploadProgressPercentage = ea.ProgressPercentage;
         MassFileUploadCurrentlyUploadedFile = Path.GetFileName(ea.RemoteFilePath);
-        MassFileUploadCurrentThroughputInKBps = ea.CurrentThroughput;
+        MassFileUploadCurrentThroughputInKBps = ea.CurrentThroughputInKBps;
     }
 ```
 

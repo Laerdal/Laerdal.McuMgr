@@ -231,6 +231,7 @@ public class AndroidFirmwareInstaller
             return;
         }
 
+        //noinspection CatchMayIgnoreException
         try
         {
             _transport.release();
@@ -331,7 +332,7 @@ public class AndroidFirmwareInstaller
     }
 
     @Contract(pure = true)
-    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKbps, final float totalAverageThroughputInKbps)
+    public void firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -358,8 +359,6 @@ public class AndroidFirmwareInstaller
         setBusyState(true);
         setState(EAndroidFirmwareInstallationState.UPLOADING);
 
-        // Timber.i("Upload resumed");
-        _totalBytesSentSoFar = NOT_STARTED;
         setLoggingEnabled(false);
         _manager.resume();
     }
@@ -540,16 +539,12 @@ public class AndroidFirmwareInstaller
                 return;
 
             final long timestamp = SystemClock.uptimeMillis();
-            final int progressPercentage = (int) (_lastBytesSent * 100.f /* % */ / _imageSize); //0
-            if (_lastProgress != progressPercentage)
-            {
-                _lastProgress = progressPercentage;
 
-                float currentThroughputInKbps = calculateCurrentThroughputInKbps(_lastBytesSent, timestamp);
-                float totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(_totalBytesSentSoFar, timestamp);
+            _lastProgress = (int) (_totalBytesSentSoFar * 100.f /* % */ / _imageSize); //0
+            float currentThroughputInKBps = calculateCurrentThroughputInKBps(_totalBytesSentSoFar, timestamp);
+            float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(_totalBytesSentSoFar, timestamp);
 
-                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps);
-            }
+            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(_lastProgress, currentThroughputInKBps, totalAverageThroughputInKBps);
 
             if (_manager.getState() == FirmwareUpgradeManager.State.UPLOAD && !_manager.isPaused())
             {
@@ -560,7 +555,7 @@ public class AndroidFirmwareInstaller
         }
 
         @SuppressWarnings("DuplicatedCode")
-        private float calculateCurrentThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
+        private float calculateCurrentThroughputInKBps(final int totalBytesSentSoFar, final long timestampInMs) {
             if (_lastBytesSentTimestampInMs == 0) {
                 _lastBytesSent = totalBytesSentSoFar;
                 _lastBytesSentTimestampInMs = timestampInMs;
@@ -574,18 +569,18 @@ public class AndroidFirmwareInstaller
                 return 0;
             }
 
-            float currentThroughputInKbps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
+            float currentThroughputInKBps = ((float) (totalBytesSentSoFar - _lastBytesSent)) / (intervalInSeconds * 1_024); //order
 
             _lastBytesSent = totalBytesSentSoFar; //order
             _lastBytesSentTimestampInMs = timestampInMs; //order
 
-            return currentThroughputInKbps;
+            return currentThroughputInKBps;
         }
 
         @SuppressWarnings("DuplicatedCode")
-        private float calculateTotalAverageThroughputInKbps(final int totalBytesSentSoFar, final long timestampInMs) {
-            if (_uploadStartTimestampInMs == 0) { //           in the particular mechanism of the firmware-installer the
-                _uploadStartTimestampInMs = timestampInMs; //  start-timestamp is probably already set but just in case
+        private float calculateTotalAverageThroughputInKBps(final int totalBytesSentSoFar, final long timestampInMs) {
+            if (_uploadStartTimestampInMs == 0) {
+                _uploadStartTimestampInMs = timestampInMs;
                 return 0;
             }
 
