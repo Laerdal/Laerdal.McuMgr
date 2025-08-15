@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Events
 
         public FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
         {
-            ArgumentOutOfRangeException.ThrowIfNegative(currentThroughputInKBps, nameof(totalAverageThroughputInKBps));
+            ArgumentOutOfRangeException.ThrowIfNegative(currentThroughputInKBps, nameof(currentThroughputInKBps));
             ArgumentOutOfRangeException.ThrowIfNegative(totalAverageThroughputInKBps, nameof(totalAverageThroughputInKBps));
             
             ResourceId = resourceId ?? throw new ArgumentNullException(nameof(resourceId));
