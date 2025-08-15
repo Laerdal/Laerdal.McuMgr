@@ -69,8 +69,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data)
                 => _downloaderCallbacksProxy.FileDownloadCompletedAdvertisement(resourceId, data);
 
-            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
-                => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //raises the actual event
+            public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
+                => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKBps, totalAverageThroughputInKBps); //raises the actual event
             
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();

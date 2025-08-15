@@ -239,15 +239,15 @@ namespace Laerdal.McuMgr.FileDownloading
                     newState: newState);
             }
 
-            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKbps, float totalAverageThroughputInKbps)
+            public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
             {
-                base.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps); //just in case
+                base.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKBps, totalAverageThroughputInKBps); //just in case
 
                 _fileDownloaderCallbacksProxy?.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
                     resourceId: resourceId,
                     progressPercentage: progressPercentage,
-                    currentThroughputInKbps: currentThroughputInKbps,
-                    totalAverageThroughputInKbps: totalAverageThroughputInKbps
+                    currentThroughputInKBps: currentThroughputInKBps,
+                    totalAverageThroughputInKBps: totalAverageThroughputInKBps
                 );
             }
             

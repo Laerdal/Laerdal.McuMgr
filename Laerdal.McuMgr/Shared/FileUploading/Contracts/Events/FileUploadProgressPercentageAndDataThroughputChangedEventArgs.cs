@@ -13,15 +13,15 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Events
         public readonly string RemoteFilePath;
         
         public readonly int ProgressPercentage;
-        public readonly float CurrentThroughputInKbps; //kbs / sec
-        public readonly float TotalAverageThroughputInKbps; //kbs / sec
+        public readonly float CurrentThroughputInKBps; //kbs / sec
+        public readonly float TotalAverageThroughputInKBps; //kbs / sec
 
         public FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
             string resourceId,
             string remoteFilePath,
             int progressPercentage,
-            float currentThroughputInKbps,
-            float totalAverageThroughputInKbps
+            float currentThroughputInKBps,
+            float totalAverageThroughputInKBps
         )
         {
             // ArgumentOutOfRangeException.ThrowIfLessThan(0, progressPercentage, nameof(progressPercentage)); //nah  would just add overhead
@@ -32,15 +32,15 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Events
             
             ProgressPercentage = progressPercentage;
             
-            CurrentThroughputInKbps = (float)Math.Round( //14.1999 -> 14.2
+            CurrentThroughputInKBps = (float)Math.Round( //14.1999 -> 14.2
                 mode: MidpointRounding.AwayFromZero,
-                value: currentThroughputInKbps,
+                value: currentThroughputInKBps,
                 digits: 1
             );
 
-            TotalAverageThroughputInKbps = (float) Math.Round( //14.1999 -> 14.2
+            TotalAverageThroughputInKBps = (float) Math.Round( //14.1999 -> 14.2
                 mode: MidpointRounding.AwayFromZero,
-                value: totalAverageThroughputInKbps,
+                value: totalAverageThroughputInKBps,
                 digits: 1
             );
         }

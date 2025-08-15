@@ -669,14 +669,14 @@ namespace Laerdal.McuMgr.FileUploading
                 string resourceId,
                 string remoteFilePath,
                 int progressPercentage,
-                float currentThroughputInKbps,
-                float totalAverageThroughputInKbps
+                float currentThroughputInKBps,
+                float totalAverageThroughputInKBps
             ) => FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new FileUploadProgressPercentageAndDataThroughputChangedEventArgs(
                 resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
                 progressPercentage: progressPercentage,
-                currentThroughputInKbps: currentThroughputInKbps,
-                totalAverageThroughputInKbps: totalAverageThroughputInKbps
+                currentThroughputInKBps: currentThroughputInKBps,
+                totalAverageThroughputInKBps: totalAverageThroughputInKBps
             ));
         }
     }
