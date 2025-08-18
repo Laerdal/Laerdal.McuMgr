@@ -28,7 +28,7 @@ if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] ; then #  ios
 
 elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] ; then # maccatalyst
 
-  XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="" #        no need to specify the minimum supported ios version for mac-catalyst builds (we suspect it causes xcodebuild to go haywire)
+  XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}" # believe it or not in mac-catalyst builds the min-supported version is specified using XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION
   if [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ] ; then
     XCODEBUILD_TARGET_SDK_VERSION="15.2" #             requires xcode 16.2
   fi
