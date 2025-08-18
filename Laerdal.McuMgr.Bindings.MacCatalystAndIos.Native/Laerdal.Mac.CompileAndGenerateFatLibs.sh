@@ -19,13 +19,23 @@ declare SWIFT_BUILD_SCHEME_NAME="${SWIFT_BUILD_SCHEME_NAME:-DefaultScheme}" # th
 declare XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION:-14.5}" # the minimum supported iOS version for the McuMgrBindingsiOS framework
 declare XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION:-14.6}" # the minimum supported MacCatalyst version for the McuMgrBindingsiOS framework
 
-if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
-  XCODEBUILD_TARGET_SDK_VERSION="18.2" #                requires xcode 16.2
-  XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="" # no need to specify the minimum supported mac catalyst version for ios builds (we suspect it causes xcodebuild to go haywire)
+if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] ; then #  ios
 
-elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # maccatalyst
-  XCODEBUILD_TARGET_SDK_VERSION="15.2" #        requires xcode 16.2
-  XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="" # no need to specify the minimum supported ios version for mac-catalyst builds (we suspect it causes xcodebuild to go haywire)
+  XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="" #   no need to specify the minimum supported mac catalyst version for ios builds (we suspect it causes xcodebuild to go haywire)
+  if [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ] ; then
+    XCODEBUILD_TARGET_SDK_VERSION="18.2" #                requires xcode 16.2
+  fi
+
+elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] ; then # maccatalyst
+
+  XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="" #        no need to specify the minimum supported ios version for mac-catalyst builds (we suspect it causes xcodebuild to go haywire)
+  if [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ] ; then
+    XCODEBUILD_TARGET_SDK_VERSION="15.2" #             requires xcode 16.2
+  fi
+
+else
+  echo "** [FAILED] Unsupported XCODEBUILD_TARGET_SDK '${XCODEBUILD_TARGET_SDK}' specified - only 'iphoneos' and 'macosx' are supported"
+  exit 1
 fi
 
 declare -r SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
