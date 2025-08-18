@@ -283,10 +283,13 @@ namespace Laerdal.McuMgr.FileUploading
                         sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
 
                         autodisposeStream: autodisposeStreams,
-                        initialMtuSize: pipelineDepth,
-                        pipelineDepth: byteAlignment,
-                        byteAlignment: initialMtuSize,
-                        windowCapacity: windowCapacity, memoryAlignment: memoryAlignment);
+                        
+                        initialMtuSize: initialMtuSize, //    both ios and android
+                        pipelineDepth: pipelineDepth, //      ios only
+                        byteAlignment: byteAlignment, //      ios only
+                        windowCapacity: windowCapacity, //    android only
+                        memoryAlignment: memoryAlignment //   android only
+                    );
 
                     if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex) //we skip sleeping after the last upload
                     {

@@ -95,14 +95,29 @@ public class IOSFileDownloader: NSObject {
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         setState(.idle) //order
-        let success = _fileSystemManager.download(name: _remoteFilePathSanitized, delegate: self) //order
-        if !success {
-            onError("[IOSFD.BD.050] Failed to commence file-Downloading (check logs for details)")
 
-            return .failedErrorUponCommencing
-        }
+        let verdict: EIOSFileDownloadingInitializationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                let success = _fileSystemManager?.download(name: _remoteFilePathSanitized, delegate: self) ?? false //order
+                if !success {
+                    onError("[IOSFD.BD.050] Failed to commence file-downloading (check logs for details)")
 
-        return .success
+                    return .failedErrorUponCommencing
+                }
+
+                return .success
+
+            } catch let ex {
+                onError("[IOSFD.BD.060] Failed to commence file-downloading", ex)
+
+                return .failedErrorUponCommencing
+            }
+        })
+
+        return verdict
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
     }
 
     @objc
@@ -112,25 +127,76 @@ public class IOSFileDownloader: NSObject {
 
     @objc
     public func pause() {
-        _fileSystemManager?.pauseTransfer()
+        if (_fileSystemManager == nil) {
+            return
+        }
 
-        setState(.paused)
-        setBusyState(false)
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                if (_fileSystemManager == nil) {
+                    return
+                }
+
+                _fileSystemManager?.pauseTransfer()
+                
+                setState(.paused)
+                setBusyState(false)
+            } catch let ex {
+                onError("[IOSFD.PAUSE.050] Failed to pause file-downloading", ex)
+            }
+        })
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
     }
 
     @objc
     public func resume() {
-        _fileSystemManager?.continueTransfer()
+        if (_fileSystemManager == nil) {
+            return
+        }
 
-        setState(.downloading)
-        setBusyState(true)
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                if (_fileSystemManager == nil) {
+                    return
+                }
+
+                _fileSystemManager?.continueTransfer()
+
+                setState(.downloading)
+                setBusyState(true)
+            } catch let ex {
+                onError("[IOSFD.RESUME.050] Failed to resume file-downloading", ex)
+            }
+        })
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
     }
 
     @objc
     public func cancel() {
-        setState(.cancelling) //order
+        if (_fileSystemManager == nil) {
+            return
+        }
 
-        _fileSystemManager?.cancelTransfer() //order
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                if (_fileSystemManager == nil) {
+                    return
+                }
+
+                _fileSystemManager?.cancelTransfer() //order
+
+                setState(.cancelling) //order
+            } catch let ex {
+                onError("[IOSFD.CANCEL.050] Failed to cancel file-downloading", ex)
+            }
+        })
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
     }
 
     @objc

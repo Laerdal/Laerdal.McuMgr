@@ -64,7 +64,7 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ⚡ FW Installation Performance: File-Uploading Stage
 
-Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0) with a 495 byte MTU size and a 4 pipeline depth.
+Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0):
 
 | Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
 |------------------|----------------|-----------------------|--------------------------|-------------------------|

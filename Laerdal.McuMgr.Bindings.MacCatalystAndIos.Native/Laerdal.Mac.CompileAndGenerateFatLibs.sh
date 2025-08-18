@@ -19,13 +19,23 @@ declare SWIFT_BUILD_SCHEME_NAME="${SWIFT_BUILD_SCHEME_NAME:-DefaultScheme}" # th
 declare XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION:-14.5}" # the minimum supported iOS version for the McuMgrBindingsiOS framework
 declare XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION:-14.6}" # the minimum supported MacCatalyst version for the McuMgrBindingsiOS framework
 
-if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # ios
-  XCODEBUILD_TARGET_SDK_VERSION="18.2" #                requires xcode 16.2
-  XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="" # no need to specify the minimum supported mac catalyst version for ios builds (we suspect it causes xcodebuild to go haywire)
+if [ "${XCODEBUILD_TARGET_SDK}" == "iphoneos" ] ; then #  ios
 
-elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] && [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ]; then # maccatalyst
-  XCODEBUILD_TARGET_SDK_VERSION="15.2" #        requires xcode 16.2
-  XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="" # no need to specify the minimum supported ios version for mac-catalyst builds (we suspect it causes xcodebuild to go haywire)
+  XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION="" #   no need to specify the minimum supported mac catalyst version for ios builds (we suspect it causes xcodebuild to go haywire)
+  if [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ] ; then
+    XCODEBUILD_TARGET_SDK_VERSION="18.2" #                requires xcode 16.2
+  fi
+
+elif [ "${XCODEBUILD_TARGET_SDK}" == "macosx" ] ; then # maccatalyst
+
+  XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION="${XCODEBUILD_MIN_SUPPORTED_MACCATALYST_SDK_VERSION}" # believe it or not in mac-catalyst builds the min-supported version is specified using XCODEBUILD_MIN_SUPPORTED_IOS_SDK_VERSION
+  if [ -z "${XCODEBUILD_TARGET_SDK_VERSION}" ] ; then
+    XCODEBUILD_TARGET_SDK_VERSION="15.2" #             requires xcode 16.2
+  fi
+
+else
+  echo "** [FAILED] Unsupported XCODEBUILD_TARGET_SDK '${XCODEBUILD_TARGET_SDK}' specified - only 'iphoneos' and 'macosx' are supported"
+  exit 1
 fi
 
 declare -r SWIFT_BUILD_CONFIGURATION="${SWIFT_BUILD_CONFIGURATION:-Release}" 
@@ -122,13 +132,12 @@ function build() {
   # note that it is absolute vital to use PRODUCT_NAME=${SWIFT_PROJECT_NAME} to force xcodebuild to spawn
   # files and folders using the name/namespace of the swift-project (instead of the name of the default-target)
   # because later on sharpie will use these name to deduce the proper namespaces for the binding-api-csharp-files!!
-  xcodebuild                                                                                   \
+  xcodebuild -resolvePackageDependencies                                                       \
                               -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
                              -arch "arm64"                                                     \
                            -scheme "${SWIFT_BUILD_SCHEME_NAME}"                                \
                           -project "${SWIFT_PROJECT_FOLDERPATH}"                               \
                     -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
-       -resolvePackageDependencies                                                             \
       -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_FOLDERPATH}"                              \
                       PRODUCT_NAME=${SWIFT_PROJECT_NAME}                                       \
                 CODE_SIGN_IDENTITY=""                                                          \
@@ -153,7 +162,7 @@ function build() {
   # note that it is absolute vital to use PRODUCT_NAME=${SWIFT_PROJECT_NAME} to force xcodebuild to spawn
   # files and folders using the name/namespace of the swift-project (instead of the name of the default-target)
   # because later on sharpie will use these name to deduce the proper namespaces for the binding-api-csharp-files!!
-  xcodebuild                                                                                   \
+  xcodebuild build                                                                             \
                               -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
                              -arch "arm64"                                                     \
                            -scheme "${SWIFT_BUILD_SCHEME_NAME}"                                \

@@ -59,11 +59,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 remoteFilePath: remoteFilePath,
                 
                 maxTriesCount: 1,
+                initialMtuSize: initialMtuSize,
                 
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
                 
-                initialMtuSize: initialMtuSize,
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment
             ));

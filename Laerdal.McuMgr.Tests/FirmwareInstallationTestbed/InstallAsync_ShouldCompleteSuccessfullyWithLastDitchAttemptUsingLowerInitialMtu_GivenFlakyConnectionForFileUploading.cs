@@ -138,12 +138,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     data: data,
                     mode: mode,
                     eraseSettings: eraseSettings,
+                    estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
+                    
+                    initialMtuSize: initialMtuSize,
+                    
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
-                    initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity,
-                    memoryAlignment: memoryAlignment,
-                    estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
+                    memoryAlignment: memoryAlignment
                 );
 
                 Task.Run(function: async () => //00 vital
