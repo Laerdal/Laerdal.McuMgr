@@ -132,13 +132,12 @@ function build() {
   # note that it is absolute vital to use PRODUCT_NAME=${SWIFT_PROJECT_NAME} to force xcodebuild to spawn
   # files and folders using the name/namespace of the swift-project (instead of the name of the default-target)
   # because later on sharpie will use these name to deduce the proper namespaces for the binding-api-csharp-files!!
-  xcodebuild                                                                                   \
+  xcodebuild -resolvePackageDependencies                                                       \
                               -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
                              -arch "arm64"                                                     \
                            -scheme "${SWIFT_BUILD_SCHEME_NAME}"                                \
                           -project "${SWIFT_PROJECT_FOLDERPATH}"                               \
                     -configuration "${SWIFT_BUILD_CONFIGURATION}"                              \
-       -resolvePackageDependencies                                                             \
       -clonedSourcePackagesDirPath "${SWIFT_PACKAGES_FOLDERPATH}"                              \
                       PRODUCT_NAME=${SWIFT_PROJECT_NAME}                                       \
                 CODE_SIGN_IDENTITY=""                                                          \
@@ -163,7 +162,7 @@ function build() {
   # note that it is absolute vital to use PRODUCT_NAME=${SWIFT_PROJECT_NAME} to force xcodebuild to spawn
   # files and folders using the name/namespace of the swift-project (instead of the name of the default-target)
   # because later on sharpie will use these name to deduce the proper namespaces for the binding-api-csharp-files!!
-  xcodebuild                                                                                   \
+  xcodebuild build                                                                             \
                               -sdk "${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}"              \
                              -arch "arm64"                                                     \
                            -scheme "${SWIFT_BUILD_SCHEME_NAME}"                                \
