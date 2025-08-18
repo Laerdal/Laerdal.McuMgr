@@ -140,31 +140,36 @@ public class IOSFileUploader: NSObject {
             configuration.pipelineDepth = pipelineDepth
         }
 
-        do
-        {
-            setState(.idle)
-            let success = _fileSystemManager.upload( //order
-                    name: _remoteFilePathSanitized,
-                    data: data!,
-                    using: configuration,
-                    delegate: self
-            )
-            if !success {
-                onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+        setState(.idle)
+
+        let verdict: EIOSFileUploadingInitializationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                let success = _fileSystemManager?.upload( //order
+                        name: _remoteFilePathSanitized,
+                        data: data!,
+                        using: configuration,
+                        delegate: self
+                ) ?? false
+                if !success {
+                    onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+
+                    return .failedErrorUponCommencing
+                }
+
+                return .success
+
+            } catch let ex {
+                onError("[IOSFU.BU.095] Failed to commence file-uploading", ex)
 
                 return .failedErrorUponCommencing
             }
-        }
-        catch let error //even though static analysis claims that no exception can be thrown it is in fact possible for the .upload() method to crash due to mtu related errors!
-        {
-            onError("[IOSFU.BU.095] Failed to commence file-uploading (check logs for details)", error)
+        })
 
-            return .failedErrorUponCommencing
-        }
-
-        return .success
+        return verdict
 
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
     }
     
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
@@ -193,28 +198,76 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func pause() {
-        _fileSystemManager?.pauseTransfer()
-
-        setState(.paused)
-        setBusyState(false)
+        if (_fileSystemManager == nil) {
+            return
+        }
+        
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            if (_fileSystemManager == nil) { //vital to double-check
+                return
+            }
+ 
+            do {
+                _fileSystemManager?.pauseTransfer()
+                
+                setState(.paused)
+                setBusyState(false)
+            } catch let ex {
+                onError("[IOSFU.PAUSE.010] Failed to pause", ex)
+            }
+        })
+        
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
     }
 
     @objc
     public func resume() {
-        _fileSystemManager?.continueTransfer()
+        if (_fileSystemManager == nil) {
+            return
+        }
+        
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            if (_fileSystemManager == nil) { //vital to double-check
+                return
+            }
+ 
+            do {
+                _fileSystemManager?.continueTransfer()
+                
+                setState(.uploading)
+                setBusyState(true)
+            } catch let ex {
+                onError("[IOSFU.RESUME.010] Failed to resume", ex)
+            }
+        })
 
-        setState(.uploading)
-        setBusyState(true)
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
     }
 
     @objc
     public func cancel(_ reason: String = "") {
-        _cancellationReason = reason
+        if (_fileSystemManager == nil) {
+            return
+        }
+        
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            if (_fileSystemManager == nil) { //vital to double-check
+                return
+            }
+            
+            do {
+                _cancellationReason = reason //need to set this for uploadDidCancel()
 
-        cancellingAdvertisement(reason)
-        setState(.cancelling) //order
+                cancellingAdvertisement(reason)
+                setState(.cancelling) //order
 
-        _fileSystemManager?.cancelTransfer() //order
+                _fileSystemManager?.cancelTransfer() //order
+            } catch let ex {
+                onError("[IOSFU.CANCEL.010] Failed to cancel", ex)
+            }
+        })
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
     }
 
     @objc
