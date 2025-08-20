@@ -2,8 +2,6 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
@@ -27,10 +25,6 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
 {
-    private Handler _handler;
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private HandlerThread _handlerThread;
     @SuppressWarnings("FieldCanBeLocal")
     private final Context _context;
     @SuppressWarnings("FieldCanBeLocal")
