@@ -63,7 +63,7 @@ namespace Laerdal.McuMgr.FileUploading
         
         public bool TrySetContext(object context) => _nativeFileUploaderProxy?.TrySetContext(context) ?? false;
         public bool TrySetBluetoothDevice(object bluetoothDevice) => _nativeFileUploaderProxy?.TrySetBluetoothDevice(bluetoothDevice) ?? false;
-        public bool TryInvalidateCachedTransport() => _nativeFileUploaderProxy?.TryInvalidateCachedTransport() ?? false;
+        public bool TryInvalidateCachedInfrastructure() => _nativeFileUploaderProxy?.TryInvalidateCachedInfrastructure() ?? false;
 
         public EFileUploaderVerdict BeginUpload(
             byte[] data,
@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.FileUploading
         }
         
         public void Cancel(string reason = "") => _nativeFileUploaderProxy?.Cancel(reason);
-        public void Disconnect() => _nativeFileUploaderProxy?.Disconnect();
+        public void Disconnect() => _nativeFileUploaderProxy?.TryDisconnect();
         public void CleanupResourcesOfLastUpload() => _nativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
         
         private event EventHandler<CancelledEventArgs> _cancelled;

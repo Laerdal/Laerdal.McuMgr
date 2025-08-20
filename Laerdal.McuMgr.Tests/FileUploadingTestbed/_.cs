@@ -51,7 +51,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 CancellationReason = reason;
             }
 
-            public virtual void Disconnect()
+            public virtual void TryDisconnect()
             {
                 DisconnectCalled = true;
             }
@@ -89,8 +89,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();
-            public bool TryInvalidateCachedTransport() => throw new NotImplementedException();
-            
+            public bool TryInvalidateCachedInfrastructure() => throw new NotImplementedException();
+
             public void Dispose()
             {
             }

@@ -55,10 +55,10 @@ namespace Laerdal.McuMgr.FileUploading
             #region commands
             
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
-            
-            public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
-            public void Disconnect() => _nativeFileUploader?.Disconnect();
 
+            public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
+            public void TryDisconnect() => _nativeFileUploader?.Disconnect();
+            
             public new void Dispose()
             {
                 Dispose(disposing: true); //doesnt throw
@@ -102,7 +102,7 @@ namespace Laerdal.McuMgr.FileUploading
 
             private void CleanupInfrastructure() // @formatter:off
             {
-                try { Disconnect();                   } catch { /*ignored*/ }
+                try { TryDisconnect();                } catch { /*ignored*/ }
                 try { _nativeFileUploader?.Dispose(); } catch { /*ignored*/ }
                 
                 //_nativeFileUploader = null;       @formatter:on
@@ -167,6 +167,11 @@ namespace Laerdal.McuMgr.FileUploading
                 var iosBluetoothDevice = bluetoothDevice as CBPeripheral ?? throw new ArgumentException($"Expected {nameof(bluetoothDevice)} to be of type {nameof(CBPeripheral)}", nameof(bluetoothDevice));
                 
                 return _nativeFileUploader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
+            }
+
+            public bool TryInvalidateCachedInfrastructure()
+            {
+                throw new NotImplementedException();
             }
 
             public bool TryInvalidateCachedTransport()

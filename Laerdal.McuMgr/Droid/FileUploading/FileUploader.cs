@@ -103,12 +103,13 @@ namespace Laerdal.McuMgr.FileUploading
                     //ignored
                 }
             }
-            
+
             private void CleanupInfrastructure()
             {
                 try
                 {
-                    Disconnect();
+                    // ReSharper disable once RedundantBaseQualifier
+                    base.NativeDispose(); //java-glue-library method 
                 }
                 catch
                 {
@@ -164,9 +165,14 @@ namespace Laerdal.McuMgr.FileUploading
                 return base.TrySetBluetoothDevice(androidBluetoothDevice);
             }
             
-            public new bool TryInvalidateCachedTransport()
+            public new void TryDisconnect()
             {
-                return base.TryInvalidateCachedTransport();
+                base.TryDisconnect();
+            }
+            
+            public new bool TryInvalidateCachedInfrastructure()
+            {
+                return base.TryInvalidateCachedInfrastructure();
             }
 
             #endregion commands
