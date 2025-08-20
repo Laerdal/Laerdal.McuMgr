@@ -63,19 +63,19 @@ public class AndroidFileUploader
     {
         if (!IsIdleOrCold())
         {
-            log("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "file-uploader", "ERROR", _resourceId);
+            emitLogEntry("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "file-uploader", "ERROR", _resourceId);
             return false;
         }
 
         if (!tryInvalidateCachedInfrastructure()) //order
         {
-            log("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "file-uploader", "ERROR", _resourceId);
+            emitLogEntry("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "file-uploader", "ERROR", _resourceId);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        log("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "file-uploader", "TRACE", _resourceId);
+        emitLogEntry("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "file-uploader", "TRACE", _resourceId);
 
         return true;
     }
@@ -244,7 +244,7 @@ public class AndroidFileUploader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
-        log("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-uploader", "TRACE", _resourceId);
+        emitLogEntry("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-uploader", "TRACE", _resourceId);
 
         try
         {
@@ -301,7 +301,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            log("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", "WARN", _resourceId);
+            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", "WARN", _resourceId);
             return false;
         }
     }
@@ -319,7 +319,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            log("[AFU.TDISC.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", "WARN", _resourceId);
+            emitLogEntry("[AFU.TDISC.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", "WARN", _resourceId);
             return false;
         }
     }
@@ -351,38 +351,40 @@ public class AndroidFileUploader
         if (_transport == null)
             return true; // already disposed
 
+        boolean success = true;
         try
         {
             _transport.release();
         }
         catch (final Exception ex) // suppress
         {
-            log("[AFU.TDT.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", "WARN", _resourceId);
-            return false;
+            success = false;
+            emitLogEntry("[AFU.TDT.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", "WARN", _resourceId);
         }
 
         _transport = null;
-        return true;
+        return success;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
+    @SuppressWarnings({"UnusedReturnValue", "DuplicatedCode"})
     private boolean tryDisposeFilesystemManager()
     {
         if (_fileSystemManager == null)
-            return true; // already disposed
+            return true;
 
+        boolean success = true;
         try
         {
             _fileSystemManager.closeAll();
         }
         catch (final Exception ex)
         {
-            log("[AFU.TDFSM.010] Error while disposing file-system-manager:\n\n" + ex, "file-uploader", "WARN", _resourceId);
-            return false;
+            success = false;
+            emitLogEntry("[AFU.TDFM.010] [SUPPRESSED] Error while closing the file-system-manager:\n\n" + ex, "file-uploader", "WARN", _resourceId);
         }
 
         _fileSystemManager = null;
-        return true;
+        return success;
     }
 
     private boolean tryDisposeCallbackProxy()
@@ -429,6 +431,23 @@ public class AndroidFileUploader
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
 
+    private void fireAndForgetInTheBg(Runnable func)
+    {
+        if (func == null)
+            return;
+
+        _backgroundExecutor.execute(() -> {
+            try
+            {
+                func.run();
+            }
+            catch (Exception ignored)
+            {
+                // ignored
+            }
+        });
+    }
+
     @Contract(pure = true)
     private boolean IsIdleOrCold()
     {
@@ -471,23 +490,6 @@ public class AndroidFileUploader
         ));
     }
 
-    private void fireAndForgetInTheBg(Runnable func)
-    {
-        if (func == null)
-            return;
-
-        _backgroundExecutor.execute(() -> {
-            try
-            {
-                func.run();
-            }
-            catch (Exception ignored)
-            {
-                // ignored
-            }
-        });
-    }
-
     public void fatalErrorOccurredAdvertisement(
             final String resourceId,
             final String remoteFilePath,
@@ -499,7 +501,7 @@ public class AndroidFileUploader
     }
 
     //@Contract(pure = true) //dont
-    public void log(final String message, final String category, final String level, final String resourceId)
+    public void emitLogEntry(final String message, final String category, final String level, final String resourceId)
     {
         fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level, resourceId));
     }
@@ -615,8 +617,10 @@ public class AndroidFileUploader
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
+
             onError(error.getMessage(), error);
             setLoggingEnabledOnTransport(true);
+
             setBusyState(false);
 
             _uploadController = null; //order
@@ -626,8 +630,10 @@ public class AndroidFileUploader
         public void onUploadCanceled()
         {
             fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
-            setState(EAndroidFileUploaderState.CANCELLED);
-            cancelledAdvertisement(_cancellationReason);
+
+            setState(EAndroidFileUploaderState.CANCELLED); // order
+            cancelledAdvertisement(_cancellationReason); //   order
+
             setLoggingEnabledOnTransport(true);
             setBusyState(false);
 
@@ -638,8 +644,10 @@ public class AndroidFileUploader
         public void onUploadCompleted()
         {
             //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
-            setState(EAndroidFileUploaderState.COMPLETE);
-            fireAndForgetInTheBg(() -> fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized));
+
+            setState(EAndroidFileUploaderState.COMPLETE); //                                                        order
+            fireAndForgetInTheBg(() -> fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized)); // order
+
             setLoggingEnabledOnTransport(true);
             setBusyState(false);
 

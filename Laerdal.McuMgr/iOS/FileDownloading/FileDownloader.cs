@@ -111,9 +111,9 @@ namespace Laerdal.McuMgr.FileDownloading
                 return _nativeFileDownloader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
             }
 
-            public bool TryInvalidateCachedTransport()
+            public bool TryInvalidateCachedInfrastructure()
             {
-                return _nativeFileDownloader?.TryInvalidateCachedTransport() ?? false;
+                return _nativeFileDownloader?.TryInvalidateCachedInfrastructure() ?? false;
             }
 
             #region commands

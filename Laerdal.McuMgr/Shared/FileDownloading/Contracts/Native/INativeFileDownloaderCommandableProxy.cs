@@ -10,6 +10,6 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
         
         bool TrySetContext(object context);
         bool TrySetBluetoothDevice(object bluetoothDevice);
-        bool TryInvalidateCachedTransport();
+        bool TryInvalidateCachedInfrastructure();
     }
 }

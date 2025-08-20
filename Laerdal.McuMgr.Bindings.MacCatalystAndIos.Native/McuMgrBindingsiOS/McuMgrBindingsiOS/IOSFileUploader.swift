@@ -39,7 +39,7 @@ public class IOSFileUploader: NSObject {
             return false
         }
 
-        if !tryInvalidateCachedTransport() { //order
+        if !tryInvalidateCachedInfrastructure() { //order
             return false
         }
 
@@ -48,7 +48,7 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func tryInvalidateCachedTransport() -> Bool {
+    public func tryInvalidateCachedInfrastructure() -> Bool {
         if _transporter == nil { //already scrapped
             return true
         }

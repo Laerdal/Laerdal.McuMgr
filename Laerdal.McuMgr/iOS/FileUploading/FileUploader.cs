@@ -170,13 +170,8 @@ namespace Laerdal.McuMgr.FileUploading
             }
 
             public bool TryInvalidateCachedInfrastructure()
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool TryInvalidateCachedTransport()
             {               
-                return _nativeFileUploader?.TryInvalidateCachedTransport() ?? false;
+                return _nativeFileUploader?.TryInvalidateCachedInfrastructure() ?? false;
             }
 
             #endregion commands

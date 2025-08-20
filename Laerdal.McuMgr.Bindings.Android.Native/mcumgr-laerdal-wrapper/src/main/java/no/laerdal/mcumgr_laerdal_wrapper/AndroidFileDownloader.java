@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrErrorCode;
-import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
@@ -14,6 +13,9 @@ import io.runtime.mcumgr.transfer.TransferController;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressWarnings("unused")
 public class AndroidFileDownloader
@@ -34,6 +36,8 @@ public class AndroidFileDownloader
     private Boolean _currentBusyState = false;
     private EAndroidFileDownloaderState _currentState = EAndroidFileDownloaderState.NONE;
 
+    private final ExecutorService _backgroundExecutor = Executors.newCachedThreadPool();
+
     public AndroidFileDownloader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
     {
     }
@@ -49,7 +53,7 @@ public class AndroidFileDownloader
         if (!IsIdleOrCold())
             return false;
 
-        if (!tryInvalidateCachedTransport()) //order
+        if (!tryInvalidateCachedInfrastructure()) //order
             return false;
 
         _context = context;
@@ -60,36 +64,30 @@ public class AndroidFileDownloader
     {
         if (!IsIdleOrCold())
         {
-            logMessageAdvertisement("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR", _remoteFilePathSanitized);
+            emitLogEntry("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR");
             return false;
         }
 
-        if (!tryInvalidateCachedTransport()) //order
+        if (!tryInvalidateCachedInfrastructure()) //order
         {
-            logMessageAdvertisement("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR", _remoteFilePathSanitized);
+            emitLogEntry("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR");
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        logMessageAdvertisement("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE", _remoteFilePathSanitized);
+        emitLogEntry("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE");
 
         return true;
     }
 
-    public boolean tryInvalidateCachedTransport()
+    public boolean tryInvalidateCachedInfrastructure()
     {
-        if (_transport == null) //already scrapped
-            return true;
+        boolean success1 = tryDisposeFilesystemManager(); // order
+        boolean success2 = tryDisposeTransport(); //         order
+        boolean success3 = tryDisposeCallbackProxy(); //     order
 
-        if (!IsIdleOrCold()) //if the upload is already in progress we bail out
-            return false;
-
-        disposeFilesystemManager(); // order
-        disposeTransport(); //         order
-        disposeCallbackProxy(); //     order
-
-        return true;
+        return success1 && success2 && success3;
     }
 
     /**
@@ -202,16 +200,44 @@ public class AndroidFileDownloader
         transferController.resume();
     }
 
-    public void disconnect()
+    public void nativeDispose()
     {
-        if (_fileSystemManager == null)
-            return;
+        tryDisconnect(); //doesnt throw
+        tryShutdownBackgroundExecutor(); //doesnt throw
+    }
 
-        final McuMgrTransport mcuMgrTransporter = _fileSystemManager.getTransporter();
-        if (!(mcuMgrTransporter instanceof McuMgrBleTransport))
-            return;
+    @SuppressWarnings("UnusedReturnValue")
+    public boolean tryDisconnect()
+    {
+        if (_transport == null)
+            return true;
 
-        mcuMgrTransporter.release();
+        try
+        {
+            _transport.release();
+        }
+        catch (Exception ex)
+        {
+            emitLogEntry("[AFD.TD.010] Failed to disconnect from the transport:\n\n" + ex, "file-downloader", "ERROR");
+            return false;
+        }
+
+        return true;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    private boolean tryShutdownBackgroundExecutor()
+    {
+        try
+        {
+            _backgroundExecutor.shutdownNow();
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", "WARN");
+            return false;
+        }
     }
 
     public void cancel()
@@ -282,43 +308,52 @@ public class AndroidFileDownloader
         _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
-    private void disposeTransport()
+    @SuppressWarnings("UnusedReturnValue")
+    private boolean tryDisposeTransport()
     {
         if (_transport == null)
-            return;
+            return true; // already disposed
 
+        boolean success = true;
         try
         {
-            _transport.disconnect();
+            _transport.release();
         }
-        catch (Exception ex)
+        catch (final Exception ex) // suppress
         {
-            // ignore
+            success = false;
+            emitLogEntry("[AFD.TDT.010] Failed to release the transport:\n\n" + ex, "file-downloader", "ERROR");
         }
 
         _transport = null;
+        return success;
     }
 
-    private void disposeFilesystemManager()
+    @SuppressWarnings({"UnusedReturnValue", "DuplicatedCode"})
+    private boolean tryDisposeFilesystemManager()
     {
         if (_fileSystemManager == null)
-            return;
+            return true;
 
+        boolean success = true;
         try
         {
             _fileSystemManager.closeAll();
         }
-        catch (McuMgrException e)
+        catch (final Exception ex)
         {
-            // ignore
+            success = false;
+            emitLogEntry("[AFD.TDFM.010] Failed to close the filesystem manager:\n\n" + ex, "file-downloader", "ERROR");
         }
 
         _fileSystemManager = null;
+        return success;
     }
 
-    private void disposeCallbackProxy()
+    private boolean tryDisposeCallbackProxy()
     {
         _fileDownloaderCallbackProxy = null;
+        return true;
     }
 
     private void setLoggingEnabledOnConnection(final boolean enabled)
@@ -345,18 +380,35 @@ public class AndroidFileDownloader
 
         _currentState = newState; //order
 
-        stateChangedAdvertisement(oldState, newState); //order
+        fireAndForgetInTheBg(() -> stateChangedAdvertisement(oldState, newState)); //order
 
         if (oldState == EAndroidFileDownloaderState.IDLE && newState == EAndroidFileDownloaderState.DOWNLOADING)
         {
-            fileDownloadStartedAdvertisement(_remoteFilePathSanitized);
+            fireAndForgetInTheBg(() -> fileDownloadStartedAdvertisement(_remoteFilePathSanitized));
         }
         else if (oldState == EAndroidFileDownloaderState.DOWNLOADING && newState == EAndroidFileDownloaderState.COMPLETE) //00
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0);
+            fireAndForgetInTheBg(() -> fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0));
         }
 
         //00 trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
+    }
+
+    private void fireAndForgetInTheBg(Runnable func)
+    {
+        if (func == null)
+            return;
+
+        _backgroundExecutor.execute(() -> {
+            try
+            {
+                func.run();
+            }
+            catch (Exception ignored)
+            {
+                // ignored
+            }
+        });
     }
 
     @Contract(pure = true)
@@ -401,7 +453,7 @@ public class AndroidFileDownloader
     {
         setState(EAndroidFileDownloaderState.ERROR);
 
-        fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, globalErrorCode);
+        fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, globalErrorCode));
     }
 
     public void fatalErrorOccurredAdvertisement(final String errorMessage, final int globalErrorCode)
@@ -416,6 +468,11 @@ public class AndroidFileDownloader
     )
     {
         _lastFatalErrorMessage = errorMessage;
+    }
+
+    private void emitLogEntry(final String message, final String category, final String level)
+    {
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level));
     }
 
     @Contract(pure = true)
@@ -480,16 +537,18 @@ public class AndroidFileDownloader
             setState(EAndroidFileDownloaderState.DOWNLOADING);
             setBusyState(true);
 
-            int fileDownloadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
-            float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
-            float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
+            fireAndForgetInTheBg(() -> {
+                int fileDownloadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
+                float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
+                float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
-                    _remoteFilePathSanitized,
-                    fileDownloadProgressPercentage,
-                    currentThroughputInKBps,
-                    totalAverageThroughputInKBps
-            );
+                fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
+                        _remoteFilePathSanitized,
+                        fileDownloadProgressPercentage,
+                        currentThroughputInKBps,
+                        totalAverageThroughputInKBps
+                );
+            });
         }
 
         @SuppressWarnings("DuplicatedCode")
@@ -533,7 +592,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadFailed(@NonNull final McuMgrException exception)
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
+            fireAndForgetInTheBg(() -> fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0));
             onError(exception.getMessage(), exception);
             setLoggingEnabledOnConnection(true);
             setBusyState(false);
@@ -544,9 +603,9 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCanceled()
         {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0);
+            fireAndForgetInTheBg(() -> fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0));
             setState(EAndroidFileDownloaderState.CANCELLED);
-            cancelledAdvertisement();
+            fireAndForgetInTheBg(() -> cancelledAdvertisement());
             setLoggingEnabledOnConnection(true);
             setBusyState(false);
 
