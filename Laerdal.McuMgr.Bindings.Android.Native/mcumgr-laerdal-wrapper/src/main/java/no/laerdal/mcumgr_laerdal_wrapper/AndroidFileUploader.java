@@ -266,9 +266,11 @@ public class AndroidFileUploader
             return;
 
         transferController.pause();
+
         setState(EAndroidFileUploaderState.PAUSED);
-        setLoggingEnabledOnTransport(true);
         setBusyState(false);
+
+        setLoggingEnabledOnTransport(true);
     }
 
     public void resume()
@@ -278,8 +280,8 @@ public class AndroidFileUploader
             return;
 
         setState(EAndroidFileUploaderState.UPLOADING);
-
         setBusyState(true);
+
         setLoggingEnabledOnTransport(false);
 
         transferController.resume();
@@ -417,16 +419,26 @@ public class AndroidFileUploader
 
         _currentState = newState; //order
 
-        fireAndForgetInTheBg(() -> stateChangedAdvertisement(_resourceId, _remoteFilePathSanitized, oldState, newState)); //order
+        final String resourceIdSnapshot = _resourceId;
+        final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized;
 
-        if (oldState == EAndroidFileUploaderState.IDLE && newState == EAndroidFileUploaderState.UPLOADING)
-        {
-            fireAndForgetInTheBg(() -> fileUploadStartedAdvertisement(_resourceId, _remoteFilePathSanitized));
-        }
-        else if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
-        {
-            fireAndForgetInTheBg(() -> fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 100, 0, 0));
-        }
+        fireAndForgetInTheBg(() -> {
+            stateChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, oldState, newState); //order
+
+            if (oldState == EAndroidFileUploaderState.CANCELLING && newState == EAndroidFileUploaderState.CANCELLED)
+            {
+                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0);
+            }
+            else if (oldState == EAndroidFileUploaderState.IDLE && newState == EAndroidFileUploaderState.UPLOADING)
+            {
+                fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
+            }
+            else if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
+            {
+                fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
+                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0);
+            }
+        });
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
@@ -483,9 +495,12 @@ public class AndroidFileUploader
         setState(EAndroidFileUploaderState.ERROR);
 
         _lastFatalErrorMessage = errorMessage;
+
+        final String resourceIdSnapshot = _resourceId;
+        final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized;
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(
-                _resourceId,
-                _remoteFilePathSanitized,
+                resourceIdSnapshot,
+                remoteFilePathSanitizedSnapshot,
                 errorMessage,
                 McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
         ));
@@ -560,8 +575,8 @@ public class AndroidFileUploader
         @Override
         public void onUploadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
-            setBusyState(true);
             setState(EAndroidFileUploaderState.UPLOADING);
+            setBusyState(true);
 
             int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
             float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
@@ -630,13 +645,11 @@ public class AndroidFileUploader
         @Override
         public void onUploadCanceled()
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
-
-            setState(EAndroidFileUploaderState.CANCELLED); // order
-            cancelledAdvertisement(_cancellationReason); //   order
+            setState(EAndroidFileUploaderState.CANCELLED); //                             order
+            fireAndForgetInTheBg(() -> cancelledAdvertisement(_cancellationReason)); //   order
+            setBusyState(false); //                                                       order
 
             setLoggingEnabledOnTransport(true);
-            setBusyState(false);
 
             _uploadController = null; //order
         }
@@ -646,11 +659,10 @@ public class AndroidFileUploader
         {
             //fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //no need this is taken care of inside setState()
 
-            setState(EAndroidFileUploaderState.COMPLETE); //                                                        order
-            fireAndForgetInTheBg(() -> fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized)); // order
+            setState(EAndroidFileUploaderState.COMPLETE); // order
+            setBusyState(false); //                          order
 
             setLoggingEnabledOnTransport(true);
-            setBusyState(false);
 
             _uploadController = null; //order
         }

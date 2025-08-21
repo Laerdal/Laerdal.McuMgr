@@ -14,11 +14,19 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003AFileUploading_002Ff_003AFileUploader_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CustomTools/CustomToolsData/@EntryValue"></s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/ksidirop/Library/Caches/JetBrains/Rider2025.1/resharper-host/temp/Rider/vAny/CoverageData/_Laerdal.McuMgr.1984391548/Snapshot/snapshot.utdcvr</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=008e18cd_002D4ed8_002D4f58_002Da66e_002D503bf109567f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::7674D292-10B2-C83C-9CD9-47A43552EE3A::net8.0::Laerdal.McuMgr.Tests.FileDownloadingTestbed.FileDownloaderTestbed.SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=045881b2_002D6541_002D44b5_002Daa6b_002D907b699d27d0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=31de16c6_002D0df4_002D4775_002D9d4a_002D88a8348d407f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToUpload" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=58c8cf47_002D0a89_002D4a8f_002Dbf49_002D8e2fbad88d55/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=72477f2e_002Ddccf_002D4535_002Da219_002D25a9e03262f0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;

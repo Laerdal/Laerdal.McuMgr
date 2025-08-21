@@ -38,7 +38,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 return EFileDownloaderVerdict.Success;
             }
 
-            public virtual void Cancel()
+            public virtual void Cancel(string reason = "")
             {
                 CancelCalled = true;
             }
@@ -48,9 +48,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 DisconnectCalled = true;
             }
 
-            public void CancelledAdvertisement() 
-                => _downloaderCallbacksProxy.CancelledAdvertisement(); //raises the actual event
+            public void CancelledAdvertisement(string reason)
+                => _downloaderCallbacksProxy.CancelledAdvertisement(reason);
             
+            public void CancellingAdvertisement(string reason)
+                => _downloaderCallbacksProxy.CancellingAdvertisement(reason);
+
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _downloaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
@@ -74,7 +77,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             
             public bool TrySetContext(object context) => throw new NotImplementedException();
             public bool TrySetBluetoothDevice(object bluetoothDevice) => throw new NotImplementedException();
-            public bool TryInvalidateCachedTransport() => throw new NotImplementedException();
+            public bool TryInvalidateCachedInfrastructure() => throw new NotImplementedException();
 
             public void Dispose()
             {

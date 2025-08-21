@@ -367,9 +367,9 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     Cancelled += FileUploader_Cancelled_;
                     Cancelling += FileUploader_Cancelling_;
-                    FileUploadCompleted += FileUploader_FileUploadCompleted_;
                     StateChanged += FileUploader_StateChanged_;
                     FatalErrorOccurred += FileUploader_FatalErrorOccurred_;
+                    FileUploadCompleted += FileUploader_FileUploadCompleted_;
                     FileUploadProgressPercentageAndDataThroughputChanged += FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_;
 
                     var failSafeSettingsToApply = ConnectionSettingsHelpers.GetFailsafeConnectionSettingsIfConnectionProvedToBeUnstable(
@@ -422,7 +422,7 @@ namespace Laerdal.McuMgr.FileUploading
                 catch (TimeoutException ex)
                 {
                     //todo   silently cancel the upload here on best effort basis
-                    
+
                     OnStateChanged(new StateChangedEventArgs( //for consistency
                         oldState: EFileUploaderState.None, //better not use this.State here because the native call might fail
                         newState: EFileUploaderState.Error,
@@ -473,9 +473,9 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     Cancelled -= FileUploader_Cancelled_;
                     Cancelling -= FileUploader_Cancelling_;
-                    FileUploadCompleted -= FileUploader_FileUploadCompleted_;
                     StateChanged -= FileUploader_StateChanged_;
                     FatalErrorOccurred -= FileUploader_FatalErrorOccurred_;
+                    FileUploadCompleted -= FileUploader_FileUploadCompleted_;
                     FileUploadProgressPercentageAndDataThroughputChanged -= FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_;
                     
                     CleanupResourcesOfLastUpload(); //vital
@@ -527,11 +527,14 @@ namespace Laerdal.McuMgr.FileUploading
                         case EFileUploaderState.Idle:
                             fileUploadProgressEventsCount = 0; //it is vital to reset the counter here to account for retries
                             return;
-                        
+
                         case EFileUploaderState.Complete:
                             //taskCompletionSource.TrySetResult(true); //dont   we want to wait for the FileUploadCompleted event
                             return;
                     }
+
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
+                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 } // ReSharper restore AccessToModifiedClosure
 
                 void FileUploader_FileUploadProgressPercentageAndDataThroughputChanged_(object _, FileUploadProgressPercentageAndDataThroughputChangedEventArgs __)

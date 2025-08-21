@@ -273,18 +273,23 @@ public class AndroidFirmwareInstaller
 
     private void setState(final EAndroidFirmwareInstallationState newState)
     {
+        if (_currentState == newState)
+            return; //no change
+
         final EAndroidFirmwareInstallationState oldState = _currentState; //order
 
         _currentState = newState; //order
 
-        if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00   order
-        {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
-        }
+        fireAndForgetInTheBg(() -> {
+            if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00
+            {
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //order
+            }
 
-        fireAndForgetInTheBg(() -> stateChangedAdvertisement(oldState, newState)); //order
+            stateChangedAdvertisement(oldState, newState); //order
+        });
 
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //00  trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
 
     protected void onCleared()
@@ -367,12 +372,11 @@ public class AndroidFirmwareInstaller
         if (!_manager.isInProgress())
             return;
 
-        setState(EAndroidFirmwareInstallationState.PAUSED);
-        _manager.pause();
-
-        // Timber.i("Upload paused"); //todo  logging
-        setLoggingEnabled(true);
         setBusyState(false);
+        setState(EAndroidFirmwareInstallationState.PAUSED);
+
+        _manager.pause();
+        setLoggingEnabled(true);
     }
 
     public void resume()
@@ -439,9 +443,9 @@ public class AndroidFirmwareInstaller
         public void onUpgradeCompleted()
         {
             setState(EAndroidFirmwareInstallationState.COMPLETE);
-            // Timber.i("Install complete");
-            setLoggingEnabled(true);
             setBusyState(false);
+
+            setLoggingEnabled(true);
         }
 
         @Override
@@ -468,7 +472,7 @@ public class AndroidFirmwareInstaller
         {
             setState(EAndroidFirmwareInstallationState.CANCELLED);
             cancelledAdvertisement();
-            // Timber.w("Install cancelled");
+
             setLoggingEnabled(true);
             setBusyState(false);
         }
