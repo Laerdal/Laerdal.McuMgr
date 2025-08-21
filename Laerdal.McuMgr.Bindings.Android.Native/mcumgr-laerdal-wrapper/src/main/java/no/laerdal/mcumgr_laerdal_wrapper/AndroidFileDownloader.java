@@ -562,6 +562,7 @@ public class AndroidFileDownloader
         public void onDownloadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
             setState(EAndroidFileDownloaderState.DOWNLOADING, null);
+            setBusyState(true);
 
             final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
             fireAndForgetInTheBg(() -> {

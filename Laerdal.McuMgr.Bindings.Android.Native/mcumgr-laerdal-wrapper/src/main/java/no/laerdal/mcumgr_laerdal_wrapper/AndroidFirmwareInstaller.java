@@ -482,15 +482,17 @@ public class AndroidFirmwareInstaller
             if (imageSize == 0)
                 return;
 
-            int lastProgress = (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
-            float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
-            float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestamp);
+            fireAndForgetInTheBg(() -> {
+                int lastProgress = (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
+                float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
+                float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestamp);
 
-            fireAndForgetInTheBg(() -> firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement( //fire-and-forget in the bg to help performance a bit
-                    lastProgress,
-                    currentThroughputInKBps,
-                    totalAverageThroughputInKBps
-            ));
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement( //fire-and-forget in the bg to help performance a bit
+                        lastProgress,
+                        currentThroughputInKBps,
+                        totalAverageThroughputInKBps
+                );
+            });
         }
 
         @SuppressWarnings("DuplicatedCode")

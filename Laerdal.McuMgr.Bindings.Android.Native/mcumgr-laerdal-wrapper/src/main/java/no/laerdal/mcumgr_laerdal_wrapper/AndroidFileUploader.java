@@ -585,17 +585,21 @@ public class AndroidFileUploader
             setState(EAndroidFileUploaderState.UPLOADING);
             setBusyState(true);
 
-            int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
-            float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
-            float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
+            final String resourceIdSnapshot = _resourceId; //order
+            final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
+            fireAndForgetInTheBg(() -> {
+                int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
+                float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
+                float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
-                    _resourceId,
-                    _remoteFilePathSanitized,
-                    fileUploadProgressPercentage,
-                    currentThroughputInKBps,
-                    totalAverageThroughputInKBps
-            );
+                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
+                        resourceIdSnapshot,
+                        remoteFilePathSanitizedSnapshot,
+                        fileUploadProgressPercentage,
+                        currentThroughputInKBps,
+                        totalAverageThroughputInKBps
+                );
+            });
         }
 
         @SuppressWarnings("DuplicatedCode")
