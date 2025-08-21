@@ -64,19 +64,19 @@ public class AndroidFileDownloader
     {
         if (!IsIdleOrCold())
         {
-            emitLogEntry("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", "ERROR");
+            emitLogEntry("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", EAndroidLoggingLevel.Error);
             return false;
         }
 
         if (!tryInvalidateCachedInfrastructure()) //order
         {
-            emitLogEntry("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", "ERROR");
+            emitLogEntry("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", EAndroidLoggingLevel.Error);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        emitLogEntry("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", "TRACE");
+        emitLogEntry("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", EAndroidLoggingLevel.Trace);
 
         return true;
     }
@@ -218,7 +218,7 @@ public class AndroidFileDownloader
         }
         catch (Exception ex)
         {
-            emitLogEntry("[AFD.TD.010] Failed to disconnect from the transport:\n\n" + ex, "file-downloader", "ERROR");
+            emitLogEntry("[AFD.TD.010] Failed to disconnect from the transport:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Error);
             return false;
         }
 
@@ -235,7 +235,7 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", "WARN");
+            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning);
             return false;
         }
     }
@@ -322,7 +322,7 @@ public class AndroidFileDownloader
         catch (final Exception ex) // suppress
         {
             success = false;
-            emitLogEntry("[AFD.TDT.010] Failed to release the transport:\n\n" + ex, "file-downloader", "ERROR");
+            emitLogEntry("[AFD.TDT.010] Failed to release the transport:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Error);
         }
 
         _transport = null;
@@ -343,7 +343,7 @@ public class AndroidFileDownloader
         catch (final Exception ex)
         {
             success = false;
-            emitLogEntry("[AFD.TDFM.010] Failed to close the filesystem manager:\n\n" + ex, "file-downloader", "ERROR");
+            emitLogEntry("[AFD.TDFM.010] Failed to close the filesystem manager:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Error);
         }
 
         _fileSystemManager = null;
@@ -367,8 +367,8 @@ public class AndroidFileDownloader
             return;
 
         _currentBusyState = newBusyState;
-        
-        busyStateChangedAdvertisement(newBusyState);
+
+        fireAndForgetInTheBg(() -> busyStateChangedAdvertisement(newBusyState));
     }
 
     private void setState(final EAndroidFileDownloaderState newState)
@@ -453,12 +453,8 @@ public class AndroidFileDownloader
     {
         setState(EAndroidFileDownloaderState.ERROR);
 
+        _lastFatalErrorMessage = errorMessage; //better set this directly in here considering that fatalErrorOccurredAdvertisement() is called only through onErrorImpl()
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(_remoteFilePathSanitized, errorMessage, globalErrorCode));
-    }
-
-    public void fatalErrorOccurredAdvertisement(final String errorMessage, final int globalErrorCode)
-    { //this method is meant to be overridden by csharp binding libraries to intercept updates
-        _lastFatalErrorMessage = errorMessage;
     }
 
     public void fatalErrorOccurredAdvertisement(
@@ -467,12 +463,11 @@ public class AndroidFileDownloader
             final int globalErrorCode // have a look at EGlobalErrorCode.cs in csharp
     )
     {
-        _lastFatalErrorMessage = errorMessage;
     }
 
-    private void emitLogEntry(final String message, final String category, final String level)
+    private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level)
     {
-        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level));
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString()));
     }
 
     @Contract(pure = true)

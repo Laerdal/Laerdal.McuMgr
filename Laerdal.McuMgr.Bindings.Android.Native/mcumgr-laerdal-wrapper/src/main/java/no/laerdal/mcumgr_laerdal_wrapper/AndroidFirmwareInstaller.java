@@ -113,10 +113,10 @@ public class AndroidFirmwareInstaller
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
         { //it is better to just warn the calling environment instead of erroring out
-            logMessageAdvertisement(
+            emitLogEntry(
                     "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
-                    "FirmwareInstaller",
-                    "WARN"
+                    "firmware-installer",
+                    EAndroidLoggingLevel.Warning
             );
         }
 
@@ -243,21 +243,21 @@ public class AndroidFirmwareInstaller
 
     public void disconnect()
     {
-        if (_transport == null) {
-            logMessageAdvertisement("Transport is null - no need to disconnect", "FirmwareInstaller", "VERBOSE");
+        if (_transport == null)
+        {
+            emitLogEntry("Transport is null - no need to disconnect", "firmware-installer", EAndroidLoggingLevel.Verbose);
             return;
         }
 
-        //noinspection CatchMayIgnoreException
         try
         {
             _transport.release();
             _backgroundExecutor.shutdownNow();
-            logMessageAdvertisement("Connection closed!", "FirmwareInstaller", "INFO");
+            emitLogEntry("Connection closed!", "firmware-installer", EAndroidLoggingLevel.Info);
         }
         catch (Exception ex)
         {
-            logMessageAdvertisement("Failed to close transport connection: " + ex.getMessage(), "FirmwareInstaller", "ERROR");
+            emitLogEntry("Failed to close transport connection: " + ex.getMessage(), "firmware-installer", EAndroidLoggingLevel.Error);
         }
     }
 
@@ -309,12 +309,14 @@ public class AndroidFirmwareInstaller
     {
         EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
         setState(EAndroidFirmwareInstallationState.ERROR); //                         order
-        fatalErrorOccurredAdvertisement( //                                           order
+
+        _lastFatalErrorMessage = errorMessage; //                                     order
+        fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement( //                order
                 currentStateSnapshot,
                 fatalErrorType,
                 errorMessage,
                 McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
-        );
+        ));
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
@@ -322,7 +324,12 @@ public class AndroidFirmwareInstaller
     //this method is meant to be overridden by csharp binding libraries to intercept updates
     public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final int globalErrorCode)
     {
-        _lastFatalErrorMessage = errorMessage;
+    }
+
+    //@Contract(pure = true) //dont
+    private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level)
+    {
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString()));
     }
 
     @Contract(pure = true)

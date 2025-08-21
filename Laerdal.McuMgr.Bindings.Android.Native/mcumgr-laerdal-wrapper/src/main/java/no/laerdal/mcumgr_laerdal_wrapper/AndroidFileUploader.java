@@ -63,19 +63,19 @@ public class AndroidFileUploader
     {
         if (!IsIdleOrCold())
         {
-            emitLogEntry("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "file-uploader", "ERROR", _resourceId);
+            emitLogEntry("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "file-uploader", EAndroidLoggingLevel.Error, _resourceId);
             return false;
         }
 
         if (!tryInvalidateCachedInfrastructure()) //order
         {
-            emitLogEntry("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "file-uploader", "ERROR", _resourceId);
+            emitLogEntry("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "file-uploader", EAndroidLoggingLevel.Error, _resourceId);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        emitLogEntry("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "file-uploader", "TRACE", _resourceId);
+        emitLogEntry("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
 
         return true;
     }
@@ -244,7 +244,7 @@ public class AndroidFileUploader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
-        emitLogEntry("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-uploader", "TRACE", _resourceId);
+        emitLogEntry("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
 
         try
         {
@@ -301,7 +301,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", "WARN", _resourceId);
+            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
             return false;
         }
     }
@@ -319,7 +319,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TDISC.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", "WARN", _resourceId);
+            emitLogEntry("[AFU.TDISC.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
             return false;
         }
     }
@@ -359,7 +359,7 @@ public class AndroidFileUploader
         catch (final Exception ex) // suppress
         {
             success = false;
-            emitLogEntry("[AFU.TDT.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", "WARN", _resourceId);
+            emitLogEntry("[AFU.TDT.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
         }
 
         _transport = null;
@@ -380,7 +380,7 @@ public class AndroidFileUploader
         catch (final Exception ex)
         {
             success = false;
-            emitLogEntry("[AFU.TDFM.010] [SUPPRESSED] Error while closing the file-system-manager:\n\n" + ex, "file-uploader", "WARN", _resourceId);
+            emitLogEntry("[AFU.TDFM.010] [SUPPRESSED] Error while closing the file-system-manager:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
         }
 
         _fileSystemManager = null;
@@ -482,6 +482,7 @@ public class AndroidFileUploader
     {
         setState(EAndroidFileUploaderState.ERROR);
 
+        _lastFatalErrorMessage = errorMessage;
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(
                 _resourceId,
                 _remoteFilePathSanitized,
@@ -497,13 +498,13 @@ public class AndroidFileUploader
             final int globalErrorCode // have a look at EGlobalErrorCode.cs in csharp
     )
     {
-        _lastFatalErrorMessage = errorMessage; //this method is meant to be overridden by csharp binding libraries to intercept updates
+        //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
     //@Contract(pure = true) //dont
-    public void emitLogEntry(final String message, final String category, final String level, final String resourceId)
+    private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level, final String resourceId)
     {
-        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level, resourceId));
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString(), resourceId));
     }
 
     @Contract(pure = true)
