@@ -19,7 +19,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
         public async Task SingleFileUploadAsync_ShouldThrowUploadCancelledException_GivenCancellationRequestMidflight(string testcaseNickname, bool isCancellationLeadingToSoftLanding)
         {
             // Arrange
-            var mockedFileData = new byte[] { 1, 2, 3 };
+            var mockedFileData = new byte[] {1, 2, 3};
             const string remoteFilePath = "/path/to/file.bin";
 
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy3(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData, isCancellationLeadingToSoftLanding);
@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             {
                 await Task.Delay(500);
 
-                fileDownloader.Cancel();
+                fileDownloader.Cancel("foobar reason");
             });
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
                 hostDeviceModel: "foobar",
@@ -56,7 +56,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
 
-            eventsMonitor.Should().Raise(nameof(fileDownloader.Cancelled));
+            eventsMonitor
+                .Should()
+                .Raise(nameof(fileDownloader.Cancelling))
+                .WithSender(fileDownloader)
+                .WithArgs<CancellingEventArgs>(args => args.Reason == "foobar reason");
+            
+            eventsMonitor
+                .Should()
+                .Raise(nameof(fileDownloader.Cancelled))
+                .WithSender(fileDownloader)
+                .WithArgs<CancelledEventArgs>(args => args.Reason == "foobar reason");
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
@@ -84,19 +94,20 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
 
-            public override void Cancel()
+            public override void Cancel(string reason = "")
             {
-                base.Cancel();
+                base.Cancel(reason);
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
-                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling); //      order
+                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling); //    order
+                    CancellingAdvertisement(reason); //                                                                                                      order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
                         StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled); //   order
-                        CancelledAdvertisement(); //                                                                                                           order    
+                        CancelledAdvertisement(reason); //                                                                                                     order    
                     }
                 });
 
@@ -134,7 +145,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                         return;
                     
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //   order
-                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
+                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                          order
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

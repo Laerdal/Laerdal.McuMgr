@@ -369,7 +369,7 @@ function create_fat_binaries() {
   find                                           \
         "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
         -type f                                  \
-        -exec sed -i.bak 's/bool TryInvalidateCachedTransport { get; }/bool TryInvalidateCachedTransport();/gi' {} \;
+        -exec sed -i.bak 's/bool TryInvalidateCachedInfrastructure { get; }/bool TryInvalidateCachedInfrastructure();/gi' {} \;
 
   rm -f "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"/*.bak || :
 

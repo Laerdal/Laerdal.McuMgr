@@ -104,7 +104,8 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         );
 
         /// <summary>Cancels the file-downloading process</summary>
-        void Cancel();
+        /// <param name="reason">The reason for the cancellation</param>
+        void Cancel(string reason = "");
         
         /// <summary>Disconnects the file-downloader from the targeted device</summary>
         void Disconnect();

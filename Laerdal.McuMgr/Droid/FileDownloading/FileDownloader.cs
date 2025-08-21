@@ -118,6 +118,12 @@ namespace Laerdal.McuMgr.FileDownloading
 
             #region commands
 
+            public void Disconnect()
+            {
+                // ReSharper disable once RedundantBaseQualifier
+                base.TryDisconnect();
+            }
+
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
                 int? initialMtuSize = null //  android only
@@ -143,9 +149,9 @@ namespace Laerdal.McuMgr.FileDownloading
                 return base.TrySetBluetoothDevice(androidBluetoothDevice);
             }
             
-            public new bool TryInvalidateCachedTransport()
+            public new bool TryInvalidateCachedInfrastructure()
             {
-                return base.TryInvalidateCachedTransport();
+                return base.TryInvalidateCachedInfrastructure();
             }
             
             #endregion commands
@@ -192,11 +198,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 );
             }
 
-            public override void CancelledAdvertisement()
+            public override void CancelledAdvertisement(string reason)
             {
-                base.CancelledAdvertisement(); //just in case
+                base.CancelledAdvertisement(reason); //just in case
                 
-                _fileDownloaderCallbacksProxy?.CancelledAdvertisement();
+                _fileDownloaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
             
             public override void FileDownloadStartedAdvertisement(string resource)

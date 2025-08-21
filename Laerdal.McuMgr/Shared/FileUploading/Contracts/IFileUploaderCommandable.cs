@@ -156,7 +156,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// Method has an effect if and only if the upload has been terminated first (canceled or failed or completed).
         /// </summary>
         /// <returns>True if the transport has been scrapped without issues - False otherwise (which typically means that an upload is still ongoing)</returns>
-        bool TryInvalidateCachedTransport();
+        bool TryInvalidateCachedInfrastructure();
         
         /// <summary>Sets the context. Mainly needed by Android - this call has no effect in iOS.</summary>
         /// <returns>True if the context was successfully set to the specified one - False otherwise (which typically means that an upload is still ongoing)</returns>

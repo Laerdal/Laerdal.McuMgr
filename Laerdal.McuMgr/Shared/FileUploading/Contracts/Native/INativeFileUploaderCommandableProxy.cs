@@ -5,7 +5,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
     internal interface INativeFileUploaderCommandableProxy
     {
         void Cancel(string reason = "");
-        void Disconnect();
+        void TryDisconnect();
 
         EFileUploaderVerdict BeginUpload(
             byte[] data,
@@ -20,6 +20,6 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 
         bool TrySetContext(object context);
         bool TrySetBluetoothDevice(object bluetoothDevice);
-        bool TryInvalidateCachedTransport();
+        bool TryInvalidateCachedInfrastructure();
     }
 }

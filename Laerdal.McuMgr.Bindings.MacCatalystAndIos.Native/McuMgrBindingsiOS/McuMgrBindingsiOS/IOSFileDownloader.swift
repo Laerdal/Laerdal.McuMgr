@@ -37,7 +37,7 @@ public class IOSFileDownloader: NSObject {
             return false
         }
 
-        if !tryInvalidateCachedTransport() { //order
+        if !tryInvalidateCachedInfrastructure() { //order
             return false
         }
 
@@ -46,15 +46,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func tryInvalidateCachedTransport() -> Bool {
-        if _transporter == nil { //already scrapped
-            return true
-        }
-
-        if !isIdleOrCold() { //if the download is already in progress we bail out
-            return false
-        }
-
+    public func tryInvalidateCachedInfrastructure() -> Bool {
         disposeFilesystemManager() // order
         disposeTransport() //         order
 

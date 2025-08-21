@@ -7,7 +7,9 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
     {
         public IFileDownloaderEventEmittable FileDownloader { get; set; }
 
-        void CancelledAdvertisement();
+        void CancelledAdvertisement(string reason);
+        void CancellingAdvertisement(string reason);
+
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource);
         void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState);
         void BusyStateChangedAdvertisement(bool busyNotIdle);

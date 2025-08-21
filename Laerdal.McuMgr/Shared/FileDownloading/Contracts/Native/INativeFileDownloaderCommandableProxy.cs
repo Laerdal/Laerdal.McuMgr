@@ -4,12 +4,12 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
 {
     internal interface INativeFileDownloaderCommandableProxy
     {
-        void Cancel();
+        void Cancel(string reason);
         void Disconnect();
         EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null);
         
         bool TrySetContext(object context);
         bool TrySetBluetoothDevice(object bluetoothDevice);
-        bool TryInvalidateCachedTransport();
+        bool TryInvalidateCachedInfrastructure();
     }
 }

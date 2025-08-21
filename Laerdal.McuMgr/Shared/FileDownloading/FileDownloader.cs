@@ -105,10 +105,11 @@ namespace Laerdal.McuMgr.FileDownloading
             return verdict;
         }
 
-        public void Cancel() => _nativeFileDownloaderProxy?.Cancel();
+        public void Cancel(string reason = "") => _nativeFileDownloaderProxy?.Cancel(reason);
         public void Disconnect() => _nativeFileDownloaderProxy?.Disconnect();
 
         private event EventHandler<CancelledEventArgs> _cancelled;
+        private event EventHandler<CancellingEventArgs> _cancelling;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
@@ -145,6 +146,16 @@ namespace Laerdal.McuMgr.FileDownloading
                 _cancelled += value;
             }
             remove => _cancelled -= value;
+        }
+        
+        public event EventHandler<CancellingEventArgs> Cancelling
+        {
+            add
+            {
+                _cancelling -= value;
+                _cancelling += value;
+            }
+            remove => _cancelling -= value;
         }
 
         public event EventHandler<BusyStateChangedEventArgs> BusyStateChanged
@@ -281,6 +292,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 : DefaultGracefulCancellationTimeoutInMs;
             
             var result = (byte[])null;
+            var cancellationReason = "";
             var isCancellationRequested = false;
             var fileDownloadProgressEventsCount = 0;
             var suspiciousTransportFailuresCount = 0;
@@ -292,6 +304,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 try
                 {
                     Cancelled += FileDownloader_Cancelled_;
+                    Cancelling += FileDownloader_Cancelling_;
                     StateChanged += FileDownloader_StateChanged_;
                     FatalErrorOccurred += FileDownloader_FatalErrorOccurred_;
                     FileDownloadCompleted += FileDownloader_FileDownloadCompleted_;
@@ -313,8 +326,8 @@ namespace Laerdal.McuMgr.FileDownloading
                             didWarnOnceAboutUnstableConnection = true;
                             OnLogEmitted(new LogEmittedEventArgs(
                                 level: ELogLevel.Warning,
-                                message: $"[FD.DA.010] Attempt#{triesCount}: Connection is too unstable for downloading assets from the target device. Subsequent tries will use failsafe parameters on the connection " +
-                                         $"just in case it helps (initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"})",
+                                message: $"[FD.DA.010] Attempt#{triesCount}: Connection is too unstable for downloading assets from the target device. Subsequent tries will use failsafe parameters " +
+                                         $"on the connection just in case it helps (initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"})",
                                 resource: "File",
                                 category: "FileDownloader"
                             ));
@@ -394,6 +407,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     taskCompletionSource.TrySetCanceled(); //it is best to ensure that the task is fossilized in case of rogue exceptions
                     
                     Cancelled -= FileDownloader_Cancelled_;
+                    Cancelling -= FileDownloader_Cancelling_;
                     StateChanged -= FileDownloader_StateChanged_;
                     FatalErrorOccurred -= FileDownloader_FatalErrorOccurred_;
                     FileDownloadCompleted -= FileDownloader_FileDownloadCompleted_;
@@ -402,7 +416,36 @@ namespace Laerdal.McuMgr.FileDownloading
 
                 void FileDownloader_Cancelled_(object sender_, CancelledEventArgs ea_)
                 {
-                    taskCompletionSource.TrySetException(new DownloadCancelledException());
+                    taskCompletionSource.TrySetException(new DownloadCancelledException(ea_.Reason));
+                }
+
+                void FileDownloader_Cancelling_(object _, CancellingEventArgs ea_)
+                {
+                    if (isCancellationRequested)
+                        return;
+
+                    cancellationReason = ea_.Reason;
+                    isCancellationRequested = true;
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary task rescheduling
+                            {
+                                await Task.Delay(gracefulCancellationTimeoutInMs);
+                            }
+
+                            OnCancelled(new CancelledEventArgs(ea_.Reason)); //00
+                        }
+                        catch // (Exception ex)
+                        {
+                            // ignored
+                        }
+                    });
+
+                    //00  we first wait to allow the cancellation to be handled by the underlying native code meaning that we should see OnCancelled()
+                    //    getting called right above   but if that takes too long we give the killing blow by calling OnCancelled() manually here
                 }
 
                 void FileDownloader_StateChanged_(object sender_, StateChangedEventArgs ea_)
@@ -411,30 +454,6 @@ namespace Laerdal.McuMgr.FileDownloading
                     {
                         case EFileDownloaderState.Idle:
                             fileDownloadProgressEventsCount = 0;
-                            return;
-                        
-                        case EFileDownloaderState.Cancelling:
-                            if (isCancellationRequested)
-                                return;
-                            
-                            isCancellationRequested = true;
-                            Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    if (gracefulCancellationTimeoutInMs > 0) //keep this check here to avoid unnecessary context switching
-                                    {
-                                        await Task.Delay(gracefulCancellationTimeoutInMs);
-                                    }
-
-                                    OnCancelled(new CancelledEventArgs()); //00
-                                }
-                                catch // (Exception ex)
-                                {
-                                    // ignored
-                                }
-                            });
-                            
                             return;
                     }
 
@@ -465,7 +484,7 @@ namespace Laerdal.McuMgr.FileDownloading
             }
 
             if (isCancellationRequested) //vital
-                throw new DownloadCancelledException(); //20
+                throw new DownloadCancelledException(cancellationReason); //20
 
             return result;
             
@@ -484,6 +503,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
         void ILogEmittable.OnLogEmitted(in LogEmittedEventArgs ea) => OnLogEmitted(in ea);
         void IFileDownloaderEventEmittable.OnCancelled(CancelledEventArgs ea) => OnCancelled(ea); //just to make the class unit-test friendly without making the methods public
+        void IFileDownloaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea); //just to make the class unit-test friendly without making the methods public
         void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
         void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
@@ -492,6 +512,7 @@ namespace Laerdal.McuMgr.FileDownloading
         void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileDownloadProgressPercentageAndDataThroughputChanged(ea);
         
         private void OnCancelled(CancelledEventArgs ea) => _cancelled?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnCancelling(CancellingEventArgs ea) => _cancelling?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
@@ -522,9 +543,12 @@ namespace Laerdal.McuMgr.FileDownloading
         {
             public IFileDownloaderEventEmittable FileDownloader { get; set; }
 
-            public void CancelledAdvertisement()
-                => FileDownloader?.OnCancelled(new CancelledEventArgs());
+            public void CancelledAdvertisement(string reason)
+                => FileDownloader?.OnCancelled(new CancelledEventArgs(reason));
 
+            public void CancellingAdvertisement(string reason)
+                => FileDownloader?.OnCancelling(new CancellingEventArgs(reason));
+            
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => FileDownloader?.OnLogEmitted(new LogEmittedEventArgs(
                     level: level,
