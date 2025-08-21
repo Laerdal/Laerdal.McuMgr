@@ -215,7 +215,6 @@ public class AndroidFileUploader
 
         setState(EAndroidFileUploaderState.NONE);
         setBusyState(false);
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
@@ -425,18 +424,26 @@ public class AndroidFileUploader
         fireAndForgetInTheBg(() -> {
             stateChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, oldState, newState); //order
 
-            if (oldState == EAndroidFileUploaderState.CANCELLING && newState == EAndroidFileUploaderState.CANCELLED)
+            switch (newState)
             {
-                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0);
-            }
-            else if (oldState == EAndroidFileUploaderState.IDLE && newState == EAndroidFileUploaderState.UPLOADING)
-            {
-                fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
-            }
-            else if (oldState == EAndroidFileUploaderState.UPLOADING && newState == EAndroidFileUploaderState.COMPLETE) //00
-            {
-                fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
-                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0);
+                case NONE: // * -> none
+                    fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0);
+                    break;
+
+                case UPLOADING:
+                    if (oldState == EAndroidFileUploaderState.IDLE) // idle -> uploading
+                    {
+                        fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
+                    }
+                    break;
+
+                case COMPLETE:
+                    if (oldState == EAndroidFileUploaderState.UPLOADING) // uploading -> complete
+                    {
+                        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
+                        fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
+                    }
+                    break;
             }
         });
 
