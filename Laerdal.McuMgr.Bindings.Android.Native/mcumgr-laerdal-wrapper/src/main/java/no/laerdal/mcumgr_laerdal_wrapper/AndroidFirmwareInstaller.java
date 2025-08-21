@@ -2,7 +2,6 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
@@ -482,8 +481,6 @@ public class AndroidFirmwareInstaller
         {
             if (imageSize == 0)
                 return;
-
-            final long uptimeMillis = SystemClock.uptimeMillis();
 
             int lastProgress = (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
             float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
