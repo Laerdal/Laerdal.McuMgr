@@ -100,7 +100,7 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage(), ex2);
+                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, "[AFI.BI.010] Failed to extract firmware-images" + ex2, ex2);
 
                 return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
             }
@@ -134,7 +134,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage(), ex);
+            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, "[AFI.BI.020] Failed to digest settings:\n\n" + ex, ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -147,7 +147,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage(), ex);
+            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, "[AFI.BI.030] Failed to kick-start the installation:\n\n" + ex, ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
         }
@@ -460,10 +460,10 @@ public class AndroidFirmwareInstaller
                 fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
             }
 
-            onError(fatalErrorType, ex.getMessage(), ex);
-            setLoggingEnabled(true);
-            // Timber.e(error, "Install failed");
+            onError(fatalErrorType, "[AFI.OAF.010] Upgrade failed:\n\n" + ex.getMessage(), ex);
             setBusyState(false);
+
+            setLoggingEnabled(true);
         }
 
         @Override

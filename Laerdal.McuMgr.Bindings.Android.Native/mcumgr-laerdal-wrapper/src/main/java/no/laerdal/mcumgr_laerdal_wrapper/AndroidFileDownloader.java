@@ -391,16 +391,16 @@ public class AndroidFileDownloader
 
             switch (newState)
             {
-                case NONE:
+                case NONE: // * -> none
                     fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0);
                     break;
-                case DOWNLOADING:
+                case DOWNLOADING: // idle -> downloading
                     if (oldState == EAndroidFileDownloaderState.IDLE)
                     {
                         fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
                     }
                     break;
-                case COMPLETE:
+                case COMPLETE: // downloading -> complete
                     if (oldState == EAndroidFileDownloaderState.DOWNLOADING) //00
                     {
                         fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); // order
