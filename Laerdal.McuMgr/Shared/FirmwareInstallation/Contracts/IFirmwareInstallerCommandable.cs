@@ -47,9 +47,10 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
         /// <return>A task that you can await on to know when the operation has completed.</return>
         ///
         /// <exception cref="UnauthorizedException"/>If the operation failed because the host-device is not authorized to perform the operation on the remote ble-device.
+        /// <exception cref="FirmwareInstallationTimeoutException"/>If the firmware installation took too long to complete and the timeout has expired.
         /// <exception cref="FirmwareInstallationImageSwappingTimedOutException"/>If the confirmation stage has timed out.
         /// <exception cref="AnotherFirmwareInstallationIsAlreadyOngoingException"/>If another firmware installation is already in progress on the remote device.
-        /// <exception cref="FirmwareInstallationUploadingStageErroredOutException"/>If the uploading stage has failed.
+        /// <exception cref="AllFirmwareInstallationAttemptsFailedException"/>If all the uploading stage has failed.
         /// <exception cref="FirmwareInstallationUnhealthyFirmwareDataGivenException"/>If the bytes of the given firmware are unhealthy.
         /// <exception cref="FirmwareInstallationErroredOutException"/>If the firmware installation has failed for any other reason.
         Task InstallAsync(
