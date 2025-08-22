@@ -98,11 +98,11 @@ public class IOSFirmwareInstaller: NSObject {
 
         setState(.idle)
 
-        let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: {
+        let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 try _manager.start(
                         images: [
-                            ImageManager.Image( //2
+                            ImageManager.Image( //20
                                     image: 0,
                                     slot: 1,
                                     hash: try McuMgrImage(data: imageData).hash,
@@ -123,11 +123,10 @@ public class IOSFirmwareInstaller: NSObject {
 
         return verdict
 
-        //0 set the installation mode
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
         //
-        //1 rF52840 due to how the flash memory works requires ~20 sec to erase images
-        //
-        //2 the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+        //20  the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
     }
 
     private func ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() {

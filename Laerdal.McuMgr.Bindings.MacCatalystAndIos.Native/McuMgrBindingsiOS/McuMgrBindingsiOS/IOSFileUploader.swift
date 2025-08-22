@@ -168,6 +168,7 @@ public class IOSFileUploader: NSObject {
         return verdict
 
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
+        //
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
     }
