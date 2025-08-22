@@ -284,7 +284,6 @@ public class IOSFileUploader: NSObject {
 
         setState(.none)
         setBusyState(false)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -370,8 +369,11 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func fileUploadCompletedAdvertisement() {
-        _listener.fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized)
+    private func fileUploadCompletedAdvertisement(
+        _ resourceId: String?,
+        _ remoteFilePathSanitized: String?
+    ) {
+        _listener.fileUploadCompletedAdvertisement(resourceId, remoteFilePathSanitized)
     }
 
     //@objc   dont
@@ -381,10 +383,12 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func stateChangedAdvertisement(
+            _ resourceId: String?,
+            _ remoteFilePathSanitized: String?,
             _ oldState: EIOSFileUploaderState,
             _ newState: EIOSFileUploaderState
     ) {
-        _listener.stateChangedAdvertisement(_resourceId, _remoteFilePathSanitized, oldState, newState)
+        _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState)
     }
 
     //@objc   dont
@@ -406,15 +410,13 @@ public class IOSFileUploader: NSObject {
             _ currentThroughputInKbps: Float32,
             _ totalAverageThroughputInKbps: Float32
     ) {
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    resourceId,
-                    remoteFilePathSanitized,
-                    progressPercentage,
-                    currentThroughputInKbps,
-                    totalAverageThroughputInKbps
-            )
-        }
+        _listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                resourceId,
+                remoteFilePathSanitized,
+                progressPercentage,
+                currentThroughputInKbps,
+                totalAverageThroughputInKbps
+        )
     }
 
     private func setBusyState(_ newBusyState: Bool) {
@@ -434,18 +436,37 @@ public class IOSFileUploader: NSObject {
 
         _currentState = newState //order
 
-        stateChangedAdvertisement(oldState, newState) //order
+        let resourceIdSnapshot = _resourceId
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        if (oldState == .idle && newState == .uploading) //00
-        {
-            fileUploadStartedAdvertisement(_resourceId, _remoteFilePathSanitized)
-        }
-        else if (oldState == .uploading && newState == .complete) //00
-        {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 100, 0, 0)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self.stateChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, oldState, newState) //order
+
+            switch (newState) {
+            case .none: // * -> none
+                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0)
+                break;
+                
+            case .uploading:
+                if (oldState == .idle) // idle -> uploading
+                {
+                    self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //00
+                }
+                break;
+                
+            case .complete:
+                if (oldState == .uploading) // uploading -> complete
+                {
+                    self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
+                    self.fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
+                }
+                break;
+                
+            default: break;
+            }
         }
 
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //00  trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
 }
 
@@ -454,12 +475,23 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
         setState(.uploading)
         setBusyState(true)
+        
+        let resourceIdSnapshot  = _resourceId;
+        let remoteFilePathSanitizedSnapshot  = _remoteFilePathSanitized;
 
-        let uploadProgressPercentage = (bytesSent * 100) / fileSize
-        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
-        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            let uploadProgressPercentage = (bytesSent * 100) / fileSize
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
+            self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                resourceIdSnapshot,
+                remoteFilePathSanitizedSnapshot,
+                uploadProgressPercentage,
+                currentThroughputInKbps,
+                totalAverageThroughputInKbps
+            )
+        }
     }
 
     public func uploadDidFail(with error: Error) {
@@ -470,13 +502,11 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadDidCancel() {
         setState(.cancelled)
         setBusyState(false)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0)
         cancelledAdvertisement(_cancellationReason)
     }
 
     public func uploadDidFinish() {
         setState(.complete)
-        fileUploadCompletedAdvertisement()
         setBusyState(false)
     }
 

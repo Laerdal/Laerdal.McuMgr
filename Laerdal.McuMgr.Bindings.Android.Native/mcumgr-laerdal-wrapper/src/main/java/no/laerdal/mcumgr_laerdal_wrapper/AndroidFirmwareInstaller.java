@@ -313,6 +313,7 @@ public class AndroidFirmwareInstaller
     {
         EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
         setState(EAndroidFirmwareInstallationState.ERROR); //                         order
+        setBusyState(false); //                                                       order
 
         _lastFatalErrorMessage = errorMessage; //                                     order
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement( //                order
