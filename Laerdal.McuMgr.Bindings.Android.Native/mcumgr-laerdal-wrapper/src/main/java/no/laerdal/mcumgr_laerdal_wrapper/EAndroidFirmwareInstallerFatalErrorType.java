@@ -13,7 +13,7 @@ public enum EAndroidFirmwareInstallerFatalErrorType //this must mirror the enum 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFirmwareInstallerFatalErrorType(int value)
+    EAndroidFirmwareInstallerFatalErrorType(final int value)
     {
         _value = value;
     }

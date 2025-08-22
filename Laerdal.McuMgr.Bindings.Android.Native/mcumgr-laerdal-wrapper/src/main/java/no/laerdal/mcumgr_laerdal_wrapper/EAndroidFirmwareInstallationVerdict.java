@@ -11,7 +11,7 @@ public enum EAndroidFirmwareInstallationVerdict
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFirmwareInstallationVerdict(int value)
+    EAndroidFirmwareInstallationVerdict(final int value)
     {
         _value = value;
     }
