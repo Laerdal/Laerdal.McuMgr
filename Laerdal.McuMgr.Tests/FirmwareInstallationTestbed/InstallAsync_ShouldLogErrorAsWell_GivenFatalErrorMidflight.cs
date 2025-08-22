@@ -100,7 +100,7 @@ public partial class FirmwareInstallerTestbed
                 await Task.Delay(100);
 
                 StateChangedAdvertisement(EFirmwareInstallationState.Validating, EFirmwareInstallationState.Error);
-                FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.GivenFirmwareDataUnhealthy, "blah blah", EGlobalErrorCode.Generic);
+                FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, "blah blah", EGlobalErrorCode.Generic);
             });
 
             return verdict;

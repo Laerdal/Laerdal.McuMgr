@@ -29,7 +29,7 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=58c8cf47_002D0a89_002D4a8f_002Dbf49_002D8e2fbad88d55/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6fd1b538_002D8692_002D4f56_002D8042_002D28aaf597c5f0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6fd1b538_002D8692_002D4f56_002D8042_002D28aaf597c5f0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=72477f2e_002Ddccf_002D4535_002Da219_002D25a9e03262f0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
@@ -43,6 +43,9 @@
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ea1d4740_002D2d02_002D44ea_002Dacf4_002Df8e1e8ab949f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Solution /&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=edfaaad2_002D8558_002D4df1_002Dbb18_002D1c7a506ec7a5/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from Solution #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=131e5d65_002D002c_002D354a_002D58d9_002D743f2733d18b_0023Laerdal_002EMcuMgr_002EBindings_002EAndroid/@EntryIndexedValue">True</s:Boolean>
 	
