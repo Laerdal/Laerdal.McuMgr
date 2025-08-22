@@ -73,7 +73,7 @@ public class IOSFirmwareInstaller: NSObject {
         }
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= EstimatedSwapTimeoutInMillisecondsWarningMinThreshold) { //its better to just warn the calling environment instead of erroring out
-            logMessageAdvertisement(
+            emitLogEntry(
                     "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1_000)' milliseconds instead?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
@@ -152,9 +152,9 @@ public class IOSFirmwareInstaller: NSObject {
         if properMtu > 0 {
             _transporter.mtu = properMtu
 
-            logMessageAdvertisement("[IOSFI.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+            emitLogEntry("[IOSFI.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
         } else {
-            logMessageAdvertisement("[IOSFI.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+            emitLogEntry("[IOSFI.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
         }
 
         //00  set to DefaultMtuForFirmwareInstallations as an explicit sturdy default-mtu for the special case of ios firmware installations
@@ -268,12 +268,17 @@ public class IOSFirmwareInstaller: NSObject {
         let currentStateSnapshot = _currentState //00  order
         setState(.error) //                            order
         setBusyState(false) //                         order
-        fatalErrorOccurredAdvertisement( //            order
-                currentStateSnapshot,
-                fatalErrorType,
-                errorMessage,
-                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
-        )
+
+        _lastFatalErrorMessage = errorMessage //order
+
+        DispatchQueue.global(qos: .background).async { //order  fire and forget to boost performance
+            self.fatalErrorOccurredAdvertisement(
+                    currentStateSnapshot,
+                    fatalErrorType,
+                    errorMessage,
+                    McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+            )
+        }
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
@@ -281,13 +286,12 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ globalErrorCode: Int) {
-        _lastFatalErrorMessage = errorMessage
         _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage, globalErrorCode)
     }
 
     //@objc   dont
 
-    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
+    private func emitLogEntry(_ message: String, _ category: String, _ level: String) {
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
             self._listener.logMessageAdvertisement(message, category, level)
         }
@@ -296,7 +300,9 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func cancelledAdvertisement() {
-        _listener.cancelledAdvertisement()
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.cancelledAdvertisement()
+        }
     }
 
     //@objc   dont
@@ -321,13 +327,11 @@ public class IOSFirmwareInstaller: NSObject {
             _ averageThroughput: Float32,
             _ totalAverageThroughputInKbps: Float32
     ) {
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    progressPercentage,
-                    averageThroughput,
-                    totalAverageThroughputInKbps
-            )
-        }
+        _listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                progressPercentage,
+                averageThroughput,
+                totalAverageThroughputInKbps
+        )
     }
 
     private func setBusyState(_ newBusyState: Bool) {
@@ -335,7 +339,9 @@ public class IOSFirmwareInstaller: NSObject {
             return
         }
 
-        busyStateChangedAdvertisement(newBusyState)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self.busyStateChangedAdvertisement(newBusyState)
+        }
     }
 
     private func setState(_ newState: EIOSFirmwareInstallationState) {
@@ -347,12 +353,14 @@ public class IOSFirmwareInstaller: NSObject {
 
         _currentState = newState //order
 
-        if (oldState == .uploading && newState == .testing) //00  order
-        {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
-        }
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            if (oldState == .uploading && newState == .testing) //00  order
+            {
+                self.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
+            }
 
-        stateChangedAdvertisement(oldState, newState) //order
+            self.stateChangedAdvertisement(oldState, newState) //order
+        }
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
@@ -455,11 +463,17 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        let uploadProgressPercentage = (bytesSent * 100) / imageSize
-        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
-        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        if (imageSize == 0) {
+            return
+        }
 
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps);
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            let uploadProgressPercentage = (bytesSent * 100) / imageSize
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+
+            self.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
+        }
     }
 
     private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
@@ -505,7 +519,7 @@ extension IOSFirmwareInstaller: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
-        logMessageAdvertisement(
+        emitLogEntry(
                 msg,
                 category.rawValue,
                 level.name
