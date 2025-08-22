@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Linq;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -189,11 +190,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
             public override void FileDownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
             {
-                var dataBytes = new byte[data.Length];
-                for (var i = 0; i < data.Length; i++)
-                {
-                    dataBytes[i] = data[i].ByteValue;
-                }
+                var dataBytes = data?.Select(x => (byte) x).ToArray() ?? Array.Empty<byte>();
 
                 FileDownloadCompletedAdvertisement(resourceId, dataBytes);
             }
