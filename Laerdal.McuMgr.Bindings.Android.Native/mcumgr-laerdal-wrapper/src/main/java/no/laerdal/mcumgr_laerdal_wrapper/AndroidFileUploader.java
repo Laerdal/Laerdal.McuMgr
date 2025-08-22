@@ -643,8 +643,6 @@ public class AndroidFileUploader
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
-
             onError(error.getMessage(), error);
             setLoggingEnabledOnTransport(true);
 
