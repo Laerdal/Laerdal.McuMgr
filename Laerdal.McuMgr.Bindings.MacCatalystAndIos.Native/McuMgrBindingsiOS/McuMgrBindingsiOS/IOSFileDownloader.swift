@@ -20,6 +20,8 @@ public class IOSFileDownloader: NSObject {
     private var _lastBytesSentTimestamp: Date? = nil
     private var _downloadStartTimestamp: Date? = nil
 
+    private var _cancellationReason: String = ""
+
     @objc
     public init(_ listener: IOSListenerForFileDownloader!) {
         _listener = listener
@@ -168,20 +170,18 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func cancel() {
-        if (_fileSystemManager == nil) {
+    public func cancel(_ reason: String = "") {
+        _cancellationReason = reason
+        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
+        setState(.cancelling) //                                                                 order
+
+        if (_fileSystemManager == nil) { //order
             return
         }
 
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10  order
             do {
-                if (_fileSystemManager == nil) {
-                    return
-                }
-
                 _fileSystemManager?.cancelTransfer() //order
-
-                setState(.cancelling) //order
             } catch let ex {
                 onError("[IOSFD.CANCEL.050] Failed to cancel file-downloading", ex)
             }
@@ -215,7 +215,6 @@ public class IOSFileDownloader: NSObject {
 
         setState(.none)
         setBusyState(false)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -260,25 +259,37 @@ public class IOSFileDownloader: NSObject {
     //@objc   dont
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage //       order
+
         setState(.error) //                            order
         setBusyState(false) //                         order
-        _listener.fatalErrorOccurredAdvertisement( //  order
-                _remoteFilePathSanitized,
-                errorMessage,
-                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
-        )
-    }
 
-    //@objc   dont
-    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
+
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.logMessageAdvertisement(message, category, level, self._remoteFilePathSanitized)
+            self._listener.fatalErrorOccurredAdvertisement( //  order
+                    remoteFilePathSanitizedSnapshot,
+                    errorMessage,
+                    McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+            )
         }
     }
 
     //@objc   dont
-    private func cancelledAdvertisement() {
-        _listener.cancelledAdvertisement()
+    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.logMessageAdvertisement(message, category, level, remoteFilePathSanitizedSnapshot)
+        }
+    }
+
+    //@objc   dont
+    private func cancellingAdvertisement(_ reason: String?) {
+        _listener.cancellingAdvertisement(reason)
+    }
+
+    //@objc   dont
+    private func cancelledAdvertisement(_ reason: String?) {
+        _listener.cancelledAdvertisement(reason)
     }
 
     //@objc   dont
@@ -301,9 +312,7 @@ public class IOSFileDownloader: NSObject {
             _ averageThroughput: Float32,
             _ totalAverageThroughputInKbps: Float32
     ) {
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, averageThroughput, totalAverageThroughputInKbps)
-        }
+        _listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, averageThroughput, totalAverageThroughputInKbps)
     }
 
     //@objc   dont
@@ -312,7 +321,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func fileDownloadCompletedAdvertisement(_ resourceId: String?, _ data: [UInt8]) {
+    private func fileDownloadCompletedAdvertisement(_ resourceId: String?, _ data: [UInt8]?) {
         _listener.fileDownloadCompletedAdvertisement(resourceId, data)
     }
 
@@ -321,25 +330,45 @@ public class IOSFileDownloader: NSObject {
             return
         }
 
-        busyStateChangedAdvertisement(newBusyState)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self.busyStateChangedAdvertisement(newBusyState)
+        }
     }
 
-    private func setState(_ newState: EIOSFileDownloaderState) {
+    private func setState(_ newState: EIOSFileDownloaderState, _ data: [UInt8]? = nil) {
         if (_currentState == newState) {
             return
         }
 
         let oldState = _currentState //order
         _currentState = newState //order
-        stateChangedAdvertisement(oldState, newState) //order
 
-        if (oldState == .idle && newState == .downloading) //00
-        {
-            fileDownloadStartedAdvertisement(_remoteFilePathSanitized)
-        }
-        else if (oldState == .downloading && newState == .complete) //00
-        {
-            fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 100, 0, 0)
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized //order
+
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self.stateChangedAdvertisement(oldState, newState) //order
+
+            switch (newState)
+            {
+            case .none: // * -> none
+                self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0)
+                break;
+            case .downloading: // idle -> downloading
+                if (oldState == .idle)
+                {
+                    self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot) //order
+                }
+                break;
+            case .complete: // downloading -> complete
+                if (oldState == .downloading) //00
+                {
+                    self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0) // order
+                    self.fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data) //                                       order
+                }
+                break;
+
+            default: break;
+            }
         }
 
         //00 trivial hotfix to deal with the fact that the file-download progress% doesn't fill up to 100%
@@ -351,29 +380,35 @@ extension IOSFileDownloader: FileDownloadDelegate {
         setState(.downloading)
         setBusyState(true)
 
-        let downloadProgressPercentage = (bytesSent * 100) / fileSize
-        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
-        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, downloadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            let downloadProgressPercentage = (bytesSent * 100) / fileSize
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+
+            self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
+                    remoteFilePathSanitizedSnapshot,
+                    downloadProgressPercentage,
+                    currentThroughputInKbps,
+                    totalAverageThroughputInKbps
+            )
+        }
     }
 
     public func downloadDidFail(with error: Error) {
         onError(error.localizedDescription, error)
-
         setBusyState(false)
     }
 
     public func downloadDidCancel() {
-        setState(.cancelled)
-        setBusyState(false)
-        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(_remoteFilePathSanitized, 0, 0, 0)
-        cancelledAdvertisement()
+        setState(.cancelled) //                                                                                    order
+        DispatchQueue.global(qos: .background).async { self.cancelledAdvertisement(self._cancellationReason) } //  order
+        setBusyState(false) //                                                                                     order
     }
 
     public func download(of name: String, didFinish data: Data) {
-        setState(.complete)
-        fileDownloadCompletedAdvertisement(_remoteFilePathSanitized, [UInt8](data))
+        setState(.complete, [UInt8](data))
         setBusyState(false)
     }
 

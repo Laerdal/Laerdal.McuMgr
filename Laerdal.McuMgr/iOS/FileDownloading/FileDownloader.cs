@@ -120,7 +120,7 @@ namespace Laerdal.McuMgr.FileDownloading
             
             public string LastFatalErrorMessage => _nativeFileDownloader?.LastFatalErrorMessage;
             
-            public void Cancel(string reason) => _nativeFileDownloader?.Cancel();
+            public void Cancel(string reason) => _nativeFileDownloader?.Cancel(reason);
             
             public void Disconnect() => _nativeFileDownloader?.Disconnect();
 
@@ -146,10 +146,10 @@ namespace Laerdal.McuMgr.FileDownloading
                 set => _nativeFileDownloaderCallbacksProxy!.FileDownloader = value;
             }
 
-            public void CancelledAdvertisement(string reason)
+            public override void CancelledAdvertisement(string reason)
                 => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement(reason: reason);
 
-            public void CancellingAdvertisement(string reason)
+            public override void CancellingAdvertisement(string reason)
                 => _nativeFileDownloaderCallbacksProxy?.CancellingAdvertisement(reason: reason);
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
