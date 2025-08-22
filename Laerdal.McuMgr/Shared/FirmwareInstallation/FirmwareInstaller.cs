@@ -413,16 +413,22 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 {
                     taskCompletionSource.TrySetException(ea_ switch
                     {
-                        { GlobalErrorCode: EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied }
-                            => new UnauthorizedException(ea_.ErrorMessage, ea_.GlobalErrorCode),
+                        {GlobalErrorCode: EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied}
+                            => new UnauthorizedException(ea_.ErrorMessage, ea_.GlobalErrorCode), // no point to pass ea_.FatalErrorType here
 
-                        { FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout }
-                            => new FirmwareInstallationConfirmationStageTimeoutException(estimatedSwapTimeInMilliseconds, ea_.GlobalErrorCode),
+                        {FatalErrorType: EFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress}
+                            => new AnotherFirmwareInstallationIsAlreadyOngoingException(ea_.ErrorMessage, ea_.FatalErrorType, ea_.GlobalErrorCode),
 
-                        { FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut } or { State: EFirmwareInstallationState.Uploading }
-                            => new FirmwareInstallationUploadingStageErroredOutException(ea_.ErrorMessage, ea_.GlobalErrorCode),
+                        {FatalErrorType: EFirmwareInstallerFatalErrorType.GivenFirmwareDataUnhealthy or EFirmwareInstallerFatalErrorType.FirmwareExtendedDataIntegrityChecksFailed}
+                            => new FirmwareInstallationUnhealthyFirmwareDataGivenException(ea_.ErrorMessage, ea_.FatalErrorType, ea_.GlobalErrorCode),
 
-                        _ => new FirmwareInstallationErroredOutException($"{ea_.ErrorMessage} (state={ea_.State})", ea_.GlobalErrorCode)
+                        {FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout}
+                            => new FirmwareInstallationImageSwappingTimedOutException(estimatedSwapTimeInMilliseconds, ea_.FatalErrorType, ea_.GlobalErrorCode),
+
+                        {FatalErrorType: EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut} or {State: EFirmwareInstallationState.Uploading}
+                            => new FirmwareInstallationUploadingStageErroredOutException(ea_.ErrorMessage, ea_.FatalErrorType, ea_.GlobalErrorCode),
+
+                        _ => new FirmwareInstallationErroredOutException($"{ea_.ErrorMessage} [state={ea_.State}]", ea_.FatalErrorType, ea_.GlobalErrorCode)
                     });
                 }
             }

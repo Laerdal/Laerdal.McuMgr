@@ -38,7 +38,7 @@ public class IOSFirmwareInstaller: NSObject {
             _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
-            onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
+            onError(.installationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
 
             return .failedInstallationAlreadyInProgress
         }
@@ -48,9 +48,9 @@ public class IOSFirmwareInstaller: NSObject {
         _lastBytesSentTimestamp = nil
 
         if (imageData.isEmpty) {
-            onError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud")
+            onError(.givenFirmwareIsUnhealthy, "[IOSFI.BI.010] The firmware data-bytes given are dud")
 
-            return .failedInvalidFirmware
+            return .failedGivenFirmwareUnhealthy
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
@@ -115,9 +115,9 @@ public class IOSFirmwareInstaller: NSObject {
                 return .success
 
             } catch let ex {
-                onError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
+                onError(.installationInitializationFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
 
-                return .failedDeploymentError
+                return .failedInstallationInitializationErroredOut
             }
         })
 
@@ -369,7 +369,7 @@ public class IOSFirmwareInstaller: NSObject {
             return FirmwareUpgradeMode.testAndConfirm
 
         default:
-            throw InvalidFirmwareInstallationModeError.runtimeError("Mode \(mode) is invalid")
+            throw givenFirmwareIsUnhealthyInstallationModeError.runtimeError("Mode \(mode) is invalid")
         }
     }
 }
@@ -407,16 +407,46 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
-        if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
-            fatalErrorType = .firmwareUploadingErroredOut
-
-        } else if (state == .confirm && error.localizedDescription.isEmpty) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
-            fatalErrorType = .firmwareImageSwapTimeout
-        }
+        let fatalErrorType = deduceInstallationFailureType(state, error)
 
         onError(fatalErrorType, error.localizedDescription, error)
         setBusyState(false)
+    }
+
+    private func deduceInstallationFailureType(_ state: FirmwareUpgradeState, _ error: Error) -> EIOSFirmwareInstallerFatalErrorType {
+        var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
+
+        switch (state) {
+        case .none: //impossible to happen   should default to .generic
+            break
+
+        case .validate:
+            fatalErrorType = .firmwareExtendedDataIntegrityChecksFailed //crc checks failed before the installation even commenced
+            break
+
+        case .upload:
+            fatalErrorType = .firmwareUploadingErroredOut //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
+            break
+
+        case .test:
+            fatalErrorType = .postInstallationDeviceHealthcheckTestsFailed
+            break
+
+        case .reset:
+            fatalErrorType = .postInstallationDeviceRebootingFailed
+            break
+
+        case .confirm:
+            fatalErrorType = error.localizedDescription.isEmpty //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
+                    ? .firmwareFinishingImageSwapTimeout
+                    : .firmwarePostInstallationConfirmationFailed
+            break
+
+        default:
+            break
+        }
+
+        return fatalErrorType
     }
 
     public func upgradeDidCancel(state: FirmwareUpgradeState) {

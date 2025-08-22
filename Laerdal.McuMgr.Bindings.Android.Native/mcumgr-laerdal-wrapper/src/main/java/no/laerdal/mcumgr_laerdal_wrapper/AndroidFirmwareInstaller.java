@@ -80,7 +80,7 @@ public class AndroidFirmwareInstaller
     {
         if (!IsCold()) //if an installation is already in progress we bail out
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.FAILED__INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
+            onError(EAndroidFirmwareInstallerFatalErrorType.INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_ALREADY_IN_PROGRESS;
         }
@@ -100,9 +100,9 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, "[AFI.BI.010] Failed to extract firmware-images" + ex2, ex2);
+                onError(EAndroidFirmwareInstallerFatalErrorType.GIVEN_FIRMWARE_DATA_UNHEALTHY, "[AFI.BI.010] Failed to extract firmware-images" + ex2, ex2);
 
-                return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
+                return EAndroidFirmwareInstallationVerdict.FAILED__GIVEN_FIRMWARE_UNHEALTHY;
             }
         }
 
@@ -147,9 +147,9 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, "[AFI.BI.030] Failed to kick-start the installation:\n\n" + ex, ex);
+            onError(EAndroidFirmwareInstallerFatalErrorType.INSTALLATION_INITIALIZATION_FAILED, "[AFI.BI.030] Failed to kick-start the installation:\n\n" + ex, ex);
 
-            return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
+            return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_INITIALIZATION_ERRORED_OUT;
         }
 
         return EAndroidFirmwareInstallationVerdict.SUCCESS;
@@ -450,20 +450,50 @@ public class AndroidFirmwareInstaller
         @Override
         public void onUpgradeFailed(final FirmwareUpgradeManager.State state, final McuMgrException ex)
         {
-            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.GENERIC;
-            if (state == State.UPLOAD)
-            {
-                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_UPLOADING_ERRORED_OUT;
-            }
-            else if (state == State.CONFIRM && ex instanceof McuMgrTimeoutException)
-            {
-                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
-            }
+            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = DeduceInstallationFailureType(state, ex);
 
-            onError(fatalErrorType, "[AFI.OAF.010] Upgrade failed:\n\n" + ex.getMessage(), ex);
+            onError(fatalErrorType, "[AFI.OAF.010] Upgrade failed:\n\n" + ex, ex);
             setBusyState(false);
 
             setLoggingEnabled(true);
+        }
+
+        private EAndroidFirmwareInstallerFatalErrorType DeduceInstallationFailureType(final FirmwareUpgradeManager.State state, final McuMgrException ex)
+        {
+            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.GENERIC;
+
+            switch (state)
+            {
+                case NONE: //impossible to happen   should default to GENERIC
+                    break;
+
+                case VALIDATE:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_STRICT_DATA_INTEGRITY_CHECKS_FAILED; //crc checks failed before the installation even commenced
+                    break;
+
+                case UPLOAD:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_UPLOADING_ERRORED_OUT; //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
+                    break;
+
+                case TEST:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.POST_INSTALLATION_DEVICE_HEALTHCHECK_TESTS_FAILED;
+                    break;
+
+                case RESET:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.POST_INSTALLATION_DEVICE_REBOOTING_FAILED;
+                    break;
+
+                case CONFIRM:
+                    fatalErrorType = ex instanceof McuMgrTimeoutException
+                                 ? EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_FINISHING_IMAGE_SWAP_TIMEOUT
+                                 : EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_POST_INSTALLATION_CONFIRMATION_FAILED;
+                    break;
+
+                default:
+                    break; //better not throw here
+            }
+
+            return fatalErrorType;
         }
 
         @Override

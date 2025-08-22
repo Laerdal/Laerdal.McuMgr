@@ -1,3 +1,3 @@
-public enum InvalidFirmwareInstallationModeError: Error {
+public enum givenFirmwareIsUnhealthyInstallationModeError: Error {
     case runtimeError(String)
 }

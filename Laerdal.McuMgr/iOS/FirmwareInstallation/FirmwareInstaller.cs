@@ -242,13 +242,16 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 return fatalErrorType switch
                 {
                     EIOSFirmwareInstallerFatalErrorType.Generic => EFirmwareInstallerFatalErrorType.Generic,
-                    EIOSFirmwareInstallerFatalErrorType.InvalidFirmware => EFirmwareInstallerFatalErrorType.InvalidFirmware,
                     EIOSFirmwareInstallerFatalErrorType.InvalidSettings => EFirmwareInstallerFatalErrorType.InvalidSettings,
-                    EIOSFirmwareInstallerFatalErrorType.DeploymentFailed => EFirmwareInstallerFatalErrorType.DeploymentFailed,
-                    EIOSFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout,
+                    EIOSFirmwareInstallerFatalErrorType.GivenFirmwareIsUnhealthy => EFirmwareInstallerFatalErrorType.GivenFirmwareDataUnhealthy,
                     EIOSFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut => EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut,
-                    EIOSFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress => EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress,
-
+                    EIOSFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress => EFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress,
+                    EIOSFirmwareInstallerFatalErrorType.InstallationInitializationFailed => EFirmwareInstallerFatalErrorType.InstallationInitializationFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout,
+                    EIOSFirmwareInstallerFatalErrorType.PostInstallationDeviceRebootingFailed => EFirmwareInstallerFatalErrorType.PostInstallationDeviceRebootingFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwareExtendedDataIntegrityChecksFailed => EFirmwareInstallerFatalErrorType.FirmwareExtendedDataIntegrityChecksFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwarePostInstallationConfirmationFailed => EFirmwareInstallerFatalErrorType.FirmwarePostInstallationConfirmationFailed,
+                    EIOSFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed => EFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed,
                     _ => throw new ArgumentOutOfRangeException(nameof(fatalErrorType), actualValue: fatalErrorType, message: "Unknown enum value")
                 };
             }
@@ -287,10 +290,10 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             static private EFirmwareInstallationVerdict TranslateFirmwareInstallationVerdict(EIOSFirmwareInstallationVerdict verdict) => verdict switch
             {
                 EIOSFirmwareInstallationVerdict.Success => EFirmwareInstallationVerdict.Success, //0
-                EIOSFirmwareInstallationVerdict.FailedDeploymentError => EFirmwareInstallationVerdict.FailedDeploymentError,
                 EIOSFirmwareInstallationVerdict.FailedInvalidSettings => EFirmwareInstallationVerdict.FailedInvalidSettings,
-                EIOSFirmwareInstallationVerdict.FailedInvalidFirmware => EFirmwareInstallationVerdict.FailedInvalidFirmware,
+                EIOSFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy => EFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy,
                 EIOSFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress,
+                EIOSFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut => EFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut,
                 _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value")
 
                 //0 we have to separate enums
