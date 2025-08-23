@@ -375,7 +375,7 @@ public class AndroidFirmwareInstaller
         setState(EAndroidFirmwareInstallationState.PAUSED);
 
         _manager.pause();
-        setLoggingEnabled(true);
+        setLoggingEnabledOnTransport(true);
     }
 
     public void resume()
@@ -386,7 +386,7 @@ public class AndroidFirmwareInstaller
         setBusyState(true);
         setState(EAndroidFirmwareInstallationState.UPLOADING);
 
-        setLoggingEnabled(false);
+        setLoggingEnabledOnTransport(false);
         _manager.resume();
     }
 
@@ -413,7 +413,7 @@ public class AndroidFirmwareInstaller
                 final FirmwareUpgradeManager.State newState
         )
         {
-            setLoggingEnabled(newState != State.UPLOAD);
+            setLoggingEnabledOnTransport(newState != State.UPLOAD);
 
             switch (newState)
             {
@@ -444,7 +444,7 @@ public class AndroidFirmwareInstaller
             setState(EAndroidFirmwareInstallationState.COMPLETE);
             setBusyState(false);
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnTransport(true);
         }
 
         @Override
@@ -455,7 +455,7 @@ public class AndroidFirmwareInstaller
             onError(fatalErrorType, "[AFI.OAF.010] Upgrade failed:\n\n" + ex, ex);
             setBusyState(false);
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnTransport(true);
         }
 
         private EAndroidFirmwareInstallerFatalErrorType DeduceInstallationFailureType(final FirmwareUpgradeManager.State state, final McuMgrException ex)
@@ -502,7 +502,7 @@ public class AndroidFirmwareInstaller
             setState(EAndroidFirmwareInstallationState.CANCELLED);
             cancelledAdvertisement();
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnTransport(true);
             setBusyState(false);
         }
 
@@ -568,8 +568,9 @@ public class AndroidFirmwareInstaller
     {
         if (_transport == null)
         {
-            emitLogEntry("[AFI.CCS.000] Transport is null - cannot configure connection settings (how did this happen?)", "firmware-installer", EAndroidLoggingLevel.Error);
-            return;
+            emitLogEntry("[AFI.CCS.000] Transport is null - instantiating it now", "firmware-installer", EAndroidLoggingLevel.Warning);
+
+            _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         }
 
         if (initialMtuSize > 0)
@@ -585,7 +586,7 @@ public class AndroidFirmwareInstaller
         _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
-    private void setLoggingEnabled(final boolean enabled)
+    private void setLoggingEnabledOnTransport(final boolean enabled)
     {
         if (_transport == null)
             return;
