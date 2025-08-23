@@ -273,12 +273,19 @@ public class AndroidFileDownloader
     {
         if (_transport == null)
         {
+            emitLogEntry("[AFD.ETIIEO.000] Transport is null - instantiating it now", "firmware-downloader", EAndroidLoggingLevel.Warning);
+
             _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         }
 
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
+            emitLogEntry("[AFD.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", "firmware-downloader", EAndroidLoggingLevel.Info);
+        }
+        else
+        {
+            emitLogEntry("[AFD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-downloader", EAndroidLoggingLevel.Info);
         }
     }
 
@@ -364,6 +371,9 @@ public class AndroidFileDownloader
 
     private void setLoggingEnabledOnConnection(final boolean enabled)
     {
+        if (_transport == null)
+            return;
+
         _transport.setLoggingEnabled(enabled);
     }
 
