@@ -265,32 +265,52 @@ public class AndroidFileUploader
         return EAndroidFileUploaderVerdict.SUCCESS;
     }
 
-    public void pause()
+    public boolean tryPause()
     {
         final TransferController transferController = _uploadController;
         if (transferController == null)
-            return;
+            return false;
 
-        transferController.pause();
+        try
+        {
+            transferController.pause();
 
-        setState(EAndroidFileUploaderState.PAUSED);
-        setBusyState(false);
+            setState(EAndroidFileUploaderState.PAUSED);
+            setBusyState(false);
 
-        setLoggingEnabledOnTransport(true);
+            setLoggingEnabledOnTransport(true);
+
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFU.TP.010] [SUPPRESSED] Error while trying to pause the upload:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            return false;
+        }
     }
 
-    public void resume()
+    public boolean tryResume()
     {
         final TransferController transferController = _uploadController;
         if (transferController == null)
-            return;
+            return false;
 
-        setState(EAndroidFileUploaderState.UPLOADING);
-        setBusyState(true);
+        try
+        {
+            setState(EAndroidFileUploaderState.UPLOADING);
+            setBusyState(true);
 
-        setLoggingEnabledOnTransport(false);
+            setLoggingEnabledOnTransport(false);
 
-        transferController.resume();
+            transferController.resume();
+
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFU.TR.010] [SUPPRESSED] Error while trying to resume the upload:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            return false;
+        }
     }
 
     public void nativeDispose()
@@ -474,16 +494,16 @@ public class AndroidFileUploader
         if (func == null)
             return;
 
-        _backgroundExecutor.execute(() -> {
-            try
-            {
-                func.run();
-            }
-            catch (Exception ignored)
-            {
-                // ignored
-            }
-        });
+        //_backgroundExecutor.execute(() -> {
+        try
+        {
+            func.run();
+        }
+        catch (Exception ignored)
+        {
+            // ignored
+        }
+        //});
     }
 
     @Contract(pure = true)
