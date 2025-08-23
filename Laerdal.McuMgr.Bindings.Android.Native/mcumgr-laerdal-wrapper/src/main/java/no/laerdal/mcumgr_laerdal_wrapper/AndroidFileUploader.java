@@ -297,7 +297,7 @@ public class AndroidFileUploader
     {
         try
         {
-            _backgroundExecutor.shutdownNow();
+            _backgroundExecutor.shutdown();
             return true;
         }
         catch (final Exception ex)
