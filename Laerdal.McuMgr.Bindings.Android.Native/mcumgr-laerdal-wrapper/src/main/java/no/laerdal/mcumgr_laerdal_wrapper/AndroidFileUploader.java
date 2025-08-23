@@ -258,7 +258,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            onError("[AFU.EFMIIEO.010] Failed to initialize the native file-system-manager", ex); //sets the state to ERROR too!
+            onError("[AFU.EFMIIEO.020] Failed to initialize the native file-system-manager", ex); //sets the state to ERROR too!
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 

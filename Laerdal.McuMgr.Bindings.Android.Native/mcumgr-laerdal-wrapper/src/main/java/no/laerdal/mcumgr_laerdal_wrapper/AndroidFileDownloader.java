@@ -237,7 +237,7 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning);
+            emitLogEntry("[AFD.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Warning);
             return false;
         }
     }
@@ -302,15 +302,16 @@ public class AndroidFileDownloader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileDownloaderVerdict.SUCCESS;
 
+        emitLogEntry("[AFD.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-downloader", EAndroidLoggingLevel.Trace);
+
         try
         {
             _fileSystemManager = new FsManager(_transport); //order
         }
         catch (final Exception ex)
         {
-            onError("[AFD.EFMIIEO.010] Failed to initialize the filesystem manager: " + ex, ex);
-
-            return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
+            onError("[AFD.EFMIIEO.020] Failed to initialize the native file-system-manager", ex); //sets the state to ERROR too!
+            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         return EAndroidFileDownloaderVerdict.SUCCESS;
@@ -503,7 +504,7 @@ public class AndroidFileDownloader
 
     private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level)
     {
-        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString()));
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString())); //todo  include the remoteFilePath as well
     }
 
     @Contract(pure = true)
