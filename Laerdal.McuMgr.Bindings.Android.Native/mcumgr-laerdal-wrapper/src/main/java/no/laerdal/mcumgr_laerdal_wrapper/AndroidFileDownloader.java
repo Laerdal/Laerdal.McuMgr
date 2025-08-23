@@ -204,15 +204,22 @@ public class AndroidFileDownloader
 
     public void nativeDispose()
     {
-        tryDisconnect(); //doesnt throw
+        emitLogEntry("[AFD.ND.010] Disposing the native-file-downloader", "file-downloader", EAndroidLoggingLevel.Trace);
+
+        tryInvalidateCachedInfrastructure(); //  doesnt throw
         tryShutdownBackgroundExecutor(); //doesnt throw
     }
 
     @SuppressWarnings("UnusedReturnValue")
     public boolean tryDisconnect()
     {
+        emitLogEntry("[AFD.TDISC.010] Will try to disconnect now ...", "file-downloader", EAndroidLoggingLevel.Trace);
+        
         if (_transport == null)
+        {
+            emitLogEntry("[AFD.TDISC.020] Transport is null so nothing to disconnect from", "file-downloader", EAndroidLoggingLevel.Trace);
             return true;
+        }
 
         try
         {
@@ -230,6 +237,8 @@ public class AndroidFileDownloader
     @SuppressWarnings("UnusedReturnValue")
     private boolean tryShutdownBackgroundExecutor()
     {
+        emitLogEntry("[AFD.TSBE.010] Shutting down the background-executor ...", "file-downloader", EAndroidLoggingLevel.Trace);
+
         try
         {
             _backgroundExecutor.shutdown();

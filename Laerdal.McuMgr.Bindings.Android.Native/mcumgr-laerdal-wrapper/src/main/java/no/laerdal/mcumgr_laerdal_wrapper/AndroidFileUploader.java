@@ -295,6 +295,8 @@ public class AndroidFileUploader
 
     public void nativeDispose()
     {
+        emitLogEntry("[AFU.ND.010] Disposing the native-file-uploader", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+        
         tryInvalidateCachedInfrastructure(); //  doesnt throw
         tryShutdownBackgroundExecutor(); //      doesnt throw
     }
@@ -302,6 +304,8 @@ public class AndroidFileUploader
     @SuppressWarnings("UnusedReturnValue")
     private boolean tryShutdownBackgroundExecutor()
     {
+        emitLogEntry("[AFU.TSBE.010] Shutting down the background-executor ...", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+
         try
         {
             _backgroundExecutor.shutdown();
@@ -317,8 +321,13 @@ public class AndroidFileUploader
     @SuppressWarnings("UnusedReturnValue")
     public boolean tryDisconnect() //doesnt throw
     {
+        emitLogEntry("[AFU.TDISC.010] Will try to disconnect now ...", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+
         if (_transport == null)
-            return true; //already disconnected
+        {
+            emitLogEntry("[AFU.TDISC.020] Transport is null so nothing to disconnect from", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+            return true;
+        }
 
         try
         {
