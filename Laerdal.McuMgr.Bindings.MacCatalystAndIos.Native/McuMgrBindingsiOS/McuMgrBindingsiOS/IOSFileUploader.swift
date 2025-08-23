@@ -48,19 +48,16 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func tryInvalidateCachedInfrastructure() -> Bool {
-        if _transporter == nil { //already scrapped
-            return true
-        }
+    public func nativeDispose() {
+        tryInvalidateCachedInfrastructure() //doesnt throw
+    }
 
-        if !isIdleOrCold() { //if the upload is already in progress we bail out
-            return false
-        }
+    @objc
+    public func tryInvalidateCachedInfrastructure() -> Bool { // must be public
+        var success1 = tryDisposeFilesystemManager() // order
+        var success2 = tryDisposeTransport() //         order
 
-        disposeFilesystemManager() // order
-        disposeTransport() //         order
-
-        return true;
+        return success1 && success2
     }
 
     @objc
@@ -131,7 +128,7 @@ public class IOSFileUploader: NSObject {
         }
 
         resetState() //order
-        disposeFilesystemManager() //00 vital hack
+        tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
@@ -168,6 +165,7 @@ public class IOSFileUploader: NSObject {
         return verdict
 
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
+        //
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
     }
@@ -246,21 +244,16 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func cancel(_ reason: String = "") {
+        _cancellationReason = reason
+        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
+        setState(.cancelling) //                                                                 order
+
         if (_fileSystemManager == nil) {
             return
         }
         
         ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            if (_fileSystemManager == nil) { //vital to double-check
-                return
-            }
-            
             do {
-                _cancellationReason = reason //need to set this for uploadDidCancel()
-
-                cancellingAdvertisement(reason)
-                setState(.cancelling) //order
-
                 _fileSystemManager?.cancelTransfer() //order
             } catch let ex {
                 onError("[IOSFU.CANCEL.010] Failed to cancel", ex)
@@ -271,8 +264,18 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func disconnect() {
-        disposeTransport()
+    public func tryDisconnect() -> Bool {
+        do
+        {
+            _transporter?.close()
+            //_transporter = nil //dont
+            return true
+        }
+        catch let ex
+        {
+            logMessageAdvertisement("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            return false
+        }
     }
 
     private func resetState() {
@@ -283,7 +286,6 @@ public class IOSFileUploader: NSObject {
 
         setState(.none)
         setBusyState(false)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -315,14 +317,28 @@ public class IOSFileUploader: NSObject {
         }
     }
 
-    private func disposeTransport() {
-        _transporter?.close()
-        _transporter = nil
+    private func tryDisposeTransport() -> Bool {
+        if (_transporter == nil) {
+            return true //already disconnected
+        }
+
+        do
+        {
+            _transporter?.close()
+            _transporter = nil
+            return true
+        }
+        catch let ex
+        {
+            logMessageAdvertisement("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            return false
+        }
     }
 
-    private func disposeFilesystemManager() {
+    private func tryDisposeFilesystemManager() -> Bool {
         //_fileSystemManager?.cancelTransfer()  dont
         _fileSystemManager = nil
+        return true
     }
 
     private func isIdleOrCold() -> Bool {
@@ -340,14 +356,20 @@ public class IOSFileUploader: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage
 
-        setState(.error) //                           order
-        setBusyState(false) //                        order
-        _listener.fatalErrorOccurredAdvertisement( // order
-                _resourceId,
-                _remoteFilePathSanitized,
-                errorMessage,
-                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
-        )
+        setState(.error) //       order
+        setBusyState(false) //    order
+
+        let resourceIdSnapshot = _resourceId
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
+
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.fatalErrorOccurredAdvertisement(// order
+                    resourceIdSnapshot,
+                    remoteFilePathSanitizedSnapshot,
+                    errorMessage,
+                    McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+            )
+        }
     }
 
     //@objc   dont
@@ -369,8 +391,11 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func fileUploadCompletedAdvertisement() {
-        _listener.fileUploadCompletedAdvertisement(_resourceId, _remoteFilePathSanitized)
+    private func fileUploadCompletedAdvertisement(
+        _ resourceId: String?,
+        _ remoteFilePathSanitized: String?
+    ) {
+        _listener.fileUploadCompletedAdvertisement(resourceId, remoteFilePathSanitized)
     }
 
     //@objc   dont
@@ -380,10 +405,12 @@ public class IOSFileUploader: NSObject {
 
     //@objc   dont
     private func stateChangedAdvertisement(
+            _ resourceId: String?,
+            _ remoteFilePathSanitized: String?,
             _ oldState: EIOSFileUploaderState,
             _ newState: EIOSFileUploaderState
     ) {
-        _listener.stateChangedAdvertisement(_resourceId, _remoteFilePathSanitized, oldState, newState)
+        _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState)
     }
 
     //@objc   dont
@@ -405,15 +432,13 @@ public class IOSFileUploader: NSObject {
             _ currentThroughputInKbps: Float32,
             _ totalAverageThroughputInKbps: Float32
     ) {
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
-                    resourceId,
-                    remoteFilePathSanitized,
-                    progressPercentage,
-                    currentThroughputInKbps,
-                    totalAverageThroughputInKbps
-            )
-        }
+        _listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                resourceId,
+                remoteFilePathSanitized,
+                progressPercentage,
+                currentThroughputInKbps,
+                totalAverageThroughputInKbps
+        )
     }
 
     private func setBusyState(_ newBusyState: Bool) {
@@ -433,18 +458,37 @@ public class IOSFileUploader: NSObject {
 
         _currentState = newState //order
 
-        stateChangedAdvertisement(oldState, newState) //order
+        let resourceIdSnapshot = _resourceId
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        if (oldState == .idle && newState == .uploading) //00
-        {
-            fileUploadStartedAdvertisement(_resourceId, _remoteFilePathSanitized)
-        }
-        else if (oldState == .uploading && newState == .complete) //00
-        {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 100, 0, 0)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self.stateChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, oldState, newState) //order
+
+            switch (newState) {
+            case .none: // * -> none
+                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0)
+                break;
+                
+            case .uploading:
+                if (oldState == .idle) // idle -> uploading
+                {
+                    self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //00
+                }
+                break;
+                
+            case .complete:
+                if (oldState == .uploading) // uploading -> complete
+                {
+                    self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
+                    self.fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
+                }
+                break;
+                
+            default: break;
+            }
         }
 
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //00  trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
 }
 
@@ -453,12 +497,23 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
         setState(.uploading)
         setBusyState(true)
+        
+        let resourceIdSnapshot  = _resourceId;
+        let remoteFilePathSanitizedSnapshot  = _remoteFilePathSanitized;
 
-        let uploadProgressPercentage = (bytesSent * 100) / fileSize
-        let currentThroughputInKbps = calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
-        let totalAverageThroughputInKbps = calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            let uploadProgressPercentage = (bytesSent * 100) / fileSize
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
+            self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                resourceIdSnapshot,
+                remoteFilePathSanitizedSnapshot,
+                uploadProgressPercentage,
+                currentThroughputInKbps,
+                totalAverageThroughputInKbps
+            )
+        }
     }
 
     public func uploadDidFail(with error: Error) {
@@ -469,13 +524,11 @@ extension IOSFileUploader: FileUploadDelegate {
     public func uploadDidCancel() {
         setState(.cancelled)
         setBusyState(false)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0)
         cancelledAdvertisement(_cancellationReason)
     }
 
     public func uploadDidFinish() {
         setState(.complete)
-        fileUploadCompletedAdvertisement()
         setBusyState(false)
     }
 

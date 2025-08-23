@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Constants;
+using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 
@@ -44,6 +45,14 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time (in ms) to sleep between retries.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <return>A task that you can await on to know when the operation has completed.</return>
+        ///
+        /// <exception cref="UnauthorizedException"/>If the operation failed because the host-device is not authorized to perform the operation on the remote ble-device.
+        /// <exception cref="FirmwareInstallationTimeoutException"/>If the firmware installation took too long to complete and the timeout has expired.
+        /// <exception cref="FirmwareInstallationImageSwappingTimedOutException"/>If the confirmation stage has timed out.
+        /// <exception cref="AnotherFirmwareInstallationIsAlreadyOngoingException"/>If another firmware installation is already in progress on the remote device.
+        /// <exception cref="AllFirmwareInstallationAttemptsFailedException"/>If all the uploading stage has failed.
+        /// <exception cref="FirmwareInstallationUnhealthyFirmwareDataGivenException"/>If the bytes of the given firmware are unhealthy.
+        /// <exception cref="FirmwareInstallationErroredOutException"/>If the firmware installation has failed for any other reason.
         Task InstallAsync(
             byte[] data,
             string hostDeviceModel,

@@ -371,6 +371,11 @@ function create_fat_binaries() {
         -type f                                  \
         -exec sed -i.bak 's/bool TryInvalidateCachedInfrastructure { get; }/bool TryInvalidateCachedInfrastructure();/gi' {} \;
 
+  find                                           \
+        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+        -type f                                  \
+        -exec sed -i.bak 's/bool TryDisconnect { get; }/bool TryDisconnect();/gi' {} \;
+
   rm -f "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"/*.bak || :
 
   echo "**** (FatBinaries 8/8) Print metadata files in their eventual form"

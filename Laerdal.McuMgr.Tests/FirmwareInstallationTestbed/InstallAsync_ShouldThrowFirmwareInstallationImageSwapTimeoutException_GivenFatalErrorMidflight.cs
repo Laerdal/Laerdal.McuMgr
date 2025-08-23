@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             ));
 
             // Assert
-            await work.Should().ThrowWithinAsync<FirmwareInstallationConfirmationStageTimeoutException>(3_000.Milliseconds());
+            await work.Should().ThrowWithinAsync<FirmwareInstallationImageSwappingTimedOutException>(3_000.Milliseconds());
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -100,7 +100,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     await Task.Delay(100);
                     
                     StateChangedAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallationState.Error); //                                                                                 order
-                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout, "image swap timeout", EGlobalErrorCode.Generic); // order
+                    FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Confirming, EFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout, "image swap timeout", EGlobalErrorCode.Generic); // order
                 });
 
                 return verdict;

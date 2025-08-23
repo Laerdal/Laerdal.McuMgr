@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Linq;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -93,8 +94,8 @@ namespace Laerdal.McuMgr.FileDownloading
 
             private void CleanupInfrastructure() // @formatter:off
             {
-                try { Disconnect();                     } catch { /*ignored*/ }
-                try { _nativeFileDownloader?.Dispose(); } catch { /*ignored*/ }
+                try { _nativeFileDownloader?.NativeDispose(); } catch { /*ignored*/ } //order
+                try { _nativeFileDownloader?.Dispose();       } catch { /*ignored*/ } //order
                 
                 //_nativeFileDownloader = null;     @formatter:on
             }
@@ -120,9 +121,9 @@ namespace Laerdal.McuMgr.FileDownloading
             
             public string LastFatalErrorMessage => _nativeFileDownloader?.LastFatalErrorMessage;
             
-            public void Cancel(string reason) => _nativeFileDownloader?.Cancel();
+            public void Cancel(string reason) => _nativeFileDownloader?.Cancel(reason);
             
-            public void Disconnect() => _nativeFileDownloader?.Disconnect();
+            public void Disconnect() => _nativeFileDownloader?.TryDisconnect();
 
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,
@@ -146,10 +147,10 @@ namespace Laerdal.McuMgr.FileDownloading
                 set => _nativeFileDownloaderCallbacksProxy!.FileDownloader = value;
             }
 
-            public void CancelledAdvertisement(string reason)
+            public override void CancelledAdvertisement(string reason)
                 => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement(reason: reason);
 
-            public void CancellingAdvertisement(string reason)
+            public override void CancellingAdvertisement(string reason)
                 => _nativeFileDownloaderCallbacksProxy?.CancellingAdvertisement(reason: reason);
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
@@ -189,11 +190,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
             public override void FileDownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
             {
-                var dataBytes = new byte[data.Length];
-                for (var i = 0; i < data.Length; i++)
-                {
-                    dataBytes[i] = data[i].ByteValue;
-                }
+                var dataBytes = data?.Select(x => (byte) x).ToArray() ?? Array.Empty<byte>();
 
                 FileDownloadCompletedAdvertisement(resourceId, dataBytes);
             }

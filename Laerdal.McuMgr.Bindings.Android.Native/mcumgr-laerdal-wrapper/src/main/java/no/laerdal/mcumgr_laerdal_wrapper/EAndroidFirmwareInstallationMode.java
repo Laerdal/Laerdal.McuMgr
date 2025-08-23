@@ -39,7 +39,7 @@ public enum EAndroidFirmwareInstallationMode
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFirmwareInstallationMode(int value)
+    EAndroidFirmwareInstallationMode(final int value)
     {
         _value = value;
     }

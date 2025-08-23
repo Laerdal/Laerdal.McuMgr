@@ -14,7 +14,7 @@ public enum EAndroidFileDownloaderState
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFileDownloaderState(int value)
+    EAndroidFileDownloaderState(final int value)
     {
         _value = value;
     }

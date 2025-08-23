@@ -80,7 +80,7 @@ public class AndroidFileUploader
         return true;
     }
 
-    public boolean tryInvalidateCachedInfrastructure()
+    public boolean tryInvalidateCachedInfrastructure() //must be public
     {
         boolean success1 = tryDisposeFilesystemManager(); // order
         boolean success2 = tryDisposeTransport(); //         order
@@ -285,13 +285,13 @@ public class AndroidFileUploader
 
         transferController.resume();
     }
-    
+
     public void nativeDispose()
     {
-        tryDisconnect(); //doesnt throw
-        tryShutdownBackgroundExecutor(); //doesnt throw
+        tryInvalidateCachedInfrastructure(); //  doesnt throw
+        tryShutdownBackgroundExecutor(); //      doesnt throw
     }
-    
+
     @SuppressWarnings("UnusedReturnValue")
     private boolean tryShutdownBackgroundExecutor()
     {
@@ -643,8 +643,6 @@ public class AndroidFileUploader
         @Override
         public void onUploadFailed(@NonNull final McuMgrException error)
         {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(_resourceId, _remoteFilePathSanitized, 0, 0, 0);
-
             onError(error.getMessage(), error);
             setLoggingEnabledOnTransport(true);
 

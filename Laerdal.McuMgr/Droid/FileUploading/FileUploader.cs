@@ -146,7 +146,9 @@ namespace Laerdal.McuMgr.FileUploading
                 ));
             }
             
-            public new void Cancel(string reason = "")
+            // ReSharper disable once RedundantOverriddenMember
+            // ReSharper disable once OptionalParameterHierarchyMismatch
+            public override void Cancel(string reason = "")
             {
                 base.Cancel(reason);
             }
@@ -165,12 +167,14 @@ namespace Laerdal.McuMgr.FileUploading
                 return base.TrySetBluetoothDevice(androidBluetoothDevice);
             }
             
-            public new void TryDisconnect()
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryDisconnect() //identical to base.TryDisconnect()
             {
-                base.TryDisconnect();
+                return base.TryDisconnect();
             }
             
-            public new bool TryInvalidateCachedInfrastructure()
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryInvalidateCachedInfrastructure()
             {
                 return base.TryInvalidateCachedInfrastructure();
             }
