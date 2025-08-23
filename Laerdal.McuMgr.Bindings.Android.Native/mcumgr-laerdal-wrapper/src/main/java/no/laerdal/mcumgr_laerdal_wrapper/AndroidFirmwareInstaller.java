@@ -588,11 +588,9 @@ public class AndroidFirmwareInstaller
 
     private void setLoggingEnabled(final boolean enabled)
     {
-        final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport))
+        if (_transport == null)
             return;
 
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
-        bleTransporter.setLoggingEnabled(enabled);
+        _transport.setLoggingEnabled(enabled);
     }
 }
