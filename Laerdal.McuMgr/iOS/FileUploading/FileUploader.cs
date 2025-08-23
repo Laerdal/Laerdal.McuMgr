@@ -57,7 +57,7 @@ namespace Laerdal.McuMgr.FileUploading
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
 
             public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
-            public void TryDisconnect() => _nativeFileUploader?.Disconnect();
+            public bool TryDisconnect() => _nativeFileUploader?.TryDisconnect() ?? false;
             
             public new void Dispose()
             {
@@ -102,8 +102,8 @@ namespace Laerdal.McuMgr.FileUploading
 
             private void CleanupInfrastructure() // @formatter:off
             {
-                try { TryDisconnect();                } catch { /*ignored*/ }
-                try { _nativeFileUploader?.Dispose(); } catch { /*ignored*/ }
+                try { _nativeFileUploader?.NativeDispose(); } catch { /*ignored*/ } //order
+                try { _nativeFileUploader?.Dispose();       } catch { /*ignored*/ } //order
                 
                 //_nativeFileUploader = null;       @formatter:on
             }

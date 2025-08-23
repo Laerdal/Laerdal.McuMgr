@@ -94,8 +94,8 @@ namespace Laerdal.McuMgr.FileDownloading
 
             private void CleanupInfrastructure() // @formatter:off
             {
-                try { Disconnect();                     } catch { /*ignored*/ }
-                try { _nativeFileDownloader?.Dispose(); } catch { /*ignored*/ }
+                try { _nativeFileDownloader?.NativeDispose(); } catch { /*ignored*/ } //order
+                try { _nativeFileDownloader?.Dispose();       } catch { /*ignored*/ } //order
                 
                 //_nativeFileDownloader = null;     @formatter:on
             }
@@ -123,7 +123,7 @@ namespace Laerdal.McuMgr.FileDownloading
             
             public void Cancel(string reason) => _nativeFileDownloader?.Cancel(reason);
             
-            public void Disconnect() => _nativeFileDownloader?.Disconnect();
+            public void Disconnect() => _nativeFileDownloader?.TryDisconnect();
 
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,

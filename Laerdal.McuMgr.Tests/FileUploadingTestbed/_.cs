@@ -51,9 +51,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 CancellationReason = reason;
             }
 
-            public virtual void TryDisconnect()
+            public virtual bool TryDisconnect()
             {
                 DisconnectCalled = true;
+                return true;
             }
 
             public void CancellingAdvertisement(string reason = "")

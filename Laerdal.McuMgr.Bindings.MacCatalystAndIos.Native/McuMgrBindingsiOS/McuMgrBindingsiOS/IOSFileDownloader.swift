@@ -48,16 +48,35 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func tryInvalidateCachedInfrastructure() -> Bool {
-        disposeFilesystemManager() // order
-        disposeTransport() //         order
+    public func nativeDispose() {
+        tryInvalidateCachedInfrastructure() //doesnt throw
+    }
 
-        return true;
+    @objc
+    public func tryDisconnect() -> Bool {
+        do
+        {
+            _transporter?.close()
+            //_transporter = nil //dont
+            return true
+        }
+        catch let ex
+        {
+            logMessageAdvertisement("[IOSFD.DC.010] Failed to disconnect", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            return false
+        }
+    }
+
+    @objc
+    public func tryInvalidateCachedInfrastructure() -> Bool {
+        let success1 = tryDisposeFilesystemManager() // order
+        let success2 = tryDisposeTransport() //         order
+
+        return success1 && success2
     }
 
     @objc
     public func beginDownload(_ remoteFilePath: String, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
-
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("[IOSFD.BD.010] Another download is already in progress")
 
@@ -84,7 +103,7 @@ public class IOSFileDownloader: NSObject {
         }
 
         resetState() //order
-        disposeFilesystemManager() //00 vital hack
+        tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
@@ -191,11 +210,6 @@ public class IOSFileDownloader: NSObject {
         //    kinda sad really considering that we fought against such an approach but to no avail
     }
 
-    @objc
-    public func disconnect() {
-        _transporter?.close()
-    }
-
     private func isIdleOrCold() -> Bool {
         return _currentState == .idle || isCold();
     }
@@ -246,14 +260,30 @@ public class IOSFileDownloader: NSObject {
         }
     }
 
-    private func disposeTransport() {
-        _transporter?.close()
-        _transporter = nil
+    private func tryDisposeTransport() -> Bool {
+        if (_transporter == nil) {
+            return true //already disconnected
+        }
+
+        do
+        {
+            _transporter?.close()
+            _transporter = nil
+            return true
+        }
+        catch let ex
+        {
+            logMessageAdvertisement("[IOSFD.TDT.010] Failed to dispose the transport", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            return false
+        }
     }
 
-    private func disposeFilesystemManager() {
+
+    private func tryDisposeFilesystemManager() -> Bool {
         //_fileSystemManager?.cancelTransfer()  dont
         _fileSystemManager = nil
+
+        return true
     }
 
     //@objc   dont

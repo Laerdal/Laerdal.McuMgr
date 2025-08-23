@@ -5,7 +5,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
     internal interface INativeFileUploaderCommandableProxy
     {
         void Cancel(string reason = "");
-        void TryDisconnect();
+        bool TryDisconnect();
 
         EFileUploaderVerdict BeginUpload(
             byte[] data,

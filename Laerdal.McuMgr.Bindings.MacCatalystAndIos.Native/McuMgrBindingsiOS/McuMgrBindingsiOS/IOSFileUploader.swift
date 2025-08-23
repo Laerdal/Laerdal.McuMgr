@@ -48,19 +48,16 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func tryInvalidateCachedInfrastructure() -> Bool {
-        if _transporter == nil { //already scrapped
-            return true
-        }
+    public func nativeDispose() {
+        tryInvalidateCachedInfrastructure() //doesnt throw
+    }
 
-        if !isIdleOrCold() { //if the upload is already in progress we bail out
-            return false
-        }
+    @objc
+    public func tryInvalidateCachedInfrastructure() -> Bool { // must be public
+        var success1 = tryDisposeFilesystemManager() // order
+        var success2 = tryDisposeTransport() //         order
 
-        disposeFilesystemManager() // order
-        disposeTransport() //         order
-
-        return true;
+        return success1 && success2
     }
 
     @objc
@@ -131,7 +128,7 @@ public class IOSFileUploader: NSObject {
         }
 
         resetState() //order
-        disposeFilesystemManager() //00 vital hack
+        tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
@@ -247,21 +244,16 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func cancel(_ reason: String = "") {
+        _cancellationReason = reason
+        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
+        setState(.cancelling) //                                                                 order
+
         if (_fileSystemManager == nil) {
             return
         }
         
         ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            if (_fileSystemManager == nil) { //vital to double-check
-                return
-            }
-            
             do {
-                _cancellationReason = reason //need to set this for uploadDidCancel()
-
-                cancellingAdvertisement(reason)
-                setState(.cancelling) //order
-
                 _fileSystemManager?.cancelTransfer() //order
             } catch let ex {
                 onError("[IOSFU.CANCEL.010] Failed to cancel", ex)
@@ -272,8 +264,18 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func disconnect() {
-        disposeTransport()
+    public func tryDisconnect() -> Bool {
+        do
+        {
+            _transporter?.close()
+            //_transporter = nil //dont
+            return true
+        }
+        catch let ex
+        {
+            logMessageAdvertisement("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            return false
+        }
     }
 
     private func resetState() {
@@ -315,14 +317,28 @@ public class IOSFileUploader: NSObject {
         }
     }
 
-    private func disposeTransport() {
-        _transporter?.close()
-        _transporter = nil
+    private func tryDisposeTransport() -> Bool {
+        if (_transporter == nil) {
+            return true //already disconnected
+        }
+
+        do
+        {
+            _transporter?.close()
+            _transporter = nil
+            return true
+        }
+        catch let ex
+        {
+            logMessageAdvertisement("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            return false
+        }
     }
 
-    private func disposeFilesystemManager() {
+    private func tryDisposeFilesystemManager() -> Bool {
         //_fileSystemManager?.cancelTransfer()  dont
         _fileSystemManager = nil
+        return true
     }
 
     private func isIdleOrCold() -> Bool {
@@ -340,14 +356,20 @@ public class IOSFileUploader: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage
 
-        setState(.error) //                           order
-        setBusyState(false) //                        order
-        _listener.fatalErrorOccurredAdvertisement( // order
-                _resourceId,
-                _remoteFilePathSanitized,
-                errorMessage,
-                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
-        )
+        setState(.error) //       order
+        setBusyState(false) //    order
+
+        let resourceIdSnapshot = _resourceId
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
+
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.fatalErrorOccurredAdvertisement(// order
+                    resourceIdSnapshot,
+                    remoteFilePathSanitizedSnapshot,
+                    errorMessage,
+                    McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+            )
+        }
     }
 
     //@objc   dont
