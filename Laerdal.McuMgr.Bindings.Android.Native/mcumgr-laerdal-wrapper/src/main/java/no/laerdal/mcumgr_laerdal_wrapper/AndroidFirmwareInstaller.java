@@ -251,7 +251,7 @@ public class AndroidFirmwareInstaller
         try
         {
             _transport.release();
-            _backgroundExecutor.shutdownNow();
+            //_backgroundExecutor.shutdown(); //dont   this doesnt belong here
             emitLogEntry("Connection closed!", "firmware-installer", EAndroidLoggingLevel.Info);
         }
         catch (Exception ex)
