@@ -29,7 +29,7 @@ public class AndroidFirmwareInstaller
     @SuppressWarnings("FieldCanBeLocal")
     private final BluetoothDevice _bluetoothDevice;
 
-    private McuMgrTransport _transport;
+    private McuMgrBleTransport _transport;
     private FirmwareUpgradeManager _manager;
 
     private long _uploadStartTimestampInMs;
@@ -567,18 +567,23 @@ public class AndroidFirmwareInstaller
 
     private void configureConnectionSettings(int initialMtuSize)
     {
-        final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport))
+        if (_transport == null)
+        {
+            emitLogEntry("[AFI.CCS.000] Transport is null - cannot configure connection settings (how did this happen?)", "firmware-installer", EAndroidLoggingLevel.Error);
             return;
-
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
+        }
 
         if (initialMtuSize > 0)
         {
-            bleTransporter.setInitialMtu(initialMtuSize);
+            _transport.setInitialMtu(initialMtuSize);
+            emitLogEntry("[AFI.CCS.010] Initial-MTU-size set explicitly to " + initialMtuSize, "firmware-installer", EAndroidLoggingLevel.Info);
+        }
+        else
+        {
+            emitLogEntry("[AFI.CCS.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-installer", EAndroidLoggingLevel.Info);
         }
 
-        bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+        _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
     private void setLoggingEnabled(final boolean enabled)
