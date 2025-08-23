@@ -221,12 +221,19 @@ public class AndroidFileUploader
     {
         if (_transport == null)
         {
+            emitLogEntry("[AFD.ETIIEO.000] Transport is null - instantiating it now", "firmware-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+
             _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         }
 
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
+            emitLogEntry("[AFD.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", "firmware-uploader", EAndroidLoggingLevel.Info, _resourceId);
+        }
+        else
+        {
+            emitLogEntry("[AFD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-uploader", EAndroidLoggingLevel.Info, _resourceId);
         }
     }
 
@@ -396,6 +403,9 @@ public class AndroidFileUploader
 
     private void setLoggingEnabledOnTransport(final boolean enabled)
     {
+        if (_transport == null)
+            return;
+
         _transport.setLoggingEnabled(enabled);
     }
 
