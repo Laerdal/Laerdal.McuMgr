@@ -132,8 +132,10 @@ namespace Laerdal.McuMgr.FileUploading
             return verdict;
         }
         
-        public void Cancel(string reason = "") => _nativeFileUploaderProxy?.Cancel(reason);
-        public void Disconnect() => _nativeFileUploaderProxy?.TryDisconnect();
+        public bool TryPause() => _nativeFileUploaderProxy?.TryPause() ?? false;
+        public bool TryResume() => _nativeFileUploaderProxy?.TryResume() ?? false;
+        public bool TryCancel(string reason = "") => _nativeFileUploaderProxy?.TryCancel(reason) ?? false;
+        public bool TryDisconnect() => _nativeFileUploaderProxy?.TryDisconnect() ?? false;
         public void CleanupResourcesOfLastUpload() => _nativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
         
         private event EventHandler<CancelledEventArgs> _cancelled;

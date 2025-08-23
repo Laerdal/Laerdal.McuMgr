@@ -120,10 +120,16 @@ namespace Laerdal.McuMgr.FileDownloading
             #region commands
             
             public string LastFatalErrorMessage => _nativeFileDownloader?.LastFatalErrorMessage;
+
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryPause() => _nativeFileDownloader?.TryPause() ?? false;
             
-            public void Cancel(string reason) => _nativeFileDownloader?.Cancel(reason);
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryResume() => _nativeFileDownloader?.TryResume() ?? false;
             
-            public void Disconnect() => _nativeFileDownloader?.TryDisconnect();
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryCancel(string reason = "") => _nativeFileDownloader?.TryCancel(reason) ?? false;
+            public bool TryDisconnect() => _nativeFileDownloader?.TryDisconnect() ?? false;
 
             public EFileDownloaderVerdict BeginDownload(
                 string remoteFilePath,

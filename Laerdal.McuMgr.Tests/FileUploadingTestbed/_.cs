@@ -11,6 +11,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         {
             private readonly INativeFileUploaderCallbacksProxy _uploaderCallbacksProxy;
 
+            public bool PauseCalled { get; private set; }
+            public bool ResumeCalled { get; private set; }
             public bool CancelCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
             public bool BeginUploadCalled { get; private set; }
@@ -45,17 +47,15 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 return EFileUploaderVerdict.Success;
             }
 
-            public virtual void Cancel(string reason = "")
+            public virtual bool TryPause() => ResumeCalled = true;
+            public virtual bool TryResume() => PauseCalled = true;
+            public virtual bool TryCancel(string reason = "")
             {
-                CancelCalled = true;
                 CancellationReason = reason;
+                return CancelCalled = true;
             }
 
-            public virtual bool TryDisconnect()
-            {
-                DisconnectCalled = true;
-                return true;
-            }
+            public virtual bool TryDisconnect() => DisconnectCalled = true;
 
             public void CancellingAdvertisement(string reason = "")
                 => _uploaderCallbacksProxy.CancellingAdvertisement(reason); //raises the actual event

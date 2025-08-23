@@ -147,10 +147,22 @@ namespace Laerdal.McuMgr.FileUploading
             }
             
             // ReSharper disable once RedundantOverriddenMember
-            // ReSharper disable once OptionalParameterHierarchyMismatch
-            public override void Cancel(string reason = "")
+            public override bool TryPause()
             {
-                base.Cancel(reason);
+                return base.TryPause();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryResume()
+            {
+                return base.TryResume();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            // ReSharper disable once OptionalParameterHierarchyMismatch
+            public override bool TryCancel(string reason = "")
+            {
+                return base.TryCancel(reason);
             }
 
             public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android

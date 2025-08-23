@@ -105,8 +105,10 @@ namespace Laerdal.McuMgr.FileDownloading
             return verdict;
         }
 
-        public void Cancel(string reason = "") => _nativeFileDownloaderProxy?.Cancel(reason);
-        public void Disconnect() => _nativeFileDownloaderProxy?.Disconnect();
+        public bool TryPause() => _nativeFileDownloaderProxy?.TryPause() ?? false;
+        public bool TryResume() => _nativeFileDownloaderProxy?.TryResume() ?? false;
+        public bool TryCancel(string reason = "") => _nativeFileDownloaderProxy?.TryCancel(reason) ?? false;
+        public bool TryDisconnect() => _nativeFileDownloaderProxy?.TryDisconnect() ?? false;
 
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<CancellingEventArgs> _cancelling;

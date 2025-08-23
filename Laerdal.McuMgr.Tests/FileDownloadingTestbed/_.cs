@@ -11,7 +11,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
         {
             private readonly INativeFileDownloaderCallbacksProxy _downloaderCallbacksProxy;
 
+            public bool PauseCalled { get; private set; }
             public bool CancelCalled { get; private set; }
+            public bool ResumeCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
             public bool BeginDownloadCalled { get; private set; }
 
@@ -38,15 +40,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 return EFileDownloaderVerdict.Success;
             }
 
-            public virtual void Cancel(string reason = "")
-            {
-                CancelCalled = true;
-            }
-
-            public virtual void Disconnect()
-            {
-                DisconnectCalled = true;
-            }
+            public virtual bool TryPause() => ResumeCalled = true;
+            public virtual bool TryResume() => PauseCalled = true;
+            public virtual bool TryCancel(string reason = "") => CancelCalled = true;
+            public virtual bool TryDisconnect() => DisconnectCalled = true;
 
             public void CancelledAdvertisement(string reason)
                 => _downloaderCallbacksProxy.CancelledAdvertisement(reason);
@@ -57,8 +54,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _downloaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
-            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
-                => _downloaderCallbacksProxy.StateChangedAdvertisement(resourceId: resource, newState: newState, oldState: oldState); //raises the actual event
+            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState)
+                => _downloaderCallbacksProxy.StateChangedAdvertisement(resourceId: resourceId, newState: newState, oldState: oldState); //raises the actual event
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _downloaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event

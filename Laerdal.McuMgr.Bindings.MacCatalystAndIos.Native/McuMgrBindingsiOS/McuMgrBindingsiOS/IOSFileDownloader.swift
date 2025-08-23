@@ -139,23 +139,34 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func pause() {
-        if (_fileSystemManager == nil) {
-            return
+    public func tryPause() -> Bool {
+        if (_currentState == .paused) { //order
+            return true // already paused which is ok
         }
 
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+        if (_currentState != .downloading) { //order
+            return false
+        }
+
+        if (_fileSystemManager == nil) { //order
+            return false
+        }
+
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 if (_fileSystemManager == nil) {
-                    return
+                    return true
                 }
 
                 _fileSystemManager?.pauseTransfer()
                 
                 setState(.paused)
                 setBusyState(false)
+
+                return true
             } catch let ex {
                 onError("[IOSFD.PAUSE.050] Failed to pause file-downloading", ex)
+                return false
             }
         })
 
@@ -164,23 +175,34 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func resume() {
-        if (_fileSystemManager == nil) {
-            return
+    public func tryResume() -> Bool {
+        if _currentState == .downloading { //order
+            return true //already downloading which is ok
         }
 
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+        if (_currentState != .paused) { //order
+            return false
+        }
+
+        if (_fileSystemManager == nil) { //order
+            return false
+        }
+
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 if (_fileSystemManager == nil) {
-                    return
+                    return false
                 }
 
                 _fileSystemManager?.continueTransfer()
 
                 setState(.downloading)
                 setBusyState(true)
+
+                return true
             } catch let ex {
                 onError("[IOSFD.RESUME.050] Failed to resume file-downloading", ex)
+                return false
             }
         })
 
@@ -189,20 +211,23 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func cancel(_ reason: String = "") {
+    public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
         DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
         setState(.cancelling) //                                                                 order
 
         if (_fileSystemManager == nil) { //order
-            return
+            return false
         }
 
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10  order
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10  order
             do {
                 _fileSystemManager?.cancelTransfer() //order
+                return true
+
             } catch let ex {
                 onError("[IOSFD.CANCEL.050] Failed to cancel file-downloading", ex)
+                return false
             }
         })
 

@@ -195,14 +195,22 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func pause() {
-        if (_fileSystemManager == nil) {
-            return
+    public func tryPause() -> Bool {
+        if (_currentState == .paused) { //order
+            return true // already paused which is ok
+        }
+
+        if (_currentState != .uploading) { //order
+            return false
+        }
+
+        if (_fileSystemManager == nil) { //order
+            return false
         }
         
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             if (_fileSystemManager == nil) { //vital to double-check
-                return
+                return false
             }
  
             do {
@@ -210,8 +218,11 @@ public class IOSFileUploader: NSObject {
                 
                 setState(.paused)
                 setBusyState(false)
+
+                return true
             } catch let ex {
                 onError("[IOSFU.PAUSE.010] Failed to pause", ex)
+                return false
             }
         })
         
@@ -219,14 +230,22 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func resume() {
-        if (_fileSystemManager == nil) {
-            return
+    public func tryResume() -> Bool {
+        if _currentState == .uploading { //order
+            return true //already downloading which is ok
+        }
+
+        if (_currentState != .paused) { //order
+            return false
+        }
+
+        if (_fileSystemManager == nil) { //order
+            return false
         }
         
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             if (_fileSystemManager == nil) { //vital to double-check
-                return
+                return false
             }
  
             do {
@@ -234,8 +253,11 @@ public class IOSFileUploader: NSObject {
                 
                 setState(.uploading)
                 setBusyState(true)
+
+                return true
             } catch let ex {
                 onError("[IOSFU.RESUME.010] Failed to resume", ex)
+                return false
             }
         })
 
@@ -243,20 +265,22 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func cancel(_ reason: String = "") {
+    public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
         DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
         setState(.cancelling) //                                                                 order
 
         if (_fileSystemManager == nil) {
-            return
+            return true
         }
         
-        ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 _fileSystemManager?.cancelTransfer() //order
+                return true
             } catch let ex {
                 onError("[IOSFU.CANCEL.010] Failed to cancel", ex)
+                return false
             }
         })
 

@@ -55,8 +55,16 @@ namespace Laerdal.McuMgr.FileUploading
             #region commands
             
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryPause() => _nativeFileUploader?.TryPause() ?? false;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryResume() => _nativeFileUploader?.TryResume() ?? false;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryCancel(string reason = "") => _nativeFileUploader?.TryCancel(reason) ?? false;
 
-            public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
             public bool TryDisconnect() => _nativeFileUploader?.TryDisconnect() ?? false;
             
             public new void Dispose()

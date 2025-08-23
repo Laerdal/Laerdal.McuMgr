@@ -178,9 +178,15 @@ public class AndroidFileDownloader
 
     public boolean tryPause()
     {
+        if (_currentState == EAndroidFileDownloaderState.PAUSED)
+            return true; // already paused which is ok
+
+        if (_currentState != EAndroidFileDownloaderState.DOWNLOADING)
+            return false;
+
         final TransferController transferController = _downloadingController;
         if (transferController == null)
-            return false;
+            return false; //controller has been trashed
 
         try
         {
@@ -202,18 +208,24 @@ public class AndroidFileDownloader
 
     public boolean tryResume()
     {
+        if (_currentState == EAndroidFileDownloaderState.DOWNLOADING)
+            return true; //already downloading which is ok
+
+        if (_currentState != EAndroidFileDownloaderState.PAUSED)
+            return false;
+
         final TransferController transferController = _downloadingController;
         if (transferController == null)
-            return false;
+            return false; //controller has been trashed
 
         try
         {
+            transferController.resume();
+
             setState(EAndroidFileDownloaderState.DOWNLOADING, null);
             setBusyState(true);
 
             setLoggingEnabledOnTransport(false);
-
-            transferController.resume();
 
             return true;
         }
@@ -275,7 +287,7 @@ public class AndroidFileDownloader
 
     private String _cancellationReason = "";
 
-    public void cancel(final String reason)
+    public boolean tryCancel(final String reason)
     {
         _cancellationReason = reason;
 
@@ -284,9 +296,18 @@ public class AndroidFileDownloader
 
         final TransferController transferController = _downloadingController; //order
         if (transferController == null)
-            return;
+            return true; //nothing to cancel which is not an error
 
-        transferController.cancel(); //order   keep this dead last
+        try
+        {
+            transferController.cancel(); //order   keep this dead last
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFD.TC.010] [SUPPRESSED] Error while trying to cancel the download:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Warning);
+            return false;
+        }
     }
 
     private void resetDownloadState()

@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             {
                 await Task.Delay(500);
 
-                fileDownloader.Cancel("foobar reason");
+                fileDownloader.TryCancel("foobar reason");
             });
             var work = new Func<Task>(() => fileDownloader.DownloadAsync(
                 hostDeviceModel: "foobar",
@@ -94,9 +94,9 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
 
-            public override void Cancel(string reason = "")
+            public override bool TryCancel(string reason = "")
             {
-                base.Cancel(reason);
+                base.TryCancel(reason);
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
@@ -110,6 +110,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                         CancelledAdvertisement(reason); //                                                                                                     order    
                     }
                 });
+
+                return true;
 
                 //00   if the cancellation doesnt lead to a soft landing due to for example a broken ble connection the the native implementation will not call
                 //     the cancelled event at all   in this case the csharp logic will wait for a few seconds and then throw the cancelled exception manually on

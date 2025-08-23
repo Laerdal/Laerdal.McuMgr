@@ -374,6 +374,16 @@ function create_fat_binaries() {
   find                                           \
         "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
         -type f                                  \
+        -exec sed -i.bak 's/bool TryPause { get; }/bool TryPause();/gi' {} \;
+
+  find                                           \
+        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+        -type f                                  \
+        -exec sed -i.bak 's/bool TryResume { get; }/bool TryResume();/gi' {} \;
+
+  find                                           \
+        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+        -type f                                  \
         -exec sed -i.bak 's/bool TryDisconnect { get; }/bool TryDisconnect();/gi' {} \;
 
   rm -f "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"/*.bak || :

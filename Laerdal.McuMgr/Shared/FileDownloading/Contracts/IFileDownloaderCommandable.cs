@@ -103,11 +103,20 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
             int? windowCapacity = null
         );
 
-        /// <summary>Cancels the file-downloading process</summary>
-        /// <param name="reason">The reason for the cancellation</param>
-        void Cancel(string reason = "");
+        /// <summary>Pauses the file-uploading process</summary>
+        /// <returns>True if the pausing request was successfully effectuated (or if the transfer was already paused) - False otherwise which typically means that the underlying transport has been dispoed</returns>
+        bool TryPause();
+        
+        /// <summary>Resumes the file-uploading process</summary>
+        /// <returns>True if the resumption request was successfully effectuated (or if the transfer has already been resumed) - False otherwise which typically means is nothing to resume</returns>        
+        bool TryResume();
+        
+        /// <summary>Cancels the file-uploading process</summary>
+        /// <param name="reason">(optional) The reason for the cancellation</param>
+        /// <returns>True if the cancellation request was successfully sent to the underlying native implementation (or if there is no transfer ongoing to cancel) - False otherwise which typically means there was an internal error (very rare)</returns>
+        bool TryCancel(string reason = "");
         
         /// <summary>Disconnects the file-downloader from the targeted device</summary>
-        void Disconnect();
+        bool TryDisconnect();
     }
 }

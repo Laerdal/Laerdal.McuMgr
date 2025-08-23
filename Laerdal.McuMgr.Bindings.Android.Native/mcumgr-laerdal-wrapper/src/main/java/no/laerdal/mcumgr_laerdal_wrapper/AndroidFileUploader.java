@@ -267,9 +267,15 @@ public class AndroidFileUploader
 
     public boolean tryPause()
     {
+        if (_currentState == EAndroidFileUploaderState.PAUSED)
+            return true; // already paused which is ok
+
+        if (_currentState != EAndroidFileUploaderState.UPLOADING)
+            return false;
+
         final TransferController transferController = _uploadController;
         if (transferController == null)
-            return false;
+            return false; //controller has been trashed
 
         try
         {
@@ -291,18 +297,24 @@ public class AndroidFileUploader
 
     public boolean tryResume()
     {
+        if (_currentState == EAndroidFileUploaderState.UPLOADING)
+            return true; //already downloading which is ok
+
+        if (_currentState != EAndroidFileUploaderState.PAUSED)
+            return false;
+
         final TransferController transferController = _uploadController;
         if (transferController == null)
-            return false;
+            return false; //controller has been trashed
 
         try
         {
+            transferController.resume();
+
             setState(EAndroidFileUploaderState.UPLOADING);
             setBusyState(true);
 
             setLoggingEnabledOnTransport(false);
-
-            transferController.resume();
 
             return true;
         }
@@ -363,7 +375,7 @@ public class AndroidFileUploader
 
     private String _cancellationReason = "";
 
-    public void cancel(final String reason)
+    public boolean tryCancel(final String reason)
     {
         _cancellationReason = reason;
 
@@ -372,9 +384,18 @@ public class AndroidFileUploader
 
         final TransferController transferController = _uploadController; //  order
         if (transferController == null)
-            return;
+            return true; // nothing to cancel which is not an error
 
-        transferController.cancel(); //order
+        try
+        {
+            transferController.cancel(); //order
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFU.TC.010] [SUPPRESSED] Error while trying to cancel the upload:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            return false;
+        }
     }
 
     private void requestHighConnectionPriorityOnTransport()

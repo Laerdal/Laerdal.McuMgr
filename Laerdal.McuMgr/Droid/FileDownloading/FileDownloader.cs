@@ -108,7 +108,7 @@ namespace Laerdal.McuMgr.FileDownloading
             {
                 try
                 {
-                    Disconnect();
+                    TryDisconnect();
                 }
                 catch
                 {
@@ -117,11 +117,30 @@ namespace Laerdal.McuMgr.FileDownloading
             }
 
             #region commands
-
-            public void Disconnect()
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryPause() //keep this override so as to amortize the native layer
             {
-                // ReSharper disable once RedundantBaseQualifier
-                base.TryDisconnect();
+                return base.TryPause();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryResume() //keep this override so as to amortize the native layer
+            {
+                return base.TryResume();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            // ReSharper disable once OptionalParameterHierarchyMismatch
+            public override bool TryCancel(string reason = "") //keep this override so as to amortize the native layer
+            {
+                return base.TryCancel(reason);
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryDisconnect() //keep this override so as to amortize the native layer
+            {
+                return base.TryDisconnect();
             }
 
             public EFileDownloaderVerdict BeginDownload(
