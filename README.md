@@ -142,7 +142,7 @@ public async Task InstallFirmwareAsync()
             windowCapacity: FirmwareInstallationWindowCapacity <= 0 ? null : FirmwareInstallationWindowCapacity, //    android only
             memoryAlignment: FirmwareInstallationMemoryAlignment <= 0 ? null : FirmwareInstallationMemoryAlignment, // android only
             estimatedSwapTimeInMilliseconds: FirmwareInstallationEstimatedSwapTimeInSecs * 1000
-        );
+        ).ConfigureAwait(false); //vital to avoid deadlocks
     }
     catch (FirmwareInstallationCancelledException) //order
     {
@@ -242,7 +242,7 @@ public async Task EraseFirmwareAsync()
         
         ToggleSubscriptionsOnFirmwareEraserEvents(subscribeNotUnsubscribe: true);
 
-        await _firmwareEraser.EraseAsync(imageIndex: IndexOfFirmwareImageToErase);
+        await _firmwareEraser.EraseAsync(imageIndex: IndexOfFirmwareImageToErase).ConfigureAwait(false);
     }
     catch (FirmwareErasureErroredOutException ex)
     {
@@ -463,7 +463,7 @@ private void CleanupDeviceResetter()
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
 
                 moveToNextUploadInCaseOfError: MassFileUploadingMoveToNextUploadInCaseOfError
-            );
+            ).ConfigureAwait(false); //vital to avoid deadlocks
         }
         catch (UploadCancelledException) //order
         {
