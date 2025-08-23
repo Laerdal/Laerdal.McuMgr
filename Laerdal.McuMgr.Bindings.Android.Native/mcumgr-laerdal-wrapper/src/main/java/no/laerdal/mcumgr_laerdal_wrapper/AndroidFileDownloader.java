@@ -481,16 +481,16 @@ public class AndroidFileDownloader
         if (func == null)
             return;
 
-        //_backgroundExecutor.execute(() -> {
-        try
-        {
-            func.run();
-        }
-        catch (Exception ignored)
-        {
-            // ignored
-        }
-        //});
+        _backgroundExecutor.execute(() -> {
+            try
+            {
+                func.run();
+            }
+            catch (Exception ignored)
+            {
+                // ignored
+            }
+        });
     }
 
     @Contract(pure = true)
