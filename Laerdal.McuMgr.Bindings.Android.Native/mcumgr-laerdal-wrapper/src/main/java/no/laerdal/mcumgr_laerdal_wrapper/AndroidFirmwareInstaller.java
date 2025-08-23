@@ -3,7 +3,6 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
-import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
@@ -113,7 +112,7 @@ public class AndroidFirmwareInstaller
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
         { //it is better to just warn the calling environment instead of erroring out
             emitLogEntry(
-                    "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
+                    "[AFI.BI.015] Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
                     "firmware-installer",
                     EAndroidLoggingLevel.Warning
             );
