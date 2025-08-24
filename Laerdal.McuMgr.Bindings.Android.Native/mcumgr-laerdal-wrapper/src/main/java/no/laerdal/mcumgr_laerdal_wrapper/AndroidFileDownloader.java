@@ -460,7 +460,7 @@ public class AndroidFileDownloader
                 case DOWNLOADING: // idle/paused -> uploading
                     if (oldState != EAndroidFileDownloaderState.IDLE && oldState != EAndroidFileDownloaderState.PAUSED)
                     {
-                        logMessageAdvertisement("[AFD.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
+                        logMessageAdvertisement("[AFD.SS.FAFITB.010] State changed to 'downloading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
 
                     fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
