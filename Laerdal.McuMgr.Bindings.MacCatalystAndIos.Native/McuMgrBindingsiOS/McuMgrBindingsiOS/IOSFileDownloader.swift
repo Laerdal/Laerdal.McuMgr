@@ -408,18 +408,22 @@ public class IOSFileDownloader: NSObject {
             case .none: // * -> none
                 self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0)
                 break;
-            case .downloading: // idle -> downloading
-                if (oldState == .idle)
+            case .downloading: // idle/paused -> downloading
+                if (oldState != .idle && oldState != .paused)
                 {
-                    self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot) //order
+                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.010] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
+
+                self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot) //order
                 break;
             case .complete: // downloading -> complete
-                if (oldState == .downloading) //00
+                if (oldState != .downloading) //00
                 {
-                    self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0) // order
-                    self.fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data) //                                       order
+                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.020] State changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
+
+                self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0) // order
+                self.fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data) //                                       order
                 break;
 
             default: break;

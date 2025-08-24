@@ -494,18 +494,22 @@ public class IOSFileUploader: NSObject {
                 break;
                 
             case .uploading:
-                if (oldState == .idle) // idle -> uploading
+                if (oldState != .idle && oldState != .paused)
                 {
-                    self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //00
+                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.010] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
+
+                self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //00
                 break;
                 
             case .complete:
-                if (oldState == .uploading) // uploading -> complete
+                if (oldState != .uploading) //00
                 {
-                    self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
-                    self.fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
+                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.020] State changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
+
+                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
+                self.fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
                 break;
                 
             default: break;
