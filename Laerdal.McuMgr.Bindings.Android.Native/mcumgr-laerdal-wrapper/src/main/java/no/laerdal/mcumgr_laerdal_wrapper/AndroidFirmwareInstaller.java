@@ -279,7 +279,7 @@ public class AndroidFirmwareInstaller
         _currentState = newState; //order
 
         fireAndForgetInTheBg(() -> {
-            if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00
+            if (newState == EAndroidFirmwareInstallationState.TESTING) //00
             {
                 firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //order
             }

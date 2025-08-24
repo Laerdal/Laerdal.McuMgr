@@ -490,19 +490,23 @@ public class AndroidFileUploader
                     fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0);
                     break;
 
-                case UPLOADING:
-                    if (oldState == EAndroidFileUploaderState.IDLE) // idle -> uploading
+                case UPLOADING: // idle/paused -> uploading
+                    if (oldState != EAndroidFileUploaderState.IDLE && oldState != EAndroidFileUploaderState.PAUSED)
                     {
-                        fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
+                        logMessageAdvertisement("[AFU.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
                     }
+
+                    fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
                     break;
 
-                case COMPLETE:
-                    if (oldState == EAndroidFileUploaderState.UPLOADING) // uploading -> complete
+                case COMPLETE: // uploading -> complete
+                    if (oldState != EAndroidFileUploaderState.UPLOADING)
                     {
-                        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
-                        fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
+                        logMessageAdvertisement("[AFU.SS.FAFITB.020] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
                     }
+
+                    fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
+                    fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
                     break;
             }
         });
@@ -652,7 +656,7 @@ public class AndroidFileUploader
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 
-                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement( // convert to percent
+                fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
                         resourceIdSnapshot,
                         remoteFilePathSanitizedSnapshot,
                         fileUploadProgressPercentage,

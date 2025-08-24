@@ -457,18 +457,22 @@ public class AndroidFileDownloader
                 case NONE: // * -> none
                     fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0);
                     break;
-                case DOWNLOADING: // idle -> downloading
-                    if (oldState == EAndroidFileDownloaderState.IDLE)
+                case DOWNLOADING: // idle/paused -> uploading
+                    if (oldState != EAndroidFileDownloaderState.IDLE && oldState != EAndroidFileDownloaderState.PAUSED)
                     {
-                        fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
+                        logMessageAdvertisement("[AFD.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
+
+                    fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
                     break;
                 case COMPLETE: // downloading -> complete
-                    if (oldState == EAndroidFileDownloaderState.DOWNLOADING) //00
+                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING) //00
                     {
-                        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); // order
-                        fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data); //                                       order
+                        logMessageAdvertisement("[AFD.SS.FAFITB.020] State changed to 'complete' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
+
+                    fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); // order
+                    fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data); //                                       order
                     break;
             }
         });
