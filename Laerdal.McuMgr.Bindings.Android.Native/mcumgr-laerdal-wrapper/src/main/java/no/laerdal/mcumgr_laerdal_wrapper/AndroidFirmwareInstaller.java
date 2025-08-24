@@ -3,7 +3,6 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import androidx.annotation.NonNull;
-import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
@@ -29,7 +28,7 @@ public class AndroidFirmwareInstaller
     @SuppressWarnings("FieldCanBeLocal")
     private final BluetoothDevice _bluetoothDevice;
 
-    private McuMgrTransport _transport;
+    private McuMgrBleTransport _transport;
     private FirmwareUpgradeManager _manager;
 
     private long _uploadStartTimestampInMs;
@@ -113,7 +112,7 @@ public class AndroidFirmwareInstaller
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
         { //it is better to just warn the calling environment instead of erroring out
             emitLogEntry(
-                    "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
+                    "[AFI.BI.015] Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
                     "firmware-installer",
                     EAndroidLoggingLevel.Warning
             );
@@ -280,7 +279,7 @@ public class AndroidFirmwareInstaller
         _currentState = newState; //order
 
         fireAndForgetInTheBg(() -> {
-            if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00
+            if (newState == EAndroidFirmwareInstallationState.TESTING) //00
             {
                 firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //order
             }
@@ -376,7 +375,7 @@ public class AndroidFirmwareInstaller
         setState(EAndroidFirmwareInstallationState.PAUSED);
 
         _manager.pause();
-        setLoggingEnabled(true);
+        setLoggingEnabledOnTransport(true);
     }
 
     public void resume()
@@ -387,7 +386,7 @@ public class AndroidFirmwareInstaller
         setBusyState(true);
         setState(EAndroidFirmwareInstallationState.UPLOADING);
 
-        setLoggingEnabled(false);
+        setLoggingEnabledOnTransport(false);
         _manager.resume();
     }
 
@@ -414,7 +413,7 @@ public class AndroidFirmwareInstaller
                 final FirmwareUpgradeManager.State newState
         )
         {
-            setLoggingEnabled(newState != State.UPLOAD);
+            setLoggingEnabledOnTransport(newState != State.UPLOAD);
 
             switch (newState)
             {
@@ -445,7 +444,7 @@ public class AndroidFirmwareInstaller
             setState(EAndroidFirmwareInstallationState.COMPLETE);
             setBusyState(false);
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnTransport(true);
         }
 
         @Override
@@ -456,7 +455,7 @@ public class AndroidFirmwareInstaller
             onError(fatalErrorType, "[AFI.OAF.010] Upgrade failed:\n\n" + ex, ex);
             setBusyState(false);
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnTransport(true);
         }
 
         private EAndroidFirmwareInstallerFatalErrorType DeduceInstallationFailureType(final FirmwareUpgradeManager.State state, final McuMgrException ex)
@@ -503,7 +502,7 @@ public class AndroidFirmwareInstaller
             setState(EAndroidFirmwareInstallationState.CANCELLED);
             cancelledAdvertisement();
 
-            setLoggingEnabled(true);
+            setLoggingEnabledOnTransport(true);
             setBusyState(false);
         }
 
@@ -567,27 +566,31 @@ public class AndroidFirmwareInstaller
 
     private void configureConnectionSettings(int initialMtuSize)
     {
-        final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport))
-            return;
+        if (_transport == null)
+        {
+            emitLogEntry("[AFI.CCS.000] Transport is null - instantiating it now", "firmware-installer", EAndroidLoggingLevel.Warning);
 
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
+            _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+        }
 
         if (initialMtuSize > 0)
         {
-            bleTransporter.setInitialMtu(initialMtuSize);
+            _transport.setInitialMtu(initialMtuSize);
+            emitLogEntry("[AFI.CCS.010] Initial-MTU-size set explicitly to " + initialMtuSize, "firmware-installer", EAndroidLoggingLevel.Info);
+        }
+        else
+        {
+            emitLogEntry("[AFI.CCS.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-installer", EAndroidLoggingLevel.Info);
         }
 
-        bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+        _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
-    private void setLoggingEnabled(final boolean enabled)
+    private void setLoggingEnabledOnTransport(final boolean enabled)
     {
-        final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport))
+        if (_transport == null)
             return;
 
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
-        bleTransporter.setLoggingEnabled(enabled);
+        _transport.setLoggingEnabled(enabled);
     }
 }

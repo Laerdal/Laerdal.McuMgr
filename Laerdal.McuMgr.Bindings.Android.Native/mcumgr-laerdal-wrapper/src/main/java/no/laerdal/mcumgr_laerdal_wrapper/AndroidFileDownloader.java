@@ -64,19 +64,19 @@ public class AndroidFileDownloader
     {
         if (!IsIdleOrCold())
         {
-            emitLogEntry("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "FileUploader", EAndroidLoggingLevel.Error);
+            emitLogEntry("[AFD.TSBD.005] trySetBluetoothDevice() cannot proceed because the downloader is not cold", "FileDownloader", EAndroidLoggingLevel.Error);
             return false;
         }
 
         if (!tryInvalidateCachedInfrastructure()) //order
         {
-            emitLogEntry("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileUploader", EAndroidLoggingLevel.Error);
+            emitLogEntry("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", "FileDownloader", EAndroidLoggingLevel.Error);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        emitLogEntry("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileUploader", EAndroidLoggingLevel.Trace);
+        emitLogEntry("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", "FileDownloader", EAndroidLoggingLevel.Trace);
 
         return true;
     }
@@ -97,7 +97,7 @@ public class AndroidFileDownloader
      * @param remoteFilePath the remote-file-path to the file on the remote device that you wish to download
      * @param initialMtuSize sets the initial MTU for the connection that the McuMgr BLE-transport sets up for the firmware installation that will follow.
      *                       Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
-     * @return a verdict indicating whether the file uploading was started successfully or not
+     * @return a verdict indicating whether the file downloading was started successfully or not
      */
     public EAndroidFileDownloaderVerdict beginDownload(
             final String remoteFilePath,
@@ -152,7 +152,7 @@ public class AndroidFileDownloader
         {
             resetDownloadState(); //order   must be called before ensureTransportIsInitializedExactlyOnce() because the environment might try to set the device via trySetBluetoothDevice()!!!
             ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
-            setLoggingEnabledOnConnection(false); //order
+            setLoggingEnabledOnTransport(false); //order
 
             final EAndroidFileDownloaderVerdict verdict = ensureFilesystemManagerIsInitializedExactlyOnce(); //order
             if (verdict != EAndroidFileDownloaderVerdict.SUCCESS)
@@ -176,43 +176,84 @@ public class AndroidFileDownloader
         return EAndroidFileDownloaderVerdict.SUCCESS;
     }
 
-    public void pause()
+    public boolean tryPause()
     {
+        if (_currentState == EAndroidFileDownloaderState.PAUSED)
+            return true; // already paused which is ok
+
+        if (_currentState != EAndroidFileDownloaderState.DOWNLOADING)
+            return false;
+
         final TransferController transferController = _downloadingController;
         if (transferController == null)
-            return;
+            return false; //controller has been trashed
 
-        setState(EAndroidFileDownloaderState.PAUSED, null);
-        setBusyState(false);
+        try
+        {
+            transferController.pause();
 
-        transferController.pause();
-        setLoggingEnabledOnConnection(true);
+            setState(EAndroidFileDownloaderState.PAUSED, null);
+            setBusyState(false);
+
+            setLoggingEnabledOnTransport(true);
+
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFD.TP.010] [SUPPRESSED] Error while trying to pause the download:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Warning);
+            return false;
+        }
     }
 
-    public void resume()
+    public boolean tryResume()
     {
+        if (_currentState == EAndroidFileDownloaderState.DOWNLOADING)
+            return true; //already downloading which is ok
+
+        if (_currentState != EAndroidFileDownloaderState.PAUSED)
+            return false;
+
         final TransferController transferController = _downloadingController;
         if (transferController == null)
-            return;
+            return false; //controller has been trashed
 
-        setState(EAndroidFileDownloaderState.DOWNLOADING, null);
-        setBusyState(true);
+        try
+        {
+            transferController.resume();
 
-        setLoggingEnabledOnConnection(false);
-        transferController.resume();
+            setState(EAndroidFileDownloaderState.DOWNLOADING, null);
+            setBusyState(true);
+
+            setLoggingEnabledOnTransport(false);
+
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFD.TR.010] [SUPPRESSED] Error while trying to resume the download:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Warning);
+            return false;
+        }
     }
 
     public void nativeDispose()
     {
-        tryDisconnect(); //doesnt throw
+        emitLogEntry("[AFD.ND.010] Disposing the native-file-downloader", "file-downloader", EAndroidLoggingLevel.Trace);
+
+        tryInvalidateCachedInfrastructure(); //  doesnt throw
         tryShutdownBackgroundExecutor(); //doesnt throw
     }
 
     @SuppressWarnings("UnusedReturnValue")
     public boolean tryDisconnect()
     {
+        emitLogEntry("[AFD.TDISC.010] Will try to disconnect now ...", "file-downloader", EAndroidLoggingLevel.Trace);
+        
         if (_transport == null)
+        {
+            emitLogEntry("[AFD.TDISC.020] Transport is null so nothing to disconnect from", "file-downloader", EAndroidLoggingLevel.Trace);
             return true;
+        }
 
         try
         {
@@ -230,6 +271,8 @@ public class AndroidFileDownloader
     @SuppressWarnings("UnusedReturnValue")
     private boolean tryShutdownBackgroundExecutor()
     {
+        emitLogEntry("[AFD.TSBE.010] Shutting down the background-executor ...", "file-downloader", EAndroidLoggingLevel.Trace);
+
         try
         {
             _backgroundExecutor.shutdown();
@@ -237,14 +280,14 @@ public class AndroidFileDownloader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning);
+            emitLogEntry("[AFD.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Warning);
             return false;
         }
     }
 
     private String _cancellationReason = "";
 
-    public void cancel(final String reason)
+    public boolean tryCancel(final String reason)
     {
         _cancellationReason = reason;
 
@@ -253,9 +296,18 @@ public class AndroidFileDownloader
 
         final TransferController transferController = _downloadingController; //order
         if (transferController == null)
-            return;
+            return true; //nothing to cancel which is not an error
 
-        transferController.cancel(); //order   keep this dead last
+        try
+        {
+            transferController.cancel(); //order   keep this dead last
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            emitLogEntry("[AFD.TC.010] [SUPPRESSED] Error while trying to cancel the download:\n\n" + ex, "file-downloader", EAndroidLoggingLevel.Warning);
+            return false;
+        }
     }
 
     private void resetDownloadState()
@@ -273,12 +325,19 @@ public class AndroidFileDownloader
     {
         if (_transport == null)
         {
+            emitLogEntry("[AFD.ETIIEO.000] Transport is null - instantiating it now", "firmware-downloader", EAndroidLoggingLevel.Warning);
+
             _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         }
 
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
+            emitLogEntry("[AFD.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", "firmware-downloader", EAndroidLoggingLevel.Info);
+        }
+        else
+        {
+            emitLogEntry("[AFD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-downloader", EAndroidLoggingLevel.Info);
         }
     }
 
@@ -295,15 +354,16 @@ public class AndroidFileDownloader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileDownloaderVerdict.SUCCESS;
 
+        emitLogEntry("[AFD.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-downloader", EAndroidLoggingLevel.Trace);
+
         try
         {
             _fileSystemManager = new FsManager(_transport); //order
         }
         catch (final Exception ex)
         {
-            onError("[AFD.EFMIIEO.010] Failed to initialize the filesystem manager: " + ex, ex);
-
-            return EAndroidFileDownloaderVerdict.FAILED__ERROR_UPON_COMMENCING;
+            onError("[AFD.EFMIIEO.020] Failed to initialize the native file-system-manager", ex); //sets the state to ERROR too!
+            return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
         return EAndroidFileDownloaderVerdict.SUCCESS;
@@ -362,8 +422,11 @@ public class AndroidFileDownloader
         return true;
     }
 
-    private void setLoggingEnabledOnConnection(final boolean enabled)
+    private void setLoggingEnabledOnTransport(final boolean enabled)
     {
+        if (_transport == null)
+            return;
+
         _transport.setLoggingEnabled(enabled);
     }
 
@@ -394,18 +457,22 @@ public class AndroidFileDownloader
                 case NONE: // * -> none
                     fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0);
                     break;
-                case DOWNLOADING: // idle -> downloading
-                    if (oldState == EAndroidFileDownloaderState.IDLE)
+                case DOWNLOADING: // idle/paused -> uploading
+                    if (oldState != EAndroidFileDownloaderState.IDLE && oldState != EAndroidFileDownloaderState.PAUSED)
                     {
-                        fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
+                        logMessageAdvertisement("[AFD.SS.FAFITB.010] State changed to 'downloading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
+
+                    fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
                     break;
                 case COMPLETE: // downloading -> complete
-                    if (oldState == EAndroidFileDownloaderState.DOWNLOADING) //00
+                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING) //00
                     {
-                        fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); // order
-                        fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data); //                                       order
+                        logMessageAdvertisement("[AFD.SS.FAFITB.020] State changed to 'complete' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
+
+                    fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); // order
+                    fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data); //                                       order
                     break;
             }
         });
@@ -493,7 +560,7 @@ public class AndroidFileDownloader
 
     private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level)
     {
-        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString()));
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString())); //todo  include the remoteFilePath as well
     }
 
     @Contract(pure = true)
@@ -609,12 +676,12 @@ public class AndroidFileDownloader
                 return 0;
             }
 
-            float elapsedSecondSinceUploadStart = ((float)(timestampInMs - _downloadStartTimestampInMs)) / 1_000;
-            if (elapsedSecondSinceUploadStart == 0) { //should be impossible but just in case
+            float elapsedSecondSinceDownloadStart = ((float)(timestampInMs - _downloadStartTimestampInMs)) / 1_000;
+            if (elapsedSecondSinceDownloadStart == 0) { //should be impossible but just in case
                 return 0;
             }
 
-            return (float)(totalBytesSentSoFar) / (elapsedSecondSinceUploadStart * 1_024);
+            return (float)(totalBytesSentSoFar) / (elapsedSecondSinceDownloadStart * 1_024);
         }
 
         @Override
@@ -623,7 +690,7 @@ public class AndroidFileDownloader
             onError("[AFD.ODF.010] Download failed due to an error:\n\n" + exception, exception);
             setBusyState(false);
 
-            setLoggingEnabledOnConnection(true);
+            setLoggingEnabledOnTransport(true);
 
             _downloadingController = null; //game over
         }
@@ -635,7 +702,7 @@ public class AndroidFileDownloader
             fireAndForgetInTheBg(() -> cancelledAdvertisement(_cancellationReason)); // order
             setBusyState(false); //                                                     order
 
-            setLoggingEnabledOnConnection(true);
+            setLoggingEnabledOnTransport(true);
             _downloadingController = null; //game over
         }
 
@@ -647,7 +714,7 @@ public class AndroidFileDownloader
             setState(EAndroidFileDownloaderState.COMPLETE, data);
             setBusyState(false);
 
-            setLoggingEnabledOnConnection(true);
+            setLoggingEnabledOnTransport(true);
             _downloadingController = null; //game over
         }
     }
