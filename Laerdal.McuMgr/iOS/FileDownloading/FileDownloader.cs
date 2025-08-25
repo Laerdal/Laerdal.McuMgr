@@ -191,8 +191,10 @@ namespace Laerdal.McuMgr.FileDownloading
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
 
-            public override void FileDownloadStartedAdvertisement(string resourceId)
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId);
+            public override void FileDownloadStartedAdvertisement(string resourceId, nint totalBytesToBeDownloadedAsNint)
+                => FileDownloadStartedAdvertisement(resourceId: resourceId, totalBytesToBeDownloaded: totalBytesToBeDownloadedAsNint);
+            public void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded) //conformance to the interface
+                => _nativeFileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded);
 
             public override void FileDownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
             {

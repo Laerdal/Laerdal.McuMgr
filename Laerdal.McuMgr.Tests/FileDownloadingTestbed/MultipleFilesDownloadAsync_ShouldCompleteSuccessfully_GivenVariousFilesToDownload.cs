@@ -118,11 +118,11 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath);
+                    FileDownloadStartedAdvertisement(remoteFilePath, totalBytesToBeDownloaded: 1_024);
 
                     await Task.Delay(20);
 
-                    var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
+                    var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant().Trim();
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
                         StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);

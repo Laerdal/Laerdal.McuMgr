@@ -182,7 +182,7 @@ public class AndroidFileUploader
             requestHighConnectionPriorityOnTransport(); //order
             ensureFileUploaderCallbackProxyIsInitializedExactlyOnce(); //order
 
-            setState(EAndroidFileUploaderState.IDLE); //order
+            setState(EAndroidFileUploaderState.IDLE, 0); //order
             FileUploader fileUploader = new FileUploader( //00  order
                     _fileSystemManager,
                     _remoteFilePathSanitized,
@@ -468,8 +468,13 @@ public class AndroidFileUploader
 
         fireAndForgetInTheBg(() -> busyStateChangedAdvertisement(newBusyState));
     }
-    
+
     private void setState(final EAndroidFileUploaderState newState)
+    {
+        setState(newState, 0);
+    }
+
+    private void setState(final EAndroidFileUploaderState newState, long totalBytesToBeUploaded)
     {
         if (_currentState == newState)
             return;
@@ -496,17 +501,24 @@ public class AndroidFileUploader
                         logMessageAdvertisement("[AFU.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
                     }
 
-                    fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot);
+                    if (oldState != EAndroidFileUploaderState.PAUSED) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
+                    {
+                        logMessageAdvertisement("[AFU.SS.FAFITB.025] Starting uploading of '" + totalBytesToBeUploaded + "' bytes", "file-uploader", EAndroidLoggingLevel.Info.toString(), resourceIdSnapshot);
+
+                        fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded);
+                    }
                     break;
 
                 case COMPLETE: // uploading -> complete
+                    logMessageAdvertisement("[AFU.SS.FAFITB.030] Completed uploading of '" + totalBytesToBeUploaded + "' bytes", "file-uploader", EAndroidLoggingLevel.Info.toString(), resourceIdSnapshot);
+
                     if (oldState != EAndroidFileUploaderState.UPLOADING)
                     {
-                        logMessageAdvertisement("[AFU.SS.FAFITB.020] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
+                        logMessageAdvertisement("[AFU.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
                     }
 
                     fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
-                    fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
+                    fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //                                                 order
                     break;
             }
         });
@@ -600,7 +612,7 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadStartedAdvertisement(final String resourceId, final String remoteFilePath)
+    public void fileUploadStartedAdvertisement(final String resourceId, final String remoteFilePath, final long totalBytesToBeUploaded)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -644,15 +656,15 @@ public class AndroidFileUploader
     private final class FileUploaderCallbackProxy implements UploadCallback
     {
         @Override
-        public void onUploadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
+        public void onUploadProgressChanged(final int totalBytesSentSoFar, final int totalBytesToBeUploaded, final long timestampInMs)
         {
-            setState(EAndroidFileUploaderState.UPLOADING);
+            setState(EAndroidFileUploaderState.UPLOADING, totalBytesToBeUploaded);
             setBusyState(true);
 
             final String resourceIdSnapshot = _resourceId; //order
             final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
             fireAndForgetInTheBg(() -> {
-                int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
+                int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / totalBytesToBeUploaded);
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 

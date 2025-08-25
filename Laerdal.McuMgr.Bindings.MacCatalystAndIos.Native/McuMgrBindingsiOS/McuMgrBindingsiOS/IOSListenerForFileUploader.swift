@@ -10,7 +10,7 @@ public protocol IOSListenerForFileUploader {
 
     func stateChangedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?, _ oldState: EIOSFileUploaderState, _ newState: EIOSFileUploaderState)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
-    func fileUploadStartedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?)
+    func fileUploadStartedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?, _ totalBytesToBeUploaded: Int)
     func fileUploadCompletedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?)
     func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
         _ resourceId: String?,

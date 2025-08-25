@@ -654,8 +654,12 @@ namespace Laerdal.McuMgr.FileUploading
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
 
-            public void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath)
-                => FileUploader?.OnFileUploadStarted(new FileUploadStartedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));
+            public void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded)
+                => FileUploader?.OnFileUploadStarted(new FileUploadStartedEventArgs(
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
+                ));
             
             public void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
                 => FileUploader?.OnFileUploadCompleted(new FileUploadCompletedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));

@@ -69,7 +69,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     await Task.Delay(10);
 
                     StateChangedAdvertisement(resourceId: remoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath);
+                    FileDownloadStartedAdvertisement(remoteFilePath, 1_024);
 
                     await Task.Delay(1_000);
 

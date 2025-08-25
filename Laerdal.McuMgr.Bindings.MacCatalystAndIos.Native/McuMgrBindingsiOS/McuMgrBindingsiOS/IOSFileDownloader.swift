@@ -371,8 +371,8 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func fileDownloadStartedAdvertisement(_ resourceId: String?) {
-        _listener.fileDownloadStartedAdvertisement(resourceId)
+    private func fileDownloadStartedAdvertisement(_ resourceId: String?, _ totalBytesToBeUploaded: Int = 0) {
+        _listener.fileDownloadStartedAdvertisement(resourceId, totalBytesToBeUploaded)
     }
 
     //@objc   dont
@@ -391,6 +391,10 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func setState(_ newState: EIOSFileDownloaderState, _ data: [UInt8]? = nil) {
+        return setState(newState, 0, data)
+    }
+
+    private func setState(_ newState: EIOSFileDownloaderState, _ totalBytesToBeUploaded: Int = 0, _ data: [UInt8]? = nil) {
         if (_currentState == newState) {
             return
         }
@@ -411,15 +415,22 @@ public class IOSFileDownloader: NSObject {
             case .downloading: // idle/paused -> downloading
                 if (oldState != .idle && oldState != .paused)
                 {
-                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.010] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.020] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
 
-                self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot) //order
+                if (oldState != .paused) //todo   if the previous state is 'paused' we should raise the event 'FileDownloadResumingNow'
+                {
+                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.025] Starting downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+
+                    self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded) //order
+                }
                 break;
             case .complete: // downloading -> complete
+                self._listener.logMessageAdvertisement("[IFD.SS.DQGB.030] Completed downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+
                 if (oldState != .downloading) //00
                 {
-                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.020] State changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
 
                 self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0) // order
@@ -467,7 +478,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
     }
 
     public func download(of name: String, didFinish data: Data) {
-        setState(.complete, [UInt8](data))
+        setState(.complete, 0, [UInt8](data))
         setBusyState(false)
     }
 

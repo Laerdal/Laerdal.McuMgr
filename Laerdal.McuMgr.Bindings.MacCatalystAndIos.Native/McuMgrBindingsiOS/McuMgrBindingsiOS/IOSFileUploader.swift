@@ -440,11 +440,13 @@ public class IOSFileUploader: NSObject {
     //@objc   dont
     private func fileUploadStartedAdvertisement(
             _ resourceId: String?,
-            _ remoteFilePathSanitized: String?
+            _ remoteFilePathSanitized: String?,
+            _ totalBytesToBeUploaded: Int
     ) {
         _listener.fileUploadStartedAdvertisement(
                 resourceId,
-                remoteFilePathSanitized
+                remoteFilePathSanitized,
+                totalBytesToBeUploaded
         )
     }
     
@@ -473,7 +475,7 @@ public class IOSFileUploader: NSObject {
         busyStateChangedAdvertisement(newBusyState)
     }
 
-    private func setState(_ newState: EIOSFileUploaderState) {
+    private func setState(_ newState: EIOSFileUploaderState, totalBytesToBeUploaded: Int = 0) {
         if (_currentState == newState) {
             return
         }
@@ -494,21 +496,28 @@ public class IOSFileUploader: NSObject {
                 break;
                 
             case .uploading:
-                if (oldState != .idle && oldState != .paused)
+                if (oldState != .idle && oldState != .paused) //20
                 {
-                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.010] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.020] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
 
-                self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //00
+                if (oldState != .paused) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
+                {
+                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.025] Starting uploading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+
+                    self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded);
+                }
                 break;
                 
             case .complete:
-                if (oldState != .uploading) //00
+                self._listener.logMessageAdvertisement("[IFU.SS.DQGB.030] Completed uploading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+
+                if (oldState != .uploading) //20
                 {
-                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.020] State changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
                 }
 
-                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
+                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //50   order
                 self.fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
                 break;
                 
@@ -516,14 +525,15 @@ public class IOSFileUploader: NSObject {
             }
         }
 
-        //00  trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //20  on tiny files that are only a few bytes long the uploader sometimes skips directly 'idle -> complete' without going through the 'uploading' phase at all
+        //50  trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
     }
 }
 
 extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(.uploading)
+        setState(.uploading, totalBytesToBeUploaded: fileSize)
         setBusyState(true)
         
         let resourceIdSnapshot  = _resourceId;

@@ -386,6 +386,16 @@ function create_fat_binaries() {
         -type f                                  \
         -exec sed -i.bak 's/bool TryDisconnect { get; }/bool TryDisconnect();/gi' {} \;
 
+#  find                                           \
+#        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+#        -type f                                  \
+#        -exec sed -i.bak 's/FileDownloadStartedAdvertisement(string resourceId, IntPtr totalBytesToBeUploaded)/FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeUploaded);/gi' {} \;
+#
+#  find                                           \
+#        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+#        -type f                                  \
+#        -exec sed -i.bak 's/FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, IntPtr totalBytesToBeUploaded)/FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded);/gi' {} \;
+
   rm -f "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"/*.bak || :
 
   echo "**** (FatBinaries 8/8) Print metadata files in their eventual form"

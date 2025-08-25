@@ -161,8 +161,8 @@ public class AndroidFileDownloader
             tryEnsureConnectionPriorityOnTransport(); //order
             ensureFileDownloaderCallbackProxyIsInitializedExactlyOnce(); //order
 
-            setBusyState(true); //                               order
-            setState(EAndroidFileDownloaderState.IDLE, null); // order
+            setBusyState(true); //                         order
+            setState(EAndroidFileDownloaderState.IDLE); // order
 
             _downloadingController = _fileSystemManager.fileDownload(_remoteFilePathSanitized, _fileDownloaderCallbackProxy); //order
         }
@@ -192,7 +192,7 @@ public class AndroidFileDownloader
         {
             transferController.pause();
 
-            setState(EAndroidFileDownloaderState.PAUSED, null);
+            setState(EAndroidFileDownloaderState.PAUSED);
             setBusyState(false);
 
             setLoggingEnabledOnTransport(true);
@@ -222,7 +222,7 @@ public class AndroidFileDownloader
         {
             transferController.resume();
 
-            setState(EAndroidFileDownloaderState.DOWNLOADING, null);
+            setState(EAndroidFileDownloaderState.DOWNLOADING);
             setBusyState(true);
 
             setLoggingEnabledOnTransport(false);
@@ -292,7 +292,7 @@ public class AndroidFileDownloader
         _cancellationReason = reason;
 
         fireAndForgetInTheBg(() -> cancellingAdvertisement(reason)); //  order
-        setState(EAndroidFileDownloaderState.CANCELLING, null); //       order
+        setState(EAndroidFileDownloaderState.CANCELLING); //             order
 
         final TransferController transferController = _downloadingController; //order
         if (transferController == null)
@@ -317,7 +317,7 @@ public class AndroidFileDownloader
         _lastBytesSent = 0;
         _lastBytesSentTimestampInMs = 0;
 
-        setState(EAndroidFileDownloaderState.NONE, null);
+        setState(EAndroidFileDownloaderState.NONE);
         setBusyState(false);
     }
 
@@ -440,7 +440,22 @@ public class AndroidFileDownloader
         fireAndForgetInTheBg(() -> busyStateChangedAdvertisement(newBusyState));
     }
 
-    private void setState(final EAndroidFileDownloaderState newState, final byte[] data)
+    private void setState(final EAndroidFileDownloaderState newState)
+    {
+        setState(newState, 0, null);
+    }
+
+    private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded)
+    {
+        setState(newState, totalBytesToBeDownloaded, null);
+    }
+
+    private void setState(final EAndroidFileDownloaderState newState, final byte[] finalDataSnapshot)
+    {
+        setState(newState, 0, finalDataSnapshot);
+    }
+
+    private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded, final byte[] finalDataSnapshot)
     {
         if (_currentState == newState)
             return;
@@ -463,16 +478,23 @@ public class AndroidFileDownloader
                         logMessageAdvertisement("[AFD.SS.FAFITB.010] State changed to 'downloading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
 
-                    fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot); //order
+                    if (oldState != EAndroidFileDownloaderState.PAUSED) //todo   introduce a separate "FileDownloadResumingNow" event too
+                    {
+                        logMessageAdvertisement("[AFD.SS.FAFITB.025] Starting downloading of '" + totalBytesToBeDownloaded + "' bytes", "file-uploader", EAndroidLoggingLevel.Info.toString());
+
+                        fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot, totalBytesToBeDownloaded); //order
+                    }
                     break;
                 case COMPLETE: // downloading -> complete
-                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING) //00
+                    logMessageAdvertisement("[AFD.SS.FAFITB.030] Completed downloading of '" + totalBytesToBeDownloaded + "' bytes", "file-uploader", EAndroidLoggingLevel.Info.toString());
+
+                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING)
                     {
-                        logMessageAdvertisement("[AFD.SS.FAFITB.020] State changed to 'complete' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
+                        logMessageAdvertisement("[AFD.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", "file-downloader", EAndroidLoggingLevel.Warning.toString());
                     }
 
-                    fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); // order
-                    fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data); //                                       order
+                    fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); //00 order
+                    fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, finalDataSnapshot); //                            order
                     break;
             }
         });
@@ -522,7 +544,7 @@ public class AndroidFileDownloader
 
     private void onError(final String errorMessage)
     {
-        onError(errorMessage, null);
+        onError(errorMessage, /*exception*/ null);
     }
 
     private void onError(final String errorMessage, final Exception exception)
@@ -537,7 +559,7 @@ public class AndroidFileDownloader
 
     private void onErrorImpl(final String errorMessage, final int globalErrorCode)
     {
-        setState(EAndroidFileDownloaderState.ERROR, null);
+        setState(EAndroidFileDownloaderState.ERROR);
 
         _lastFatalErrorMessage = errorMessage; //better set this directly in here considering that fatalErrorOccurredAdvertisement() is called only through onErrorImpl()
 
@@ -600,7 +622,7 @@ public class AndroidFileDownloader
     }
 
     @Contract(pure = true)
-    public void fileDownloadStartedAdvertisement(final String resourceId)
+    public void fileDownloadStartedAdvertisement(final String resourceId, long totalBytesToBeDownloaded)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
@@ -628,7 +650,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadProgressChanged(final int totalBytesSentSoFar, final int fileSize, final long timestampInMs)
         {
-            setState(EAndroidFileDownloaderState.DOWNLOADING, null);
+            setState(EAndroidFileDownloaderState.DOWNLOADING, fileSize);
             setBusyState(true);
 
             final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
@@ -698,7 +720,7 @@ public class AndroidFileDownloader
         @Override
         public void onDownloadCanceled()
         {
-            setState(EAndroidFileDownloaderState.CANCELLED, null); //                   order
+            setState(EAndroidFileDownloaderState.CANCELLED); //                         order
             fireAndForgetInTheBg(() -> cancelledAdvertisement(_cancellationReason)); // order
             setBusyState(false); //                                                     order
 

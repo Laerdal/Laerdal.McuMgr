@@ -251,11 +251,11 @@ namespace Laerdal.McuMgr.FileUploading
                 _fileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
             
-            public override void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath)
+            public override void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded)
             {
-                base.FileUploadStartedAdvertisement(resourceId, remoteFilePath); //just in case
+                base.FileUploadStartedAdvertisement(resourceId, remoteFilePath, totalBytesToBeUploaded); //just in case
 
-                _fileUploaderCallbacksProxy?.FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                _fileUploaderCallbacksProxy?.FileUploadStartedAdvertisement(resourceId, remoteFilePath, totalBytesToBeUploaded);
             }
 
             public override void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)

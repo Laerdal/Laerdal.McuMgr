@@ -81,7 +81,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     await Task.Delay(100);
 
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
 
                     await Task.Delay(100);
                     
