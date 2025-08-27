@@ -207,12 +207,12 @@ public class IOSFileUploader: NSObject {
         }
         
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            if (_fileSystemManager == nil) { //order
-                logInBg("[IOSFU.TPS.030] Ignoring 'pause' request because the file-system-manager has been trashed", McuMgrLogLevel.info)
-                return false
-            }
-
             do {
+                if (_fileSystemManager == nil) { //order
+                    logInBg("[IOSFU.TPS.030] Ignoring 'pause' request because the file-system-manager has been trashed", McuMgrLogLevel.info)
+                    return false
+                }
+
                 logInBg("[IOSFU.TPS.040] Pausing uploading ...", McuMgrLogLevel.verbose)
                 
                 _fileSystemManager?.pauseTransfer()
@@ -232,8 +232,8 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func tryResume() -> Bool {
-        if _currentState == .uploading { //order
-            logInBg("[IOSFU.TR.010] Ignoring 'resume' request because we're already in 'uploading' state anyway", McuMgrLogLevel.info)
+        if _currentState == .uploading || _currentState == .resuming { //order
+            logInBg("[IOSFU.TR.010] Ignoring 'resume' request because we're already in 'uploading/resuming' state anyway", McuMgrLogLevel.info)
             return true //already downloading which is ok
         }
 
@@ -243,17 +243,17 @@ public class IOSFileUploader: NSObject {
         }
         
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            if (_fileSystemManager == nil) { //vital to double-check
-                logInBg("[IOSFU.TR.030] Ignoring 'resume' request because the file-system-manager is null", McuMgrLogLevel.info)
-                return false
-            }
- 
             do {
+                if (_fileSystemManager == nil) { //vital to double-check
+                    logInBg("[IOSFU.TR.030] Ignoring 'resume' request because the file-system-manager is null", McuMgrLogLevel.info)
+                    return false
+                }
+
                 logInBg("[IOSFU.TR.040] Resuming uploading ...", McuMgrLogLevel.verbose)
 
                 _fileSystemManager?.continueTransfer()
                 
-                setState(.uploading)
+                setState(.resuming)
                 setBusyState(true)
 
                 return true
@@ -483,6 +483,10 @@ public class IOSFileUploader: NSObject {
     }
 
     private func setState(_ newState: EIOSFileUploaderState, totalBytesToBeUploaded: Int = 0) {
+        if (_currentState == .paused && newState == .uploading) {
+            return; // after pausing we might still get a quick UPLOADING update from the native-layer - we must ignore it
+        }
+
         if (_currentState == newState) {
             return
         }
@@ -503,12 +507,12 @@ public class IOSFileUploader: NSObject {
                 break;
                 
             case .uploading:
-                if (oldState != .idle && oldState != .paused) //20
+                if (oldState != .idle && oldState != .resuming) //20
                 {
                     self.log("[IFU.SS.DQGB.020] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
                 }
 
-                if (oldState != .paused) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
+                if (oldState != .resuming) //todo   if the previous state is 'resuming' we should raise the event 'FileUploadResumingNow'
                 {
                     self.log("[IFU.SS.DQGB.025] Upload complete", McuMgrLogLevel.info)
 

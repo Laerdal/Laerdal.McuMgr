@@ -264,6 +264,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 EIOSFileDownloaderState.Idle => EFileDownloaderState.Idle,
                 EIOSFileDownloaderState.Error => EFileDownloaderState.Error,
                 EIOSFileDownloaderState.Paused => EFileDownloaderState.Paused,
+                EIOSFileDownloaderState.Resuming => EFileDownloaderState.Resuming,
                 EIOSFileDownloaderState.Complete => EFileDownloaderState.Complete,
                 EIOSFileDownloaderState.Cancelled => EFileDownloaderState.Cancelled,
                 EIOSFileDownloaderState.Cancelling => EFileDownloaderState.Cancelling,

@@ -329,6 +329,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 {
                     return EFileDownloaderState.Paused;
                 }
+                
+                if (state == EAndroidFileDownloaderState.Resuming)
+                {
+                    return EFileDownloaderState.Resuming;
+                }
 
                 if (state == EAndroidFileDownloaderState.Complete)
                 {

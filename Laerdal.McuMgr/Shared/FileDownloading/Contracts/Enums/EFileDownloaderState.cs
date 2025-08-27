@@ -6,9 +6,10 @@
         Idle = 1,
         Downloading = 2,
         Paused = 3,
-        Complete = 4,
-        Cancelled = 5,
-        Error = 6,
-        Cancelling = 7,
+        Resuming = 4,
+        Complete = 5,
+        Cancelled = 6,
+        Error = 7,
+        Cancelling = 8,
     }
 }

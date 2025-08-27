@@ -141,22 +141,23 @@ public class IOSFileDownloader: NSObject {
     @objc
     public func tryPause() -> Bool {
         if (_currentState == .paused) { //order
+            logInBg("[IOSFD.TPS.010] Ignoring 'pause' request because we're already in 'paused' state anyway", McuMgrLogLevel.info)
             return true // already paused which is ok
         }
 
         if (_currentState != .downloading) { //order
-            return false
-        }
-
-        if (_fileSystemManager == nil) { //order
+            logInBg("[IOSFD.TPS.020] Ignoring 'pause' request because we're not in a 'downloading' state to begin with", McuMgrLogLevel.info)
             return false
         }
 
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 if (_fileSystemManager == nil) {
-                    return true
+                    logInBg("[IOSFD.TPS.030] Ignoring 'pause' request because the file-system-manager has been trashed", McuMgrLogLevel.info)
+                    return false
                 }
+
+                logInBg("[IOSFD.TPS.040] Pausing downloading ...", McuMgrLogLevel.verbose)
 
                 _fileSystemManager?.pauseTransfer()
                 
@@ -176,11 +177,13 @@ public class IOSFileDownloader: NSObject {
 
     @objc
     public func tryResume() -> Bool {
-        if _currentState == .downloading { //order
+        if _currentState == .downloading || _currentState == .resuming { //order
+            logInBg("[IOSFD.TR.010] Ignoring 'resume' request because we're already in 'downloading/resuming' state anyway", McuMgrLogLevel.info)
             return true //already downloading which is ok
         }
 
         if (_currentState != .paused) { //order
+            logInBg("[IOSFD.TR.020] Ignoring 'resume' request because we're not in a 'paused' state to begin with", McuMgrLogLevel.info)
             return false
         }
 
@@ -191,12 +194,15 @@ public class IOSFileDownloader: NSObject {
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 if (_fileSystemManager == nil) {
+                    logInBg("[IOSFD.TR.030] Ignoring 'resume' request because the file-system-manager is null", McuMgrLogLevel.info)
                     return false
                 }
 
+                logInBg("[IOSFD.TR.040] Resuming downloading ...", McuMgrLogLevel.verbose)
+
                 _fileSystemManager?.continueTransfer()
 
-                setState(.downloading)
+                setState(.resuming)
                 setBusyState(true)
 
                 return true
@@ -401,6 +407,10 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func setState(_ newState: EIOSFileDownloaderState, _ totalBytesToBeUploaded: Int = 0, _ data: [UInt8]? = nil) {
+        if (_currentState == .paused && newState == .downloading) {
+            return; // after pausing we might still get a quick DOWNLOADING update from the native-layer - we must ignore it
+        }
+
         if (_currentState == newState) {
             return
         }
@@ -419,12 +429,12 @@ public class IOSFileDownloader: NSObject {
                 self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0)
                 break;
             case .downloading: // idle/paused -> downloading
-                if (oldState != .idle && oldState != .paused)
+                if (oldState != .idle && oldState != .resuming)
                 {
                     self.log("[IFD.SS.DQGB.020] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
                 }
 
-                if (oldState != .paused) //todo   if the previous state is 'paused' we should raise the event 'FileDownloadResumingNow'
+                if (oldState != .resuming) //todo   if the previous state is 'resuming' we should raise the event 'FileDownloadResumingNow'
                 {
                     self.log("[IFD.SS.DQGB.025] Starting downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogLevel.info)
 

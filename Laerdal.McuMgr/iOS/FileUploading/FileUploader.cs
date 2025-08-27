@@ -333,6 +333,7 @@ namespace Laerdal.McuMgr.FileUploading
                 EIOSFileUploaderState.Idle => EFileUploaderState.Idle,
                 EIOSFileUploaderState.Error => EFileUploaderState.Error,
                 EIOSFileUploaderState.Paused => EFileUploaderState.Paused,
+                EIOSFileUploaderState.Resuming => EFileUploaderState.Resuming,
                 EIOSFileUploaderState.Complete => EFileUploaderState.Complete,
                 EIOSFileUploaderState.Uploading => EFileUploaderState.Uploading,
                 EIOSFileUploaderState.Cancelled => EFileUploaderState.Cancelled,

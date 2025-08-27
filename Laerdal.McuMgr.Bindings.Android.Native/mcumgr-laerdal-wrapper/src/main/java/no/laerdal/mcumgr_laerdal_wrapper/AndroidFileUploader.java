@@ -308,9 +308,9 @@ public class AndroidFileUploader
 
     public boolean tryResume()
     {
-        if (_currentState == EAndroidFileUploaderState.UPLOADING)
+        if (_currentState == EAndroidFileUploaderState.UPLOADING || _currentState == EAndroidFileUploaderState.RESUMING)
         {
-            logInBg("[AFU.TRS.010] Ignoring 'resume' request because we're already in the 'uploading' state anyway", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TRS.010] Ignoring 'resume' request because we're already in the 'uploading/resuming' state anyway", EAndroidLoggingLevel.Info);
             return true; //already uploading which is ok
         }
 
@@ -333,7 +333,7 @@ public class AndroidFileUploader
 
             transferController.resume();
 
-            setState(EAndroidFileUploaderState.UPLOADING);
+            setState(EAndroidFileUploaderState.RESUMING);
             setBusyState(true);
 
             setLoggingEnabledOnTransport(false);
@@ -415,7 +415,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            logInBg("[AFU.TC.010] [SUPPRESSED] Error while trying to cancel the upload:\n\n" + ex, EAndroidLoggingLevel.Warning);
+            logInBg("[AFU.TC.010] [SUPPRESSED] Error while trying to cancel the upload:\n\n" + ex, EAndroidLoggingLevel.Warning); //better not error out here
             return false;
         }
     }
@@ -496,6 +496,9 @@ public class AndroidFileUploader
 
     private void setState(final EAndroidFileUploaderState newState, final long totalBytesToBeUploaded)
     {
+        if (_currentState == EAndroidFileUploaderState.PAUSED && newState == EAndroidFileUploaderState.UPLOADING)
+            return; // after pausing we might still get a quick UPLOADING update from the native-layer - we must ignore it
+
         if (_currentState == newState)
             return;
 
@@ -516,12 +519,12 @@ public class AndroidFileUploader
                     break;
 
                 case UPLOADING: // idle/paused -> uploading
-                    if (oldState != EAndroidFileUploaderState.IDLE && oldState != EAndroidFileUploaderState.PAUSED)
+                    if (oldState != EAndroidFileUploaderState.IDLE && oldState != EAndroidFileUploaderState.RESUMING)
                     {
                         log("[AFU.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
                     }
 
-                    if (oldState != EAndroidFileUploaderState.PAUSED) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
+                    if (oldState != EAndroidFileUploaderState.RESUMING) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
                     {
                         log("[AFU.SS.FAFITB.025] Starting uploading of '" + totalBytesToBeUploaded + "' bytes", EAndroidLoggingLevel.Info);
 
@@ -529,10 +532,10 @@ public class AndroidFileUploader
                     }
                     break;
 
-                case COMPLETE: // uploading -> complete
+                case COMPLETE: // idle/uploading -> complete
                     log("[AFU.SS.FAFITB.030] Upload complete", EAndroidLoggingLevel.Info);
 
-                    if (oldState != EAndroidFileUploaderState.UPLOADING)
+                    if (oldState != EAndroidFileUploaderState.UPLOADING) //[note] tiny files we can go idle->complete in a heartbeat
                     {
                         log("[AFU.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
                     }

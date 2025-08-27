@@ -219,9 +219,9 @@ public class AndroidFileDownloader
 
     public boolean tryResume()
     {
-        if (_currentState == EAndroidFileDownloaderState.DOWNLOADING)
+        if (_currentState == EAndroidFileDownloaderState.DOWNLOADING || _currentState == EAndroidFileDownloaderState.RESUMING)
         {
-            logInBg("[AFD.TRS.010] Ignoring 'resume' request because we're already in the 'downloading' state anyway", EAndroidLoggingLevel.Info);
+            logInBg("[AFD.TRS.010] Ignoring 'resume' request because we're already in the 'downloading/resuming' state anyway", EAndroidLoggingLevel.Info);
             return true; //already downloading which is ok
         }
 
@@ -244,7 +244,7 @@ public class AndroidFileDownloader
             
             transferController.resume();
 
-            setState(EAndroidFileDownloaderState.DOWNLOADING);
+            setState(EAndroidFileDownloaderState.RESUMING);
             setBusyState(true);
 
             setLoggingEnabledOnTransport(false);
@@ -469,6 +469,9 @@ public class AndroidFileDownloader
 
     private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded, final byte[] finalDataSnapshot)
     {
+        if (_currentState == EAndroidFileDownloaderState.PAUSED && newState == EAndroidFileDownloaderState.DOWNLOADING)
+            return; // after pausing we might still get a quick DOWNLOADING update from the native-layer - we must ignore it
+
         if (_currentState == newState)
             return;
 
@@ -484,23 +487,23 @@ public class AndroidFileDownloader
                 case NONE: // * -> none
                     fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0);
                     break;
-                case DOWNLOADING: // idle/paused -> uploading
-                    if (oldState != EAndroidFileDownloaderState.IDLE && oldState != EAndroidFileDownloaderState.PAUSED)
+                case DOWNLOADING: // idle/paused -> downloading
+                    if (oldState != EAndroidFileDownloaderState.IDLE && oldState != EAndroidFileDownloaderState.RESUMING)
                     {
                         log("[AFD.SS.FAFITB.010] State changed to 'downloading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
                     }
 
-                    if (oldState != EAndroidFileDownloaderState.PAUSED) //todo   introduce a separate "FileDownloadResumingNow" event too
+                    if (oldState != EAndroidFileDownloaderState.RESUMING) //todo   introduce a separate "FileDownloadResumingNow" event too
                     {
                         log("[AFD.SS.FAFITB.025] Starting downloading of '" + totalBytesToBeDownloaded + "' bytes", EAndroidLoggingLevel.Info);
 
                         fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot, totalBytesToBeDownloaded); //order
                     }
                     break;
-                case COMPLETE: // downloading -> complete
+                case COMPLETE: // idle/downloading -> complete
                     log("[AFD.SS.FAFITB.030] Download complete", EAndroidLoggingLevel.Info);
 
-                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING)
+                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING) // [note] tiny files can be downloaded so fast that we go directly from IDLE to COMPLETE in a heartbeat
                     {
                         log("[AFD.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
                     }

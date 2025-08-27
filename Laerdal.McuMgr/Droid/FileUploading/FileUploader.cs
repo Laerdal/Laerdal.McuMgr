@@ -366,6 +366,11 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     return EFileUploaderState.Paused;
                 }
+                
+                if (state == EAndroidFileUploaderState.Resuming)
+                {
+                    return EFileUploaderState.Resuming;
+                }
 
                 if (state == EAndroidFileUploaderState.Complete)
                 {
