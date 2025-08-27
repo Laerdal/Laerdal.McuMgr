@@ -149,7 +149,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                         return;
 
                     StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)

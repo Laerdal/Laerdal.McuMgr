@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(10);
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
                     
                     await Task.Delay(20);
                     if (_tryCount < _maxNumberOfTriesForSuccess)

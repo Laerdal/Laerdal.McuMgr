@@ -63,8 +63,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode) 
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //raises the actual event
 
-            public void FileDownloadStartedAdvertisement(string resourceId)
-                => _downloaderCallbacksProxy.FileDownloadStartedAdvertisement(resourceId);
+            public void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded)
+                => _downloaderCallbacksProxy.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded);
 
             public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data)
                 => _downloaderCallbacksProxy.FileDownloadCompletedAdvertisement(resourceId, data);

@@ -223,12 +223,12 @@ namespace Laerdal.McuMgr.FileDownloading
                 
                 _fileDownloaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
-            
-            public override void FileDownloadStartedAdvertisement(string resource)
-            {
-                base.FileDownloadStartedAdvertisement(resource); //just in case
 
-                _fileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resource);
+            public override void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded)
+            {
+                base.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded); //just in case
+                
+                _fileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded);
             }
 
             public override void FileDownloadCompletedAdvertisement(string resource, byte[] data)
@@ -328,6 +328,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (state == EAndroidFileDownloaderState.Paused)
                 {
                     return EFileDownloaderState.Paused;
+                }
+                
+                if (state == EAndroidFileDownloaderState.Resuming)
+                {
+                    return EFileDownloaderState.Resuming;
                 }
 
                 if (state == EAndroidFileDownloaderState.Complete)
