@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Contract;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFileUploader
 {
     private Context _context;
@@ -23,7 +23,7 @@ public class AndroidFileUploader
 
     private FsManager _fileSystemManager;
     private McuMgrBleTransport _transport;
-    private TransferController _uploadController;
+    private TransferController _uploadingController;
     private FileUploaderCallbackProxy _fileUploaderCallbackProxy;
 
     private int _lastBytesSent;
@@ -63,19 +63,19 @@ public class AndroidFileUploader
     {
         if (!IsIdleOrCold())
         {
-            emitLogEntry("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", "file-uploader", EAndroidLoggingLevel.Error, _resourceId);
+            logInBg("[AFU.TSBD.005] trySetBluetoothDevice() cannot proceed because the uploader is not cold", EAndroidLoggingLevel.Error);
             return false;
         }
 
         if (!tryInvalidateCachedInfrastructure()) //order
         {
-            emitLogEntry("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", "file-uploader", EAndroidLoggingLevel.Error, _resourceId);
+            logInBg("[AFU.TSBD.020] Failed to invalidate the cached-transport instance", EAndroidLoggingLevel.Error);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        emitLogEntry("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+        logInBg("[AFU.TSBD.030] Successfully set the android-bluetooth-device to the given value", EAndroidLoggingLevel.Trace);
 
         return true;
     }
@@ -191,7 +191,7 @@ public class AndroidFileUploader
                     Math.max(1, memoryAlignment)
             );
 
-            _uploadController = fileUploader.uploadAsync(_fileUploaderCallbackProxy);
+            _uploadingController = fileUploader.uploadAsync(_fileUploaderCallbackProxy);
         }
         catch (final Exception ex)
         {
@@ -221,7 +221,7 @@ public class AndroidFileUploader
     {
         if (_transport == null)
         {
-            emitLogEntry("[AFD.ETIIEO.000] Transport is null - instantiating it now", "firmware-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            logInBg("[AFU.ETIIEO.000] Transport is null - instantiating it now", EAndroidLoggingLevel.Warning);
 
             _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         }
@@ -229,11 +229,11 @@ public class AndroidFileUploader
         if (initialMtuSize > 0)
         {
             _transport.setInitialMtu(initialMtuSize);
-            emitLogEntry("[AFD.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", "firmware-uploader", EAndroidLoggingLevel.Info, _resourceId);
+            logInBg("[AFU.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", EAndroidLoggingLevel.Info);
         }
         else
         {
-            emitLogEntry("[AFD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-uploader", EAndroidLoggingLevel.Info, _resourceId);
+            logInBg("[AFU.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", EAndroidLoggingLevel.Info);
         }
     }
 
@@ -250,7 +250,7 @@ public class AndroidFileUploader
         if (_fileSystemManager != null) //already initialized
             return EAndroidFileUploaderVerdict.SUCCESS;
 
-        emitLogEntry("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+        logInBg("[AFU.EFMIIEO.010] (Re)Initializing filesystem-manager", EAndroidLoggingLevel.Trace);
 
         try
         {
@@ -268,17 +268,28 @@ public class AndroidFileUploader
     public boolean tryPause()
     {
         if (_currentState == EAndroidFileUploaderState.PAUSED)
+        {
+            logInBg("[AFU.TPS.010] Ignoring 'pause' request because we're already in 'paused' state anyway", EAndroidLoggingLevel.Info);
             return true; // already paused which is ok
+        }
 
         if (_currentState != EAndroidFileUploaderState.UPLOADING)
+        {
+            logInBg("[AFU.TPS.020] Ignoring 'pause' request because we're already not 'uploading' to begin with", EAndroidLoggingLevel.Info);
             return false;
+        }
 
-        final TransferController transferController = _uploadController;
+        final TransferController transferController = _uploadingController;
         if (transferController == null)
+        {
+            logInBg("[AFU.TPS.030] Ignoring 'pause' request because the native-transfer-controller has been trashed", EAndroidLoggingLevel.Info);
             return false; //controller has been trashed
+        }
 
         try
         {
+            logInBg("[AFU.TPS.040] Pausing transfer ...", EAndroidLoggingLevel.Info);
+
             transferController.pause();
 
             setState(EAndroidFileUploaderState.PAUSED);
@@ -290,7 +301,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TP.010] [SUPPRESSED] Error while trying to pause the upload:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            onError("[AFU.TPS.050] [SUPPRESSED] Error while trying to pause the upload", ex);
             return false;
         }
     }
@@ -298,17 +309,28 @@ public class AndroidFileUploader
     public boolean tryResume()
     {
         if (_currentState == EAndroidFileUploaderState.UPLOADING)
-            return true; //already downloading which is ok
+        {
+            logInBg("[AFU.TRS.010] Ignoring 'resume' request because we're already in the 'uploading' state anyway", EAndroidLoggingLevel.Info);
+            return true; //already uploading which is ok
+        }
 
         if (_currentState != EAndroidFileUploaderState.PAUSED)
+        {
+            logInBg("[AFU.TRS.020] Ignoring 'resume' request because we're not in a 'paused' state to begin with", EAndroidLoggingLevel.Info);
             return false;
+        }
 
-        final TransferController transferController = _uploadController;
+        final TransferController transferController = _uploadingController;
         if (transferController == null)
+        {
+            logInBg("[AFU.TRS.030] Ignoring 'resume' request because the native-transfer-controller has been trashed", EAndroidLoggingLevel.Info);
             return false; //controller has been trashed
+        }
 
         try
         {
+            logInBg("[AFU.TRS.040] Resuming transfer ...", EAndroidLoggingLevel.Info);
+
             transferController.resume();
 
             setState(EAndroidFileUploaderState.UPLOADING);
@@ -320,14 +342,14 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TR.010] [SUPPRESSED] Error while trying to resume the upload:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            onError("[AFU.TRS.050] Error while trying to resume the upload", ex);
             return false;
         }
     }
 
     public void nativeDispose()
     {
-        emitLogEntry("[AFU.ND.010] Disposing the native-file-uploader", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+        logInBg("[AFU.ND.010] Disposing the native-file-uploader", EAndroidLoggingLevel.Trace);
         
         tryInvalidateCachedInfrastructure(); //  doesnt throw
         tryShutdownBackgroundExecutor(); //      doesnt throw
@@ -336,7 +358,7 @@ public class AndroidFileUploader
     @SuppressWarnings("UnusedReturnValue")
     private boolean tryShutdownBackgroundExecutor()
     {
-        emitLogEntry("[AFU.TSBE.010] Shutting down the background-executor ...", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+        logInBg("[AFU.TSBE.010] Shutting down the background-executor ...", EAndroidLoggingLevel.Trace);
 
         try
         {
@@ -345,7 +367,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            logInBg("[AFU.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, EAndroidLoggingLevel.Warning);
             return false;
         }
     }
@@ -353,11 +375,11 @@ public class AndroidFileUploader
     @SuppressWarnings("UnusedReturnValue")
     public boolean tryDisconnect() //doesnt throw
     {
-        emitLogEntry("[AFU.TDISC.010] Will try to disconnect now ...", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+        logInBg("[AFU.TDISC.010] Will try to disconnect now ...", EAndroidLoggingLevel.Trace);
 
         if (_transport == null)
         {
-            emitLogEntry("[AFU.TDISC.020] Transport is null so nothing to disconnect from", "file-uploader", EAndroidLoggingLevel.Trace, _resourceId);
+            logInBg("[AFU.TDISC.020] Transport is null so nothing to disconnect from", EAndroidLoggingLevel.Trace);
             return true;
         }
 
@@ -368,7 +390,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TDISC.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            logInBg("[AFU.TDISC.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, EAndroidLoggingLevel.Warning);
             return false;
         }
     }
@@ -382,7 +404,7 @@ public class AndroidFileUploader
         fireAndForgetInTheBg(() -> cancellingAdvertisement(reason)); //      order
         setState(EAndroidFileUploaderState.CANCELLING); //                   order
 
-        final TransferController transferController = _uploadController; //  order
+        final TransferController transferController = _uploadingController; //  order
         if (transferController == null)
             return true; // nothing to cancel which is not an error
 
@@ -393,7 +415,7 @@ public class AndroidFileUploader
         }
         catch (final Exception ex)
         {
-            emitLogEntry("[AFU.TC.010] [SUPPRESSED] Error while trying to cancel the upload:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            logInBg("[AFU.TC.010] [SUPPRESSED] Error while trying to cancel the upload:\n\n" + ex, EAndroidLoggingLevel.Warning);
             return false;
         }
     }
@@ -417,7 +439,7 @@ public class AndroidFileUploader
         catch (final Exception ex) // suppress
         {
             success = false;
-            emitLogEntry("[AFU.TDT.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            logInBg("[AFU.TDT.010] [SUPPRESSED] Error while disposing transport:\n\n" + ex, EAndroidLoggingLevel.Warning);
         }
 
         _transport = null;
@@ -438,7 +460,7 @@ public class AndroidFileUploader
         catch (final Exception ex)
         {
             success = false;
-            emitLogEntry("[AFU.TDFM.010] [SUPPRESSED] Error while closing the file-system-manager:\n\n" + ex, "file-uploader", EAndroidLoggingLevel.Warning, _resourceId);
+            logInBg("[AFU.TDFM.010] [SUPPRESSED] Error while closing the file-system-manager:\n\n" + ex, EAndroidLoggingLevel.Warning);
         }
 
         _fileSystemManager = null;
@@ -469,12 +491,10 @@ public class AndroidFileUploader
         fireAndForgetInTheBg(() -> busyStateChangedAdvertisement(newBusyState));
     }
 
-    private void setState(final EAndroidFileUploaderState newState)
-    {
-        setState(newState, 0);
-    }
+    //@formatter:off
+    private void setState(final EAndroidFileUploaderState newState) { setState(newState, 0); } //@formatter:on
 
-    private void setState(final EAndroidFileUploaderState newState, long totalBytesToBeUploaded)
+    private void setState(final EAndroidFileUploaderState newState, final long totalBytesToBeUploaded)
     {
         if (_currentState == newState)
             return;
@@ -498,23 +518,23 @@ public class AndroidFileUploader
                 case UPLOADING: // idle/paused -> uploading
                     if (oldState != EAndroidFileUploaderState.IDLE && oldState != EAndroidFileUploaderState.PAUSED)
                     {
-                        logMessageAdvertisement("[AFU.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
+                        log("[AFU.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
                     }
 
                     if (oldState != EAndroidFileUploaderState.PAUSED) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
                     {
-                        logMessageAdvertisement("[AFU.SS.FAFITB.025] Starting uploading of '" + totalBytesToBeUploaded + "' bytes", "file-uploader", EAndroidLoggingLevel.Info.toString(), resourceIdSnapshot);
+                        log("[AFU.SS.FAFITB.025] Starting uploading of '" + totalBytesToBeUploaded + "' bytes", EAndroidLoggingLevel.Info);
 
                         fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded);
                     }
                     break;
 
                 case COMPLETE: // uploading -> complete
-                    logMessageAdvertisement("[AFU.SS.FAFITB.030] Completed uploading of '" + totalBytesToBeUploaded + "' bytes", "file-uploader", EAndroidLoggingLevel.Info.toString(), resourceIdSnapshot);
+                    log("[AFU.SS.FAFITB.030] Upload complete", EAndroidLoggingLevel.Info);
 
                     if (oldState != EAndroidFileUploaderState.UPLOADING)
                     {
-                        logMessageAdvertisement("[AFU.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", "file-uploader", EAndroidLoggingLevel.Warning.toString(), resourceIdSnapshot);
+                        log("[AFU.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
                     }
 
                     fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
@@ -599,12 +619,6 @@ public class AndroidFileUploader
         //this method is meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    //@Contract(pure = true) //dont
-    private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level, final String resourceId)
-    {
-        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString(), resourceId));
-    }
-
     @Contract(pure = true)
     public void busyStateChangedAdvertisement(final boolean busyNotIdle)
     {
@@ -645,6 +659,19 @@ public class AndroidFileUploader
     public void fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final String remoteFilePath, final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
+    }
+
+    //@Contract(pure = true) //dont
+    private final String DefaultLogCategory = "FileUploader";
+    private void logInBg(final String message, final EAndroidLoggingLevel level)
+    {
+        String resourceIdSnapshot = _resourceId; //snapshot
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, DefaultLogCategory, level.toString(), resourceIdSnapshot));
+    }
+
+    public void log(final String message, final EAndroidLoggingLevel level)
+    {
+        logMessageAdvertisement(message, DefaultLogCategory, level.toString(), _resourceId);
     }
 
     @Contract(pure = true)
@@ -724,7 +751,7 @@ public class AndroidFileUploader
 
             setBusyState(false);
 
-            _uploadController = null; //order
+            _uploadingController = null; //order
         }
 
         @Override
@@ -736,7 +763,7 @@ public class AndroidFileUploader
 
             setLoggingEnabledOnTransport(true);
 
-            _uploadController = null; //order
+            _uploadingController = null; //order
         }
 
         @Override
@@ -749,7 +776,7 @@ public class AndroidFileUploader
 
             setLoggingEnabledOnTransport(true);
 
-            _uploadController = null; //order
+            _uploadingController = null; //order
         }
     }
 }

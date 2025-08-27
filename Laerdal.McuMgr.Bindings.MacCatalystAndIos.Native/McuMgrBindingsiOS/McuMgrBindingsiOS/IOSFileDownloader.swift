@@ -62,7 +62,7 @@ public class IOSFileDownloader: NSObject {
         }
         catch let ex
         {
-            logMessageAdvertisement("[IOSFD.DC.010] Failed to disconnect", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            logInBg("[IOSFD.DC.010] Failed to disconnect", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -279,9 +279,9 @@ public class IOSFileDownloader: NSObject {
         if properMtu > 0 {
             _transporter.mtu = properMtu
 
-            logMessageAdvertisement("[IOSFD.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+            logInBg("[IOSFD.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogLevel.info)
         } else {
-            logMessageAdvertisement("[IOSFD.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+            logInBg("[IOSFD.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogLevel.info)
         }
     }
 
@@ -298,7 +298,7 @@ public class IOSFileDownloader: NSObject {
         }
         catch let ex
         {
-            logMessageAdvertisement("[IOSFD.TDT.010] Failed to dispose the transport", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            logInBg("[IOSFD.TDT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -330,11 +330,17 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
+    private static let DefaultLogCategory = "FileUploader";
+
+    private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.logMessageAdvertisement(message, category, level, remoteFilePathSanitizedSnapshot)
+            self._listener.logMessageAdvertisement(message, category, level.name, remoteFilePathSanitizedSnapshot)
         }
+    }
+
+    private func log(_ message: String, _ level: McuMgrLogLevel) {
+        self._listener.logMessageAdvertisement(message, IOSFileDownloader.DefaultLogCategory, level.name, _remoteFilePathSanitized)
     }
 
     //@objc   dont
@@ -415,22 +421,22 @@ public class IOSFileDownloader: NSObject {
             case .downloading: // idle/paused -> downloading
                 if (oldState != .idle && oldState != .paused)
                 {
-                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.020] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self.log("[IFD.SS.DQGB.020] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
                 }
 
                 if (oldState != .paused) //todo   if the previous state is 'paused' we should raise the event 'FileDownloadResumingNow'
                 {
-                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.025] Starting downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+                    self.log("[IFD.SS.DQGB.025] Starting downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogLevel.info)
 
                     self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded) //order
                 }
                 break;
             case .complete: // downloading -> complete
-                self._listener.logMessageAdvertisement("[IFD.SS.DQGB.030] Completed downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+                self._listener.logMessageAdvertisement("[IFD.SS.DQGB.030] Download complete", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
 
                 if (oldState != .downloading) //00
                 {
-                    self._listener.logMessageAdvertisement("[IFD.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self.log("[IFD.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
                 }
 
                 self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0) // order
@@ -525,10 +531,6 @@ extension IOSFileDownloader: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
-        logMessageAdvertisement(
-                msg,
-                category.rawValue,
-                level.name
-        )
+        logInBg(msg, level, category.rawValue)
     }
 }

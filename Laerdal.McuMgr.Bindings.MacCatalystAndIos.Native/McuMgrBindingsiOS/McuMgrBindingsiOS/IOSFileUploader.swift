@@ -197,23 +197,24 @@ public class IOSFileUploader: NSObject {
     @objc
     public func tryPause() -> Bool {
         if (_currentState == .paused) { //order
+            logInBg("[IOSFU.TPS.010] Ignoring 'pause' request because we're already in 'paused' state anyway", McuMgrLogLevel.info)
             return true // already paused which is ok
         }
 
         if (_currentState != .uploading) { //order
-            return false
-        }
-
-        if (_fileSystemManager == nil) { //order
+            logInBg("[IOSFU.TPS.020] Ignoring 'pause' request because we're not in a 'uploading' state to begin with", McuMgrLogLevel.info)
             return false
         }
         
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            if (_fileSystemManager == nil) { //vital to double-check
+            if (_fileSystemManager == nil) { //order
+                logInBg("[IOSFU.TPS.030] Ignoring 'pause' request because the file-system-manager has been trashed", McuMgrLogLevel.info)
                 return false
             }
- 
+
             do {
+                logInBg("[IOSFU.TPS.040] Pausing uploading ...", McuMgrLogLevel.verbose)
+                
                 _fileSystemManager?.pauseTransfer()
                 
                 setState(.paused)
@@ -221,7 +222,7 @@ public class IOSFileUploader: NSObject {
 
                 return true
             } catch let ex {
-                onError("[IOSFU.PAUSE.010] Failed to pause", ex)
+                onError("[IOSFU.TPS.050] Failed to pause", ex)
                 return false
             }
         })
@@ -232,23 +233,24 @@ public class IOSFileUploader: NSObject {
     @objc
     public func tryResume() -> Bool {
         if _currentState == .uploading { //order
+            logInBg("[IOSFU.TR.010] Ignoring 'resume' request because we're already in 'uploading' state anyway", McuMgrLogLevel.info)
             return true //already downloading which is ok
         }
 
         if (_currentState != .paused) { //order
-            return false
-        }
-
-        if (_fileSystemManager == nil) { //order
+            logInBg("[IOSFU.TR.020] Ignoring 'resume' request because we're not in a 'paused' state to begin with", McuMgrLogLevel.info)
             return false
         }
         
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             if (_fileSystemManager == nil) { //vital to double-check
+                logInBg("[IOSFU.TR.030] Ignoring 'resume' request because the file-system-manager is null", McuMgrLogLevel.info)
                 return false
             }
  
             do {
+                logInBg("[IOSFU.TR.040] Resuming uploading ...", McuMgrLogLevel.verbose)
+
                 _fileSystemManager?.continueTransfer()
                 
                 setState(.uploading)
@@ -256,7 +258,7 @@ public class IOSFileUploader: NSObject {
 
                 return true
             } catch let ex {
-                onError("[IOSFU.RESUME.010] Failed to resume", ex)
+                onError("[IOSFU.RESUME.050] Failed to resume", ex)
                 return false
             }
         })
@@ -297,7 +299,7 @@ public class IOSFileUploader: NSObject {
         }
         catch let ex
         {
-            logMessageAdvertisement("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            logInBg("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -335,9 +337,9 @@ public class IOSFileUploader: NSObject {
         if properMtu > 0 {
             _transporter.mtu = properMtu
 
-            logMessageAdvertisement("[IOSFU.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+            logInBg("[IOSFU.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogLevel.info)
         } else {
-            logMessageAdvertisement("[IOSFU.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+            logInBg("[IOSFU.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogLevel.info)
         }
     }
 
@@ -354,7 +356,7 @@ public class IOSFileUploader: NSObject {
         }
         catch let ex
         {
-            logMessageAdvertisement("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name)
+            logInBg("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -396,12 +398,17 @@ public class IOSFileUploader: NSObject {
         }
     }
 
-    //@objc   dont
-    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
+    private static let DefaultLogCategory = "FileUploader";
+
+    private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
         let resourceIdSnapshot = _resourceId
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.logMessageAdvertisement(message, category, level, resourceIdSnapshot)
+            self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, resourceIdSnapshot)
         }
+    }
+
+    private func log(_ message: String, _ level: McuMgrLogLevel) {
+        self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, _resourceId)
     }
 
     //@objc   dont
@@ -498,23 +505,23 @@ public class IOSFileUploader: NSObject {
             case .uploading:
                 if (oldState != .idle && oldState != .paused) //20
                 {
-                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.020] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self.log("[IFU.SS.DQGB.020] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
                 }
 
                 if (oldState != .paused) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
                 {
-                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.025] Starting uploading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+                    self.log("[IFU.SS.DQGB.025] Upload complete", McuMgrLogLevel.info)
 
                     self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded);
                 }
                 break;
                 
             case .complete:
-                self._listener.logMessageAdvertisement("[IFU.SS.DQGB.030] Completed uploading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
+                self.log("[IFU.SS.DQGB.030] Upload complete", McuMgrLogLevel.info)
 
                 if (oldState != .uploading) //20
                 {
-                    self._listener.logMessageAdvertisement("[IFU.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.warning.name, remoteFilePathSanitizedSnapshot)
+                    self.log("[IFU.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
                 }
 
                 self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //50   order
@@ -605,7 +612,6 @@ extension IOSFileUploader: FileUploadDelegate {
 
         return Float32(bytesSent) / (secondsSinceUploadStart * 1024)
     }
-
 }
 
 extension IOSFileUploader: McuMgrLogDelegate {
@@ -614,10 +620,6 @@ extension IOSFileUploader: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
-        logMessageAdvertisement(
-                msg,
-                category.rawValue,
-                level.name
-        )
+        logInBg(msg, level, category.rawValue)
     }
 }
