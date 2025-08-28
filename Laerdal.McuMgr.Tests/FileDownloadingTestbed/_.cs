@@ -54,20 +54,20 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _downloaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
-            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState)
-                => _downloaderCallbacksProxy.StateChangedAdvertisement(resourceId: resourceId, newState: newState, oldState: oldState); //raises the actual event
+            public void StateChangedAdvertisement(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState, long totalBytesToBeDownloaded, byte[] completeDownloadedData)
+                => _downloaderCallbacksProxy.StateChangedAdvertisement( //raises the actual event
+                    newState: newState,
+                    oldState: oldState,
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
+                );
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _downloaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
 
             public void FatalErrorOccurredAdvertisement(string resource, string errorMessage, EGlobalErrorCode globalErrorCode) 
                 => _downloaderCallbacksProxy.FatalErrorOccurredAdvertisement(resource, errorMessage, globalErrorCode); //raises the actual event
-
-            public void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded)
-                => _downloaderCallbacksProxy.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded);
-
-            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data)
-                => _downloaderCallbacksProxy.FileDownloadCompletedAdvertisement(resourceId, data);
 
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
                 => _downloaderCallbacksProxy.FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, currentThroughputInKBps, totalAverageThroughputInKBps); //raises the actual event

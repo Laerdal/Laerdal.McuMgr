@@ -71,7 +71,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
 
             eventsMonitor
                 .Should()
@@ -100,14 +100,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
-                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling); //    order
-                    CancellingAdvertisement(reason); //                                                                                                      order
+                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling, 0, null); //  order
+                    CancellingAdvertisement(reason); //                                                                                                             order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
-                        StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled); //   order
-                        CancelledAdvertisement(reason); //                                                                                                     order    
+                        StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled, 0, null); //  order
+                        CancelledAdvertisement(reason); //                                                                                                             order    
                     }
                 });
 
@@ -139,15 +139,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
 
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath, _mockedFileData.Length);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, _mockedFileData.Length, null);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //   order
-                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                          order
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, 0, _mockedFileData);
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

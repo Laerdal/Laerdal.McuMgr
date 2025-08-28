@@ -709,6 +709,7 @@ namespace Laerdal.McuMgr.FileUploading
                         {
                             FileUploader?.OnFileUploadStarted(new(resourceId, remoteFilePath, totalBytesToBeUploaded)); //30
                         }
+
                         break;
                     case EFileUploaderState.Complete: // idle/uploading/paused/resuming -> complete
                         if (oldState != EFileUploaderState.Uploading) //00
@@ -721,13 +722,13 @@ namespace Laerdal.McuMgr.FileUploading
                             FileUploader?.OnFileUploadResumed(new(resourceId, remoteFilePath)); //workaround
                         }
 
-                        FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, progressPercentage: 100, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0));  //50
+                        FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, progressPercentage: 100, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0)); //50
                         FileUploader?.OnFileUploadCompleted(new(resourceId: resourceId, remoteFilePath: remoteFilePath));
                         break;
 
                     //default: break; // idle error paused resuming cancelled cancelling    these have their own dedicated advertisements so we ignore them here    
                 }
-                
+
                 //30   we took a conscious decision to have separate events for upload-started/paused/resumed/completed and not to try to cram everything into
                 //     the state-changed event   this is out of respect for the notion of separation-of-concerns
                 //
