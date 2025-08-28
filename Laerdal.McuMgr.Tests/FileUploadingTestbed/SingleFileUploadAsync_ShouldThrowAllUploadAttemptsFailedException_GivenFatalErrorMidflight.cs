@@ -90,7 +90,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy4 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy4 : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedGreenNativeFileUploaderProxySpy4(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
@@ -128,13 +128,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(100);
 
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(2_000);
                     
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //  order
-                    FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); //  order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0); //  order
+                    FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); //                             order
                 });
 
                 return verdict;

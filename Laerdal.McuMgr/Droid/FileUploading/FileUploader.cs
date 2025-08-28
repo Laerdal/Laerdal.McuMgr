@@ -250,20 +250,6 @@ namespace Laerdal.McuMgr.FileUploading
                 
                 _fileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
-            
-            public override void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded)
-            {
-                base.FileUploadStartedAdvertisement(resourceId, remoteFilePath, totalBytesToBeUploaded); //just in case
-
-                _fileUploaderCallbacksProxy?.FileUploadStartedAdvertisement(resourceId, remoteFilePath, totalBytesToBeUploaded);
-            }
-
-            public override void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
-            {
-                base.FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //just in case
-
-                _fileUploaderCallbacksProxy?.FileUploadCompletedAdvertisement(resourceId, remoteFilePath);
-            }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
@@ -272,25 +258,27 @@ namespace Laerdal.McuMgr.FileUploading
                 _fileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
+            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState, long totalBytesToBeUploaded)
             {
-                base.StateChangedAdvertisement(resourceId, remoteFilePath, oldState, newState); //just in case
+                base.StateChangedAdvertisement(resourceId, remoteFilePath, oldState, newState, totalBytesToBeUploaded); //just in case
 
                 StateChangedAdvertisement(
                     oldState: TranslateEAndroidFileUploaderState(oldState),
                     newState: TranslateEAndroidFileUploaderState(newState),
                     resourceId: resourceId, //essentially the remote filepath
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
                 );
             }
 
-            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded) //conforms to the interface
             {
                 _fileUploaderCallbacksProxy?.StateChangedAdvertisement(
                     oldState: oldState,
                     newState: newState,
                     resourceId: resourceId,
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
                 );
             }
 

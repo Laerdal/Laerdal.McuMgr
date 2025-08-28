@@ -40,8 +40,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 return EFileDownloaderVerdict.Success;
             }
 
-            public virtual bool TryPause() => ResumeCalled = true;
-            public virtual bool TryResume() => PauseCalled = true;
+            public virtual bool TryPause() => PauseCalled = true;
+            public virtual bool TryResume() => ResumeCalled = true;
             public virtual bool TryCancel(string reason = "") => CancelCalled = true;
             public virtual bool TryDisconnect() => DisconnectCalled = true;
 

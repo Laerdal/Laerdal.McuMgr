@@ -142,7 +142,9 @@ namespace Laerdal.McuMgr.FileUploading
         private event EventHandler<CancellingEventArgs> _cancelling;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
+        private event EventHandler<FileUploadPausedEventArgs> _fileUploadPaused;
         private event EventHandler<FileUploadStartedEventArgs> _fileUploadStarted;
+        private event EventHandler<FileUploadResumedEventArgs> _fileUploadResumed;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
         private event EventHandler<FileUploadCompletedEventArgs> _fileUploadCompleted;
         private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
@@ -216,6 +218,26 @@ namespace Laerdal.McuMgr.FileUploading
                 _fileUploadStarted += value;
             }
             remove => _fileUploadStarted -= value;
+        }
+
+        public event EventHandler<FileUploadPausedEventArgs> FileUploadPaused
+        {
+            add
+            {
+                _fileUploadPaused -= value;
+                _fileUploadPaused += value;
+            }
+            remove => _fileUploadPaused -= value;
+        }
+        
+        public event EventHandler<FileUploadResumedEventArgs> FileUploadResumed
+        {
+            add
+            {
+                _fileUploadResumed -= value;
+                _fileUploadResumed += value;
+            }
+            remove => _fileUploadResumed -= value;
         }
         
         public event EventHandler<FileUploadCompletedEventArgs> FileUploadCompleted
@@ -592,7 +614,9 @@ namespace Laerdal.McuMgr.FileUploading
         void IFileUploaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea);
         void IFileUploaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileUploaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
+        void IFileUploaderEventEmittable.OnFileUploadPaused(FileUploadPausedEventArgs ea) => OnFileUploadPaused(ea);
         void IFileUploaderEventEmittable.OnFileUploadStarted(FileUploadStartedEventArgs ea) => OnFileUploadStarted(ea);
+        void IFileUploaderEventEmittable.OnFileUploadResumed(FileUploadResumedEventArgs ea) => OnFileUploadResumed(ea);
         void IFileUploaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
         void IFileUploaderEventEmittable.OnFileUploadCompleted(FileUploadCompletedEventArgs ea) => OnFileUploadCompleted(ea);
         void IFileUploaderEventEmittable.OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileUploadProgressPercentageAndDataThroughputChanged(ea);
@@ -601,27 +625,43 @@ namespace Laerdal.McuMgr.FileUploading
         private void OnCancelling(CancellingEventArgs ea) => _cancelling?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileUploadStarted(FileUploadStartedEventArgs ea) => _fileUploadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileUploadCompleted(FileUploadCompletedEventArgs ea) => _fileUploadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileUploadProgressPercentageAndDataThroughputChanged(FileUploadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileUploadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
+
+        private void OnFileUploadCompleted(FileUploadCompletedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Trace, message: "[FU.OFUC.010] Uploading complete", category: "FileUploader", resource: ea.ResourceId));
+            
+            _fileUploadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+
+        private void OnFileUploadPaused(FileUploadPausedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: "[FU.OFUP.010] Uploading paused", category: "FileUploader", resource: ea.ResourceId));
+
+            _fileUploadPaused?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+        
+        private void OnFileUploadStarted(FileUploadStartedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: $"[FU.OFUS.010] Starting uploading of '{ea.TotalBytesToBeUploaded}' bytes", category: "FileUploader", resource: ea.ResourceId));
+
+            _fileUploadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+        
+        private void OnFileUploadResumed(FileUploadResumedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: "[FU.OFUR.010] Resumed uploading of asset", category: "FileUploader", resource: ea.ResourceId));
+
+            _fileUploadResumed?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
         
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
         {
-            OnLogEmitted(new LogEmittedEventArgs(
-                level: ELogLevel.Error,
-                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
-                resource: ea.RemoteFilePath,
-                category: "file-uploader"
-            ));
+            OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Error, message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}", resource: ea.RemoteFilePath, category: "file-uploader"));
             
-            OnFatalErrorOccurred_(ea);
-            return;
-
-            void OnFatalErrorOccurred_(FatalErrorOccurredEventArgs ea_)
-            {
-                _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea_);
-            }
+            _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         }
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileUploaderProxy
@@ -643,26 +683,61 @@ namespace Laerdal.McuMgr.FileUploading
                     resource: resourceId
                 ));
 
-            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
-                => FileUploader?.OnStateChanged(new StateChangedEventArgs(
-                    newState: newState,
-                    oldState: oldState,
-                    resourceId: resourceId,
-                    remoteFilePath: remoteFilePath
-                ));
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded)
+            {                
+                FileUploader?.OnStateChanged(new StateChangedEventArgs(newState: newState, oldState: oldState, resourceId: resourceId, remoteFilePath: remoteFilePath)); //keep first
+
+                switch (newState) //keep second
+                {
+                    case EFileUploaderState.None: // * -> none
+                        FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId, remoteFilePath, 0, 0, 0));
+                        break;
+                    case EFileUploaderState.Paused: // * -> paused
+                        FileUploader?.OnFileUploadPaused(new(resourceId, remoteFilePath));
+                        break;
+                    case EFileUploaderState.Uploading: // idle/resuming -> uploading
+                        if (oldState is not EFileUploaderState.Idle and not EFileUploaderState.Resuming)
+                        {
+                            FileUploader?.OnLogEmitted(new(level: ELogLevel.Warning, message: $"[FU.SCA.010] State changed to '{EFileUploaderState.Uploading}' from an unexpected state '{oldState}' - this looks fishy so report this incident!", category: "FileUploader", resource: resourceId));
+                        }
+
+                        if (oldState == EFileUploaderState.Resuming)
+                        {
+                            FileUploader?.OnFileUploadResumed(new(resourceId, remoteFilePath)); //30
+                        }
+                        else // != resuming means we it just started
+                        {
+                            FileUploader?.OnFileUploadStarted(new(resourceId, remoteFilePath, totalBytesToBeUploaded)); //30
+                        }
+                        break;
+                    case EFileUploaderState.Complete: // idle/uploading/paused/resuming -> complete
+                        if (oldState != EFileUploaderState.Uploading) //00
+                        {
+                            FileUploader?.OnLogEmitted(new(level: ELogLevel.Warning, message: $"[FU.SCA.050] State changed to 'complete' from an unexpected state '{oldState}' - this looks fishy so report this incident!", category: "FileUploader", resource: resourceId));
+                        }
+
+                        if (oldState is EFileUploaderState.Paused or EFileUploaderState.Resuming) // resuming/paused -> complete   (very rare cornercase)
+                        {
+                            FileUploader?.OnFileUploadResumed(new(resourceId, remoteFilePath)); //workaround
+                        }
+
+                        FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, progressPercentage: 100, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0));  //50
+                        FileUploader?.OnFileUploadCompleted(new(resourceId: resourceId, remoteFilePath: remoteFilePath));
+                        break;
+
+                    //default: break; // idle error paused resuming cancelled cancelling    these have their own dedicated advertisements so we ignore them here    
+                }
+                
+                //30   we took a conscious decision to have separate events for upload-started/paused/resumed/completed and not to try to cram everything into
+                //     the state-changed event   this is out of respect for the notion of separation-of-concerns
+                //
+                //50   trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
+                //
+                //90   note that tiny files which are only a few bytes long can go idle->complete in a heartbeat skipping the 'uploading' state altogether
+            }
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileUploader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
-
-            public void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded)
-                => FileUploader?.OnFileUploadStarted(new FileUploadStartedEventArgs(
-                    resourceId: resourceId,
-                    remoteFilePath: remoteFilePath,
-                    totalBytesToBeUploaded: totalBytesToBeUploaded
-                ));
-            
-            public void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
-                => FileUploader?.OnFileUploadCompleted(new FileUploadCompletedEventArgs(resourceId: resourceId, remoteFilePath: remoteFilePath));
 
             public void FatalErrorOccurredAdvertisement(
                 string resourceId,
