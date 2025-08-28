@@ -508,45 +508,18 @@ public class AndroidFileUploader
 
         final String resourceIdSnapshot = _resourceId;
         final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized;
+        fireAndForgetInTheBg(() -> stateChangedAdvertisement( //50
+                resourceIdSnapshot,
+                remoteFilePathSanitizedSnapshot,
+                oldState,
+                newState,
+                totalBytesToBeUploaded //60
+        ));
 
-        fireAndForgetInTheBg(() -> {
-            stateChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, oldState, newState); //order
-
-            switch (newState)
-            {
-                case NONE: // * -> none
-                    fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0);
-                    break;
-
-                case UPLOADING: // idle/paused -> uploading
-                    if (oldState != EAndroidFileUploaderState.IDLE && oldState != EAndroidFileUploaderState.RESUMING)
-                    {
-                        log("[AFU.SS.FAFITB.010] State changed to 'uploading' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
-                    }
-
-                    if (oldState != EAndroidFileUploaderState.RESUMING) //todo   if the previous state is 'paused' we should raise the event 'FileUploadResumingNow'
-                    {
-                        log("[AFU.SS.FAFITB.025] Starting uploading of '" + totalBytesToBeUploaded + "' bytes", EAndroidLoggingLevel.Info);
-
-                        fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded);
-                    }
-                    break;
-
-                case COMPLETE: // idle/uploading -> complete
-                    log("[AFU.SS.FAFITB.030] Upload complete", EAndroidLoggingLevel.Info);
-
-                    if (oldState != EAndroidFileUploaderState.UPLOADING) //[note] tiny files we can go idle->complete in a heartbeat
-                    {
-                        log("[AFU.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
-                    }
-
-                    fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //00   order
-                    fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); //                                                 order
-                    break;
-            }
-        });
-
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //50   to simplify the native layers of android and ios we delegated the responsibility of firing the file-upload-started/paused/resumed/completed events
+        //     to the csharp layer so that we can strike many birds with one stone
+        //
+        //60   the total-bytes-to-be-uploaded is only relevant when entering the UPLOADING state   in all other states it will be zero which is fine
     }
 
     private void fireAndForgetInTheBg(Runnable func)
@@ -629,18 +602,6 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void fileUploadStartedAdvertisement(final String resourceId, final String remoteFilePath, final long totalBytesToBeUploaded)
-    {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void fileUploadCompletedAdvertisement(final String resourceId, final String remoteFilePath)
-    {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
     public void cancellingAdvertisement(final String reason)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
@@ -653,7 +614,11 @@ public class AndroidFileUploader
     }
 
     @Contract(pure = true)
-    public void stateChangedAdvertisement(final String resourceId, final String remoteFilePath, final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState) // (final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState)
+    public void stateChangedAdvertisement(
+            final String resourceId, final String remoteFilePath,
+            final EAndroidFileUploaderState oldState, final EAndroidFileUploaderState newState,
+            final long totalBytesToBeUploaded
+    )
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

@@ -8,10 +8,8 @@ public protocol IOSListenerForFileUploader {
     func cancelledAdvertisement(_ reason: String?)
     func cancellingAdvertisement(_ reason: String?)
 
-    func stateChangedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?, _ oldState: EIOSFileUploaderState, _ newState: EIOSFileUploaderState)
+    func stateChangedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?, _ oldState: EIOSFileUploaderState, _ newState: EIOSFileUploaderState, _ totalBytesToBeUploaded: Int)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
-    func fileUploadStartedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?, _ totalBytesToBeUploaded: Int)
-    func fileUploadCompletedAdvertisement(_ resourceId: String?, _ remoteFilePath: String?)
     func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
         _ resourceId: String?,
         _ remoteFilePath: String?,

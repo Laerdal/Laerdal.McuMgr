@@ -7,7 +7,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 {
     public partial class FileUploaderTestbed
     {
-        private class MockedNativeFileUploaderProxySpy : INativeFileUploaderProxy //template class for all spies
+        private class BaseMockedNativeFileUploaderProxySpy : INativeFileUploaderProxy //template class for all spies
         {
             private readonly INativeFileUploaderCallbacksProxy _uploaderCallbacksProxy;
 
@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 set => _uploaderCallbacksProxy!.FileUploader = value;
             }
 
-            protected MockedNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy)
+            protected BaseMockedNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy)
             {
                 _uploaderCallbacksProxy = uploaderCallbacksProxy;
             }
@@ -47,8 +47,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 return EFileUploaderVerdict.Success;
             }
 
-            public virtual bool TryPause() => ResumeCalled = true;
-            public virtual bool TryResume() => PauseCalled = true;
+            public virtual bool TryPause() => PauseCalled = true;
+            public virtual bool TryResume() => ResumeCalled = true;
             public virtual bool TryCancel(string reason = "")
             {
                 CancellationReason = reason;
@@ -66,17 +66,17 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
                 => _uploaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
-            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
-                => _uploaderCallbacksProxy.StateChangedAdvertisement(resourceId: resourceId, remoteFilePath: remoteFilePath, newState: newState, oldState: oldState); //raises the actual event
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded)
+                => _uploaderCallbacksProxy.StateChangedAdvertisement( //raises the actual event
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
+                    newState: newState,
+                    oldState: oldState,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
+                );
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _uploaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
-            
-            public void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded)
-                => _uploaderCallbacksProxy.FileUploadStartedAdvertisement(resourceId, remoteFilePath, totalBytesToBeUploaded); //raises the actual event
-            
-            public void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
-                => _uploaderCallbacksProxy.FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //raises the actual event
 
             public void FatalErrorOccurredAdvertisement(
                 string resourceId,

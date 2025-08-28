@@ -109,7 +109,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy140 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy140 : BaseMockedNativeFileUploaderProxySpy
         {
             public int? ObservedPipelineDepth { get; private set; }
             public int? ObservedByteAlignment { get; private set; }
@@ -159,8 +159,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
                     
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 00, 00, 00);
@@ -185,8 +184,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 100, 10, 10);
 
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //                                                     order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 });
 
                 return verdict;

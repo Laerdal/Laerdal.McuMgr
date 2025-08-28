@@ -11,11 +11,9 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         void CancellingAdvertisement(string reason = "");
 
         void LogMessageAdvertisement(string message, string category, ELogLevel level, string resourceId);
-        void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState);
+        void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded);
         void BusyStateChangedAdvertisement(bool busyNotIdle);
-        void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded);
         void FatalErrorOccurredAdvertisement(string resourceId, string remoteFilePath, string errorMessage, EGlobalErrorCode globalErrorCode);
-        void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath);
         void FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, string remoteFilePath, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps);
     }
 }

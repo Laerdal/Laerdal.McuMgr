@@ -55,7 +55,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenButSlowNativeFileUploaderProxySpy : MockedNativeFileUploaderProxySpy
+        private class MockedGreenButSlowNativeFileUploaderProxySpy : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedGreenButSlowNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy resetterCallbacksProxy) : base(resetterCallbacksProxy)
             {
@@ -92,11 +92,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Uploading);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(1_000);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Complete);
-                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 });
 
                 return verdict;

@@ -23,7 +23,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-
+ 
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy1(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
             var fileDownloader = new FileDownloader(mockedNativeFileDownloaderProxy);
 
@@ -68,13 +68,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath, _mockedFileData.Length);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, _mockedFileData.Length, completeDownloadedData: null);
 
                     await Task.Delay(20);
-                    
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
-                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                        order
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, totalBytesToBeDownloaded: 0, _mockedFileData);
                 });
 
                 return verdict;

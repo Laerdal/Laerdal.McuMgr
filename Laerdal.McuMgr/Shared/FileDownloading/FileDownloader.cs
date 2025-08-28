@@ -115,6 +115,8 @@ namespace Laerdal.McuMgr.FileDownloading
         private event EventHandler<StateChangedEventArgs> _stateChanged;
         private event EventHandler<BusyStateChangedEventArgs> _busyStateChanged;
         private event EventHandler<FatalErrorOccurredEventArgs> _fatalErrorOccurred;
+        private event EventHandler<FileDownloadPausedEventArgs> _fileDownloadPaused;
+        private event EventHandler<FileDownloadResumedEventArgs> _fileDownloadResumed;
         private event EventHandler<FileDownloadStartedEventArgs> _fileDownloadStarted;
         private event EventHandler<FileDownloadCompletedEventArgs> _fileDownloadCompleted;
         private event ZeroCopyEventHelpers.ZeroCopyEventHandler<LogEmittedEventArgs> _logEmitted;
@@ -188,6 +190,26 @@ namespace Laerdal.McuMgr.FileDownloading
                 _fileDownloadStarted += value;
             }
             remove => _fileDownloadStarted -= value;
+        }
+
+        public event EventHandler<FileDownloadPausedEventArgs> FileDownloadPaused
+        {
+            add
+            {
+                _fileDownloadPaused -= value;
+                _fileDownloadPaused += value;
+            }
+            remove => _fileDownloadPaused -= value;
+        }
+        
+        public event EventHandler<FileDownloadResumedEventArgs> FileDownloadResumed
+        {
+            add
+            {
+                _fileDownloadResumed -= value;
+                _fileDownloadResumed += value;
+            }
+            remove => _fileDownloadResumed -= value;
         }
 
         public event EventHandler<FileDownloadCompletedEventArgs> FileDownloadCompleted
@@ -355,7 +377,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     //todo   silently cancel the download here on best effort basis
 
                     OnStateChanged(new StateChangedEventArgs( //for consistency
-                        resource: remoteFilePath,
+                        remoteFilePath: remoteFilePath,
                         oldState: EFileDownloaderState.None, //better not use this.State here because the native call might fail
                         newState: EFileDownloaderState.Error
                     ));
@@ -395,7 +417,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 )
                 {
                     OnStateChanged(new StateChangedEventArgs( //for consistency
-                        resource: remoteFilePath,
+                        remoteFilePath: remoteFilePath,
                         oldState: EFileDownloaderState.None,
                         newState: EFileDownloaderState.Error
                     ));
@@ -508,7 +530,9 @@ namespace Laerdal.McuMgr.FileDownloading
         void IFileDownloaderEventEmittable.OnCancelling(CancellingEventArgs ea) => OnCancelling(ea); //just to make the class unit-test friendly without making the methods public
         void IFileDownloaderEventEmittable.OnStateChanged(StateChangedEventArgs ea) => OnStateChanged(ea);
         void IFileDownloaderEventEmittable.OnBusyStateChanged(BusyStateChangedEventArgs ea) => OnBusyStateChanged(ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadPaused(FileDownloadPausedEventArgs ea) => OnFileDownloadPaused(ea);
         void IFileDownloaderEventEmittable.OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea) => OnFatalErrorOccurred(ea);
+        void IFileDownloaderEventEmittable.OnFileDownloadResumed(FileDownloadResumedEventArgs ea) => OnFileDownloadResumed(ea);
         void IFileDownloaderEventEmittable.OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => OnFileDownloadStarted(ea);
         void IFileDownloaderEventEmittable.OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => OnFileDownloadCompleted(ea);
         void IFileDownloaderEventEmittable.OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => OnFileDownloadProgressPercentageAndDataThroughputChanged(ea);
@@ -518,26 +542,17 @@ namespace Laerdal.McuMgr.FileDownloading
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadPaused(FileDownloadPausedEventArgs ea) => _fileDownloadPaused?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        private void OnFileDownloadResumed(FileDownloadResumedEventArgs ea) => _fileDownloadResumed?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => _fileDownloadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => _fileDownloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
         
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
         {
-            OnLogEmitted(new LogEmittedEventArgs(
-                level: ELogLevel.Error,
-                message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}",
-                resource: ea.Resource,
-                category: "file-downloader"
-            ));
+            OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Error, message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}", resource: ea.Resource, category: "file-downloader"));
 
-            OnFatalErrorOccurred_(ea);
-            return;
-
-            void OnFatalErrorOccurred_(FatalErrorOccurredEventArgs ea_)
-            {
-                _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea_);
-            }
+            _fatalErrorOccurred?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         }
 
         //this sort of approach proved to be necessary for our testsuite to be able to effectively mock away the INativeFileDownloaderProxy
@@ -559,28 +574,69 @@ namespace Laerdal.McuMgr.FileDownloading
                     resource: resource
                 ));
 
-            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState)
-                => FileDownloader?.OnStateChanged(new StateChangedEventArgs(
-                    resource: resourceId,
-                    newState: newState,
-                    oldState: oldState
-                ));
+            public void StateChangedAdvertisement(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState, long totalBytesToBeDownloaded, byte[] completeDownloadedData)
+            {                
+                FileDownloader?.OnStateChanged(new(newState: newState, oldState: oldState, remoteFilePath: remoteFilePath)); //keep first
+
+                switch (newState) //keep second
+                {
+                    case EFileDownloaderState.None: // * -> none
+                        FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new(remoteFilePath, 0, 0, 0));
+                        break;
+                    case EFileDownloaderState.Paused: // * -> paused
+                        FileDownloader?.OnFileDownloadPaused(new(remoteFilePath));
+                        break;
+                    case EFileDownloaderState.Downloading: // idle/resuming -> downloading
+                        if (oldState is not EFileDownloaderState.Idle and not EFileDownloaderState.Resuming)
+                        {
+                            FileDownloader?.OnLogEmitted(new(level: ELogLevel.Warning, message: $"[FD.SCA.010] State changed to '{EFileDownloaderState.Downloading}' from an unexpected state '{oldState}' - this looks fishy so report this incident!", category: "FileDownloader", resource: remoteFilePath));
+                        }
+
+                        if (oldState == EFileDownloaderState.Resuming)
+                        {
+                            FileDownloader?.OnFileDownloadResumed(new(remoteFilePath)); //30
+                        }
+                        else // != resuming means we it just started
+                        {
+                            FileDownloader?.OnFileDownloadStarted(new(remoteFilePath, totalBytesToBeDownloaded)); //30
+                        }
+
+                        break;
+                    case EFileDownloaderState.Complete: // idle/downloading/paused/resuming -> complete
+                        if (oldState != EFileDownloaderState.Downloading) //00
+                        {
+                            FileDownloader?.OnLogEmitted(new(level: ELogLevel.Warning, message: $"[FD.SCA.050] State changed to 'complete' from an unexpected state '{oldState}' - this looks fishy so report this incident!", category: "FileDownloader", resource: remoteFilePath));
+                        }
+
+                        if (oldState is EFileDownloaderState.Paused or EFileDownloaderState.Resuming) // resuming/paused -> complete   (very rare cornercase)
+                        {
+                            FileDownloader?.OnFileDownloadResumed(new(remoteFilePath)); //workaround
+                        }
+
+                        FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new(remoteFilePath: remoteFilePath, progressPercentage: 100, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0)); //50
+                        FileDownloader?.OnFileDownloadCompleted(new(remoteFilePath: remoteFilePath, data: completeDownloadedData));
+                        break;
+
+                    //default: break; // idle error paused resuming cancelled cancelling    these have their own dedicated advertisements so we ignore them here    
+                }
+
+                //30   we took a conscious decision to have separate events for download-started/paused/resumed/completed and not to try to cram everything into
+                //     the state-changed event   this is out of respect for the notion of separation-of-concerns
+                //
+                //50   trivial hotfix to deal with the fact that the file-download progress% doesnt fill up to 100%
+                //
+                //90   note that tiny files which are only a few bytes long can go idle->complete in a heartbeat skipping the 'downloading' state altogether
+            }
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => FileDownloader?.OnBusyStateChanged(new BusyStateChangedEventArgs(busyNotIdle));
-
-            public void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded)
-                => FileDownloader?.OnFileDownloadStarted(new FileDownloadStartedEventArgs(resourceId, totalBytesToBeDownloaded));
-
-            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data)
-                => FileDownloader?.OnFileDownloadCompleted(new FileDownloadCompletedEventArgs(resourceId, data));
 
             public void FatalErrorOccurredAdvertisement(string resourceId, string errorMessage, EGlobalErrorCode globalErrorCode)
                 => FileDownloader?.OnFatalErrorOccurred(new FatalErrorOccurredEventArgs(resourceId, errorMessage, globalErrorCode));
 
             public void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
                 => FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new FileDownloadProgressPercentageAndDataThroughputChangedEventArgs(
-                    resourceId: resourceId,
+                    remoteFilePath: resourceId,
                     progressPercentage: progressPercentage,
                     currentThroughputInKBps: currentThroughputInKBps,
                     totalAverageThroughputInKBps: totalAverageThroughputInKBps

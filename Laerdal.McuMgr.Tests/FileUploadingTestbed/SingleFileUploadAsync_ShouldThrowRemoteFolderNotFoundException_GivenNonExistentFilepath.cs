@@ -88,7 +88,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousNativeFileUploaderProxySpy2 : MockedNativeFileUploaderProxySpy
+        private class MockedErroneousNativeFileUploaderProxySpy2 : BaseMockedNativeFileUploaderProxySpy
         {
             private readonly EGlobalErrorCode _globalErrorCode;
             private readonly string _nativeErrorMessageForFileNotFound;
@@ -136,13 +136,12 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 {
                     await Task.Delay(100);
 
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); //      order
-                    FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, _nativeErrorMessageForFileNotFound, _globalErrorCode); //  order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0); // order
+                    FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, _nativeErrorMessageForFileNotFound, _globalErrorCode); //                        order
                 });
 
                 return verdict;

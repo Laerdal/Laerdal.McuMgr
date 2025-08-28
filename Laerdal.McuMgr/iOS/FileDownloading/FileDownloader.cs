@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
             return new IOSNativeFileDownloaderProxy(
                 bluetoothDevice: bluetoothDevice,
-                nativeFileDownloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy()
+                nativeFileDownloaderCallbacksProxy: new FileDownloader.GenericNativeFileDownloaderCallbacksProxy()
             );
         }
 
@@ -175,36 +175,31 @@ namespace Laerdal.McuMgr.FileDownloading
                     resource: resource
                 );
 
-            public override void StateChangedAdvertisement(string resourceId, EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
-                => StateChangedAdvertisement(
-                    resourceId: resourceId, //essentially the remote filepath
-                    newState: TranslateEIOSFileDownloaderState(newState),
-                    oldState: TranslateEIOSFileDownloaderState(oldState)
-                );
-            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
+            public override void StateChangedAdvertisement(
+                string remoteFilePath,
+                EIOSFileDownloaderState oldState,
+                EIOSFileDownloaderState newState,
+                nint totalBytesToBeDownloaded,
+                NSNumber[] completeDownloadedData //null unless we reach the 'completed' state
+            ) => StateChangedAdvertisement(
+                oldState: TranslateEIOSFileDownloaderState(oldState),
+                newState: TranslateEIOSFileDownloaderState(newState),
+                remoteFilePath: remoteFilePath,
+                completeDownloadedData: completeDownloadedData?.Select(x => (byte) x).ToArray() ?? Array.Empty<byte>(),
+                totalBytesToBeDownloaded: totalBytesToBeDownloaded
+            );
+
+            public void StateChangedAdvertisement(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState, long totalBytesToBeDownloaded, byte[] completeDownloadedData) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.StateChangedAdvertisement(
-                    resourceId: resourceId, //essentially the remote filepath
+                    oldState: oldState,
                     newState: newState,
-                    oldState: oldState
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
                 );
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
-
-            public override void FileDownloadStartedAdvertisement(string resourceId, nint totalBytesToBeDownloadedAsNint)
-                => FileDownloadStartedAdvertisement(resourceId: resourceId, totalBytesToBeDownloaded: totalBytesToBeDownloadedAsNint);
-            public void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded);
-
-            public override void FileDownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
-            {
-                var dataBytes = data?.Select(x => (byte) x).ToArray() ?? Array.Empty<byte>();
-
-                FileDownloadCompletedAdvertisement(resourceId, dataBytes);
-            }
-
-            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadCompletedAdvertisement(resourceId, data);
 
             public override void FatalErrorOccurredAdvertisement(
                 string resourceId,

@@ -220,22 +220,8 @@ namespace Laerdal.McuMgr.FileDownloading
             public override void CancelledAdvertisement(string reason)
             {
                 base.CancelledAdvertisement(reason); //just in case
-                
+
                 _fileDownloaderCallbacksProxy?.CancelledAdvertisement(reason);
-            }
-
-            public override void FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeDownloaded)
-            {
-                base.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded); //just in case
-                
-                _fileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId, totalBytesToBeDownloaded);
-            }
-
-            public override void FileDownloadCompletedAdvertisement(string resource, byte[] data)
-            {
-                base.FileDownloadCompletedAdvertisement(resource, data); //just in case
-
-                _fileDownloaderCallbacksProxy?.FileDownloadCompletedAdvertisement(resource, data);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
@@ -245,23 +231,34 @@ namespace Laerdal.McuMgr.FileDownloading
                 _fileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(string resource, EAndroidFileDownloaderState oldState, EAndroidFileDownloaderState newState) 
+            public override void StateChangedAdvertisement(
+                string remoteFilePath,
+                EAndroidFileDownloaderState oldState,
+                EAndroidFileDownloaderState newState,
+                long totalBytesToBeDownloaded,
+                byte[] completeDownloadedData
+            )
             {
-                base.StateChangedAdvertisement(resource, oldState, newState); //just in case
+                base.StateChangedAdvertisement(remoteFilePath, oldState, newState, totalBytesToBeDownloaded, completeDownloadedData); //just in case
 
                 StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
                     oldState: TranslateEAndroidFileDownloaderState(oldState),
-                    newState: TranslateEAndroidFileDownloaderState(newState)
+                    newState: TranslateEAndroidFileDownloaderState(newState),
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
                 );
             }
 
-            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
+            public void StateChangedAdvertisement(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState, long totalBytesToBeDownloaded, byte[] completeDownloadedData)
             {
                 _fileDownloaderCallbacksProxy?.StateChangedAdvertisement(
-                    resourceId: resource,
                     oldState: oldState,
-                    newState: newState);
+                    newState: newState,
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
+                );
             }
 
             public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)

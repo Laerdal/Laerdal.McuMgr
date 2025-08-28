@@ -365,14 +365,6 @@ public class IOSFileDownloader: NSObject {
     }
 
     //@objc   dont
-    private func stateChangedAdvertisement(
-            _ oldState: EIOSFileDownloaderState,
-            _ newState: EIOSFileDownloaderState
-    ) {
-        _listener.stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState)
-    }
-
-    //@objc   dont
     private func fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ resourceId: String?,
             _ progressPercentage: Int,
@@ -380,16 +372,6 @@ public class IOSFileDownloader: NSObject {
             _ totalAverageThroughputInKbps: Float32
     ) {
         _listener.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, progressPercentage, averageThroughput, totalAverageThroughputInKbps)
-    }
-
-    //@objc   dont
-    private func fileDownloadStartedAdvertisement(_ resourceId: String?, _ totalBytesToBeUploaded: Int = 0) {
-        _listener.fileDownloadStartedAdvertisement(resourceId, totalBytesToBeUploaded)
-    }
-
-    //@objc   dont
-    private func fileDownloadCompletedAdvertisement(_ resourceId: String?, _ data: [UInt8]?) {
-        _listener.fileDownloadCompletedAdvertisement(resourceId, data)
     }
 
     private func setBusyState(_ newBusyState: Bool) {
@@ -415,49 +397,13 @@ public class IOSFileDownloader: NSObject {
             return
         }
 
-        let oldState = _currentState //order
-        _currentState = newState //order
+        let oldState = _currentState //                                    order
+        _currentState = newState //                                        order
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized //  order
 
-        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized //order
-
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self.stateChangedAdvertisement(oldState, newState) //order
-
-            switch (newState)
-            {
-            case .none: // * -> none
-                self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0)
-                break;
-            case .downloading: // idle/paused -> downloading
-                if (oldState != .idle && oldState != .resuming)
-                {
-                    self.log("[IFD.SS.DQGB.020] State changed to 'downloading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
-                }
-
-                if (oldState != .resuming) //todo   if the previous state is 'resuming' we should raise the event 'FileDownloadResumingNow'
-                {
-                    self.log("[IFD.SS.DQGB.025] Starting downloading of '\(String(describing: totalBytesToBeUploaded))' bytes", McuMgrLogLevel.info)
-
-                    self.fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded) //order
-                }
-                break;
-            case .complete: // downloading -> complete
-                self._listener.logMessageAdvertisement("[IFD.SS.DQGB.030] Download complete", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name, remoteFilePathSanitizedSnapshot)
-
-                if (oldState != .downloading) //00
-                {
-                    self.log("[IFD.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
-                }
-
-                self.fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0) // order
-                self.fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, data) //                                       order
-                break;
-
-            default: break;
-            }
+        DispatchQueue.global(qos: .background).async {
+            self._listener.stateChangedAdvertisement(remoteFilePathSanitizedSnapshot, oldState, newState, totalBytesToBeUploaded, data)
         }
-
-        //00 trivial hotfix to deal with the fact that the file-download progress% doesn't fill up to 100%
     }
 }
 

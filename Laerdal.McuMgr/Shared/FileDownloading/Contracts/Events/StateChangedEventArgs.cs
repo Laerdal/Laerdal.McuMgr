@@ -10,15 +10,15 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Events
     [StructLayout(LayoutKind.Auto)]
     public readonly struct StateChangedEventArgs : IMcuMgrEventArgs
     {
-        public string Resource { get; init; }
+        public string RemoteFilePath { get; init; }
         public EFileDownloaderState NewState { get; init; }
         public EFileDownloaderState OldState { get; init; }
 
-        public StateChangedEventArgs(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
+        public StateChangedEventArgs(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState)
         {
-            Resource = resource;
             NewState = newState;
             OldState = oldState;
+            RemoteFilePath = remoteFilePath;
         }
     }
 }

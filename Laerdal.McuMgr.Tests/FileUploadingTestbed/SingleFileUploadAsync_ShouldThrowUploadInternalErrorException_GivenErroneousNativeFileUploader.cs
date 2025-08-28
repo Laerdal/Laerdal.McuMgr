@@ -36,7 +36,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousNativeFileUploaderProxySpy : MockedNativeFileUploaderProxySpy
+        private class MockedErroneousNativeFileUploaderProxySpy : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedErroneousNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {

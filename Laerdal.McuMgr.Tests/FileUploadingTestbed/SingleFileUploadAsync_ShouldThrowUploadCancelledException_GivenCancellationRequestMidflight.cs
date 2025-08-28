@@ -67,7 +67,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy3 : BaseMockedNativeFileUploaderProxySpy
         {
             private string _currentRemoteFilePath;
 
@@ -88,14 +88,14 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
-                    CancellingAdvertisement(reason); //                                                                                                             order
-                    StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
+                    CancellingAdvertisement(reason); //                                                                                                                                        order
+                    StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling, totalBytesToBeUploaded: 0); //  order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
-                        StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                        CancelledAdvertisement(reason); //                                                                                                              order    
+                        StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled, totalBytesToBeUploaded: 0); //   order
+                        CancelledAdvertisement(reason); //                                                                                                                                         order    
                     }
                 });
 
@@ -148,15 +148,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
 
-                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath, data.Length);
+                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
-                    FileUploadCompletedAdvertisement(_resourceId, remoteFilePath);
+                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 }, _cancellationTokenSource.Token);
 
                 return verdict;

@@ -422,41 +422,21 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func fileUploadCompletedAdvertisement(
-        _ resourceId: String?,
-        _ remoteFilePathSanitized: String?
-    ) {
-        _listener.fileUploadCompletedAdvertisement(resourceId, remoteFilePathSanitized)
-    }
-
-    //@objc   dont
     private func busyStateChangedAdvertisement(_ busyNotIdle: Bool) {
         _listener.busyStateChangedAdvertisement(busyNotIdle)
     }
 
     //@objc   dont
-    private func stateChangedAdvertisement(
-            _ resourceId: String?,
+    private func stateChangedAdvertisement( //@formatter:off
+            _ resourceId:              String?,
             _ remoteFilePathSanitized: String?,
-            _ oldState: EIOSFileUploaderState,
-            _ newState: EIOSFileUploaderState
-    ) {
-        _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState)
+            _ oldState:                EIOSFileUploaderState,
+            _ newState:                EIOSFileUploaderState,
+            _ totalBytesToBeUploaded:  Int
+    ) {  //@formatter:off
+        _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState, totalBytesToBeUploaded)
     }
 
-    //@objc   dont
-    private func fileUploadStartedAdvertisement(
-            _ resourceId: String?,
-            _ remoteFilePathSanitized: String?,
-            _ totalBytesToBeUploaded: Int
-    ) {
-        _listener.fileUploadStartedAdvertisement(
-                resourceId,
-                remoteFilePathSanitized,
-                totalBytesToBeUploaded
-        )
-    }
-    
     //@objc   dont
     private func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ resourceId: String?,
@@ -498,46 +478,20 @@ public class IOSFileUploader: NSObject {
         let resourceIdSnapshot = _resourceId
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self.stateChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, oldState, newState) //order
-
-            switch (newState) {
-            case .none: // * -> none
-                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 0, 0, 0)
-                break;
-                
-            case .uploading:
-                if (oldState != .idle && oldState != .resuming) //20
-                {
-                    self.log("[IFU.SS.DQGB.020] State changed to 'uploading' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
-                }
-
-                if (oldState != .resuming) //todo   if the previous state is 'resuming' we should raise the event 'FileUploadResumingNow'
-                {
-                    self.log("[IFU.SS.DQGB.025] Upload complete", McuMgrLogLevel.info)
-
-                    self.fileUploadStartedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, totalBytesToBeUploaded);
-                }
-                break;
-                
-            case .complete:
-                self.log("[IFU.SS.DQGB.030] Upload complete", McuMgrLogLevel.info)
-
-                if (oldState != .uploading) //20
-                {
-                    self.log("[IFU.SS.DQGB.035] Noticed that the state changed to 'complete' from an unexpected state '\(String(describing: oldState))' - this transition looks fishy so report this incident!", McuMgrLogLevel.warning)
-                }
-
-                self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot, 100, 0, 0); //50   order
-                self.fileUploadCompletedAdvertisement(resourceIdSnapshot, remoteFilePathSanitizedSnapshot); // order
-                break;
-                
-            default: break;
-            }
+        DispatchQueue.global(qos: .background).async { //50 fire and forget to boost performance
+            self.stateChangedAdvertisement(
+                    resourceIdSnapshot,
+                    remoteFilePathSanitizedSnapshot,
+                    oldState,
+                    newState,
+                    totalBytesToBeUploaded //60
+            )
         }
 
-        //20  on tiny files that are only a few bytes long the uploader sometimes skips directly 'idle -> complete' without going through the 'uploading' phase at all
-        //50  trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //50   to simplify the native layers of android and ios we delegated the responsibility of firing the file-upload-started/paused/resumed/completed events
+        //     to the csharp layer so that we can strike many birds with one stone
+        //
+        //60   the total-bytes-to-be-uploaded is only relevant when entering the UPLOADING state   in all other states it will be zero which is fine
     }
 }
 

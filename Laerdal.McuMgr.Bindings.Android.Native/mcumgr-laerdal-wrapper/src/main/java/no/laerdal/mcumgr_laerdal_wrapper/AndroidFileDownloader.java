@@ -479,42 +479,19 @@ public class AndroidFileDownloader
         _currentState = newState; //                                                 order
         final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //  order
 
-        fireAndForgetInTheBg(() -> {
-            stateChangedAdvertisement(oldState, newState); //order
+        fireAndForgetInTheBg(() -> stateChangedAdvertisement( //50
+                remoteFilePathSanitizedSnapshot,
+                oldState,
+                newState,
+                totalBytesToBeDownloaded, //60
+                finalDataSnapshot
+        ));
 
-            switch (newState)
-            {
-                case NONE: // * -> none
-                    fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 0, 0, 0);
-                    break;
-                case DOWNLOADING: // idle/paused -> downloading
-                    if (oldState != EAndroidFileDownloaderState.IDLE && oldState != EAndroidFileDownloaderState.RESUMING)
-                    {
-                        log("[AFD.SS.FAFITB.010] State changed to 'downloading' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
-                    }
-
-                    if (oldState != EAndroidFileDownloaderState.RESUMING) //todo   introduce a separate "FileDownloadResumingNow" event too
-                    {
-                        log("[AFD.SS.FAFITB.025] Starting downloading of '" + totalBytesToBeDownloaded + "' bytes", EAndroidLoggingLevel.Info);
-
-                        fileDownloadStartedAdvertisement(remoteFilePathSanitizedSnapshot, totalBytesToBeDownloaded); //order
-                    }
-                    break;
-                case COMPLETE: // idle/downloading -> complete
-                    log("[AFD.SS.FAFITB.030] Download complete", EAndroidLoggingLevel.Info);
-
-                    if (oldState != EAndroidFileDownloaderState.DOWNLOADING) // [note] tiny files can be downloaded so fast that we go directly from IDLE to COMPLETE in a heartbeat
-                    {
-                        log("[AFD.SS.FAFITB.035] State changed to 'complete' from an unexpected state '" + oldState + "' - this transition looks fishy so report this incident!", EAndroidLoggingLevel.Warning);
-                    }
-
-                    fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePathSanitizedSnapshot, 100, 0, 0); //00 order
-                    fileDownloadCompletedAdvertisement(remoteFilePathSanitizedSnapshot, finalDataSnapshot); //                            order
-                    break;
-            }
-        });
-
-        //00  trivial hotfix to deal with the fact that the filedownload progress% doesnt fill up to 100%
+        //50   to simplify the native layers of android and ios we delegated the responsibility of firing the file-download
+        //     started/paused/resumed/completed events to the csharp layer so that we can strike many birds with one stone
+        //
+        //60   the total-bytes-to-be-downloaded is only relevant when entering the DOWNLOADING state   in all other states
+        //     it will be zero which is fine
     }
 
     private void fireAndForgetInTheBg(Runnable func)
@@ -613,32 +590,20 @@ public class AndroidFileDownloader
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
-    @Contract(pure = true) //wrapper utility method so that we will not have to constantly pass remoteFilePathSanitized as the first argument    currently unused but should be handy in the future
-    public void stateChangedAdvertisement(final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
-    {
-        stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState);
-    }
-
     @Contract(pure = true)
-    public void stateChangedAdvertisement(final String resource, final EAndroidFileDownloaderState oldState, final EAndroidFileDownloaderState newState)
+    public void stateChangedAdvertisement(
+            final String remoteFilePath,
+            final EAndroidFileDownloaderState oldState,
+            final EAndroidFileDownloaderState newState,
+            long totalBytesToBeDownloaded,
+            byte[] finalDataSnapshot
+    )
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }
 
     @Contract(pure = true)
     public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps)
-    {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void fileDownloadStartedAdvertisement(final String resourceId, long totalBytesToBeDownloaded)
-    {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void fileDownloadCompletedAdvertisement(final String resourceId, final byte[] data)
     {
         //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
     }

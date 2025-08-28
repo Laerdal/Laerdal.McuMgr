@@ -63,7 +63,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 .Should()
                 .Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
 
             // eventsMonitor
             //     .OccurredEvents
@@ -79,7 +79,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == remoteFilePath && args.NewState == EFileDownloaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadStarted))
@@ -89,7 +89,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadCompleted))
                 .WithSender(fileDownloader)
-                .WithArgs<FileDownloadCompletedEventArgs>(args => args.ResourceId == remoteFilePath);
+                .WithArgs<FileDownloadCompletedEventArgs>(args => args.RemoteFilePath == remoteFilePath);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -123,8 +123,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath, 1_024);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, totalBytesToBeDownloaded: 1_024, null);
 
                     await Task.Delay(5);
                     FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 00, 00, 00);
@@ -144,16 +143,16 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     if (_tryCounter == _maxTriesCount && initialMtuSize == null)
                     {
                         BugDetected = $"[BUG DETECTED] The very last try should be with {nameof(initialMtuSize)} set to a fail-safe value but it's still set to 'null' - something is wrong!";
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //  order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //                   order
+                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error, 0, null); //  order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, BugDetected, EGlobalErrorCode.Generic); //                            order
                         return;
                     }
 
                     if (_tryCounter < _maxTriesCount)
                     {
                         await Task.Delay(20);
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error); //   order
-                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); //         order
+                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error, 0, null); //   order
+                        FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); //                  order
                         return;
                     }
 
@@ -166,8 +165,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     await Task.Delay(5);
                     FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(remoteFilePath, 100, 10, 10);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
-                    FileDownloadCompletedAdvertisement(remoteFilePath, _expectedData); //                                              order
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, 0, _expectedData);
                 });
 
                 return verdict;
