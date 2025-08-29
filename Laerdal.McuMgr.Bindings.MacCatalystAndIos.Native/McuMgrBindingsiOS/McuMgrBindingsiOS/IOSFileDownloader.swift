@@ -309,7 +309,6 @@ public class IOSFileDownloader: NSObject {
         }
     }
 
-
     private func tryDisposeFilesystemManager() -> Bool {
         //_fileSystemManager?.cancelTransfer()  dont
         _fileSystemManager = nil

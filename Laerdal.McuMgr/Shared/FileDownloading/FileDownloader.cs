@@ -581,7 +581,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 switch (newState) //keep second
                 {
                     case EFileDownloaderState.None: // * -> none
-                        FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new(remoteFilePath, 0, 0, 0));
+                        FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new(remoteFilePath: remoteFilePath, progressPercentage: 0, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0));
                         break;
                     case EFileDownloaderState.Paused: // * -> paused
                         FileDownloader?.OnFileDownloadPaused(new(remoteFilePath));

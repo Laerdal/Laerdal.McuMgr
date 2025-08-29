@@ -690,10 +690,10 @@ namespace Laerdal.McuMgr.FileUploading
                 switch (newState) //keep second
                 {
                     case EFileUploaderState.None: // * -> none
-                        FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId, remoteFilePath, 0, 0, 0));
+                        FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, progressPercentage: 0, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0));
                         break;
                     case EFileUploaderState.Paused: // * -> paused
-                        FileUploader?.OnFileUploadPaused(new(resourceId, remoteFilePath));
+                        FileUploader?.OnFileUploadPaused(new(resourceId: resourceId, remoteFilePath: remoteFilePath));
                         break;
                     case EFileUploaderState.Uploading: // idle/resuming -> uploading
                         if (oldState is not EFileUploaderState.Idle and not EFileUploaderState.Resuming)
@@ -703,11 +703,11 @@ namespace Laerdal.McuMgr.FileUploading
 
                         if (oldState == EFileUploaderState.Resuming)
                         {
-                            FileUploader?.OnFileUploadResumed(new(resourceId, remoteFilePath)); //30
+                            FileUploader?.OnFileUploadResumed(new(resourceId: resourceId, remoteFilePath: remoteFilePath)); //30
                         }
                         else // != resuming means we it just started
                         {
-                            FileUploader?.OnFileUploadStarted(new(resourceId, remoteFilePath, totalBytesToBeUploaded)); //30
+                            FileUploader?.OnFileUploadStarted(new(resourceId: resourceId, remoteFilePath: remoteFilePath, totalBytesToBeUploaded: totalBytesToBeUploaded)); //30
                         }
 
                         break;
@@ -719,7 +719,7 @@ namespace Laerdal.McuMgr.FileUploading
 
                         if (oldState is EFileUploaderState.Paused or EFileUploaderState.Resuming) // resuming/paused -> complete   (very rare cornercase)
                         {
-                            FileUploader?.OnFileUploadResumed(new(resourceId, remoteFilePath)); //workaround
+                            FileUploader?.OnFileUploadResumed(new(resourceId: resourceId, remoteFilePath: remoteFilePath)); //workaround
                         }
 
                         FileUploader?.OnFileUploadProgressPercentageAndDataThroughputChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, progressPercentage: 100, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0)); //50
