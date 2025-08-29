@@ -283,7 +283,8 @@ namespace Laerdal.McuMgr.FileDownloading
 
             return results;
             
-            //00  we would love to parallelize all this but the native side simply reverts to queuing the requests so its pointless
+            //00  we would love to parallelize all of this but the native side simply reverts to queuing the requests so its pointless
+            //    nordic might fix this in the future but for now we have to do it sequentially
             //
             //10  we dont want to throw here because we want to return the results for the files that were successfully downloaded
             //    if a file fails to download we simply return null data for that file
