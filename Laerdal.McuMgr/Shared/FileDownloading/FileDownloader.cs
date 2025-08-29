@@ -283,7 +283,8 @@ namespace Laerdal.McuMgr.FileDownloading
 
             return results;
             
-            //00  we would love to parallelize all this but the native side simply reverts to queuing the requests so its pointless
+            //00  we would love to parallelize all of this but the native side simply reverts to queuing the requests so its pointless
+            //    nordic might fix this in the future but for now we have to do it sequentially
             //
             //10  we dont want to throw here because we want to return the results for the files that were successfully downloaded
             //    if a file fails to download we simply return null data for that file
@@ -581,7 +582,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 switch (newState) //keep second
                 {
                     case EFileDownloaderState.None: // * -> none
-                        FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new(remoteFilePath, 0, 0, 0));
+                        FileDownloader?.OnFileDownloadProgressPercentageAndDataThroughputChanged(new(remoteFilePath: remoteFilePath, progressPercentage: 0, currentThroughputInKBps: 0, totalAverageThroughputInKBps: 0));
                         break;
                     case EFileDownloaderState.Paused: // * -> paused
                         FileDownloader?.OnFileDownloadPaused(new(remoteFilePath));
