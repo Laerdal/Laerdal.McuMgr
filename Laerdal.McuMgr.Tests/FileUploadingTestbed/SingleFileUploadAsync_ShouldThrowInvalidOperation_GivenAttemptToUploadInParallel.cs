@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Laerdal.McuMgr.FileUploading;
 using Laerdal.McuMgr.FileUploading.Contracts.Enums;
-using Laerdal.McuMgr.FileUploading.Contracts.Events;
 using Laerdal.McuMgr.FileUploading.Contracts.Native;
 using GenericNativeFileUploaderCallbacksProxy_ = Laerdal.McuMgr.FileUploading.FileUploader.GenericNativeFileUploaderCallbacksProxy;
 
@@ -10,86 +9,57 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task SingleFileUploadAsync_ShouldPause_GivenPauseRequestMidflight()
+        public async Task SingleFileUploadAsync_ShouldThrowInvalidOperation_GivenAttemptToUploadInParallel()
         {
             // Arrange
             var resourceId = "foobar";
             var mockedFileData = new byte[] {1, 2, 3};
             const string remoteFilePath = "/path/to/file.bin";
 
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy9(resourceId, new GenericNativeFileUploaderCallbacksProxy_());
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy99(resourceId, new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
-            fileUploader.FileUploadStarted += async (_, _) =>
+            fileUploader.FileUploadStarted += (_, _) =>
             {
                 fileUploader.TryPause();
-                await Task.Delay(100);
-                fileUploader.TryResume();
             };
             
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<Task>(() => fileUploader.UploadAsync(
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp.",
+            var work = new Func<Task>(async () =>
+            {
+                _ = fileUploader.UploadAsync( //first attempt
+                    hostDeviceModel: "foobar",
+                    hostDeviceManufacturer: "acme corp.",
+                    data: mockedFileData,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath
+                );
 
-                data: mockedFileData,
-                resourceId: resourceId,
-                remoteFilePath: remoteFilePath
-            ));
+                await Task.Delay(50);
+                
+                await fileUploader.UploadAsync( //second attempt in parallel should cause an exception
+                    hostDeviceModel: "foobar",
+                    hostDeviceManufacturer: "acme corp.",
+                    data: mockedFileData,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath
+                );
+            });
 
             // Assert
-            await work.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3));
-
-            mockedNativeFileUploaderProxy.PauseCalled.Should().BeTrue();
-            mockedNativeFileUploaderProxy.ResumeCalled.Should().BeTrue();
-
-            mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
-
-            eventsMonitor
-                .Should().Raise(nameof(fileUploader.StateChanged))
-                .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
-            
-            eventsMonitor // checking for pause
-                .Should().Raise(nameof(fileUploader.StateChanged))
-                .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Paused);
-            
-            eventsMonitor
-                .Should()
-                .Raise(nameof(fileUploader.FileUploadPaused))
-                .WithSender(fileUploader)
-                .WithArgs<FileUploadPausedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
-
-            eventsMonitor //checking for resume
-                .Should().Raise(nameof(fileUploader.StateChanged))
-                .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Resuming);
-            
-            eventsMonitor
-                .Should()
-                .Raise(nameof(fileUploader.FileUploadResumed))
-                .WithSender(fileUploader)
-                .WithArgs<FileUploadResumedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath);
-
-            eventsMonitor // checking for completion
-                .Should()
-                .Raise(nameof(fileUploader.FileUploadCompleted));
-
-            //00 we dont want to disconnect the device regardless of the outcome
+            await work.Should().ThrowWithinAsync<InvalidOperationException>(TimeSpan.FromSeconds(3));
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy9 : BaseMockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy99 : BaseMockedNativeFileUploaderProxySpy
         {
             private string _currentRemoteFilePath;
 
             private readonly string _resourceId;
             private readonly ManualResetEventSlim _manualResetEventSlim = new(initialState: true);
 
-            public MockedGreenNativeFileUploaderProxySpy9(string resourceId, INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy99(string resourceId, INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
                 _resourceId = resourceId;
             }

@@ -3,7 +3,7 @@ using Laerdal.McuMgr.FileUploading.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 {
-    internal interface INativeFileUploaderCallbacksProxy
+    public interface INativeFileUploaderCallbacksProxy
     {
         public IFileUploaderEventEmittable FileUploader { get; set; }
 

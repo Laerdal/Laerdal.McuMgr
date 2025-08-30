@@ -313,7 +313,9 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                         memoryAlignment: memoryAlignment //   android only
                     );
                     if (verdict != EFirmwareInstallationVerdict.Success)
-                        throw new ArgumentException(verdict.ToString());
+                        throw verdict == EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress
+                            ? new InvalidOperationException("Another installation operation is already in progress")
+                            : new ArgumentException(verdict.ToString());
 
                     await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs);
                 }

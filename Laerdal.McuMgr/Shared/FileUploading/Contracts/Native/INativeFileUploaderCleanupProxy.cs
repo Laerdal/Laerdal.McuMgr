@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 {
-    internal interface INativeFileUploaderCleanupProxy
+    public interface INativeFileUploaderCleanupProxy
     {
         void CleanupResourcesOfLastUpload();
     }
