@@ -197,19 +197,19 @@ public class IOSFileUploader: NSObject {
     @objc
     public func tryPause() -> Bool {
         if (_currentState == .paused) { //order
-            logInBg("[IOSFU.TPS.010] Ignoring 'pause' request because we're already in 'paused' state anyway", McuMgrLogLevel.info)
+            logInBg("[IOSFU.TPS.010] Ignoring 'pause' request in the native layer because we're already in 'paused' state anyway", McuMgrLogLevel.info)
             return true // already paused which is ok
         }
 
         if (_currentState != .uploading) { //order
-            logInBg("[IOSFU.TPS.020] Ignoring 'pause' request because we're not in a 'uploading' state to begin with", McuMgrLogLevel.info)
+            logInBg("[IOSFU.TPS.020] Ignoring 'pause' request in the native layer because we're not in a 'uploading' state to begin with", McuMgrLogLevel.info)
             return false
         }
         
         return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 if (_fileSystemManager == nil) { //order
-                    logInBg("[IOSFU.TPS.030] Ignoring 'pause' request because the file-system-manager has been trashed", McuMgrLogLevel.info)
+                    logInBg("[IOSFU.TPS.030] Ignoring 'pause' request in the native layer because the file-system-manager has been trashed", McuMgrLogLevel.info)
                     return false
                 }
 

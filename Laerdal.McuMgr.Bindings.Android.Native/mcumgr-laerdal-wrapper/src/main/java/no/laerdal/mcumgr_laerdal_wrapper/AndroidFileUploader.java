@@ -269,20 +269,20 @@ public class AndroidFileUploader
     {
         if (_currentState == EAndroidFileUploaderState.PAUSED)
         {
-            logInBg("[AFU.TPS.010] Ignoring 'pause' request because we're already in 'paused' state anyway", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TPS.010] Ignoring 'pause' request at the native-lib level because we're already in 'paused' state anyway", EAndroidLoggingLevel.Info);
             return true; // already paused which is ok
         }
 
         if (_currentState != EAndroidFileUploaderState.UPLOADING)
         {
-            logInBg("[AFU.TPS.020] Ignoring 'pause' request because we're already not 'uploading' to begin with", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TPS.020] Ignoring 'pause' request at the native-lib level because we're already not 'uploading' to begin with", EAndroidLoggingLevel.Info);
             return false;
         }
 
         final TransferController transferController = _uploadingController;
         if (transferController == null)
         {
-            logInBg("[AFU.TPS.030] Ignoring 'pause' request because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TPS.030] Ignoring 'pause' request at the native-lib level because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
             return false; //controller is uninitialized/trashed
         }
 
@@ -310,20 +310,20 @@ public class AndroidFileUploader
     {
         if (_currentState == EAndroidFileUploaderState.UPLOADING || _currentState == EAndroidFileUploaderState.RESUMING)
         {
-            logInBg("[AFU.TRS.010] Ignoring 'resume' request because we're already in the 'uploading/resuming' state anyway", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TRS.010] Ignoring 'resume' request at the native-lib level because we're already in the 'uploading/resuming' state anyway", EAndroidLoggingLevel.Info);
             return true; //already uploading which is ok
         }
 
         if (_currentState != EAndroidFileUploaderState.PAUSED)
         {
-            logInBg("[AFU.TRS.020] Ignoring 'resume' request because we're not in a 'paused' state to begin with", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TRS.020] Ignoring 'resume' request at the native-lib level because we're not in a 'paused' state to begin with", EAndroidLoggingLevel.Info);
             return false;
         }
 
         final TransferController transferController = _uploadingController;
         if (transferController == null)
         {
-            logInBg("[AFU.TRS.030] Ignoring 'resume' request because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
+            logInBg("[AFU.TRS.030] Ignoring 'resume' request at the native-lib level because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
             return false; //controller is uninitialized/trashed
         }
 
