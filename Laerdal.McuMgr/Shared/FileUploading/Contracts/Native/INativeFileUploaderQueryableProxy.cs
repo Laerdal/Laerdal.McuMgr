@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 {
-    internal interface INativeFileUploaderQueryableProxy
+    public interface INativeFileUploaderQueryableProxy
     {
         string LastFatalErrorMessage { get; }
     }

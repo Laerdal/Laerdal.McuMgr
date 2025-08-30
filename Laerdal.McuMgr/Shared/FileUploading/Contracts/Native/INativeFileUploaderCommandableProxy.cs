@@ -2,7 +2,7 @@
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 {
-    internal interface INativeFileUploaderCommandableProxy
+    public interface INativeFileUploaderCommandableProxy
     {
         bool TryPause();
         bool TryResume();

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
@@ -22,18 +23,26 @@ namespace Laerdal.McuMgr.FileUploading
     /// <inheritdoc cref="IFileUploader"/>
     public partial class FileUploader : IFileUploader, IFileUploaderEventEmittable
     {
-        private readonly INativeFileUploaderProxy _nativeFileUploaderProxy;
+        protected bool IsOperationOngoing;
+        protected bool IsCancellationRequested;
+        protected string CancellationReason = "";
+        protected readonly object OperationCheckLock = new();
+        protected readonly INativeFileUploaderProxy NativeFileUploaderProxy;
 
-        public string LastFatalErrorMessage => _nativeFileUploaderProxy?.LastFatalErrorMessage;
+        public string LastFatalErrorMessage => NativeFileUploaderProxy?.LastFatalErrorMessage;
+        
+        // we cant use a ManualResetEventSlim here because it doesnt support async-await and we want to avoid blocking threads while
+        // waiting   we could AsyncManualResetEventSlim from Nito.AsyncEx() but we want to avoid adding more dependencies if possible
+        protected readonly SemaphoreSlim WaitToBecomeActiveAgainSemaphore = new(initialCount: 1, maxCount: 1); //related to pausing/unpausing
 
         //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFileUploaderProxy
         internal FileUploader(INativeFileUploaderProxy nativeFileUploaderProxy)
         {
-            _nativeFileUploaderProxy = nativeFileUploaderProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderProxy));
-            _nativeFileUploaderProxy.FileUploader = this; //vital
+            NativeFileUploaderProxy = nativeFileUploaderProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderProxy));
+            NativeFileUploaderProxy.FileUploader = this; //vital
         }
         
-        private bool _disposed;
+        protected bool IsDisposed;
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -43,27 +52,33 @@ namespace Laerdal.McuMgr.FileUploading
 
         protected virtual void Dispose(bool isDisposing)
         {
-            if (_disposed)
+            if (IsDisposed)
                 return;
 
             if (!isDisposing)
                 return;
 
+            lock (_lockForPauseAndResumeMethods)
+            {
+                WaitToBecomeActiveAgainSemaphore.TryReleaseAll();
+                WaitToBecomeActiveAgainSemaphore.Dispose();
+            }
+            
             try
             {
-                _nativeFileUploaderProxy?.Dispose();
+                NativeFileUploaderProxy?.Dispose();
             }
             catch
             {
                 //ignored
             }
 
-            _disposed = true;
+            IsDisposed = true;
         }
         
-        public bool TrySetContext(object context) => _nativeFileUploaderProxy?.TrySetContext(context) ?? false;
-        public bool TrySetBluetoothDevice(object bluetoothDevice) => _nativeFileUploaderProxy?.TrySetBluetoothDevice(bluetoothDevice) ?? false;
-        public bool TryInvalidateCachedInfrastructure() => _nativeFileUploaderProxy?.TryInvalidateCachedInfrastructure() ?? false;
+        public bool TrySetContext(object context) => NativeFileUploaderProxy?.TrySetContext(context) ?? false;
+        public bool TrySetBluetoothDevice(object bluetoothDevice) => NativeFileUploaderProxy?.TrySetBluetoothDevice(bluetoothDevice) ?? false;
+        public bool TryInvalidateCachedInfrastructure() => NativeFileUploaderProxy?.TryInvalidateCachedInfrastructure() ?? false;
 
         public EFileUploaderVerdict BeginUpload(
             byte[] data,
@@ -112,12 +127,12 @@ namespace Laerdal.McuMgr.FileUploading
                     level: ELogLevel.Warning,
                     message: $"[FU.BU.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
                              $"(pipelineDepth={pipelineDepth ?.ToString() ?? "null"}, byteAlignment={byteAlignment?.ToString() ?? "null"}, initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"}, memoryAlignment={memoryAlignment?.ToString() ?? "null"})",
-                    resource: "File",
+                    resource: resourceId,
                     category: "FileDownloader"
                 ));
             }
 
-            var verdict = _nativeFileUploaderProxy.BeginUpload(
+            var verdict = NativeFileUploaderProxy.BeginUpload(
                 data: data,
                 resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
@@ -131,12 +146,62 @@ namespace Laerdal.McuMgr.FileUploading
 
             return verdict;
         }
-        
-        public bool TryPause() => _nativeFileUploaderProxy?.TryPause() ?? false;
-        public bool TryResume() => _nativeFileUploaderProxy?.TryResume() ?? false;
-        public bool TryCancel(string reason = "") => _nativeFileUploaderProxy?.TryCancel(reason) ?? false;
-        public bool TryDisconnect() => _nativeFileUploaderProxy?.TryDisconnect() ?? false;
-        public void CleanupResourcesOfLastUpload() => _nativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
+
+        private readonly object _lockForPauseAndResumeMethods = new();
+
+        public bool TryPause()
+        {
+            if (IsDisposed || IsCancellationRequested || !IsOperationOngoing)
+                return false;
+
+            OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Trace, message: "[FU.TPS.010] Received request to pause the ongoing upload operation", category: "FileUploader", resource: ""));
+
+            lock (_lockForPauseAndResumeMethods) //not 100% foolproof but should be good enough
+            {
+                if (WaitToBecomeActiveAgainSemaphore.CurrentCount > 0)
+                {
+                    _ = WaitToBecomeActiveAgainSemaphore.WaitAsync(); // blocks any ongoing installation/verification    dont be tempted to use waitasync(0) here as it will induce a cornercase bug!    
+                }
+            }
+
+            _ = NativeFileUploaderProxy?.TryPause(); //ignore the return value
+
+            return true; //must always return true
+        }
+
+        public bool TryResume()
+        {
+            if (IsDisposed || IsCancellationRequested || !IsOperationOngoing)
+                return false;
+
+            OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Trace, message: "[FU.TRS.010] Received request to resume the upload operation (if any)", category: "FileUploader", resource: ""));
+
+            lock (_lockForPauseAndResumeMethods) //not 100% foolproof but should be good enough
+            {
+                if (WaitToBecomeActiveAgainSemaphore.CurrentCount > 0)
+                    return true; // already resumed
+
+                WaitToBecomeActiveAgainSemaphore.TryReleaseAll(); // unblocks any ongoing installation/verification
+            }
+
+            _ = NativeFileUploaderProxy?.TryResume(); //ignore the return value
+
+            return true; //must always return true
+        }
+
+        public bool TryCancel(string reason = "")
+        {
+            IsCancellationRequested = true; //order
+
+            var success = NativeFileUploaderProxy?.TryCancel(reason) ?? false; //order
+
+            _ = WaitToBecomeActiveAgainSemaphore.TryReleaseAll(); //order   unblocks any ongoing installation/verification so that it can observe the cancellation
+
+            return success;
+        }
+
+        public bool TryDisconnect() => NativeFileUploaderProxy?.TryDisconnect() ?? false;
+        public void CleanupResourcesOfLastUpload() => NativeFileUploaderProxy?.CleanupResourcesOfLastUpload();
         
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<CancellingEventArgs> _cancelling;
@@ -277,69 +342,85 @@ namespace Laerdal.McuMgr.FileUploading
             int? memoryAlignment = null
         ) where TData : notnull
         {
-            if (string.IsNullOrWhiteSpace(hostDeviceModel))
-                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
-
-            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
-                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+            EnsureExclusiveOperation(); //keep this outside of the try-finally block!
+            ResetInternalStateTidbits();
             
-            if (sleepTimeBetweenUploadsInMs < 0)
-                throw new ArgumentOutOfRangeException(nameof(sleepTimeBetweenUploadsInMs), sleepTimeBetweenUploadsInMs, "Must be greater than or equal to zero");
-
-            var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
-
-            var lastIndex = sanitizedRemoteFilePathsAndTheirData.Count - 1;
-            var filesThatFailedToBeUploaded = (List<string>) null;
-            foreach (var ((remoteFilePath, (resourceId, data)), i) in sanitizedRemoteFilePathsAndTheirData.Select((x, i) => (x, i)))
+            try
             {
-                try
-                {
-                    await UploadAsync(
-                        data: data,
-                        resourceId: resourceId,
-                        remoteFilePath: remoteFilePath,
-
-                        hostDeviceModel: hostDeviceModel,
-                        hostDeviceManufacturer: hostDeviceManufacturer,
-
-                        maxTriesCount: maxTriesPerUpload,
-                        timeoutForUploadInMs: timeoutPerUploadInMs,
-                        sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
-
-                        autodisposeStream: autodisposeStreams,
-                        
-                        initialMtuSize: initialMtuSize, //    both ios and android
-                        pipelineDepth: pipelineDepth, //      ios only
-                        byteAlignment: byteAlignment, //      ios only
-                        windowCapacity: windowCapacity, //    android only
-                        memoryAlignment: memoryAlignment //   android only
-                    );
-
-                    if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex) //we skip sleeping after the last upload
-                    {
-                        await Task.Delay(sleepTimeBetweenUploadsInMs);
-                    }
-                }
-                catch (UploadErroredOutException)
-                {
-                    if (moveToNextUploadInCaseOfError) //00
-                    {
-                        (filesThatFailedToBeUploaded ??= new List<string>(4)).Add(remoteFilePath);
-                        continue;
-                    }
-
-                    throw;
-                }
+                return await UploadCoreAsync_();
+            }
+            finally
+            {
+                ReleaseExclusiveOperation();
             }
 
-            return filesThatFailedToBeUploaded;
+            async Task<IEnumerable<string>> UploadCoreAsync_()
+            {
+                if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                    throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
 
-            //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
-            //    tactic because failures are fairly common when uploading 50 files or more over to mcumgr devices, and we wanted to ensure
-            //    that it would be as easy as possible to achieve the mass uploading just by using the default settings 
+                if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                    throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+            
+                if (sleepTimeBetweenUploadsInMs < 0)
+                    throw new ArgumentOutOfRangeException(nameof(sleepTimeBetweenUploadsInMs), sleepTimeBetweenUploadsInMs, "Must be greater than or equal to zero");
+
+                var sanitizedRemoteFilePathsAndTheirData = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePathsWithData(remoteFilePathsAndTheirData);
+
+                var lastIndex = sanitizedRemoteFilePathsAndTheirData.Count - 1;
+                var filesThatFailedToBeUploaded = (List<string>) null;
+                foreach (var ((remoteFilePath, (resourceId, data)), i) in sanitizedRemoteFilePathsAndTheirData.Select((x, i) => (x, i)))
+                {
+                    try
+                    {
+                        await SingleUploadImplAsync(
+                            data: data,
+                            resourceId: resourceId,
+                            remoteFilePath: remoteFilePath,
+
+                            hostDeviceModel: hostDeviceModel,
+                            hostDeviceManufacturer: hostDeviceManufacturer,
+
+                            maxTriesCount: maxTriesPerUpload,
+                            timeoutForUploadInMs: timeoutPerUploadInMs,
+                            sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+
+                            autodisposeStream: autodisposeStreams,
+                        
+                            initialMtuSize: initialMtuSize, //    both ios and android
+                            pipelineDepth: pipelineDepth, //      ios only
+                            byteAlignment: byteAlignment, //      ios only
+                            windowCapacity: windowCapacity, //    android only
+                            memoryAlignment: memoryAlignment //   android only
+                        );
+
+                        if (sleepTimeBetweenUploadsInMs > 0 && i < lastIndex) //we skip sleeping after the last upload
+                        {
+                            await Task.Delay(sleepTimeBetweenUploadsInMs);
+                        }
+                    }
+                    catch (UploadErroredOutException)
+                    {
+                        if (moveToNextUploadInCaseOfError) //00
+                        {
+                            (filesThatFailedToBeUploaded ??= new List<string>(4)).Add(remoteFilePath);
+                            continue;
+                        }
+
+                        throw;
+                    }
+                }
+
+                return filesThatFailedToBeUploaded;
+
+                //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
+                //    tactic because failures are fairly common when uploading 50 files or more over to mcumgr devices, and we wanted to ensure
+                //    that it would be as easy as possible to achieve the mass uploading just by using the default settings
+            }
         }
         
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
+
         public async Task UploadAsync<TData>(
             TData data,
             string resourceId,
@@ -358,6 +439,59 @@ namespace Laerdal.McuMgr.FileUploading
             int? memoryAlignment = null
         ) where TData : notnull
         {
+            EnsureExclusiveOperation(); //keep this outside of the try-finally block!
+            ResetInternalStateTidbits();
+
+            try
+            {
+                await SingleUploadImplAsync(
+                    data: data,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
+                    
+                    hostDeviceModel: hostDeviceModel,
+                    hostDeviceManufacturer: hostDeviceManufacturer,
+                    
+                    maxTriesCount: maxTriesCount,
+                    timeoutForUploadInMs: timeoutForUploadInMs,
+                    
+                    sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+                    gracefulCancellationTimeoutInMs: gracefulCancellationTimeoutInMs,
+                    autodisposeStream: autodisposeStream,
+                    
+                    initialMtuSize: initialMtuSize, //    both ios and android
+                    pipelineDepth: pipelineDepth, //      ios only
+                    byteAlignment: byteAlignment, //      ios only
+                    windowCapacity: windowCapacity, //    android only
+                    memoryAlignment: memoryAlignment //   android only
+                );
+            }
+            finally
+            {
+                ReleaseExclusiveOperation();
+            }
+        }
+
+        private async Task SingleUploadImplAsync<TData>(
+            TData data,
+            string resourceId,
+            string remoteFilePath,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            int timeoutForUploadInMs = -1,
+            int maxTriesCount = 10,
+            int sleepTimeBetweenRetriesInMs = 1_000,
+            int gracefulCancellationTimeoutInMs = 2_500,
+            bool autodisposeStream = false,
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+            int? initialMtuSize = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
+        ) where TData : notnull
+        {
+            //EnsureExclusiveOperation_(); //dont   this should never be checked here
+            
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
             
@@ -379,16 +513,20 @@ namespace Laerdal.McuMgr.FileUploading
                 ? gracefulCancellationTimeoutInMs
                 : DefaultGracefulCancellationTimeoutInMs;
 
-            var cancellationReason = "";
-            var isCancellationRequested = false;
             var fileUploadProgressEventsCount = 0;
             var suspiciousTransportFailuresCount = 0;
             var didWarnOnceAboutUnstableConnection = false;
-            for (var triesCount = 1; !isCancellationRequested;)
+            var isDeathknellCancellationTaskBeenLaunched = false;
+            for (var triesCount = 1; !IsCancellationRequested;)
             {
                 var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
                 try
                 {
+                    await CheckIfPausedAsync(); //order
+
+                    if (IsCancellationRequested) //order   keep inside the try-catch block
+                        throw new UploadCancelledException(CancellationReason);
+
                     Cancelled += FileUploader_Cancelled_;
                     Cancelling += FileUploader_Cancelling_;
                     StateChanged += FileUploader_StateChanged_;
@@ -417,7 +555,7 @@ namespace Laerdal.McuMgr.FileUploading
                                 level: ELogLevel.Warning,
                                 message: $"[FU.UA.010] Attempt#{triesCount}: Connection is too unstable for uploading assets to the target device. Subsequent tries will use failsafe parameters on the connection " +
                                          $"just in case it helps (byteAlignment={byteAlignment}, pipelineDepth={pipelineDepth}, initialMtuSize={initialMtuSize}, windowCapacity={windowCapacity}, memoryAlignment={memoryAlignment})",
-                                resource: "File",
+                                resource: resourceId,
                                 category: "FileUploader"
                             ));
                         }
@@ -438,7 +576,9 @@ namespace Laerdal.McuMgr.FileUploading
                         memoryAlignment: memoryAlignment //   android only
                     );
                     if (verdict != EFileUploaderVerdict.Success)
-                        throw new ArgumentException(verdict.ToString());
+                        throw verdict == EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress
+                            ? new InvalidOperationException("Another upload operation is already in progress") //impossible at this point but just in case
+                            : new ArgumentException(verdict.ToString());
 
                     await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutForUploadInMs); //order
                     break;
@@ -515,15 +655,16 @@ namespace Laerdal.McuMgr.FileUploading
                     taskCompletionSource.TrySetResult(true);
                 }
 
-                void FileUploader_Cancelling_(object _, CancellingEventArgs ea_)
+                void FileUploader_Cancelling_(object __, CancellingEventArgs ea_)
                 {
-                    if (isCancellationRequested)
+                    if (isDeathknellCancellationTaskBeenLaunched)
                         return;
 
-                    cancellationReason = ea_.Reason;
-                    isCancellationRequested = true;
+                    CancellationReason = ea_.Reason;
+                    IsCancellationRequested = true;
+                    isDeathknellCancellationTaskBeenLaunched = true;
 
-                    Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         try
                         {
@@ -577,8 +718,8 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
             
-            if (isCancellationRequested) //vital
-                throw new UploadCancelledException(cancellationReason); //20
+            if (IsCancellationRequested) //vital
+                throw new UploadCancelledException(CancellationReason); //20
 
             return;
             
@@ -766,6 +907,52 @@ namespace Laerdal.McuMgr.FileUploading
                 currentThroughputInKBps: currentThroughputInKBps,
                 totalAverageThroughputInKBps: totalAverageThroughputInKBps
             ));
+        }
+        
+        protected void EnsureExclusiveOperation()
+        {
+            lock (OperationCheckLock)
+            {
+                if (IsOperationOngoing)
+                    throw new InvalidOperationException("An upload operation is already running - cannot start another one");
+                
+                IsOperationOngoing = true;    
+            }
+        }
+
+        protected void ReleaseExclusiveOperation()
+        {
+            lock (OperationCheckLock)
+            {
+                IsOperationOngoing = false;
+            }
+        }
+        
+        protected virtual void ResetInternalStateTidbits()
+        {
+            //IsOperationOngoing = false; //dont
+
+            CancellationReason = "";
+            IsCancellationRequested = false;
+
+            WaitToBecomeActiveAgainSemaphore.TryReleaseAll(); // unblocks any ongoing installation/verification    just in case
+        }
+        
+        private async Task CheckIfPausedAsync()
+        {
+            if (WaitToBecomeActiveAgainSemaphore.CurrentCount == 0)
+            {
+                OnFileUploadPaused(new(resourceId: "", remoteFilePath: "")); //00
+            }
+        
+            await WaitToBecomeActiveAgainSemaphore.WaitAsync(); //10
+            _ = WaitToBecomeActiveAgainSemaphore.TryReleaseAll();
+        
+            //00  if the semaphore count is zero it means we are about to get paused without any ongoing
+            //    transfers so we will emit the paused event here to keep things consistent
+            //
+            //10  we just want to check if we are paused/cancelled   this will block if we are paused
+            //    immediately release again   we dont want to postpone this any longer than necessary
         }
     }
 }

@@ -368,7 +368,9 @@ namespace Laerdal.McuMgr.FileDownloading
                         windowCapacity: windowCapacity
                     );
                     if (verdict != EFileDownloaderVerdict.Success)
-                        throw new ArgumentException(verdict.ToString());
+                        throw verdict == EFileDownloaderVerdict.FailedDownloadAlreadyInProgress
+                            ? new InvalidOperationException("Another download operation is already in progress")
+                            : new ArgumentException(verdict.ToString());
 
                     result = await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutForDownloadInMs);
                     break;
