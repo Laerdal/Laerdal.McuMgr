@@ -12,23 +12,27 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenNoFilesToUpload()
+        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenNoInputFiles()
         {
             // Arrange
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy5(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
+            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!");
+            fileUploader.FileUploadResumed += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
 
             // Act
-            var work = new Func<Task>(async () => await fileUploader.UploadAsync(
+            var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
                 remoteFilePathsAndTheirData: new Dictionary<string, (string, IEnumerable<byte[]>)>(0)
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(500.Milliseconds());
+            var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(500.Milliseconds())).Which;
+            
+            filesThatFailedToBeUploaded.Should().BeEmpty();
 
             eventsMonitor.OccurredEvents.Should().HaveCount(0);
 

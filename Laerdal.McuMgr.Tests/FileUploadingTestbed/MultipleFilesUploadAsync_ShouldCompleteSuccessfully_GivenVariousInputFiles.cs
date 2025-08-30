@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToUpload()
+        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousInputFiles()
         {
             // Arrange
             var filesThatShouldBeSuccessfullyUploaded = new[]

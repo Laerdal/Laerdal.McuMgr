@@ -282,8 +282,8 @@ public class AndroidFileUploader
         final TransferController transferController = _uploadingController;
         if (transferController == null)
         {
-            logInBg("[AFU.TPS.030] Ignoring 'pause' request because the native-transfer-controller has been trashed", EAndroidLoggingLevel.Info);
-            return false; //controller has been trashed
+            logInBg("[AFU.TPS.030] Ignoring 'pause' request because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
+            return false; //controller is uninitialized/trashed
         }
 
         try
@@ -323,8 +323,8 @@ public class AndroidFileUploader
         final TransferController transferController = _uploadingController;
         if (transferController == null)
         {
-            logInBg("[AFU.TRS.030] Ignoring 'resume' request because the native-transfer-controller has been trashed", EAndroidLoggingLevel.Info);
-            return false; //controller has been trashed
+            logInBg("[AFU.TRS.030] Ignoring 'resume' request because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
+            return false; //controller is uninitialized/trashed
         }
 
         try
