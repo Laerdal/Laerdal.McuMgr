@@ -492,7 +492,7 @@ public class AndroidFileUploader
     }
 
     //@formatter:off
-    private void setState(final EAndroidFileUploaderState newState) { setState(newState, 0); } //@formatter:on
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileUploaderState newState) { setState(newState, 0); } //@formatter:on
 
     private void setState(final EAndroidFileUploaderState newState, final long totalBytesToBeUploaded)
     {

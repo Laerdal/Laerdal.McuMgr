@@ -463,9 +463,9 @@ public class AndroidFileDownloader
     }
 
     //@formatter:off
-    private void setState(final EAndroidFileDownloaderState newState)                                     { setState(newState, 0, null);                        }
-    private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded) { setState(newState, totalBytesToBeDownloaded, null); }
-    private void setState(final EAndroidFileDownloaderState newState, final byte[] finalDataSnapshot)     { setState(newState, 0, finalDataSnapshot);           } //@formatter:on
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileDownloaderState newState)                                     { setState(newState, 0, null);  }
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded) { setState(newState, totalBytesToBeDownloaded, null); }
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileDownloaderState newState, final byte[] finalDataSnapshot)     { setState(newState, 0, finalDataSnapshot);    } //@formatter:on
 
     private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded, final byte[] finalDataSnapshot)
     {
