@@ -12,10 +12,11 @@ tasks.register('wrapper', Wrapper) {
 android {
     namespace "no.laerdal.mcumgr_laerdal_wrapper" // per https://developer.android.com/studio/build/configure-app-module#set-namespace
 
+    //noinspection GradleDependency
     compileSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file
 
     defaultConfig {
-        minSdk 21
+        minSdk 21 //noinspection OldTargetApi
         targetSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file
 
         consumerProguardFiles "consumer-rules.pro"
