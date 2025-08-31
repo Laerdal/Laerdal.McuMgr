@@ -102,7 +102,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 _nativeFirmwareInstaller = null;
             }
 
-            public void CleanupResourcesOfLastInstallation() //00
+            public void TryCleanupResourcesOfLastInstallation() //00
             {
                 try
                 {

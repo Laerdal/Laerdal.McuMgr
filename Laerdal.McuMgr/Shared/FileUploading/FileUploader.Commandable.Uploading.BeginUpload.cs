@@ -1,0 +1,81 @@
+// ReSharper disable UnusedType.Global
+// ReSharper disable RedundantExtendsListEntry
+
+using System;
+using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.Common.Events;
+using Laerdal.McuMgr.Common.Helpers;
+using Laerdal.McuMgr.FileUploading.Contracts.Enums;
+
+namespace Laerdal.McuMgr.FileUploading
+{
+    public partial class FileUploader
+    {
+        public EFileUploaderVerdict BeginUpload(
+            byte[] data,
+            string resourceId,
+            string remoteFilePath,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            int? initialMtuSize = null,
+            int? pipelineDepth = null, //  ios
+            int? byteAlignment = null, //  ios
+            int? windowCapacity = null, // android
+            int? memoryAlignment = null // android
+        )
+        {
+            if (string.IsNullOrWhiteSpace(hostDeviceModel))
+                throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
+
+            if (string.IsNullOrWhiteSpace(hostDeviceManufacturer))
+                throw new ArgumentException("Host device manufacturer cannot be null or whitespace", nameof(hostDeviceManufacturer));
+            
+            data = data ?? throw new ArgumentNullException(nameof(data));
+            remoteFilePath = RemoteFilePathHelpers.ValidateAndSanitizeRemoteFilePath(remoteFilePath);
+
+            var failsafeConnectionSettings = ConnectionSettingsHelpers.GetFailSafeConnectionSettingsIfHostDeviceIsProblematic(
+                hostDeviceModel: hostDeviceModel,
+                hostDeviceManufacturer: hostDeviceManufacturer,
+
+                initialMtuSize: initialMtuSize,
+                uploadingNotDownloading: true,
+
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
+            );
+            if (failsafeConnectionSettings != null)
+            {
+                initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
+                pipelineDepth = failsafeConnectionSettings.Value.pipelineDepth;
+                byteAlignment = failsafeConnectionSettings.Value.byteAlignment;
+                windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
+                memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
+                
+                OnLogEmitted(new LogEmittedEventArgs(
+                    level: ELogLevel.Warning,
+                    message: $"[FU.BU.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
+                             $"(pipelineDepth={pipelineDepth ?.ToString() ?? "null"}, byteAlignment={byteAlignment?.ToString() ?? "null"}, initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"}, memoryAlignment={memoryAlignment?.ToString() ?? "null"})",
+                    resource: resourceId,
+                    category: "FileDownloader"
+                ));
+            }
+
+            var verdict = NativeFileUploaderProxy.BeginUpload(
+                data: data,
+                resourceId: resourceId,
+                remoteFilePath: remoteFilePath,
+
+                initialMtuSize: initialMtuSize,
+                pipelineDepth: pipelineDepth,
+                byteAlignment: byteAlignment,
+                windowCapacity: windowCapacity,
+                memoryAlignment: memoryAlignment
+            );
+
+            return verdict;
+        }
+    }
+}

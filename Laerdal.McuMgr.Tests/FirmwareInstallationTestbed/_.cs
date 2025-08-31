@@ -75,7 +75,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
                 => _firmwareInstallerCallbacksProxy.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKBps, totalAverageThroughputInKBps); //raises the actual event
 
-            public void CleanupResourcesOfLastInstallation()
+            public void TryCleanupResourcesOfLastInstallation()
             {
             }
 

@@ -162,6 +162,14 @@
     <ItemGroup>
         <Compile Include="Shared\**\*.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
+
+        <!-- FILE UPLOADER -->
+        <Compile Update="**\FileUploader.*.cs">
+            <DependentUpon>FileUploader.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FileUploader.Commandable.*.cs">
+            <DependentUpon>FileUploader.Commandable.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->

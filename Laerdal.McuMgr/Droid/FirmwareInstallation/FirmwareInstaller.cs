@@ -118,7 +118,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 }
             }
             
-            public void CleanupResourcesOfLastInstallation()
+            public void TryCleanupResourcesOfLastInstallation()
             {
                 //nothing to do here for android   only ios needs this
             }

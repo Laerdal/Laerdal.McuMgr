@@ -117,7 +117,7 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
 
-            public void CleanupResourcesOfLastUpload()
+            public void TryCleanupResourcesOfLastUpload()
             {
                 //nothing to do in android
             }

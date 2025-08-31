@@ -3,11 +3,11 @@ using System;
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Native
 {
     internal interface INativeFirmwareInstallerProxy :
-        INativeFirmwareInstallerCommandableProxy,
+        IDisposable,
         INativeFirmwareInstallerQueryableProxy,
-        INativeFirmwareInstallerCleanupableProxy,
         INativeFirmwareInstallerCallbacksProxy,
-        IDisposable
+        INativeFirmwareInstallerCommandableProxy,
+        INativeFirmwareInstallerCleanupableProxy
     {
         string Nickname { get; set; }
     }
