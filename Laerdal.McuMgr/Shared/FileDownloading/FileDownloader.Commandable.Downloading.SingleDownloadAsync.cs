@@ -5,6 +5,7 @@ using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Exceptions;
 using Laerdal.McuMgr.Common.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
+using Laerdal.McuMgr.FileDownloading.Contracts;
 using Laerdal.McuMgr.FileDownloading.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloading.Contracts.Events;
 using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
@@ -19,10 +20,10 @@ namespace Laerdal.McuMgr.FileDownloading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutForDownloadInMs = -1,
-            int maxTriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs,
+            int timeoutForDownloadInMs          = IFileDownloaderCommandable.Defaults.TimeoutPerDownloadInMs,
+            int maxTriesCount                   = IFileDownloaderCommandable.Defaults.MaxTriesPerDownload,
+            int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
+            int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
             int? initialMtuSize = null,
             int? windowCapacity = null
         )

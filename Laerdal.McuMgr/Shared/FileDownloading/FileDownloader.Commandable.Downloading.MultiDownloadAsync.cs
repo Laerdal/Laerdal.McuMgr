@@ -3,24 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Helpers;
+using Laerdal.McuMgr.FileDownloading.Contracts;
 using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileDownloading
 {
     public partial class FileDownloader
     {
-        public async Task<IDictionary<string, byte[]>> DownloadAsync(
+        public async Task<IDictionary<string, byte[]>> DownloadAsync( //@formatter:off
             IEnumerable<string> remoteFilePaths,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutPerDownloadInMs = -1,
-            int maxTriesPerDownload = 10,
-            int sleepTimeBetweenRetriesInMs = 0,
-            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs,
+
+            int timeoutPerDownloadInMs          = IFileDownloaderCommandable.Defaults.TimeoutPerDownloadInMs,
+            int maxTriesPerDownload             = IFileDownloaderCommandable.Defaults.MaxTriesPerDownload,
+            int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
+            int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
+
             int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
-        )
+        ) //@formatter:on
         {
             EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
 
