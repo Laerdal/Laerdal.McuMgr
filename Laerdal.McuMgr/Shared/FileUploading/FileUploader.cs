@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.AsyncX;
 using Laerdal.McuMgr.Common.Contracts;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
@@ -31,9 +31,7 @@ namespace Laerdal.McuMgr.FileUploading
 
         public string LastFatalErrorMessage => NativeFileUploaderProxy?.LastFatalErrorMessage;
         
-        // we cant use a ManualResetEventSlim here because it doesnt support async-await and we want to avoid blocking threads while
-        // waiting   we could AsyncManualResetEventSlim from Nito.AsyncEx() but we want to avoid adding more dependencies if possible
-        protected readonly SemaphoreSlim WaitToBecomeActiveAgainSemaphore = new(initialCount: 1, maxCount: 1); //related to pausing/unpausing
+        protected readonly AsyncManualResetEvent KeepGoing = new(set: true); //related to pausing/unpausing   keepgoing=true by default
 
         //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFileUploaderProxy
         internal FileUploader(INativeFileUploaderProxy nativeFileUploaderProxy)
@@ -58,11 +56,7 @@ namespace Laerdal.McuMgr.FileUploading
             if (!isDisposing)
                 return;
 
-            lock (_lockForPauseAndResumeMethods)
-            {
-                WaitToBecomeActiveAgainSemaphore.TryReleaseAll();
-                WaitToBecomeActiveAgainSemaphore.Dispose();
-            }
+            KeepGoing.Set(); // unblock any pause to let it observe the disposal
             
             try
             {
@@ -147,8 +141,6 @@ namespace Laerdal.McuMgr.FileUploading
             return verdict;
         }
 
-        private readonly object _lockForPauseAndResumeMethods = new();
-
         public bool TryPause()
         {
             if (IsDisposed || IsCancellationRequested || !IsOperationOngoing)
@@ -156,15 +148,8 @@ namespace Laerdal.McuMgr.FileUploading
 
             OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Trace, message: "[FU.TPS.010] Received request to pause the ongoing upload operation", category: "FileUploader", resource: ""));
 
-            lock (_lockForPauseAndResumeMethods) //not 100% foolproof but should be good enough
-            {
-                if (WaitToBecomeActiveAgainSemaphore.CurrentCount > 0)
-                {
-                    _ = WaitToBecomeActiveAgainSemaphore.WaitAsync(); // blocks any ongoing installation/verification    dont be tempted to use waitasync(0) here as it will induce a cornercase bug!    
-                }
-            }
-
-            _ = NativeFileUploaderProxy?.TryPause(); //ignore the return value
+            KeepGoing.Reset(); //order                     blocks any ongoing installation/verification
+            NativeFileUploaderProxy?.TryPause(); //order   ignore the return value
 
             return true; //must always return true
         }
@@ -176,15 +161,8 @@ namespace Laerdal.McuMgr.FileUploading
 
             OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Trace, message: "[FU.TRS.010] Received request to resume the upload operation (if any)", category: "FileUploader", resource: ""));
 
-            lock (_lockForPauseAndResumeMethods) //not 100% foolproof but should be good enough
-            {
-                if (WaitToBecomeActiveAgainSemaphore.CurrentCount > 0)
-                    return true; // already resumed
-
-                WaitToBecomeActiveAgainSemaphore.TryReleaseAll(); // unblocks any ongoing installation/verification
-            }
-
-            _ = NativeFileUploaderProxy?.TryResume(); //ignore the return value
+            KeepGoing.Set(); //order                         unblocks any ongoing installation/verification
+            NativeFileUploaderProxy?.TryResume(); //order    ignore the return value
 
             return true; //must always return true
         }
@@ -195,7 +173,7 @@ namespace Laerdal.McuMgr.FileUploading
 
             var success = NativeFileUploaderProxy?.TryCancel(reason) ?? false; //order
 
-            _ = WaitToBecomeActiveAgainSemaphore.TryReleaseAll(); //order   unblocks any ongoing installation/verification so that it can observe the cancellation
+            KeepGoing.Set(); //order   unblocks any ongoing installation/verification so that it can observe the cancellation
 
             return success;
         }
@@ -411,7 +389,7 @@ namespace Laerdal.McuMgr.FileUploading
                     }
                 }
 
-                return filesThatFailedToBeUploaded;
+                return filesThatFailedToBeUploaded ?? Enumerable.Empty<string>();
 
                 //00  we prefer to upload as many files as possible and report any failures collectively at the very end   we resorted to this
                 //    tactic because failures are fairly common when uploading 50 files or more over to mcumgr devices, and we wanted to ensure
@@ -522,7 +500,7 @@ namespace Laerdal.McuMgr.FileUploading
                 var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
                 try
                 {
-                    await CheckIfPausedAsync(); //order
+                    await CheckIfPausedAsync(resourceId: resourceId, remoteFilePath: remoteFilePath); //order
 
                     if (IsCancellationRequested) //order   keep inside the try-catch block
                         throw new UploadCancelledException(CancellationReason);
@@ -935,21 +913,28 @@ namespace Laerdal.McuMgr.FileUploading
             CancellationReason = "";
             IsCancellationRequested = false;
 
-            WaitToBecomeActiveAgainSemaphore.TryReleaseAll(); // unblocks any ongoing installation/verification    just in case
+            KeepGoing.Set(); // unblocks any ongoing installation/verification    just in case
         }
         
-        private async Task CheckIfPausedAsync()
+        protected virtual async Task CheckIfPausedAsync(string resourceId, string remoteFilePath)
         {
-            if (WaitToBecomeActiveAgainSemaphore.CurrentCount == 0)
+            var mustPauseHere = !KeepGoing.IsSet; //00
+            if (mustPauseHere)
             {
-                OnFileUploadPaused(new(resourceId: "", remoteFilePath: "")); //00
+                OnStateChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, EFileUploaderState.None, EFileUploaderState.Paused)); //  we kinda emulate the behavior 
+                OnFileUploadPaused(new(resourceId: resourceId, remoteFilePath: remoteFilePath)); //                                                  of the native layer
             }
         
-            await WaitToBecomeActiveAgainSemaphore.WaitAsync(); //10
-            _ = WaitToBecomeActiveAgainSemaphore.TryReleaseAll();
+            await KeepGoing.WaitAsync(); //10
+            
+            if (mustPauseHere)
+            {
+                OnStateChanged(new(resourceId: resourceId, remoteFilePath: remoteFilePath, EFileUploaderState.Paused, EFileUploaderState.None)); //  we kinda emulate the behavior of the native layer
+                OnFileUploadResumed(new(resourceId: resourceId, remoteFilePath: remoteFilePath)); //00                                               (we skip the 'resuming' state though)
+            }
         
             //00  if the semaphore count is zero it means we are about to get paused without any ongoing
-            //    transfers so we will emit the paused event here to keep things consistent
+            //    transfers so we will emit the paused/resumed events here to keep things consistent
             //
             //10  we just want to check if we are paused/cancelled   this will block if we are paused
             //    immediately release again   we dont want to postpone this any longer than necessary

@@ -180,21 +180,21 @@ public class AndroidFileDownloader
     {
         if (_currentState == EAndroidFileDownloaderState.PAUSED)
         {
-            logInBg("[AFD.TPS.010] Ignoring 'pause' request because we're already in 'paused' state anyway", EAndroidLoggingLevel.Info);
+            logInBg("[AFD.TPS.010] Ignoring 'pause' request at the native-lib level because we're already in 'paused' state anyway", EAndroidLoggingLevel.Info);
             return true; // already paused which is ok
         }
 
         if (_currentState != EAndroidFileDownloaderState.DOWNLOADING)
         {
-            logInBg("[AFD.TPS.020] Ignoring 'pause' request because we're already not 'downloading' to begin with", EAndroidLoggingLevel.Info);
+            logInBg("[AFD.TPS.020] Ignoring 'pause' request at the native-lib level because we're already not 'downloading' to begin with", EAndroidLoggingLevel.Info);
             return false;
         }
 
         final TransferController transferController = _downloadingController;
         if (transferController == null)
         {
-            logInBg("[AFD.TPS.030] Ignoring 'pause' request because the native-transfer-controller has been trashed", EAndroidLoggingLevel.Info);
-            return false; //controller has been trashed
+            logInBg("[AFD.TPS.030] Ignoring 'pause' request at the native-lib level because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
+            return false; //controller is uninitialized/trashed
         }
 
         try
@@ -221,21 +221,21 @@ public class AndroidFileDownloader
     {
         if (_currentState == EAndroidFileDownloaderState.DOWNLOADING || _currentState == EAndroidFileDownloaderState.RESUMING)
         {
-            logInBg("[AFD.TRS.010] Ignoring 'resume' request because we're already in the 'downloading/resuming' state anyway", EAndroidLoggingLevel.Info);
+            logInBg("[AFD.TRS.010] Ignoring 'resume' request at the native-lib level because we're already in the 'downloading/resuming' state anyway", EAndroidLoggingLevel.Info);
             return true; //already downloading which is ok
         }
 
         if (_currentState != EAndroidFileDownloaderState.PAUSED)
         {
-            logInBg("[AFD.TRS.020] Ignoring 'resume' request because we're not in a 'paused' state to begin with", EAndroidLoggingLevel.Info);
+            logInBg("[AFD.TRS.020] Ignoring 'resume' request at the native-lib level because we're not in a 'paused' state to begin with", EAndroidLoggingLevel.Info);
             return false;
         }
 
         final TransferController transferController = _downloadingController;
         if (transferController == null)
         {
-            logInBg("[AFD.TRS.030] Ignoring 'resume' request because the native-transfer-controller has been trashed", EAndroidLoggingLevel.Info);
-            return false; //controller has been trashed
+            logInBg("[AFD.TRS.030] Ignoring 'resume' request at the native-lib level because the native-transfer-controller is uninitialized/trashed", EAndroidLoggingLevel.Info);
+            return false; //controller is uninitialized/trashed
         }
 
         try
@@ -463,9 +463,9 @@ public class AndroidFileDownloader
     }
 
     //@formatter:off
-    private void setState(final EAndroidFileDownloaderState newState)                                     { setState(newState, 0, null);                        }
-    private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded) { setState(newState, totalBytesToBeDownloaded, null); }
-    private void setState(final EAndroidFileDownloaderState newState, final byte[] finalDataSnapshot)     { setState(newState, 0, finalDataSnapshot);           } //@formatter:on
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileDownloaderState newState)                                     { setState(newState, 0, null);  }
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded) { setState(newState, totalBytesToBeDownloaded, null); }
+    @SuppressWarnings("SameParameterValue") private void setState(final EAndroidFileDownloaderState newState, final byte[] finalDataSnapshot)     { setState(newState, 0, finalDataSnapshot);    } //@formatter:on
 
     private void setState(final EAndroidFileDownloaderState newState, final int totalBytesToBeDownloaded, final byte[] finalDataSnapshot)
     {

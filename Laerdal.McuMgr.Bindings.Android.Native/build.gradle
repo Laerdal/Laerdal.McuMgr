@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    id 'com.android.library' version '7.4.2' apply false
-    id 'com.android.application' version '7.4.2' apply false
+ plugins { //noinspection AndroidGradlePluginVersion
+    id 'com.android.library' version '7.4.2' apply false //noinspection AndroidGradlePluginVersion
+    id 'com.android.application' version '7.4.2' apply false //we can only go as far as AGP 7.4.2 for the time being
 }
 
 tasks.register('clean', Delete) {

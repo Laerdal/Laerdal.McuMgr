@@ -10,7 +10,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task SingleFileUploadAsync_ShouldPause_GivenPauseRequestMidflight()
+        public async Task SingleFileUploadAsync_ShouldPauseAndResumeSuccessfully_GivenPauseAndResumeRequestsDuringUpload()
         {
             // Arrange
             var resourceId = "foobar";
@@ -19,15 +19,19 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy9(resourceId, new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
-
-            fileUploader.FileUploadStarted += async (_, _) =>
+            
+            using var eventsMonitor = fileUploader.Monitor();
+            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!");
+            fileUploader.FileUploadResumed += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
+            fileUploader.FileUploadProgressPercentageAndDataThroughputChanged += async (_, ea_) =>
             {
+                if (ea_.ProgressPercentage <= 30)
+                    return; // we want to pause only after the upload has started
+                
                 fileUploader.TryPause();
                 await Task.Delay(100);
                 fileUploader.TryResume();
             };
-            
-            using var eventsMonitor = fileUploader.Monitor();
 
             // Act
             var work = new Func<Task>(() => fileUploader.UploadAsync(
