@@ -6,6 +6,9 @@ namespace Laerdal.McuMgr.FileUploading
     {
         protected void EnsureExclusiveOperationToken()
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(FileUploader));
+            
             lock (OperationCheckLock)
             {
                 if (IsOperationOngoing)

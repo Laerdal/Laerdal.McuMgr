@@ -105,11 +105,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
             }
 
-            protected override Task CheckIfPausedAsync(string resourceId, string remoteFilePath)
+            protected override Task CheckIfPausedOrCancelledAsync(string resourceId, string remoteFilePath)
             {
                 _onBeforeCheckIfPausedCallback(this);
                 
-                return base.CheckIfPausedAsync(resourceId: resourceId, remoteFilePath: remoteFilePath);
+                return base.CheckIfPausedOrCancelledAsync(resourceId: resourceId, remoteFilePath: remoteFilePath);
             }
         }
 

@@ -1,10 +1,12 @@
 // ReSharper disable UnusedType.Global
 // ReSharper disable RedundantExtendsListEntry
 
+using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileUploading.Contracts.Enums;
+using Laerdal.McuMgr.FileUploading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileUploading
 {
@@ -23,8 +25,14 @@ namespace Laerdal.McuMgr.FileUploading
             return true; //must always return true
         }
         
-        protected virtual async Task CheckIfPausedAsync(string resourceId, string remoteFilePath) //used to check the 'KeepGoing' guard
-        {
+        protected virtual async Task CheckIfPausedOrCancelledAsync(string resourceId, string remoteFilePath) //used to check the 'KeepGoing' guard
+        {            
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(FileUploader));
+
+            if (IsCancellationRequested)
+                throw new UploadCancelledException(CancellationReason);
+            
             var mustPauseHere = !KeepGoing.IsSet; //00
             if (mustPauseHere)
             {
@@ -33,6 +41,12 @@ namespace Laerdal.McuMgr.FileUploading
             }
         
             await KeepGoing.WaitAsync(); //10
+            
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(FileUploader));
+
+            if (IsCancellationRequested)
+                throw new UploadCancelledException(CancellationReason);
             
             if (mustPauseHere)
             {

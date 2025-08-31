@@ -130,10 +130,7 @@ namespace Laerdal.McuMgr.FileUploading
                 var taskCompletionSource = new TaskCompletionSourceRCA<bool>(state: false);
                 try
                 {
-                    await CheckIfPausedAsync(resourceId: resourceId, remoteFilePath: remoteFilePath); //order
-
-                    if (IsCancellationRequested) //order   keep inside the try-catch block
-                        throw new UploadCancelledException(CancellationReason);
+                    await CheckIfPausedOrCancelledAsync(resourceId: resourceId, remoteFilePath: remoteFilePath); //order
 
                     Cancelled += FileUploader_Cancelled_;
                     Cancelling += FileUploader_Cancelling_;
@@ -227,6 +224,7 @@ namespace Laerdal.McuMgr.FileUploading
                 catch (Exception ex) when (
                     ex is not ArgumentException //10 wops probably missing native lib symbols!
                     && ex is not TimeoutException
+                    && ex is not ObjectDisposedException
                     && !(ex is IUploadException) //this accounts for both cancellations and upload errors
                 )
                 {
