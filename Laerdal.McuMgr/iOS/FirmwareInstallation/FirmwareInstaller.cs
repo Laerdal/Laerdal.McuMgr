@@ -79,15 +79,15 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
-                CleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
 
                 _alreadyDisposed = true;
                 
                 base.Dispose(disposing: true);
             }
 
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {

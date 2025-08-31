@@ -93,7 +93,7 @@ namespace Laerdal.McuMgr.FirmwareErasure
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
                 
                 _alreadyDisposed = true;
 
@@ -107,7 +107,7 @@ namespace Laerdal.McuMgr.FirmwareErasure
                 }
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {

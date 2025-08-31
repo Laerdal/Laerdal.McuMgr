@@ -89,7 +89,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
                 
                 _alreadyDisposed = true;
 
@@ -103,7 +103,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
