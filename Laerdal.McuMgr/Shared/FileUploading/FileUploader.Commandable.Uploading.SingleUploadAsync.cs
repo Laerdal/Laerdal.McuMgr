@@ -10,6 +10,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Extensions;
 using Laerdal.McuMgr.Common.Helpers;
+using Laerdal.McuMgr.FileUploading.Contracts;
 using Laerdal.McuMgr.FileUploading.Contracts.Enums;
 using Laerdal.McuMgr.FileUploading.Contracts.Events;
 using Laerdal.McuMgr.FileUploading.Contracts.Exceptions;
@@ -20,31 +21,35 @@ namespace Laerdal.McuMgr.FileUploading
     {
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
 
-        public async Task UploadAsync<TData>(
+        public async Task UploadAsync<TData>( //@formatter:off
             TData data,
+
             string resourceId,
             string remoteFilePath,
+            
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutForUploadInMs = -1,
-            int maxTriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = 2_500,
-            bool autodisposeStream = false,
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
-            int? initialMtuSize = null,
-            int? windowCapacity = null,
+            
+            int timeoutForUploadInMs            = IFileUploaderCommandable.Defaults.TimeoutPerUploadInMs,
+            int maxTriesCount                   = IFileUploaderCommandable.Defaults.MaxTriesPerUpload,
+            int sleepTimeBetweenRetriesInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
+            int gracefulCancellationTimeoutInMs = IFileUploaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
+            bool autodisposeStream              = IFileUploaderCommandable.Defaults.AutodisposeStreams,
+            
+            int? pipelineDepth   = null,
+            int? byteAlignment   = null,
+            int? initialMtuSize  = null,
+            int? windowCapacity  = null,
             int? memoryAlignment = null
-        ) where TData : notnull
+        ) where TData : notnull //@formatter:on
         {
-            EnsureExclusiveOperation(); //keep this outside of the try-finally block!
+            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
 
             try
             {
                 ResetInternalStateTidbits();
 
-                await SingleUploadImplAsync(
+                await SingleUploadCoreAsync(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -55,9 +60,9 @@ namespace Laerdal.McuMgr.FileUploading
                     maxTriesCount: maxTriesCount,
                     timeoutForUploadInMs: timeoutForUploadInMs,
 
+                    autodisposeStream: autodisposeStream,
                     sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
                     gracefulCancellationTimeoutInMs: gracefulCancellationTimeoutInMs,
-                    autodisposeStream: autodisposeStream,
 
                     initialMtuSize: initialMtuSize, //    both ios and android
                     pipelineDepth: pipelineDepth, //      ios only
@@ -68,29 +73,32 @@ namespace Laerdal.McuMgr.FileUploading
             }
             finally
             {
-                ReleaseExclusiveOperation();
+                ReleaseExclusiveOperationToken();
             }
         }
-
-        private async Task SingleUploadImplAsync<TData>(
+        
+        protected async Task SingleUploadCoreAsync<TData>(
             TData data,
             string resourceId,
             string remoteFilePath,
+
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutForUploadInMs = -1,
-            int maxTriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = 2_500,
-            bool autodisposeStream = false,
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
-            int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+
+            int timeoutForUploadInMs, //            = Defaults.TimeoutPerUploadInMs
+            int maxTriesCount, //                   = Defaults.MaxTriesPerUpload
+            int sleepTimeBetweenRetriesInMs, //     = Defaults.SleepTimeBetweenRetriesInMs
+            int gracefulCancellationTimeoutInMs, // = Defaults.GracefulCancellationTimeoutInMs
+            bool autodisposeStream, //              = Defaults.AutodisposeStreams
+
+            int? pipelineDepth, //                  = null,
+            int? byteAlignment, //                  = null,
+            int? initialMtuSize, //                 = null,
+            int? windowCapacity, //                 = null,
+            int? memoryAlignment //                 = null
         ) where TData : notnull
         {
-            //EnsureExclusiveOperation_(); //dont   this should never be checked here
+            //EnsureExclusiveOperationToken_(); //dont   this should never be checked here
 
             if (data is null)
                 throw new ArgumentNullException(nameof(data));

@@ -4,7 +4,7 @@ namespace Laerdal.McuMgr.FileUploading
 {
     public partial class FileUploader
     {
-        protected void EnsureExclusiveOperation()
+        protected void EnsureExclusiveOperationToken()
         {
             lock (OperationCheckLock)
             {
@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.FileUploading
             }
         }
 
-        protected void ReleaseExclusiveOperation()
+        protected void ReleaseExclusiveOperationToken()
         {
             lock (OperationCheckLock)
             {

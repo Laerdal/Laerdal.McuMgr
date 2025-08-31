@@ -7,6 +7,23 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
 {
     public interface IFileUploaderCommandable
     {
+        static internal class Defaults //@formatter:off
+        {
+            public const int    MaxTriesPerUpload               = 10;
+            public const bool   AutodisposeStreams              = false;
+            public const int    TimeoutPerUploadInMs            = -1;
+            public const int    SleepTimeBetweenUploadsInMs     = 0;
+            public const int    SleepTimeBetweenRetriesInMs     = 100;
+            public const bool   MoveToNextUploadInCaseOfError   = true;
+            public const int    GracefulCancellationTimeoutInMs = 2_500;
+            
+            // PipelineDepth   = null; //these are meant to be left 'null' 
+            // ByteAlignment   = null; //so we cannot make these 'const' values
+            // InitialMtuSize  = null;
+            // WindowCapacity  = null;
+            // MemoryAlignment = null;
+        } //@formatter:on
+        
         /// <summary>Uploads the given data entries (typically representing the contents of files modeled either as streams or raw byte arrays).</summary>
         /// <remarks>
         /// To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
@@ -21,6 +38,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="sleepTimeBetweenUploadsInMs">The time to sleep, in milliseconds, between successful uploads. Defaults to zero.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep, in milliseconds, between each retry after a failed try. Defaults to 100ms.</param>
+        /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
@@ -42,22 +60,25 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
-        Task<IEnumerable<string>> UploadAsync<TData>(
+        Task<IEnumerable<string>> UploadAsync<TData>( //@formatter:off
             IDictionary<string, (string ResourceId, TData Data)> remoteFilePathsAndTheirData,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int sleepTimeBetweenUploadsInMs = 0,
-            int sleepTimeBetweenRetriesInMs = 100,
-            int timeoutPerUploadInMs = -1,
-            int maxTriesPerUpload = 10,
-            bool moveToNextUploadInCaseOfError = true,
-            bool autodisposeStreams = false,
-            int? initialMtuSize = null,
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
-            int? windowCapacity = null,
+            
+            int  sleepTimeBetweenUploadsInMs     = Defaults.SleepTimeBetweenUploadsInMs,
+            int  sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
+            int  gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
+            int  timeoutPerUploadInMs            = Defaults.TimeoutPerUploadInMs,
+            int  maxTriesPerUpload               = Defaults.MaxTriesPerUpload,
+            bool moveToNextUploadInCaseOfError   = Defaults.MoveToNextUploadInCaseOfError,
+            bool autodisposeStreams              = Defaults.AutodisposeStreams,
+            
+            int? initialMtuSize  = null,
+            int? pipelineDepth   = null,
+            int? byteAlignment   = null,
+            int? windowCapacity  = null,
             int? memoryAlignment = null
-        );
+        ); //@formatter:on
 
         /// <summary>Uploads the given data (typically representing the contents of a file either as a stream or a raw byte array).</summary>
         /// <remarks>
@@ -95,21 +116,26 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
-        Task UploadAsync<TData>(TData localData,
+        Task UploadAsync<TData>( //@formatter:off
+            TData localData,
             string resourceId,
             string remoteFilePath,
+            
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutForUploadInMs = -1,
-            int maxTriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = 2_500,
-            bool autodisposeStream = false,
-            int? initialMtuSize = null,
-            int? pipelineDepth = null,
-            int? byteAlignment = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null);
+            
+            int  timeoutForUploadInMs            = Defaults.TimeoutPerUploadInMs,
+            int  maxTriesCount                   = Defaults.MaxTriesPerUpload,
+            int  sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
+            int  gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
+            bool autodisposeStream               = Defaults.AutodisposeStreams,
+            
+            int? initialMtuSize  = null,
+            int? pipelineDepth   = null,
+            int? byteAlignment   = null,
+            int? windowCapacity  = null,
+            int? memoryAlignment = null
+        ); //@formatter:on
 
         /// <summary>
         /// Begins the file-uploading process. To really know when the upgrade process has been completed you have to register to the events emitted by the uploader.
@@ -146,9 +172,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int? pipelineDepth = null, //  ios
             int? byteAlignment = null, //  ios
             int? windowCapacity = null, // android
-            int? memoryAlignment = null
-
-            // android
+            int? memoryAlignment = null // android
         );
         
         /// <summary>

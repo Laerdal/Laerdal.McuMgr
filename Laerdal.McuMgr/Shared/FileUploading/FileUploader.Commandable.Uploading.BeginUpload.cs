@@ -21,7 +21,7 @@ namespace Laerdal.McuMgr.FileUploading
             int? memoryAlignment = null // android
         )
         {
-            EnsureExclusiveOperation(); //keep this outside of the try-finally block!
+            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
 
             try
             {
@@ -29,10 +29,13 @@ namespace Laerdal.McuMgr.FileUploading
 
                 return BeginUploadCore(
                     data: data,
+
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
                     hostDeviceModel: hostDeviceModel,
                     hostDeviceManufacturer: hostDeviceManufacturer,
+                    
                     initialMtuSize: initialMtuSize,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
@@ -42,7 +45,7 @@ namespace Laerdal.McuMgr.FileUploading
             }
             finally
             {
-                ReleaseExclusiveOperation();
+                ReleaseExclusiveOperationToken();
             }
         }
 
@@ -52,11 +55,11 @@ namespace Laerdal.McuMgr.FileUploading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int? initialMtuSize = null,
-            int? pipelineDepth = null, //  ios
-            int? byteAlignment = null, //  ios
-            int? windowCapacity = null, // android
-            int? memoryAlignment = null // android
+            int? initialMtuSize,
+            int? pipelineDepth, //  ios
+            int? byteAlignment, //  ios
+            int? windowCapacity, // android
+            int? memoryAlignment // android
         )
         {
             if (string.IsNullOrWhiteSpace(hostDeviceModel))
