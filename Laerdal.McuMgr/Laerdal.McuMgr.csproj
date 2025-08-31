@@ -170,6 +170,14 @@
         <Compile Update="**\FileUploader.Commandable.*.cs">
             <DependentUpon>FileUploader.Commandable.cs</DependentUpon>
         </Compile>
+
+        <!-- FILE DOWNLOADER -->        
+        <Compile Update="**\FileDownloader.*.cs">
+            <DependentUpon>FileDownloader.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FileDownloader.Commandable.*.cs">
+            <DependentUpon>FileDownloader.Commandable.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->
