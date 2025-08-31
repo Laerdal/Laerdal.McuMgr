@@ -22,7 +22,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
             try
             {
-                _nativeFileDownloaderProxy?.Dispose();
+                NativeFileDownloaderProxy?.Dispose();
             }
             catch
             {

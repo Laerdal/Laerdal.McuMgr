@@ -16,6 +16,35 @@ namespace Laerdal.McuMgr.FileDownloading
             int? windowCapacity = null //not applicable currently   but nordic considers these for future use
         )
         {
+            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+
+            try
+            {
+                ResetInternalStateTidbits();
+
+                return BeginDownloadCore(
+                    remoteFilePath: remoteFilePath,
+                    hostDeviceModel: hostDeviceModel,
+                    hostDeviceManufacturer: hostDeviceManufacturer,
+
+                    initialMtuSize: initialMtuSize,
+                    windowCapacity: windowCapacity
+                );
+            }
+            finally
+            {
+                ReleaseExclusiveOperationToken();
+            }
+        }
+        
+        protected EFileDownloaderVerdict BeginDownloadCore(
+            string remoteFilePath,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            int? initialMtuSize,
+            int? windowCapacity //not applicable currently   but nordic considers these for future use
+        )
+        {
             if (string.IsNullOrWhiteSpace(hostDeviceModel))
                 throw new ArgumentException("Host device model cannot be null or whitespace", nameof(hostDeviceModel));
 
@@ -44,7 +73,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 ));
             }
 
-            var verdict = _nativeFileDownloaderProxy.BeginDownload(
+            var verdict = NativeFileDownloaderProxy.BeginDownload(
                 remoteFilePath: remoteFilePath,
                 initialMtuSize: initialMtuSize
             );

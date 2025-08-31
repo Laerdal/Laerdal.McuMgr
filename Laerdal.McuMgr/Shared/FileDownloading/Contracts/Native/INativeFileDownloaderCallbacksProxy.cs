@@ -3,7 +3,7 @@ using Laerdal.McuMgr.FileDownloading.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
 {
-    internal interface INativeFileDownloaderCallbacksProxy
+    public interface INativeFileDownloaderCallbacksProxy
     {
         public IFileDownloaderEventEmittable FileDownloader { get; set; }
 

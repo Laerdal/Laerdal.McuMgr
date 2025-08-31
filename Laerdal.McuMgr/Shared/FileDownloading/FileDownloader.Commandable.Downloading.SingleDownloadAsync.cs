@@ -22,9 +22,48 @@ namespace Laerdal.McuMgr.FileDownloading
             int timeoutForDownloadInMs = -1,
             int maxTriesCount = 10,
             int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = 2_500,
+            int gracefulCancellationTimeoutInMs = DefaultGracefulCancellationTimeoutInMs,
             int? initialMtuSize = null,
             int? windowCapacity = null
+        )
+        {
+            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+
+            try
+            {
+                ResetInternalStateTidbits();
+
+                return await SingleDownloadCoreAsync(
+                    remoteFilePath: remoteFilePath,
+
+                    hostDeviceModel: hostDeviceModel,
+                    hostDeviceManufacturer: hostDeviceManufacturer,
+
+                    maxTriesCount: maxTriesCount,
+                    timeoutForDownloadInMs: timeoutForDownloadInMs,
+                    sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
+                    gracefulCancellationTimeoutInMs: gracefulCancellationTimeoutInMs,
+
+                    initialMtuSize: initialMtuSize,
+                    windowCapacity: windowCapacity
+                );
+            }
+            finally
+            {
+                ReleaseExclusiveOperationToken();
+            }
+        }
+        
+        protected async Task<byte[]> SingleDownloadCoreAsync(
+            string remoteFilePath,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            int timeoutForDownloadInMs,
+            int maxTriesCount,
+            int sleepTimeBetweenRetriesInMs,
+            int gracefulCancellationTimeoutInMs,
+            int? initialMtuSize,
+            int? windowCapacity
         )
         {
             if (maxTriesCount <= 0)
@@ -83,7 +122,7 @@ namespace Laerdal.McuMgr.FileDownloading
                         }
                     }
 
-                    var verdict = BeginDownload( //00 dont use task.run here for now
+                    var verdict = BeginDownloadCore( //00 dont use task.run here for now
                         remoteFilePath: remoteFilePath,
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,

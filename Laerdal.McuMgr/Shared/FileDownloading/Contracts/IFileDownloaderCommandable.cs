@@ -16,6 +16,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <param name="timeoutPerDownloadInMs">The amount of time to wait for each download to complete before skipping it.</param>
         /// <param name="maxTriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
+        /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -37,6 +38,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
             int timeoutPerDownloadInMs = -1,
             int maxTriesPerDownload = 10,
             int sleepTimeBetweenRetriesInMs = 0,
+            int gracefulCancellationTimeoutInMs = 2_500,
             int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
