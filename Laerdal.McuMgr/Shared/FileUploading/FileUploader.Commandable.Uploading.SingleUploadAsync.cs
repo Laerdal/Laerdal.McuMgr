@@ -349,34 +349,5 @@ namespace Laerdal.McuMgr.FileUploading
                 _ => throw new NotSupportedException($"Unsupported data type {dataObject_?.GetType().FullName ?? "N/A"} passed to UploadAsync()")
             };
         }
-
-        protected void EnsureExclusiveOperation()
-        {
-            lock (OperationCheckLock)
-            {
-                if (IsOperationOngoing)
-                    throw new InvalidOperationException("An upload operation is already running - cannot start another one");
-
-                IsOperationOngoing = true;
-            }
-        }
-
-        protected void ReleaseExclusiveOperation()
-        {
-            lock (OperationCheckLock)
-            {
-                IsOperationOngoing = false;
-            }
-        }
-
-        protected virtual void ResetInternalStateTidbits()
-        {
-            //IsOperationOngoing = false; //dont
-
-            CancellationReason = "";
-            IsCancellationRequested = false;
-
-            KeepGoing.Set(); // unblocks any ongoing installation/verification    just in case
-        }
     }
 }

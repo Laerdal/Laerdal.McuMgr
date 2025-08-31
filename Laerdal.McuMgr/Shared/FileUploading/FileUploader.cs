@@ -27,5 +27,15 @@ namespace Laerdal.McuMgr.FileUploading
             NativeFileUploaderProxy = nativeFileUploaderProxy ?? throw new ArgumentNullException(nameof(nativeFileUploaderProxy));
             NativeFileUploaderProxy.FileUploader = this; //vital
         }
+
+        protected virtual void ResetInternalStateTidbits()
+        {
+            //IsOperationOngoing = false; //dont
+
+            CancellationReason = "";
+            IsCancellationRequested = false;
+
+            KeepGoing.Set(); // unblocks any ongoing installation/verification    just in case
+        }
     }
 }
