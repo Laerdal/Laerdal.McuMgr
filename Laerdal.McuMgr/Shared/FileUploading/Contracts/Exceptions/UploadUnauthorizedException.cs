@@ -1,5 +1,4 @@
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.Common.Exceptions;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
 {

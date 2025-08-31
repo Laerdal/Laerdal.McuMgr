@@ -93,8 +93,8 @@ namespace Laerdal.McuMgr.FileUploading
                 if (!disposing)
                     return;
 
-                CleanupInfrastructure();
-                CleanupResourcesOfLastUpload();
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastUpload();
 
                 _alreadyDisposed = true;
 
@@ -108,7 +108,7 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
 
-            private void CleanupInfrastructure() // @formatter:off
+            private void TryCleanupInfrastructure() // @formatter:off
             {
                 try { _nativeFileUploader?.NativeDispose(); } catch { /*ignored*/ } //order
                 try { _nativeFileUploader?.Dispose();       } catch { /*ignored*/ } //order
@@ -116,7 +116,7 @@ namespace Laerdal.McuMgr.FileUploading
                 //_nativeFileUploader = null;       @formatter:on
             }
 
-            public void CleanupResourcesOfLastUpload() //00
+            public void TryCleanupResourcesOfLastUpload() //00
             {
                 try
                 {

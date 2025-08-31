@@ -78,7 +78,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (!disposing)
                     return;
 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
 
                 _alreadyDisposed = true;
 
@@ -92,7 +92,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
             }
 
-            private void CleanupInfrastructure() // @formatter:off
+            private void TryCleanupInfrastructure() // @formatter:off
             {
                 try { _nativeFileDownloader?.NativeDispose(); } catch { /*ignored*/ } //order
                 try { _nativeFileDownloader?.Dispose();       } catch { /*ignored*/ } //order

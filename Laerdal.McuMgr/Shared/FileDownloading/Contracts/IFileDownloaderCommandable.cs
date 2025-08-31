@@ -7,6 +7,23 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
 {
     public interface IFileDownloaderCommandable
     {
+        static internal class Defaults //@formatter:off
+        {
+            public const int    MaxTriesPerDownload             = 10;
+            public const int    TimeoutPerDownloadInMs          = -1;
+            public const int    SleepTimeBetweenRetriesInMs     = 100;
+            public const int    GracefulCancellationTimeoutInMs = 2_500;
+            
+            //public const int    SleepTimeBetweenDownloadsInMs   = 0; //todo      add support for this too
+            //public const bool   MoveToNextDownloadInCaseOfError = true; //todo   add support for this too
+            
+            // PipelineDepth   = null; //these are meant to be left 'null' 
+            // ByteAlignment   = null; //so we cannot make these 'const' values
+            // InitialMtuSize  = null;
+            // WindowCapacity  = null;
+            // MemoryAlignment = null;
+        } //@formatter:on
+        
         /// <summary>
         /// Begins the file-downloading process on multiple files. Files that cannot be downloaded due to errors will have a null entry in the returned dictionary. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
         /// </summary>
@@ -16,6 +33,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <param name="timeoutPerDownloadInMs">The amount of time to wait for each download to complete before skipping it.</param>
         /// <param name="maxTriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
+        /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -30,17 +48,21 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
-        Task<IDictionary<string, byte[]>> DownloadAsync(
+        Task<IDictionary<string, byte[]>> DownloadAsync( //@formatter:off
             IEnumerable<string> remoteFilePaths,
+
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutPerDownloadInMs = -1,
-            int maxTriesPerDownload = 10,
-            int sleepTimeBetweenRetriesInMs = 0,
+
+            int timeoutPerDownloadInMs           = Defaults.TimeoutPerDownloadInMs,
+            int maxTriesPerDownload              = Defaults.MaxTriesPerDownload,
+            int sleepTimeBetweenRetriesInMs      = Defaults.SleepTimeBetweenRetriesInMs,
+            int gracefulCancellationTimeoutInMs  = Defaults.GracefulCancellationTimeoutInMs,
+
             int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
-        );
+        ); //@formatter:on
 
         /// <summary>
         /// Begins the file-downloading process. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.
@@ -65,17 +87,19 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <returns>The bytes of the remote file that got fetched over.</returns>
-        Task<byte[]> DownloadAsync(
+        Task<byte[]> DownloadAsync( //@formatter:off
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            int timeoutForDownloadInMs = -1,
-            int maxTriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 1_000,
-            int gracefulCancellationTimeoutInMs = 2_500,
+
+            int timeoutForDownloadInMs          = Defaults.TimeoutPerDownloadInMs,
+            int maxTriesCount                   = Defaults.MaxTriesPerDownload,
+            int sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
+            int gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
+            
             int? initialMtuSize = null,
             int? windowCapacity = null
-        );
+        ); //@formatter:on
 
         /// <summary>
         /// Begins the file-downloading process. To really know when the upgrade process has been completed you have to register to the events emitted by the downloader.

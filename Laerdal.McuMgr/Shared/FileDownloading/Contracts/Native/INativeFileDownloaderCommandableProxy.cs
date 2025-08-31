@@ -2,7 +2,7 @@
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
 {
-    internal interface INativeFileDownloaderCommandableProxy
+    public interface INativeFileDownloaderCommandableProxy
     {
         bool TryPause();
         bool TryResume();

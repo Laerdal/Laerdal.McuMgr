@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 
         public void Cancel() => _nativeFirmwareInstallerProxy?.Cancel();
         public void Disconnect() => _nativeFirmwareInstallerProxy?.Disconnect();
-        public void CleanupResourcesOfLastUpload() => _nativeFirmwareInstallerProxy?.CleanupResourcesOfLastInstallation();
+        public void TryCleanupResourcesOfLastInstallation() => _nativeFirmwareInstallerProxy?.TryCleanupResourcesOfLastInstallation();
 
         private event EventHandler<CancelledEventArgs> _cancelled;
         private event EventHandler<StateChangedEventArgs> _stateChanged;
@@ -364,7 +364,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     StateChanged -= FirmwareInstaller_StateChanged_;
                     FatalErrorOccurred -= FirmwareInstaller_FatalErrorOccurred_;
 
-                    CleanupResourcesOfLastUpload();
+                    TryCleanupResourcesOfLastInstallation();
                 }
 
                 return;

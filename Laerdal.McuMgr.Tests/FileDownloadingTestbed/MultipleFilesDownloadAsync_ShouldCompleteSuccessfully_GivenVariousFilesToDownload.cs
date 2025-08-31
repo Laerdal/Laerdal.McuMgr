@@ -75,6 +75,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
             results.Should().BeEquivalentTo(expectedResults);
 
+            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
+            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
+            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
+            
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileDownloader.FileDownloadStarted))
                 .Should()
@@ -89,10 +93,6 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 .Count(args => args.EventName == nameof(fileDownloader.FatalErrorOccurred))
                 .Should()
                 .Be(10);
-
-            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
-            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
 
             //00 we dont want to disconnect the device regardless of the outcome
         }

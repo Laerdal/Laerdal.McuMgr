@@ -96,7 +96,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
             }
 
-            public void CleanupResourcesOfLastUpload()
+            public void TryCleanupResourcesOfLastUpload()
             {
             }
         }

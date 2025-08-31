@@ -90,7 +90,8 @@ namespace Laerdal.McuMgr.FileUploading
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastUpload(); //just for the sake of completeness 
                 
                 _alreadyDisposed = true;
 
@@ -104,7 +105,7 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
 
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
@@ -117,7 +118,7 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
 
-            public void CleanupResourcesOfLastUpload()
+            public void TryCleanupResourcesOfLastUpload()
             {
                 //nothing to do in android
             }

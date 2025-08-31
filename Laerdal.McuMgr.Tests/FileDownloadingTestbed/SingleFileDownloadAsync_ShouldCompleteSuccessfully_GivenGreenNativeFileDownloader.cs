@@ -72,7 +72,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadStarted))
                 .WithSender(fileDownloader)
-                .WithArgs<FileDownloadStartedEventArgs>(args => args.ResourceId == expectedRemoteFilepath);
+                .WithArgs<FileDownloadStartedEventArgs>(args => args.RemoteFilePath == expectedRemoteFilepath);
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadCompleted))

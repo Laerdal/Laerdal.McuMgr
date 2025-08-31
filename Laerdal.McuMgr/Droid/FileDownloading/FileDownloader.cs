@@ -16,8 +16,7 @@ using Laerdal.McuMgr.FileDownloading.Contracts.Native;
 
 namespace Laerdal.McuMgr.FileDownloading
 {
-    /// <inheritdoc cref="IFileDownloader"/>
-    public partial class FileDownloader : IFileDownloader
+    public partial class FileDownloader
     {
         public FileDownloader(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             androidContext: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<Context>(obj: androidContext, parameterName: nameof(androidContext), allowNulls: true),
@@ -90,7 +89,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
                 
                 _alreadyDisposed = true;
 
@@ -104,7 +103,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {

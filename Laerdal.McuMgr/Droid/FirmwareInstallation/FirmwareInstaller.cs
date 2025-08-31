@@ -92,7 +92,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastInstallation();
                 
                 _alreadyDisposed = true;
 
@@ -106,7 +107,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 }
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
@@ -118,7 +119,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 }
             }
             
-            public void CleanupResourcesOfLastInstallation()
+            public void TryCleanupResourcesOfLastInstallation()
             {
                 //nothing to do here for android   only ios needs this
             }

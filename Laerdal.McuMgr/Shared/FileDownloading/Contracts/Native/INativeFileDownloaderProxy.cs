@@ -2,7 +2,7 @@
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts.Native
 {
-    internal interface INativeFileDownloaderProxy :
+    public interface INativeFileDownloaderProxy :
         IDisposable,
         INativeFileDownloaderCallbacksProxy,
         INativeFileDownloaderQueryableProxy,
