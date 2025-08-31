@@ -161,7 +161,7 @@ namespace Laerdal.McuMgr.FileUploading
                         }
                     }
 
-                    var verdict = BeginUpload( //00 dont use task.run here for now
+                    var verdict = BeginUploadCore( //00 dont use task.run here for now
                         data: dataArray,
                         resourceId: resourceId,
                         remoteFilePath: remoteFilePath,

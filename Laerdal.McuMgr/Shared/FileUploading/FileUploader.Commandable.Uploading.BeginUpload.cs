@@ -1,6 +1,3 @@
-// ReSharper disable UnusedType.Global
-// ReSharper disable RedundantExtendsListEntry
-
 using System;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
@@ -11,7 +8,45 @@ namespace Laerdal.McuMgr.FileUploading
 {
     public partial class FileUploader
     {
-        public EFileUploaderVerdict BeginUpload(
+        public EFileUploaderVerdict BeginUpload( //this is meant to be used by the users   but our .DownloadAsync() methods should *never* use this method
+            byte[] data,
+            string resourceId,
+            string remoteFilePath,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            int? initialMtuSize = null,
+            int? pipelineDepth = null, //  ios
+            int? byteAlignment = null, //  ios
+            int? windowCapacity = null, // android
+            int? memoryAlignment = null // android
+        )
+        {
+            EnsureExclusiveOperation(); //keep this outside of the try-finally block!
+
+            try
+            {
+                ResetInternalStateTidbits();
+
+                return BeginUploadCore(
+                    data: data,
+                    resourceId: resourceId,
+                    remoteFilePath: remoteFilePath,
+                    hostDeviceModel: hostDeviceModel,
+                    hostDeviceManufacturer: hostDeviceManufacturer,
+                    initialMtuSize: initialMtuSize,
+                    pipelineDepth: pipelineDepth,
+                    byteAlignment: byteAlignment,
+                    windowCapacity: windowCapacity,
+                    memoryAlignment: memoryAlignment
+                );
+            }
+            finally
+            {
+                ReleaseExclusiveOperation();
+            }
+        }
+
+        protected EFileUploaderVerdict BeginUploadCore( //this is meant to be used by the .DownloadAsync() methods of our api surface
             byte[] data,
             string resourceId,
             string remoteFilePath,
