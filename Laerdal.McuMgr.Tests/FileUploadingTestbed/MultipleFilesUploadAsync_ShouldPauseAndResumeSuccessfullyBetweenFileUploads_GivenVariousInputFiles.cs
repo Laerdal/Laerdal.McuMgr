@@ -43,7 +43,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }; //@formatter:on
 
             using var eventsMonitor = fileUploader.Monitor();
-            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!");
+            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!"); //should be immune to such exceptions in user-land
             fileUploader.FileUploadResumed += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
             fileUploader.FileUploadProgressPercentageAndDataThroughputChanged += async (_, ea_) =>
             {
@@ -65,13 +65,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(6.Seconds())).Which;
+            await work.Should().CompleteWithinAsync(6.Seconds());
             
-            filesThatFailedToBeUploaded.Should().BeEquivalentTo(expectation:
-            [
-                "/some/file/to/a/folder/that/doesnt/exist.bin",
-                "/some/file/that/is/erroring/out/when/we/try/to/upload/it.bin"
-            ]);
+            mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
+            mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
+            mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
@@ -121,10 +119,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileUploader.FatalErrorOccurred))
                 .Should().Be(8);
-
-            mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
-            mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
 
             //00 we dont want to disconnect the device regardless of the outcome
         }

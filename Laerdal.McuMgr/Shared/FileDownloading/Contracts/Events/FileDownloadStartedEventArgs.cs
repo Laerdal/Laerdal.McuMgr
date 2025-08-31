@@ -5,11 +5,11 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Events
     public readonly struct FileDownloadStartedEventArgs : IMcuMgrEventArgs //hotpathish
     {
         public readonly long TotalBytesToBeDownloaded;
-        public readonly string ResourceId; //remote file path essentially
+        public readonly string RemoteFilePath;
 
-        public FileDownloadStartedEventArgs(string resourceId, long totalBytesToBeDownloaded)
+        public FileDownloadStartedEventArgs(string remoteFilePath, long totalBytesToBeDownloaded)
         {
-            ResourceId = resourceId;
+            RemoteFilePath = remoteFilePath;
             TotalBytesToBeDownloaded = totalBytesToBeDownloaded;
         }
     }

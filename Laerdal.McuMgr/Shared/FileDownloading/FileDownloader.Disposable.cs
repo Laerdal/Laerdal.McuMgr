@@ -4,7 +4,7 @@ namespace Laerdal.McuMgr.FileDownloading
 {
     public partial class FileDownloader
     {
-        private bool _disposed;
+        protected bool IsDisposed;
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -14,7 +14,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
         protected virtual void Dispose(bool isDisposing)
         {
-            if (_disposed)
+            if (IsDisposed)
                 return;
 
             if (!isDisposing)
@@ -29,7 +29,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 //ignored
             }
 
-            _disposed = true;
+            IsDisposed = true;
         }
     }
 }

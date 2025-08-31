@@ -92,6 +92,8 @@ namespace Laerdal.McuMgr.FileDownloading
 
                 try
                 {
+                    await CheckIfPausedOrCancelledAsync(remoteFilePath: remoteFilePath); //order
+                    
                     Cancelled += FileDownloader_Cancelled_;
                     Cancelling += FileDownloader_Cancelling_;
                     StateChanged += FileDownloader_StateChanged_;
@@ -180,6 +182,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 catch (Exception ex) when (
                     ex is not ArgumentException //10 wops probably missing native lib symbols!
                     && ex is not TimeoutException
+                    && ex is not ObjectDisposedException
                     && !(ex is IDownloadException) //this accounts for both cancellations and download exceptions!
                 )
                 {

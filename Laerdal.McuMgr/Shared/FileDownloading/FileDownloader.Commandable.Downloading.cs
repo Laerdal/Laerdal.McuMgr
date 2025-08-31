@@ -6,6 +6,9 @@ namespace Laerdal.McuMgr.FileDownloading
     {
         protected void EnsureExclusiveOperationToken()
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(FileDownloader));
+            
             lock (OperationCheckLock)
             {
                 if (IsOperationOngoing)

@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             });
             
             using var eventsMonitor = fileUploader.Monitor();
-            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!");
+            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!"); //should be immune to such exceptions in user-land
             fileUploader.FileUploadResumed += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
 
             // Act

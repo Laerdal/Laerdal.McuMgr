@@ -1,9 +1,9 @@
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.FileDownloading;
 using Laerdal.McuMgr.FileDownloading.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloading.Contracts.Events;
 using Laerdal.McuMgr.FileDownloading.Contracts.Native;
 using GenericNativeFileDownloaderCallbacksProxy_ = Laerdal.McuMgr.FileDownloading.FileDownloader.GenericNativeFileDownloaderCallbacksProxy;
 
@@ -14,7 +14,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
     public partial class FileDownloaderTestbed
     {
         [Fact]
-        public async Task MultipleFilesDownloadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToDownload()
+        public async Task MultipleFilesDownloadAsync_ShouldPauseAndResumeSuccessfullyBetweenFileDownloads_GivenVariousInputFiles()
         {
             // Arrange
             var expectedResults = new Dictionary<string, byte[]>
@@ -27,9 +27,18 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 { "/some/file/path/pointing/to/a/Directory", null },
                 { "/some/file/path/pointing/to/a/directory", null },
             };
-            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy6(new GenericNativeFileDownloaderCallbacksProxy_(), expectedResults);
-            
-            var fileDownloader = new FileDownloader(mockedNativeFileDownloaderProxy);
+            var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy60(new GenericNativeFileDownloaderCallbacksProxy_(), expectedResults);
+
+            var fileDownloader = new FileDownloaderSpy60(mockedNativeFileDownloaderProxy, onBeforeCheckIfPausedCallback: self => //called right before each call to the native .beginDownload()
+            {
+                self.TryPause();
+
+                Task.Run(async () =>
+                {
+                    await Task.Delay(50);
+                    self.TryResume();
+                });
+            });
 
             var remoteFilePathsToTest = new[]
             {
@@ -52,14 +61,17 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
             using var eventsMonitor = fileDownloader.Monitor();
 
-            fileDownloader.Cancelled += (_, _) => throw new Exception($"{nameof(fileDownloader.Cancelled)} -> oops!"); //order   these must be wired up after the events-monitor
-            fileDownloader.LogEmitted += (object _, in LogEmittedEventArgs _) => throw new Exception($"{nameof(fileDownloader.LogEmitted)} -> oops!"); //library should be immune to any and all user-land exceptions 
-            fileDownloader.StateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.StateChanged)} -> oops!");
-            fileDownloader.BusyStateChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.BusyStateChanged)} -> oops!");
-            fileDownloader.FatalErrorOccurred += (_, _) => throw new Exception($"{nameof(fileDownloader.FatalErrorOccurred)} -> oops!");
-            fileDownloader.FileDownloadStarted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadStarted)} -> oops!");
-            fileDownloader.FileDownloadCompleted += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadCompleted)} -> oops!");
-            fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged)} -> oops!");
+            // fileDownloader.FileDownloadPaused += (_, _) => throw new Exception($"{nameof(fileDownloader.FileDownloadStarted)} -> oops!"); //should be immune to such exceptions in user-land
+            // fileDownloader.FileDownloadResumed += (_, _) => throw new Exception($"{nameof(fileDownloader.FatalErrorOccurred)} -> oops!");
+            fileDownloader.FileDownloadProgressPercentageAndDataThroughputChanged += async (_, ea_) =>
+            {
+                if (ea_.ProgressPercentage <= 30)
+                    return; // we want to pause only after the download has started
+                
+                fileDownloader.TryPause();
+                await Task.Delay(100);
+                fileDownloader.TryResume();
+            };
 
             // Act
             var work = new Func<Task<IDictionary<string, byte[]>>>(async () => await fileDownloader.DownloadAsync(
@@ -71,37 +83,74 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             ));
 
             // Assert
-            var results = (await work.Should().CompleteWithinAsync(20.Seconds())).Which;
+            await work.Should().CompleteWithinAsync(20.Seconds());
+            
+            eventsMonitor
+                .Should().Raise(nameof(fileDownloader.StateChanged))
+                .WithSender(fileDownloader)
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == "/some/file/that/exists.bin" && args.NewState == EFileDownloaderState.Downloading);
 
-            results.Should().BeEquivalentTo(expectedResults);
+            eventsMonitor // checking for pause
+                .Should().Raise(nameof(fileDownloader.StateChanged))
+                .WithSender(fileDownloader)
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == "/some/file/that/exists.bin"
+                                                         && args.OldState == EFileDownloaderState.None
+                                                         && args.NewState == EFileDownloaderState.Paused);
+            
+            eventsMonitor
+                .Should()
+                .Raise(nameof(fileDownloader.FileDownloadPaused))
+                .WithSender(fileDownloader)
+                .WithArgs<FileDownloadPausedEventArgs>(args => args.RemoteFilePath == "/some/file/that/exists.bin");
 
-            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
-            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
+            eventsMonitor //checking for resume
+                .Should().Raise(nameof(fileDownloader.StateChanged))
+                .WithSender(fileDownloader)
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == "/some/file/that/exists.bin"
+                                                         && args.OldState == EFileDownloaderState.Paused
+                                                         && args.NewState == EFileDownloaderState.None); // in this case we skip the 'resuming' state completely
             
             eventsMonitor.OccurredEvents
-                .Count(args => args.EventName == nameof(fileDownloader.FileDownloadStarted))
+                .Count(args => args.EventName == nameof(fileDownloader.FileDownloadPaused))
                 .Should()
-                .Be(13); //7 files to download with multiple attempts for some of them
+                .Be(13);
             
             eventsMonitor.OccurredEvents
-                .Count(args => args.EventName == nameof(fileDownloader.FileDownloadCompleted))
+                .Where(args => args.EventName == nameof(fileDownloader.FileDownloadStarted))
+                .Select(x => x.Parameters.OfType<FileDownloadStartedEventArgs>().FirstOrDefault().RemoteFilePath)
+                .Count()
                 .Should()
-                .Be(expectedResults.Count(x => x.Value != null));
-            
+                .Be(13);
+
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileDownloader.FatalErrorOccurred))
-                .Should()
-                .Be(10);
+                .Should().Be(10);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
+        
+        private class FileDownloaderSpy60 : FileDownloader
+        {
+            private readonly Action<FileDownloader> _onBeforeCheckIfPausedCallback;
 
-        private class MockedGreenNativeFileDownloaderProxySpy6 : MockedNativeFileDownloaderProxySpy
+            internal FileDownloaderSpy60(INativeFileDownloaderProxy nativeFileDownloaderProxy, Action<FileDownloader> onBeforeCheckIfPausedCallback) : base(nativeFileDownloaderProxy)
+            {
+                _onBeforeCheckIfPausedCallback = onBeforeCheckIfPausedCallback;
+            }
+
+            protected override Task CheckIfPausedOrCancelledAsync(string remoteFilePath)
+            {
+                _onBeforeCheckIfPausedCallback(this);
+                
+                return base.CheckIfPausedOrCancelledAsync(remoteFilePath: remoteFilePath);
+            }
+        }
+
+        private class MockedGreenNativeFileDownloaderProxySpy60 : MockedNativeFileDownloaderProxySpy
         {
             private readonly IDictionary<string, byte[]> _expectedResults;
             
-            public MockedGreenNativeFileDownloaderProxySpy6(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, IDictionary<string, byte[]> expectedResults) : base(downloaderCallbacksProxy)
+            public MockedGreenNativeFileDownloaderProxySpy60(INativeFileDownloaderCallbacksProxy downloaderCallbacksProxy, IDictionary<string, byte[]> expectedResults) : base(downloaderCallbacksProxy)
             {
                 _expectedResults = expectedResults;
             }
