@@ -12,7 +12,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             lock (OperationCheckLock)
             {
                 if (IsOperationOngoing)
-                    throw new InvalidOperationException("An firmware-installation operation is already running - cannot start another one");
+                    throw new InvalidOperationException("A firmware-installation operation is already running - cannot start another one");
 
                 IsOperationOngoing = true;
             }

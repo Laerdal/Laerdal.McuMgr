@@ -73,8 +73,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                         );    
                     }
                 });
-
-                manualResetEvent.Set(); //now start the core-logic of the two tasks at the exactly the same time
+                
+                await Task.Yield(); //order      just to be 100% sure that the tasks above will be launched before we set the event
+                manualResetEvent.Set(); //order  now start the core-logic of the two tasks at the exactly the same time
 
                 await Task.WhenAll(racingTask1, racingTask2); // let them race   one of the two should throw InvalidOperationException
                 
@@ -94,12 +95,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 .GuardCallsCounter
                 .Should().Be(2);
             
-            firmwareInstaller //we need to be 100% sure that the token was released only once (by the task that started the installation process)
-                .ReleaseCallsCounter
-                .Should().Be(1);
-            
             firmwareInstaller //we need to be 100% sure that the guard check is the one that threw the exception!
                 .InvalidOperationExceptionThrownByGuardCheckCounter
+                .Should().Be(1);
+            
+            firmwareInstaller //we need to be 100% sure that the token was released only once (by the task that started the installation process)
+                .ReleaseCallsCounter
                 .Should().Be(1);
             
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
@@ -132,7 +133,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 
                 try
                 {
-                    base.EnsureExclusiveOperationToken();    
+                    base.EnsureExclusiveOperationToken();
                 }
                 catch (InvalidOperationException)
                 {
