@@ -26,11 +26,13 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             // Act
             var work = new Func<Task>(async () =>
             {
-                var manualResetEvent = new ManualResetEventSlim(initialState: false);
-                
+                var taskParkingGuard = new ManualResetEventSlim(initialState: false);
+             
+                var task1ReadyGuard = new ManualResetEventSlim(initialState: false);
                 var racingTask1 = Task.Run(async () =>
                 {
-                    manualResetEvent.Wait(); //parking both tasks at the start
+                    task1ReadyGuard.Set(); //signal that task1 is parked and ready
+                    taskParkingGuard.Wait(); //parking both tasks at the start
                     
                     if (task1UsesAsyncNotBeginInstall)
                     {
@@ -50,10 +52,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                         );    
                     }
                 });
-
+                
+                var task2ReadyGuard = new ManualResetEventSlim(initialState: false);
                 var racingTask2 = Task.Run(async () =>
                 {
-                    manualResetEvent.Wait(); //parking both tasks at the start
+                    task2ReadyGuard.Set(); //signal that task2 is parked and ready
+                    taskParkingGuard.Wait(); //parking both tasks at the start
                     
                     if (task2UsesAsyncNotBeginInstall)
                     {
@@ -75,7 +79,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 });
                 
                 await Task.Yield(); //order      just to be 100% sure that the tasks above will be launched before we set the event
-                manualResetEvent.Set(); //order  now start the core-logic of the two tasks at the exactly the same time
+                
+                task1ReadyGuard.Wait(); //order  wait until both tasks
+                task2ReadyGuard.Wait(); //order  are parked and ready
+                
+                taskParkingGuard.Set(); //order  and finally start the core-logic of the two tasks at exactly the same time
 
                 await Task.WhenAll(racingTask1, racingTask2); // let them race   one of the two should throw InvalidOperationException
                 
