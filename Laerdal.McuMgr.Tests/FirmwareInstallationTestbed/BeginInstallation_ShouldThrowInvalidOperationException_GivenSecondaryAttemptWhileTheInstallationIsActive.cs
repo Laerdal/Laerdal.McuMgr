@@ -13,79 +13,115 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
     public partial class FirmwareInstallerTestbed
     {
         [Fact]
-        public async Task InstallAsync_ShouldCompleteSuccessfully_GivenGreenNativeFirmwareInstaller()
+        public async Task BeginInstallation_ShouldThrowInvalidOperationException_GivenSecondaryAttemptWhileTheInstallationIsActive()
         {
             // Arrange
-            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy(new GenericNativeFirmwareInstallerCallbacksProxy_());
-            var firmwareInstaller = new FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
+            var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy100(new GenericNativeFirmwareInstallerCallbacksProxy_());
+            var firmwareInstaller = new FirmwareInstallerSpy100(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Func<Task>(() => firmwareInstaller.InstallAsync(
-                data: [1, 2, 3],
-                maxTriesCount: 1,
-                hostDeviceModel: "foobar",
-                hostDeviceManufacturer: "acme corp."
-            ));
+            var work = new Func<Task>(async () =>
+            {
+                var manualResetEvent = new ManualResetEventSlim(initialState: false);
+                
+                var racingTask = Task.Run(async () =>
+                {
+                    await Task.CompletedTask;
+                
+                    manualResetEvent.Wait(); //parking it until the first installation starts validating+uploading
+
+                    firmwareInstaller.BeginInstallation(
+                        data: [4, 5, 6],
+                        hostDeviceModel: "foobar",
+                        hostDeviceManufacturer: "acme corp."
+                    );
+                });
+                
+                await Task.Yield();
+                
+                firmwareInstaller.StateChanged += (_, ea_) =>
+                {
+                    if (ea_.NewState == EFirmwareInstallationState.Validating)
+                    {
+                        manualResetEvent.Set(); // tell the 'racingTask' to start exactly now
+                        Thread.Sleep(100); //      stall the first installation a bit for good measure
+                    }
+                };
+                
+                firmwareInstaller.BeginInstallation(
+                    data: [1, 2, 3],
+                    hostDeviceModel: "foobar",
+                    hostDeviceManufacturer: "acme corp."
+                );
+                
+                await racingTask;
+            });
 
             // Assert
-            await work.Should().CompleteWithinAsync(4.Seconds());
+            (await work.Should().ThrowWithinAsync<InvalidOperationException>(1.Days())).WithMessage("*another installation is already in progress*");
 
+            firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
+                .GuardCallsCounter
+                .Should().Be(2);
+            
+            //firmwareInstaller.ReleaseCallsCounter.Should().Be(1); //irrelevant for this test
+            
+            firmwareInstaller  //it must be zero because this test is not aiming at the guard-check   it aims at 'IsCold()' in the native-layer!
+                .InvalidOperationExceptionThrownByGuardCheckCounter
+                .Should().Be(0);
+            
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
 
-            eventsMonitor.OccurredEvents.Length.Should().Be(26);
-
             eventsMonitor
+                .OccurredEvents
+                .Count(x => x.EventName == nameof(firmwareInstaller.StateChanged)
+                            && x.Parameters.OfType<StateChangedEventArgs>().Any(ea => ea.NewState == EFirmwareInstallationState.Idle))
                 .Should()
-                .NotRaise(nameof(firmwareInstaller.IdenticalFirmwareCachedOnTargetDeviceDetected));
-            
-            eventsMonitor
-                .Should().Raise(nameof(firmwareInstaller.StateChanged))
-                .WithSender(firmwareInstaller)
-                .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Uploading);
-            
-            eventsMonitor
-                .Should()
-                .Raise(nameof(firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged))
-                .WithSender(firmwareInstaller);
-
-            eventsMonitor
-                .Should().Raise(nameof(firmwareInstaller.StateChanged))
-                .WithSender(firmwareInstaller)
-                .WithArgs<StateChangedEventArgs>(args => args.NewState == EFirmwareInstallationState.Complete);
-
-            var overallProgressPercentages = eventsMonitor.OccurredEvents
-                .Where(args => args.EventName == nameof(firmwareInstaller.OverallProgressPercentageChanged))
-                .SelectMany(x => x.Parameters)
-                .OfType<OverallProgressPercentageChangedEventArgs>()
-                .Select(x => x.ProgressPercentage)
-                .ToArray();
-            
-            overallProgressPercentages.Min().Should().Be(0);
-            overallProgressPercentages.Max().Should().Be(100);
-            overallProgressPercentages.Length.Should().Be(12);
-            overallProgressPercentages.Should().BeInAscendingOrder();
-
-            overallProgressPercentages.Should().ContainInOrder( //@formatter:off
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.None       )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Idle       )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Validating )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading  )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Testing    )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Resetting  )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Confirming )!.Value,
-                FirmwareInstaller.GetProgressMilestonePercentageForState(EFirmwareInstallationState.Complete   )!.Value
-            ); //@formatter:on
+                .Be(1); // only one of the two tasks should have started the installation process
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
-
-        private class MockedGreenNativeFirmwareInstallerProxySpy : MockedNativeFirmwareInstallerProxySpy
+        
+        private class FirmwareInstallerSpy100 : FirmwareInstaller
         {
-            public MockedGreenNativeFirmwareInstallerProxySpy(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy)
+            public volatile int GuardCallsCounter = 0;
+            public volatile int ReleaseCallsCounter = 0;
+            public volatile int InvalidOperationExceptionThrownByGuardCheckCounter = 0;
+            
+            public FirmwareInstallerSpy100(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy) : base(nativeFirmwareInstallerProxy)
+            {
+            }
+
+            protected override void EnsureExclusiveOperationToken() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
+            {
+                Interlocked.Increment(ref GuardCallsCounter);
+                
+                try
+                {
+                    base.EnsureExclusiveOperationToken();    
+                }
+                catch (InvalidOperationException)
+                {
+                    Interlocked.Increment(ref InvalidOperationExceptionThrownByGuardCheckCounter);
+                    throw;
+                }
+            }
+
+            protected override void ReleaseExclusiveOperationToken()
+            {
+                Interlocked.Increment(ref ReleaseCallsCounter);
+                
+                base.ReleaseExclusiveOperationToken();
+            }
+        }
+
+        private class MockedGreenNativeFirmwareInstallerProxySpy100 : MockedNativeFirmwareInstallerProxySpy
+        {
+            public MockedGreenNativeFirmwareInstallerProxySpy100(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy)
                 : base(firmwareInstallerCallbacksProxy)
             {
             }
@@ -114,8 +150,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
 
-                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None);
-                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle);
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None); //must be outside the Task.Run()
+                Thread.Sleep(010);
+
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle); //must be outside the Task.Run()
+                Thread.Sleep(500); //this delay needs to be a bit hefty for the sake of the beginInstall() race!
                 
                 Task.Run(function: async () => //00 vital
                 {

@@ -106,7 +106,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 //     a best effort basis and this is exactly what we are testing here
             }
             
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -128,7 +128,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: _resourceId,
                     remoteFilePath: remoteFilePath,
@@ -142,6 +142,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     memoryAlignment: memoryAlignment //  android only
                 );
 
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
+                
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(100, _cancellationTokenSource.Token);
@@ -157,7 +160,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 }, _cancellationTokenSource.Token);
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

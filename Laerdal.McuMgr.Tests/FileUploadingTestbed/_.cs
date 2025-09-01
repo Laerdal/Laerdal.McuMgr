@@ -11,6 +11,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
         {
             private readonly INativeFileUploaderCallbacksProxy _uploaderCallbacksProxy;
 
+            public string CurrentResourceId  { get; private set; }
+            public string CurrentRemoteFilePath  { get; private set; }
+            public EFileUploaderState CurrentState { get; protected set; }
+
             public bool PauseCalled { get; private set; }
             public bool ResumeCalled { get; private set; }
             public bool CancelCalled { get; private set; }
@@ -31,7 +35,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 _uploaderCallbacksProxy = uploaderCallbacksProxy;
             }
 
-            public virtual EFileUploaderVerdict BeginUpload(
+            public virtual EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -42,13 +46,76 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android
             )
             {
-                BeginUploadCalled = true;
-
+                BeginUploadCalled = true; //order
+                CurrentResourceId = resourceId;
+                CurrentRemoteFilePath = remoteFilePath;
+                
+                if (!IsCold()) //order   emulating the native-layer
+                {
+                    StateChangedAdvertisement( //emulating the native-layer
+                        resourceId: resourceId,
+                        remoteFilePath: remoteFilePath,
+                        oldState: CurrentState,
+                        newState: EFileUploaderState.Error,
+                        totalBytesToBeUploaded: 0
+                    );
+                    return EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress;
+                }
+                
                 return EFileUploaderVerdict.Success;
             }
+            
+            private bool IsCold()
+            {
+                return CurrentState == EFileUploaderState.None //        this is what the native-layer does
+                       || CurrentState == EFileUploaderState.Error //    and we must keep this mock updated
+                       || CurrentState == EFileUploaderState.Complete // to reflect this fact
+                       || CurrentState == EFileUploaderState.Cancelled;
+            }
 
-            public virtual bool TryPause() => PauseCalled = true;
-            public virtual bool TryResume() => ResumeCalled = true;
+            protected readonly ManualResetEventSlim PauseGuard = new(initialState: true);
+            public virtual bool TryPause()
+            {
+                PauseCalled = true; //keep first
+                
+                if (CurrentState == EFileUploaderState.Paused) //order
+                    return true; //already paused
+                
+                if (CurrentState != EFileUploaderState.Uploading)
+                    return false; //can only pause when we are actually uploading something
+
+                PauseGuard.Reset(); //capture the lock
+
+                StateChangedAdvertisement(resourceId: CurrentResourceId, remoteFilePath: CurrentRemoteFilePath, oldState: CurrentState, newState: EFileUploaderState.Paused, totalBytesToBeUploaded: 0);
+                BusyStateChangedAdvertisement(busyNotIdle: false);
+
+                return true;
+            }
+
+            public virtual bool TryResume()
+            {
+                ResumeCalled = true; //order  keep first
+                
+                if (CurrentState == EFileUploaderState.Resuming) //order
+                    return true; //already resuming
+                
+                if (CurrentState != EFileUploaderState.Paused)
+                    return false; //not paused, cannot resume
+
+                StateChangedAdvertisement(oldState: EFileUploaderState.Paused, newState: EFileUploaderState.Resuming, resourceId: CurrentResourceId, remoteFilePath: CurrentRemoteFilePath, totalBytesToBeUploaded: 0);
+                BusyStateChangedAdvertisement(busyNotIdle: true);
+                
+                _ = Task.Run(async () => // under normal circumstances the native implementation will bubble-up the following callbacks
+                {
+                    await Task.Delay(5); // simulate the ble-layer lag involved in resuming the upload
+                    StateChangedAdvertisement(oldState: EFileUploaderState.Resuming, newState: EFileUploaderState.Uploading, resourceId: CurrentResourceId, remoteFilePath: CurrentRemoteFilePath, totalBytesToBeUploaded: 0);
+
+                    PauseGuard.Set(); //release the lock so that the upload can continue
+                });
+
+                return true;
+            }
+
             public virtual bool TryCancel(string reason = "")
             {
                 CancellationReason = reason;
@@ -67,13 +134,17 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 => _uploaderCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
             public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded)
-                => _uploaderCallbacksProxy.StateChangedAdvertisement( //raises the actual event
+            {
+                CurrentState = newState;
+                
+                _uploaderCallbacksProxy.StateChangedAdvertisement( //raises the actual event
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
                     newState: newState,
                     oldState: oldState,
                     totalBytesToBeUploaded: totalBytesToBeUploaded
                 );
+            }
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _uploaderCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event

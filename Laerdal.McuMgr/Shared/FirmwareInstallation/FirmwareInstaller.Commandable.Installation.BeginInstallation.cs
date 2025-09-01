@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 {
     public partial class FirmwareInstaller
     {
-        public EFirmwareInstallationVerdict BeginInstallation(
+        public void BeginInstallation(
             byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
@@ -21,6 +21,49 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             int? memoryAlignment = null, //  android only    not applicable for ios
             int? pipelineDepth = null, //    ios only        not applicable for android
             int? byteAlignment = null //     ios only        not applicable for android
+        )
+        {
+            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            
+            try
+            {
+                BeginInstallationCore(
+                    mode: mode,
+                    data: data,
+                    
+                    hostDeviceModel: hostDeviceModel,
+                    hostDeviceManufacturer: hostDeviceManufacturer,
+                    
+                    eraseSettings: eraseSettings,
+                    estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
+                    
+                    initialMtuSize: initialMtuSize,
+
+                    pipelineDepth: pipelineDepth, //ios
+                    byteAlignment: byteAlignment, //ios
+                    
+                    windowCapacity: windowCapacity, //android
+                    memoryAlignment: memoryAlignment //android
+                );
+            }
+            finally
+            {
+                ReleaseExclusiveOperationToken();
+            }
+        }
+        
+        protected void BeginInstallationCore(
+            byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            EFirmwareInstallationMode mode,
+            bool? eraseSettings,
+            int? estimatedSwapTimeInMilliseconds,
+            int? initialMtuSize,
+            int? windowCapacity, //   android only    not applicable for ios
+            int? memoryAlignment, //  android only    not applicable for ios
+            int? pipelineDepth, //    ios only        not applicable for android
+            int? byteAlignment //     ios only        not applicable for android
         )
         {
             if (data == null || !data.Any())
@@ -52,7 +95,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
                 windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
                 memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
-                
+
                 OnLogEmitted(new LogEmittedEventArgs(
                     level: ELogLevel.Warning,
                     message: $"[FI.BI.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
@@ -61,23 +104,28 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     category: "FileDownloader"
                 ));
             }
-            
+
             _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
-            var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
+
+            var verdict = _nativeFirmwareInstallerProxy.NativeBeginInstallation( //throws an exception if something is wrong
                 data: data,
 
                 mode: mode,
                 eraseSettings: eraseSettings,
-                initialMtuSize: initialMtuSize,
-                
-                pipelineDepth: pipelineDepth,
-                byteAlignment: byteAlignment,
-                windowCapacity: windowCapacity,
-                memoryAlignment: memoryAlignment,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
-            );
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
 
-            return verdict;
+                initialMtuSize: initialMtuSize, //    ios + android
+                
+                pipelineDepth: pipelineDepth, //      ios
+                memoryAlignment: memoryAlignment, //  ios
+                
+                byteAlignment: byteAlignment, //      android
+                windowCapacity: windowCapacity //     android
+            );
+            if (verdict != EFirmwareInstallationVerdict.Success)
+                throw verdict == EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress
+                    ? new InvalidOperationException("Another installation operation is already in progress")
+                    : new ArgumentException(verdict.ToString());
         }
     }
 }

@@ -77,7 +77,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 _numberOfFirmwareUploadingEventsToEmitCount = numberOfFirmwareUploadingEventsToEmitCount;
             }
 
-            public override EFirmwareInstallationVerdict BeginInstallation(
+            public override EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -89,7 +89,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 int? byteAlignment = null
             )
             {
-                var verdict = base.BeginInstallation(
+                base.NativeBeginInstallation(
                     data: data,
                     mode: mode,
                     eraseSettings: eraseSettings,
@@ -101,11 +101,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
 
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None);
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle);
+                
                 Task.Run(function: async () => //00 vital
                 {
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
-                    await Task.Delay(10);
-                    
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);
                     await Task.Delay(10);
                     
@@ -141,8 +141,8 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                             throw new ArgumentOutOfRangeException(nameof(_cachedFirmwareTypeToEmulate));
                     }
                 });
-
-                return verdict;
+                
+                return EFirmwareInstallationVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

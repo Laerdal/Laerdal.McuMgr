@@ -123,7 +123,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             public void Cancel() => _nativeFirmwareInstaller?.Cancel();
             public void Disconnect() => _nativeFirmwareInstaller?.Disconnect();
 
-            public EFirmwareInstallationVerdict BeginInstallation(
+            public EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,

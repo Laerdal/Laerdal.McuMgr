@@ -187,6 +187,7 @@ public class AndroidFirmwareInstaller
     @Contract(pure = true)
     private boolean IsCold()
     {
+        // dont add .IDLE in the mix as it will cause corner-case bugs when it comes to racing threads calling beginInstall()!
         return _currentState == EAndroidFirmwareInstallationState.NONE
                 || _currentState == EAndroidFirmwareInstallationState.ERROR
                 || _currentState == EAndroidFirmwareInstallationState.COMPLETE

@@ -126,7 +126,7 @@ namespace Laerdal.McuMgr.FileUploading
             #region commands
 
             // ReSharper disable UnusedParameter.Local
-            public EFileUploaderVerdict BeginUpload(
+            public EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -137,6 +137,7 @@ namespace Laerdal.McuMgr.FileUploading
                 int? memoryAlignment //  android
             ) // ReSharper enable UnusedParameter.Local
             {
+                // ReSharper disable once RedundantBaseQualifier
                 return TranslateFileUploaderVerdict(base.BeginUpload(
                     data: data,
                     resourceId: resourceId,

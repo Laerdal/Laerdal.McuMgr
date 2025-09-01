@@ -8,7 +8,7 @@ namespace Laerdal.McuMgr.FileUploading
 {
     public partial class FileUploader
     {
-        public EFileUploaderVerdict BeginUpload( //this is meant to be used by the users   but our .DownloadAsync() methods should *never* use this method
+        public void BeginUpload( //this is meant to be used by the users   but our .UploadAsync() methods should *never* use this method
             byte[] data,
             string resourceId,
             string remoteFilePath,
@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.FileUploading
             {
                 ResetInternalStateTidbits();
 
-                return BeginUploadCore(
+                BeginUploadCore(
                     data: data,
 
                     resourceId: resourceId,
@@ -49,7 +49,7 @@ namespace Laerdal.McuMgr.FileUploading
             }
         }
 
-        protected EFileUploaderVerdict BeginUploadCore( //this is meant to be used by the .DownloadAsync() methods of our api surface
+        protected void BeginUploadCore( //this is meant to be used by the .DownloadAsync() methods of our api surface
             byte[] data,
             string resourceId,
             string remoteFilePath,
@@ -101,7 +101,7 @@ namespace Laerdal.McuMgr.FileUploading
                 ));
             }
 
-            var verdict = NativeFileUploaderProxy.BeginUpload(
+            var verdict = NativeFileUploaderProxy.NativeBeginUpload(
                 data: data,
                 resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
@@ -112,8 +112,12 @@ namespace Laerdal.McuMgr.FileUploading
                 windowCapacity: windowCapacity,
                 memoryAlignment: memoryAlignment
             );
-
-            return verdict;
+            if (verdict != EFileUploaderVerdict.Success)
+                throw verdict == EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress //00
+                    ? new InvalidOperationException("Another upload operation is already in progress")
+                    : new ArgumentException(verdict.ToString());
+            
+            //00  we can get FailedOtherUploadAlreadyInProgress even here if there are two racing threads that have both called .BeginUpload() directly!
         }
     }
 }

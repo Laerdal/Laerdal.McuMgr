@@ -82,7 +82,6 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
         private class MockedGreenNativeFileDownloaderProxySpy3 : MockedNativeFileDownloaderProxySpy
         {
-            private string _currentRemoteFilePath;
             private readonly bool _isCancellationLeadingToSoftLanding;
 
             private readonly byte[] _mockedFileData;
@@ -100,13 +99,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
-                    StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling, 0, null); //  order
+                    StateChangedAdvertisement(CurrentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelling, 0, null); //  order
                     CancellingAdvertisement(reason); //                                                                                                             order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
-                        StateChangedAdvertisement(_currentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled, 0, null); //  order
+                        StateChangedAdvertisement(CurrentRemoteFilePath, oldState: EFileDownloaderState.Idle, newState: EFileDownloaderState.Cancelled, 0, null); //  order
                         CancelledAdvertisement(reason); //                                                                                                             order    
                     }
                 });
@@ -118,9 +117,8 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 //     a best effort basis and this is exactly what we are testing here
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
                 
                 (FileDownloader as IFileDownloaderEventSubscribable)!.Cancelled += (_, _) =>
@@ -128,10 +126,13 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     _cancellationTokenSource.Cancel();
                 };
 
-                var verdict = base.BeginDownload(
+                base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize
                 );
+                
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.None, totalBytesToBeDownloaded: 0, null);
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.Idle, totalBytesToBeDownloaded: 0, null);
 
                 Task.Run(async () => //00 vital
                 {
@@ -148,7 +149,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                     StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, 0, _mockedFileData);
                 }, _cancellationTokenSource.Token);
 
-                return verdict;
+                return EFileDownloaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native downloader
             }

@@ -72,7 +72,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             {
             }
 
-            public override EFirmwareInstallationVerdict BeginInstallation(
+            public override EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -84,7 +84,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 int? byteAlignment = null
             )
             {
-                var verdict = base.BeginInstallation(
+                base.NativeBeginInstallation(
                     data: data,
                     mode: mode,
                     eraseSettings: eraseSettings,
@@ -95,12 +95,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     memoryAlignment: memoryAlignment,
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
-
+                
+                StateChangedAdvertisement(EFirmwareInstallationState.None, EFirmwareInstallationState.None);
+                StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
+                
                 Task.Run(async () => //00 vital
                 {
-                    StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Idle);
-                    await Task.Delay(100);
-
                     StateChangedAdvertisement(EFirmwareInstallationState.Idle, EFirmwareInstallationState.Validating);
                     await Task.Delay(100);
                     
@@ -114,7 +114,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, "error while uploading firmware blah blah", EGlobalErrorCode.Generic); //  order
                 });
 
-                return verdict;
+                return EFirmwareInstallationVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

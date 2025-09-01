@@ -9,6 +9,9 @@ namespace Laerdal.McuMgr.FirmwareInstallation
     {
         private readonly INativeFirmwareInstallerProxy _nativeFirmwareInstallerProxy;
 
+        protected bool IsOperationOngoing;
+        protected readonly object OperationCheckLock = new();
+        
         public string LastFatalErrorMessage => _nativeFirmwareInstallerProxy?.LastFatalErrorMessage;
 
         //this constructor is also needed by the testsuite    tests absolutely need to control the INativeFirmwareInstallerProxy

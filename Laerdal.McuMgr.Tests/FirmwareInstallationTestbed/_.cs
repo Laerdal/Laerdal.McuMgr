@@ -12,6 +12,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             private readonly INativeFirmwareInstallerCallbacksProxy _firmwareInstallerCallbacksProxy;
 
             public string Nickname { get; set; }
+            public EFirmwareInstallationState CurrentState { get; private set; }
 
             public bool CancelCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
@@ -30,7 +31,15 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy;
             }
 
-            public virtual EFirmwareInstallationVerdict BeginInstallation(
+            private bool IsCold()
+            {
+                return CurrentState == EFirmwareInstallationState.None //        this is what the native-layer does
+                       || CurrentState == EFirmwareInstallationState.Error //    and we must keep this mock updated
+                       || CurrentState == EFirmwareInstallationState.Complete // to reflect this fact
+                       || CurrentState == EFirmwareInstallationState.Cancelled;
+            }
+
+            public virtual EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -42,7 +51,16 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 int? byteAlignment = null
             )
             {
-                BeginInstallationCalled = true;
+                BeginInstallationCalled = true; //order
+                
+                if (!IsCold()) //order   emulating the native-layer
+                {
+                    StateChangedAdvertisement( //emulating the native-layer
+                        oldState: CurrentState,
+                        newState: EFirmwareInstallationState.Error
+                    );
+                    throw new InvalidOperationException("Another installation is already in progress.");
+                }
 
                 return EFirmwareInstallationVerdict.Success;
             }
@@ -64,7 +82,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 => _firmwareInstallerCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
             public void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
-                => _firmwareInstallerCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+            {
+                CurrentState = newState;
+                
+                _firmwareInstallerCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+            }
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _firmwareInstallerCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event

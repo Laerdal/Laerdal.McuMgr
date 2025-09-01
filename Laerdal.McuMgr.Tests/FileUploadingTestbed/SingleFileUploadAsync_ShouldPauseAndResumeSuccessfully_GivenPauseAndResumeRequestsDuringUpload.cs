@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 return true;
             }
             
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -149,7 +149,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 _currentRemoteFilePath = remoteFilePath;
 
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: _resourceId,
                     remoteFilePath: remoteFilePath,
@@ -163,10 +163,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     memoryAlignment: memoryAlignment //  android only
                 );
 
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
+                
                 Task.Run(async () => //00 vital   @formatter:off
                 {
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle, totalBytesToBeUploaded: 0);
-
                     _manualResetEventSlim.Wait(); await Task.Delay(010); StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
                     _manualResetEventSlim.Wait(); await Task.Delay(015); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 00, 00, 00);
                     _manualResetEventSlim.Wait(); await Task.Delay(100); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 10, 10, 10);
@@ -183,7 +184,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 }); //@formatter:on
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

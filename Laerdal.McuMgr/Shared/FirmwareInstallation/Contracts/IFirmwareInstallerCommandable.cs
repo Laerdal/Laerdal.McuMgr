@@ -99,8 +99,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
         /// <returns>A verdict that you can use to tell whether the installation has indeed kicked-off or not.</returns>
-        EFirmwareInstallationVerdict BeginInstallation(
-            byte[] data,
+        void BeginInstallation(byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
@@ -110,8 +109,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
             int? windowCapacity = null,
             int? memoryAlignment = null,
             int? pipelineDepth = null,
-            int? byteAlignment = null
-        );
+            int? byteAlignment = null);
 
         /// <summary>
         /// Cancels the firmware upgrade process
