@@ -97,41 +97,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 _resourceId = resourceId;
             }
-
-            public override bool TryPause()
-            {
-                base.TryPause();
-
-                Task.Run(async () => // under normal circumstances the native implementation will bubble-up the following callbacks
-                {
-                    await Task.Delay(50);
-                    _manualResetEventSlim.Reset(); //capture the lock
-                    
-                    StateChangedAdvertisement(resourceId: _resourceId, remoteFilePath: _currentRemoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Paused, totalBytesToBeUploaded: 0);
-                    BusyStateChangedAdvertisement(busyNotIdle: false);
-                });
-
-                return true;
-            }
-
-            public override bool TryResume()
-            {
-                base.TryResume();
-
-                Task.Run(async () => // under normal circumstances the native implementation will bubble-up the following callbacks
-                {
-                    await Task.Delay(5);
-                    StateChangedAdvertisement(resourceId: _resourceId, remoteFilePath: _currentRemoteFilePath, oldState: EFileUploaderState.Paused, newState: EFileUploaderState.Resuming, totalBytesToBeUploaded: 0);
-                    BusyStateChangedAdvertisement(busyNotIdle: true);
-                    
-                    await Task.Delay(5);
-                    StateChangedAdvertisement(resourceId: _resourceId, remoteFilePath: _currentRemoteFilePath, oldState: EFileUploaderState.Resuming, newState: EFileUploaderState.Uploading, totalBytesToBeUploaded: 0);
-
-                    _manualResetEventSlim.Set(); //release the lock so that the upload can continue
-                });
-
-                return true;
-            }
             
             public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,

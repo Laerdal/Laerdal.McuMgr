@@ -123,9 +123,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 _resourceId = resourceId;
             }
 
-            // public override bool TryPause()  { ... } //nothing special needed by this test   the base impl is just fine
-            // public override bool TryResume() { ... } //nothing special needed by this test   the base impl is just fine
-            
             public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
