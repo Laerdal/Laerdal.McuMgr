@@ -166,7 +166,7 @@ namespace Laerdal.McuMgr.FileUploading
                         }
                     }
 
-                    var verdict = BeginUploadCore( //00 dont use task.run here for now
+                    BeginUploadCore( //00 dont use task.run here for now
                         data: dataArray,
                         resourceId: resourceId,
                         remoteFilePath: remoteFilePath,
@@ -180,10 +180,6 @@ namespace Laerdal.McuMgr.FileUploading
                         byteAlignment: byteAlignment, //      android only
                         memoryAlignment: memoryAlignment //   android only
                     );
-                    if (verdict != EFileUploaderVerdict.Success)
-                        throw verdict == EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress
-                            ? new InvalidOperationException("Another upload operation is already in progress") //impossible at this point but just in case
-                            : new ArgumentException(verdict.ToString());
 
                     await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutForUploadInMs); //order
                     break;
@@ -238,6 +234,10 @@ namespace Laerdal.McuMgr.FileUploading
                     // OnFatalErrorOccurred(); //better not   too much fuss
 
                     throw new UploadInternalErrorException(remoteFilePath, ex);
+                }
+                catch (Exception ex)
+                {
+                    throw;
                 }
                 finally
                 {

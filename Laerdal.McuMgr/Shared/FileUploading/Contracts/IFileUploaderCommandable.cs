@@ -162,7 +162,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
-        EFileUploaderVerdict BeginUpload(
+        void BeginUpload(
             byte[] data,
             string resourceId,
             string remoteFilePath,
@@ -172,7 +172,9 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int? pipelineDepth = null, //  ios
             int? byteAlignment = null, //  ios
             int? windowCapacity = null, // android
-            int? memoryAlignment = null // android
+            int? memoryAlignment = null
+
+            // android
         );
         
         /// <summary>

@@ -133,7 +133,7 @@ namespace Laerdal.McuMgr.FileUploading
 
             private NSData _nsDataOfFileInCurrentlyActiveUpload;
             
-            public EFileUploaderVerdict BeginUpload(
+            public EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,

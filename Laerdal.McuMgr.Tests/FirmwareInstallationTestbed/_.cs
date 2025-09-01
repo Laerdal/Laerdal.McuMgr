@@ -31,7 +31,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy;
             }
 
-            public bool IsCold()
+            private bool IsCold()
             {
                 return CurrentState == EFirmwareInstallationState.None //        this is what the native-layer does
                        || CurrentState == EFirmwareInstallationState.Error //    and we must keep this mock updated
@@ -51,10 +51,16 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 int? byteAlignment = null
             )
             {
-                if (!IsCold()) //emulating the native-layer
-                    throw new InvalidOperationException("Another installation is already in progress.");
+                BeginInstallationCalled = true; //order
                 
-                BeginInstallationCalled = true;
+                if (!IsCold()) //order   emulating the native-layer
+                {
+                    StateChangedAdvertisement( //emulating the native-layer
+                        oldState: CurrentState,
+                        newState: EFirmwareInstallationState.Error
+                    );
+                    throw new InvalidOperationException("Another installation is already in progress.");
+                }
 
                 return EFirmwareInstallationVerdict.Success;
             }

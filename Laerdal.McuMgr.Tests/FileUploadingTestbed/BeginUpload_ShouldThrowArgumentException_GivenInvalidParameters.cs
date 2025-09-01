@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<EFileUploaderVerdict>(() => fileUploader.BeginUpload(
+            var work = new Action(() => fileUploader.BeginUpload(
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer,
 
@@ -60,7 +60,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -71,7 +71,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -84,6 +84,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     windowCapacity: windowCapacity, //   android only
                     memoryAlignment: memoryAlignment //  android only
                 );
+                
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
 
                 Task.Run(async () => //00 vital
                 {
@@ -94,7 +97,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, 0);
                 });
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

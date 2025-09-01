@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         bool TryCancel(string reason = "");
         bool TryDisconnect();
 
-        EFileUploaderVerdict BeginUpload(
+        EFileUploaderVerdict NativeBeginUpload(
             byte[] data,
             string resourceId,
             string remoteFilePath,
