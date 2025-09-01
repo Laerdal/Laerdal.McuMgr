@@ -117,7 +117,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 _maxTriesCount = maxTriesCount;
             }
 
-            public override EFirmwareInstallationVerdict BeginInstallation(
+            public override EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -134,7 +134,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 
                 _tryCounter++;
 
-                var verdict = base.BeginInstallation(
+                base.NativeBeginInstallation(
                     data: data,
                     mode: mode,
                     eraseSettings: eraseSettings,
@@ -147,6 +147,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     windowCapacity: windowCapacity,
                     memoryAlignment: memoryAlignment
                 );
+
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None);
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle);
 
                 Task.Run(function: async () => //00 vital
                 {
@@ -191,9 +194,6 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                             FatalErrorOccurredAdvertisement(EFirmwareInstallationState.Uploading, EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut, BugDetected, EGlobalErrorCode.Generic);
                             return;
                         }
-
-                        StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Idle);
-                        await Task.Delay(10);
 
                         StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);
                         await Task.Delay(10);
@@ -284,7 +284,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     }
                 });
 
-                return verdict;
+                return EFirmwareInstallationVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

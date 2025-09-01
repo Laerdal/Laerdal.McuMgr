@@ -12,7 +12,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             private readonly INativeFirmwareInstallerCallbacksProxy _firmwareInstallerCallbacksProxy;
 
             public string Nickname { get; set; }
-            public EFirmwareInstallationState CurrentState { get; set; }
+            public EFirmwareInstallationState CurrentState { get; private set; }
 
             public bool CancelCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
@@ -31,7 +31,15 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy;
             }
 
-            public virtual EFirmwareInstallationVerdict BeginInstallation(
+            public bool IsCold()
+            {
+                return CurrentState == EFirmwareInstallationState.None //        this is what the native-layer does
+                       || CurrentState == EFirmwareInstallationState.Error //    and we must keep this mock updated
+                       || CurrentState == EFirmwareInstallationState.Complete // to reflect this fact
+                       || CurrentState == EFirmwareInstallationState.Cancelled;
+            }
+
+            public virtual EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -43,6 +51,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 int? byteAlignment = null
             )
             {
+                if (!IsCold()) //emulating the native-layer
+                    throw new InvalidOperationException("Another installation is already in progress.");
+                
                 BeginInstallationCalled = true;
 
                 return EFirmwareInstallationVerdict.Success;

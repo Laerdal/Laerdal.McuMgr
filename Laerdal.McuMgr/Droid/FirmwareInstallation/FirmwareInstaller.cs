@@ -125,7 +125,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             
             #region commands
 
-            public EFirmwareInstallationVerdict BeginInstallation(
+            public EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -134,10 +134,10 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null, // ignored in android   it only affects ios
-                int? byteAlignment = null  // ignored in android   it only affects ios
+                int? byteAlignment = null // ignored in android   it only affects ios
             )
             {
-                var nativeVerdict = base.BeginInstallation(
+                return TranslateFirmwareInstallationVerdict(BeginInstallation(
                     data: data,
                     mode: TranslateFirmwareInstallationMode(mode),
                     eraseSettings: eraseSettings ?? false,
@@ -147,9 +147,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
                     // pipelineDepth: ignored in android   it only affects ios
                     // byteAlignment: ignored in android   it only affects ios
-                );
-
-                return TranslateFirmwareInstallationVerdict(nativeVerdict);
+                ));
             }
             
             #endregion

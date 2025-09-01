@@ -43,7 +43,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             {
             }
 
-            public override EFirmwareInstallationVerdict BeginInstallation(
+            public override EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -55,7 +55,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 int? byteAlignment = null
             )
             {
-                base.BeginInstallation(
+                base.NativeBeginInstallation(
                     data: data,
                     mode: mode,
                     eraseSettings: eraseSettings,

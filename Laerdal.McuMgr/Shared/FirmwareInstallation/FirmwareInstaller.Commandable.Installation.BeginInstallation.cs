@@ -9,8 +9,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 {
     public partial class FirmwareInstaller
     {
-        public EFirmwareInstallationVerdict BeginInstallation(
-            byte[] data,
+        public void BeginInstallation(byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
@@ -27,7 +26,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             
             try
             {
-                var verdict = BeginInstallationCore(
+                BeginInstallationCore(
                     mode: mode,
                     data: data,
                     
@@ -45,8 +44,6 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     windowCapacity: windowCapacity, //android
                     memoryAlignment: memoryAlignment //android
                 );
-
-                return verdict;
             }
             finally
             {
@@ -54,7 +51,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             }
         }
         
-        protected EFirmwareInstallationVerdict BeginInstallationCore(
+        protected void BeginInstallationCore(
             byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
@@ -68,7 +65,6 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             int? byteAlignment //     ios only        not applicable for android
         )
         {
-
             if (data == null || !data.Any())
                 throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
 
@@ -109,23 +105,26 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             }
 
             _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
-            var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
-                mode: mode,
+
+            var verdict = _nativeFirmwareInstallerProxy.NativeBeginInstallation( //throws an exception if something is wrong
                 data: data,
 
+                mode: mode,
                 eraseSettings: eraseSettings,
                 estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
-                
-                initialMtuSize: initialMtuSize,
 
-                pipelineDepth: pipelineDepth,
-                byteAlignment: byteAlignment,
+                initialMtuSize: initialMtuSize, //    ios + android
                 
-                windowCapacity: windowCapacity, //  android
-                memoryAlignment: memoryAlignment // android
+                pipelineDepth: pipelineDepth, //      ios
+                memoryAlignment: memoryAlignment, //  ios
+                
+                byteAlignment: byteAlignment, //      android
+                windowCapacity: windowCapacity //     android
             );
-
-            return verdict;
+            if (verdict != EFirmwareInstallationVerdict.Success)
+                throw verdict == EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress
+                    ? new InvalidOperationException("Another installation operation is already in progress")
+                    : new ArgumentException(verdict.ToString());
         }
     }
 }

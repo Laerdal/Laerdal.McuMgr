@@ -99,7 +99,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                             }
                         }
 
-                        var verdict = BeginInstallationCore( //00 dont use task.run here for now
+                        BeginInstallationCore( //00 dont use task.run here for now
                             data: data,
                             hostDeviceModel: hostDeviceModel,
                             hostDeviceManufacturer: hostDeviceManufacturer,
@@ -116,10 +116,6 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                             windowCapacity: windowCapacity, //    android only
                             memoryAlignment: memoryAlignment //   android only
                         );
-                        if (verdict != EFirmwareInstallationVerdict.Success)
-                            throw verdict == EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress
-                                ? new InvalidOperationException("Another installation operation is already in progress")
-                                : new ArgumentException(verdict.ToString());
 
                         await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs);
                     }
