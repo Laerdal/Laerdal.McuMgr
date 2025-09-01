@@ -3,6 +3,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploading.Contracts.Enums;
+using Laerdal.McuMgr.FileUploading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileUploading
 {
@@ -49,7 +50,7 @@ namespace Laerdal.McuMgr.FileUploading
             }
         }
 
-        protected void BeginUploadCore( //this is meant to be used by the .DownloadAsync() methods of our api surface
+        protected void BeginUploadCore( //this is meant to be used by the .UploadAsync() methods of our api surface
             byte[] data,
             string resourceId,
             string remoteFilePath,
@@ -97,7 +98,7 @@ namespace Laerdal.McuMgr.FileUploading
                     message: $"[FU.BU.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
                              $"(pipelineDepth={pipelineDepth ?.ToString() ?? "null"}, byteAlignment={byteAlignment?.ToString() ?? "null"}, initialMtuSize={initialMtuSize?.ToString() ?? "null"}, windowCapacity={windowCapacity?.ToString() ?? "null"}, memoryAlignment={memoryAlignment?.ToString() ?? "null"})",
                     resource: resourceId,
-                    category: "FileDownloader"
+                    category: "FileUploader"
                 ));
             }
 
@@ -113,9 +114,13 @@ namespace Laerdal.McuMgr.FileUploading
                 memoryAlignment: memoryAlignment
             );
             if (verdict != EFileUploaderVerdict.Success)
-                throw verdict == EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress //00
-                    ? new InvalidOperationException("Another upload operation is already in progress")
-                    : new ArgumentException(verdict.ToString());
+                throw verdict switch
+                {
+                    EFileUploaderVerdict.FailedInvalidSettings => new ArgumentException("The provided connection settings were deemed invalid by the native layer (check logs for details)"),
+                    EFileUploaderVerdict.FailedErrorUponCommencing => new UploadInternalErrorException(remoteFilePath: remoteFilePath, message: "An internal error occurred within the native layer upon commencing the upload operation"),
+                    EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress => new InvalidOperationException("Another download operation is already in progress"),
+                    _ => new ArgumentException($"An error occurred within the native layer [verdict={verdict}]"),
+                };
             
             //00  we can get FailedOtherUploadAlreadyInProgress even here if there are two racing threads that have both called .BeginUpload() directly!
         }

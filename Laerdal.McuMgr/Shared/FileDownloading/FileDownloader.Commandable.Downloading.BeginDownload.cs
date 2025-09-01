@@ -3,6 +3,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloading.Contracts.Enums;
+using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileDownloading
 {
@@ -77,9 +78,13 @@ namespace Laerdal.McuMgr.FileDownloading
                 initialMtuSize: initialMtuSize
             );
             if (verdict != EFileDownloaderVerdict.Success)
-                throw verdict == EFileDownloaderVerdict.FailedDownloadAlreadyInProgress
-                    ? new InvalidOperationException("Another download operation is already in progress")
-                    : new ArgumentException(verdict.ToString());
+                throw verdict switch
+                {
+                    EFileDownloaderVerdict.FailedInvalidSettings => new ArgumentException("The provided connection settings were deemed invalid by the native layer (check logs for details)"),
+                    EFileDownloaderVerdict.FailedErrorUponCommencing => new DownloadInternalErrorException("An internal error occurred within the native layer upon commencing the download operation"),
+                    EFileDownloaderVerdict.FailedDownloadAlreadyInProgress => new InvalidOperationException("Another download operation is already in progress"),
+                    _ => new ArgumentException($"An error occurred within the native layer [verdict={verdict}]"),
+                };
         }
     }
 }

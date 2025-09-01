@@ -4,6 +4,7 @@ using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
@@ -105,9 +106,9 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 ));
             }
 
-            _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
+            NativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
 
-            var verdict = _nativeFirmwareInstallerProxy.NativeBeginInstallation( //throws an exception if something is wrong
+            var verdict = NativeFirmwareInstallerProxy.NativeBeginInstallation( //throws an exception if something is wrong
                 data: data,
 
                 mode: mode,
@@ -123,9 +124,14 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 windowCapacity: windowCapacity //     android
             );
             if (verdict != EFirmwareInstallationVerdict.Success)
-                throw verdict == EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress
-                    ? new InvalidOperationException("Another installation operation is already in progress")
-                    : new ArgumentException(verdict.ToString());
+                throw verdict switch
+                {
+                    EFirmwareInstallationVerdict.FailedInvalidSettings => new ArgumentException("The provided connection settings were deemed invalid by the native layer (check logs for details)"),
+                    EFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy => new ArgumentException("The provided firmware was deemed invalid by the native layer (check logs for details)"),
+                    EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => new InvalidOperationException("Another installation is already in progress"),
+                    EFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut => new FirmwareInstallationInternalErrorException("The native layer failed to initialize the installation"),
+                    _ => new ArgumentException($"An error occurred within the native layer [verdict={verdict}]"),
+                };
         }
     }
 }
