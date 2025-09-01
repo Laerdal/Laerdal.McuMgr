@@ -14,8 +14,7 @@ using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
-    /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller
+    public partial class FirmwareInstaller
     {
         public FirmwareInstaller(object nativeBluetoothDevice) // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             : this(NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<CBPeripheral>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice)))

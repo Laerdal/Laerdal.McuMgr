@@ -8,8 +8,7 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
-    /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller
+    public partial class FirmwareInstaller
     {
         /// <summary>This constructor is employed when using the *-force-dud nuget packages to provide dummy support for the sake of compiling stuff without issues even on unsupported platforms.</summary>
         /// <throws>Always throws <see cref="PlatformNotSupportedException"/> regardless of platform.</throws>

@@ -16,8 +16,7 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
-    /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller
+    public partial class FirmwareInstaller
     {
         public FirmwareInstaller(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             androidContext: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<Context>(obj: androidContext, parameterName: nameof(androidContext), allowNulls: true),
