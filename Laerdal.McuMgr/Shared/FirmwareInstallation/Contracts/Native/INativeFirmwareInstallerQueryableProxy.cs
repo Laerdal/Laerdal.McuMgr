@@ -1,6 +1,6 @@
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Native
 {
-    internal interface INativeFirmwareInstallerQueryableProxy
+    public interface INativeFirmwareInstallerQueryableProxy
     {
         string LastFatalErrorMessage { get; }
     }

@@ -156,7 +156,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                             newState: EFirmwareInstallationState.Error
                         ));
 
-                        throw new FirmwareInstallationInternalErrorException(ex);
+                        throw new FirmwareInstallationInternalErrorException(innerException: ex);
                     }
                     finally
                     {

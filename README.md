@@ -376,12 +376,15 @@ private void CleanupDeviceResetter()
 
          Note:
 
-         The very first upload always feels slow and takes quite a bit of time to commence because Zephyr chipsets perform filesystem cleanup. There is nothing we can do about this.
-         The culprit lies in issues plaguing littlefs
+         1. The very first data-upload might feel slow to start because certain Nordic chipsets perform filesystem cleanup on the very first file-upload.
+            There is nothing we can do about this. The culprit lies in issues plaguing littlefs itself:
 
-         https://github.com/littlefs-project/littlefs/issues/797
-         https://github.com/littlefs-project/littlefs/issues/783
-         https://github.com/littlefs-project/littlefs/issues/810
+            https://github.com/littlefs-project/littlefs/issues/797
+            https://github.com/littlefs-project/littlefs/issues/783
+            https://github.com/littlefs-project/littlefs/issues/810
+
+         2. The library doesn't support streaming files. You must load each file's bytes as an array in memory before you can upload it. As long as you stay
+            within reasonable limits (a few MBs) this shouldn't be a problem for most smartphones / tablets.
 
 ```c#
 
@@ -609,7 +612,216 @@ private void CleanupDeviceResetter()
     }
 ```
 
+- To perform file-downloading from the device:
 
+         Note:
+ 
+         The library doesn't support streaming files. The bytes of each file you download will be stored
+         in memory as a byte-array before being returned to you. As long as you stay within reasonable limits
+         (a few MBs) this shouldn't be a problem for most smartphones / tablets.
+
+         We might add streaming support in the future if there's a serious reason for it.
+
+```csharp
+    private async Task DownloadSingleFileButtonClickedAsync()
+    {
+        var bytes = (byte[]?)null;
+        try
+        {
+            _fileDownloader = new FileUploader(/*native ble-device*/);
+
+            ToggleSubscriptionsOnSingleFileDownloaderEvents(_fileDownloader, subscribeNotUnsubscribe: true); //  order
+            
+            SingleFileDownloaderStage = "";
+            bytes = await _fileDownloader!.DownloadAsync( // order
+                maxTriesCount: SingleFileDownloaderMaxTries,
+                hostDeviceModel: DeviceInfo.Model,
+                hostDeviceManufacturer: DeviceInfo.Manufacturer,
+
+                remoteFilePath: remoteFilePathToDownload,
+                initialMtuSize: SingleFileDownloaderInitialMtuSize < 0 ? null : SingleFileDownloaderInitialMtuSize
+            ).ConfigureAwait(false); //good practice to avoid deadlocks
+            if (bytes == null) //shouldnt happen but just in case 
+                return;
+        }
+        catch (DownloadCancelledException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Cancelled",
+                message: "The operation was cancelled"
+            );
+            return;
+        }
+        catch (DownloadErroredOutRemotePathPointsToDirectoryException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: $"Filepath '{remoteFilePathToDownload}' points to a directory on the remote device!"
+            );
+            return;
+        }
+        catch (DownloadErroredOutRemoteFileNotFoundException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: $"File '{remoteFilePathToDownload}' not found in the remote device!"
+            );
+            return;
+        }
+        catch (DownloadTimeoutException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: "The operation didn't complete within the appropriate amount time!"
+            );
+            return;
+        }
+        catch (DownloadErroredOutException ex) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: $"An error occurred:{S.nl2}{ex}"
+            );
+            return;
+        }
+        catch (Exception ex) //order
+        {
+            App.DisplayAlert(
+                title: "[BUG] File-Download Failed",
+                message: $"An unexpected error occurred:{S.nl2}{ex}"
+            );
+            return;
+        }
+        finally
+        {
+            ToggleSubscriptionsOnSingleFileDownloaderEvents(_fileDownloader, subscribeNotUnsubscribe: false); // order
+            CleanupFileDownloader(); //                                                                          order
+
+            // if (shouldRestartScannerAfterInstallation)
+            // {
+            //     await Scanner.Instance.StartScanningAsync(); //order
+            // }
+        }
+
+        var localSavePath = (string?)null;
+        try
+        {
+            SingleFileDownloaderStage += "-> Saving to local file ...";
+
+            localSavePath = await SaveBytesToLocalFileAsync(
+                bytes: bytes,
+                filename: Path.GetFileName(SingleFileDownloaderRemoteFilePathToDownload),
+                directory: SingleFileDownloaderLocalSavePath
+            );
+        }
+        catch (Exception ex)
+        {
+            App.DisplayAlert(
+                title: "File-Save Error",
+                message: $"File downloaded successfully but saving it to local file-system failed:\r\n\r\n{ex}"
+            );
+            return;
+        }
+        
+        SingleFileDownloaderStage += " -> Done";
+        
+        App.DisplayAlert(
+            title: "File-Download Complete",
+            message: $"File downloaded and saved successfully at:\r\n\r\n{localSavePath}"
+        );
+
+        //00 file downloading on aed devices requires the connection to be authed to work
+    }
+    
+    private void CancelSingleFileDownloadButtonClicked()
+    {
+        _fileDownloader?.TryCancel();
+    }
+    
+    private void ToggleSubscriptionsOnSingleFileDownloaderEvents(IFileDownloader? singleFileDownloaderSnapshot, bool subscribeNotUnsubscribe)
+    {
+        if (singleFileDownloaderSnapshot == null)
+            return;
+
+        if (subscribeNotUnsubscribe)
+        {
+            singleFileDownloaderSnapshot.LogEmitted += SingleFileDownloader_LogEmitted;
+            singleFileDownloaderSnapshot.StateChanged += SingleFileDownloader_StateChanged;
+            
+            this.Try(() => _massFileUploaderFUPPADTCEventStreamSubscription?.Dispose());
+            _massFileUploaderFUPPADTCEventStreamSubscription = Observable
+                .FromEventPattern<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs>(
+                    addHandler: h => singleFileDownloaderSnapshot.FileDownloadProgressPercentageAndDataThroughputChanged += h,
+                    removeHandler: h => singleFileDownloaderSnapshot.FileDownloadProgressPercentageAndDataThroughputChanged -= h
+                )
+                .Throttle(TimeSpan.FromMilliseconds(75))
+                .SubscribeAndHandleAllExceptions(
+                    onNext: SingleFileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged,
+                    onError: ErrorHandler
+                );
+
+            //_fileDownloader.Cancelled += SingleFileDownloader_Cancelled;
+            //_fileDownloader.BusyStateChanged += SingleFileDownloader_BusyStateChanged;
+            //_fileDownloader.DownloadCompleted += SingleFileDownloader_DownloadCompleted;
+            //_fileDownloader.FatalErrorOccurred += SingleFileDownloader_FatalErrorOccurred;
+        }
+        else
+        {
+            
+            singleFileDownloaderSnapshot.LogEmitted -= SingleFileDownloader_LogEmitted;
+            singleFileDownloaderSnapshot.StateChanged -= SingleFileDownloader_StateChanged;
+            
+            this.Try(() => _massFileUploaderFUPPADTCEventStreamSubscription?.Dispose());
+
+            //_fileDownloader.Cancelled -= SingleFileDownloader_Cancelled;
+            //_fileDownloader.BusyStateChanged -= SingleFileDownloader_BusyStateChanged;
+            //_fileDownloader.DownloadCompleted -= SingleFileDownloader_DownloadCompleted;
+            //_fileDownloader.FatalErrorOccurred -= SingleFileDownloader_FatalErrorOccurred;
+        }
+        
+        return;
+        
+        void ErrorHandler(Exception exception, bool isComingFromSourceNotFromOnNext)
+        {
+            this.Error($"""[SDPVM.SFD.EH.010] isComingFromSourceNotFromOnNext={isComingFromSourceNotFromOnNext} Error :\n\n{exception.Message}\n\nFull Details :\n\n{exception}""", ExtraLoggingFlags.FileDownloader);
+        }
+    }
+
+    static private async Task<string> SaveBytesToLocalFileAsync(byte[] bytes, string directory, string filename)
+    {
+        Directory.CreateDirectory(directory);
+
+        var localSavePath = Path.Combine(directory, filename);
+
+        await using var fileStream = new FileStream(
+            path: localSavePath,
+            mode: FileMode.Create,
+            access: FileAccess.Write
+        );
+
+        await fileStream.WriteAsync(
+            buffer: bytes,
+            count: bytes.Length,
+            offset: 0
+        );
+
+        return localSavePath;
+    }
+
+    private void CleanupFileDownloader()
+    {
+        SingleFileDownloadProgressPercentage = 0;
+        SingleFileDownloadCurrentThroughputInKBps = 0;
+
+        this.Try(() => _fileDownloader?.Dispose()); //calls disconnect under the hood
+        _fileDownloader = null;
+    }
+
+    private void SingleFileDownloader_LogEmitted(object? sender, in LogEmittedEventArgs ea)
+    {
+        SingleFileDownloaderLogProperly(ea.Level.ToLaerdalLogLevel(),  $"[category={ea.Category}] [resource={ea.Resource}] {ea.Message}");
+    }
+```
 
 ## 📱 iOS
 
@@ -650,27 +862,27 @@ public sealed class McumgrFactoryService : IPlatformSpecificMcumgrFactoryService
 {
     public IFileDownloader SpawnFileDownloader(IYourAbstractBleDevice yourAbstractBleDevice)
     {
-        return new FileDownloader.FileDownloader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice); // .NativeDevice is defined as 'object' and points to either iOS/CBPeripheral or Android/BluetoothDevice depending on the underlying platform
+        return new FileDownloading.FileDownloader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice); // .NativeDevice is defined as 'object' and points to either iOS/CBPeripheral or Android/BluetoothDevice depending on the underlying platform
     }
     
     public IFileUploader SpawnFileUploader(IDevice device)
     {
-        return new FileUploader.FileUploader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+        return new FileUploading.FileUploader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
     }
 
     public IFirmwareEraser SpawnFirmwareEraser(IDevice device)
     {
-        return new FirmwareEraser.FirmwareEraser(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+        return new FirmwareErasing.FirmwareEraser(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
     }
 
     public IDeviceResetter SpawnDeviceResetter(IDevice device)
     {
-        return new DeviceResetter.DeviceResetter(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+        return new DeviceResetting.DeviceResetter(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
     }
 
     public IFirmwareInstaller SpawnFirmwareInstaller(IDevice device)
     {
-        return new FirmwareInstaller.FirmwareInstaller(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+        return new FirmwareInstallation.FirmwareInstaller(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
     }
 }
 

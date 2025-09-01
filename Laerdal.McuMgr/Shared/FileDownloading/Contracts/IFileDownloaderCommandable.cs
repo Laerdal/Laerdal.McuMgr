@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.FileDownloading.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts
@@ -48,6 +48,9 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
+        /// <throws cref="ArgumentException">Thrown if one of the parameters fails validation</throws>
+        /// <throws cref="InvalidOperationException">Thrown if a download operation is already ongoing (parallel downloads are not supported)</throws>
+        /// <throws cref="AllDownloadAttemptsFailedException">Thrown if all download attempts failed</throws>
         Task<IDictionary<string, byte[]>> DownloadAsync( //@formatter:off
             IEnumerable<string> remoteFilePaths,
 
@@ -87,6 +90,11 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <returns>The bytes of the remote file that got fetched over.</returns>
+        /// <throws cref="ArgumentException">Thrown if one of the parameters fails validation</throws>
+        /// <throws cref="DownloadTimeoutException">Thrown if the operation timed out</throws>
+        /// <throws cref="InvalidOperationException">Thrown if a download operation is already ongoing (parallel downloads are not supported)</throws>
+        /// <throws cref="OperationCanceledException">Thrown if the operation was cancelled</throws>
+        /// <throws cref="AllDownloadAttemptsFailedException">Thrown if all download attempts failed</throws>
         Task<byte[]> DownloadAsync( //@formatter:off
             string remoteFilePath,
             string hostDeviceModel,

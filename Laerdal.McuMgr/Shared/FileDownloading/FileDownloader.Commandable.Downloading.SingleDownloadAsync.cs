@@ -190,7 +190,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
                     //OnFatalErrorOccurred(); //dont   not worth it in this case  
 
-                    throw new DownloadInternalErrorException(ex);
+                    throw new DownloadInternalErrorException(innerException: ex);
                 }
                 finally
                 {

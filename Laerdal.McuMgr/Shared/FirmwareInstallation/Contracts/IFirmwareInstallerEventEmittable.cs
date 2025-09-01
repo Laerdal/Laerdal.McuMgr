@@ -3,7 +3,7 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts.Events;
 
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
 {
-    internal interface IFirmwareInstallerEventEmittable : ILogEmittable
+    public interface IFirmwareInstallerEventEmittable : ILogEmittable
     {
         void OnCancelled(CancelledEventArgs ea);
         void OnStateChanged(StateChangedEventArgs ea);

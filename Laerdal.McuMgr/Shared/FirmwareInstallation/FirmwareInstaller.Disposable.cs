@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 
             try
             {
-                _nativeFirmwareInstallerProxy?.Dispose();
+                NativeFirmwareInstallerProxy?.Dispose();
             }
             catch
             {

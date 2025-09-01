@@ -3,7 +3,7 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Native
 {
-    internal interface INativeFirmwareInstallerCallbacksProxy
+    public interface INativeFirmwareInstallerCallbacksProxy
     {
         public IFirmwareInstallerEventEmittable FirmwareInstaller { get; set; }
         

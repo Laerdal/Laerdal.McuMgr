@@ -2,7 +2,7 @@ using System;
 
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Native
 {
-    internal interface INativeFirmwareInstallerProxy :
+    public interface INativeFirmwareInstallerProxy :
         IDisposable,
         INativeFirmwareInstallerQueryableProxy,
         INativeFirmwareInstallerCallbacksProxy,

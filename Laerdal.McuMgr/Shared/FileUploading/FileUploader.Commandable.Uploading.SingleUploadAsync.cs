@@ -233,11 +233,7 @@ namespace Laerdal.McuMgr.FileUploading
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
 
-                    throw new UploadInternalErrorException(remoteFilePath, ex);
-                }
-                catch (Exception ex)
-                {
-                    throw;
+                    throw new UploadInternalErrorException(remoteFilePath, innerException: ex);
                 }
                 finally
                 {
