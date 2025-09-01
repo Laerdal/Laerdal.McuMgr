@@ -7,7 +7,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 {
     public partial class FirmwareInstaller
     {
-        private bool _disposed;
+        protected bool IsDisposed;
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -17,7 +17,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 
         protected virtual void Dispose(bool isDisposing)
         {
-            if (_disposed)
+            if (IsDisposed)
                 return;
 
             if (!isDisposing)
@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 //ignored
             }
 
-            _disposed = true;
+            IsDisposed = true;
         }
     }
 }

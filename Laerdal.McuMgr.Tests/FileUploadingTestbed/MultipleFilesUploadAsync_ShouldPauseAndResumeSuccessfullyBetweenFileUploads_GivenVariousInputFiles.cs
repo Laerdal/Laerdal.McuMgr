@@ -47,8 +47,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             fileUploader.FileUploadResumed += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
             fileUploader.FileUploadProgressPercentageAndDataThroughputChanged += async (_, ea_) =>
             {
-                if (ea_.ProgressPercentage <= 30)
-                    return; // we want to pause only after the upload has started
+                if (!(ea_.ProgressPercentage is >= 30 and <= 35))
+                    return; // we want to pause only after the download has started
                 
                 fileUploader.TryPause();
                 await Task.Delay(100);
@@ -101,7 +101,14 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileUploader.FileUploadPaused))
                 .Should()
-                .Be(10);
+                .Be(21);
+
+            eventsMonitor.OccurredEvents
+                .Count(args => args.EventName == nameof(fileUploader.FileUploadResumed))
+                .Should()
+                .Be(
+                    eventsMonitor.OccurredEvents.Count(args => args.EventName == nameof(fileUploader.FileUploadPaused))
+                );
             
             eventsMonitor.OccurredEvents
                 .Where(args => args.EventName == nameof(fileUploader.FileUploadStarted))
@@ -142,8 +149,48 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
         private class MockedGreenNativeFileUploaderProxySpy60 : BaseMockedNativeFileUploaderProxySpy
         {
+            private string _currentResourceId;
+            private string _currentRemoteFilePath;
+            
+            private readonly ManualResetEventSlim _manualResetEventSlim = new(initialState: true);
+            
             public MockedGreenNativeFileUploaderProxySpy60(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
+            }
+            
+            public override bool TryPause()
+            {
+                base.TryPause();
+
+                Task.Run(async () => // under normal circumstances the native implementation will bubble-up the following callbacks
+                {
+                    await Task.Delay(50);
+                    _manualResetEventSlim.Reset(); //capture the lock
+                    
+                    StateChangedAdvertisement(resourceId: _currentResourceId, remoteFilePath: _currentRemoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Paused, totalBytesToBeUploaded: 0);
+                    BusyStateChangedAdvertisement(busyNotIdle: false);
+                });
+
+                return true;
+            }
+
+            public override bool TryResume()
+            {
+                base.TryResume();
+
+                Task.Run(async () => // under normal circumstances the native implementation will bubble-up the following callbacks
+                {
+                    await Task.Delay(5);
+                    StateChangedAdvertisement(resourceId: _currentResourceId, remoteFilePath: _currentRemoteFilePath, oldState: EFileUploaderState.Paused, newState: EFileUploaderState.Resuming, totalBytesToBeUploaded: 0);
+                    BusyStateChangedAdvertisement(busyNotIdle: true);
+
+                    await Task.Delay(5);
+                    StateChangedAdvertisement(resourceId: _currentResourceId, remoteFilePath: _currentRemoteFilePath, oldState: EFileUploaderState.Resuming, newState: EFileUploaderState.Uploading, totalBytesToBeUploaded: 0);
+
+                    _manualResetEventSlim.Set(); //release the lock so that the upload can continue
+                });
+
+                return true;
             }
 
             private int _retryCountForProblematicFile;
@@ -161,6 +208,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
+                _currentResourceId = resourceId;
+                _currentRemoteFilePath = remoteFilePath;
+                
                 var verdict = base.BeginUpload(
                     data: data,
                     resourceId: resourceId,
@@ -199,10 +249,22 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                         StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0);
                         FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "native symbols not loaded blah blah", EGlobalErrorCode.Generic);
                     }
-                    else
+                    else //@formatter:off
                     {
+                        _manualResetEventSlim.Wait(); await Task.Delay(015); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:00, currentThroughputInKBps:00, totalAverageThroughputInKBps:00);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:10, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:20, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:30, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:40, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:50, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:60, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:70, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:80, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:90, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        _manualResetEventSlim.Wait(); await Task.Delay(005); FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId:resourceId, remoteFilePath:remoteFilePath, progressPercentage:100, currentThroughputInKBps:10, totalAverageThroughputInKBps:10);
+                        
                         StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
-                    }
+                    } //@formatter:off
                 });
 
                 return verdict;

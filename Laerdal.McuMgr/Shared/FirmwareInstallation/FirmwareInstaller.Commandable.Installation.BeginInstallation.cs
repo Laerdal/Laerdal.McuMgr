@@ -23,6 +23,52 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             int? byteAlignment = null //     ios only        not applicable for android
         )
         {
+            EnsureExclusiveOperationToken();
+            
+            try
+            {
+                var verdict = BeginInstallationCore(
+                    mode: mode,
+                    data: data,
+                    
+                    hostDeviceModel: hostDeviceModel,
+                    hostDeviceManufacturer: hostDeviceManufacturer,
+                    
+                    eraseSettings: eraseSettings,
+                    estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
+                    
+                    initialMtuSize: initialMtuSize,
+
+                    pipelineDepth: pipelineDepth, //ios
+                    byteAlignment: byteAlignment, //ios
+                    
+                    windowCapacity: windowCapacity, //android
+                    memoryAlignment: memoryAlignment //android
+                );
+
+                return verdict;
+            }
+            finally
+            {
+                ReleaseExclusiveOperationToken();
+            }
+        }
+        
+        protected EFirmwareInstallationVerdict BeginInstallationCore(
+            byte[] data,
+            string hostDeviceModel,
+            string hostDeviceManufacturer,
+            EFirmwareInstallationMode mode,
+            bool? eraseSettings,
+            int? estimatedSwapTimeInMilliseconds,
+            int? initialMtuSize,
+            int? windowCapacity, //   android only    not applicable for ios
+            int? memoryAlignment, //  android only    not applicable for ios
+            int? pipelineDepth, //    ios only        not applicable for android
+            int? byteAlignment //     ios only        not applicable for android
+        )
+        {
+
             if (data == null || !data.Any())
                 throw new ArgumentException("The data byte-array parameter is null or empty", nameof(data));
 
@@ -52,7 +98,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 initialMtuSize = failsafeConnectionSettings.Value.initialMtuSize;
                 windowCapacity = failsafeConnectionSettings.Value.windowCapacity;
                 memoryAlignment = failsafeConnectionSettings.Value.memoryAlignment;
-                
+
                 OnLogEmitted(new LogEmittedEventArgs(
                     level: ELogLevel.Warning,
                     message: $"[FI.BI.010] Host device '{hostDeviceModel} (made by {hostDeviceManufacturer})' is known to be problematic. Resorting to using failsafe settings " +
@@ -61,20 +107,22 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     category: "FileDownloader"
                 ));
             }
-            
+
             _nativeFirmwareInstallerProxy.Nickname = "Firmware Installation"; //todo  get this from a parameter 
             var verdict = _nativeFirmwareInstallerProxy.BeginInstallation(
+                mode: mode,
                 data: data,
 
-                mode: mode,
                 eraseSettings: eraseSettings,
-                initialMtuSize: initialMtuSize,
+                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds,
                 
+                initialMtuSize: initialMtuSize,
+
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
-                windowCapacity: windowCapacity,
-                memoryAlignment: memoryAlignment,
-                estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
+                
+                windowCapacity: windowCapacity, //  android
+                memoryAlignment: memoryAlignment // android
             );
 
             return verdict;
