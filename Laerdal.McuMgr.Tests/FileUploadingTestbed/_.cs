@@ -73,7 +73,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                        || CurrentState == EFileUploaderState.Cancelled;
             }
 
-            protected readonly ManualResetEventSlim NativePauseGuardDuringUploadingPhaseSlim = new(initialState: true);
+            protected readonly ManualResetEventSlim PauseGuard = new(initialState: true);
             public virtual bool TryPause()
             {
                 PauseCalled = true; //keep first
@@ -84,7 +84,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 if (CurrentState != EFileUploaderState.Uploading)
                     return false; //can only pause when we are actually uploading something
 
-                NativePauseGuardDuringUploadingPhaseSlim.Reset(); //capture the lock
+                PauseGuard.Reset(); //capture the lock
 
                 StateChangedAdvertisement(resourceId: CurrentResourceId, remoteFilePath: CurrentRemoteFilePath, oldState: CurrentState, newState: EFileUploaderState.Paused, totalBytesToBeUploaded: 0);
                 BusyStateChangedAdvertisement(busyNotIdle: false);
@@ -110,7 +110,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     await Task.Delay(5); // simulate the ble-layer lag involved in resuming the upload
                     StateChangedAdvertisement(oldState: EFileUploaderState.Resuming, newState: EFileUploaderState.Uploading, resourceId: CurrentResourceId, remoteFilePath: CurrentRemoteFilePath, totalBytesToBeUploaded: 0);
 
-                    NativePauseGuardDuringUploadingPhaseSlim.Set(); //release the lock so that the upload can continue
+                    PauseGuard.Set(); //release the lock so that the upload can continue
                 });
 
                 return true;

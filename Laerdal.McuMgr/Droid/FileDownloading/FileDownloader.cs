@@ -142,7 +142,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 return base.TryDisconnect();
             }
 
-            public EFileDownloaderVerdict BeginDownload(
+            public EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
                 int? initialMtuSize = null //  android only
             )

@@ -119,13 +119,11 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
-        EFileDownloaderVerdict BeginDownload(
-            string remoteFilePath,
+        void BeginDownload(string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int? initialMtuSize = null,
-            int? windowCapacity = null
-        );
+            int? windowCapacity = null);
 
         /// <summary>Pauses the file-uploading process</summary>
         /// <returns>True if the pausing request was successfully effectuated (or if the transfer was already paused) - False otherwise which typically means that the underlying transport has been dispoed</returns>

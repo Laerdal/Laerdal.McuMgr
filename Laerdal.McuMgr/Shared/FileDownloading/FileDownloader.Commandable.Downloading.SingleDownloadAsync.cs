@@ -125,7 +125,7 @@ namespace Laerdal.McuMgr.FileDownloading
                         }
                     }
 
-                    var verdict = BeginDownloadCore( //00 dont use task.run here for now
+                    BeginDownloadCore( //00 dont use task.run here for now
                         remoteFilePath: remoteFilePath,
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
@@ -133,10 +133,6 @@ namespace Laerdal.McuMgr.FileDownloading
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity
                     );
-                    if (verdict != EFileDownloaderVerdict.Success)
-                        throw verdict == EFileDownloaderVerdict.FailedDownloadAlreadyInProgress
-                            ? new InvalidOperationException("Another download operation is already in progress")
-                            : new ArgumentException(verdict.ToString());
 
                     result = await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutForDownloadInMs);
                     break;

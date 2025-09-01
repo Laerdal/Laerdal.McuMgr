@@ -131,7 +131,7 @@ namespace Laerdal.McuMgr.FileDownloading
             public bool TryCancel(string reason = "") => _nativeFileDownloader?.TryCancel(reason) ?? false;
             public bool TryDisconnect() => _nativeFileDownloader?.TryDisconnect() ?? false;
 
-            public EFileDownloaderVerdict BeginDownload(
+            public EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
                 int? initialMtuSize = null
             )

@@ -26,11 +26,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             // Act
             var work = new Func<Task>(async () =>
             {
-                var manualResetEvent = new ManualResetEvent(initialState: false);
+                var manualResetEvent = new ManualResetEventSlim(initialState: false);
                 
                 var racingTask1 = Task.Run(async () =>
                 {
-                    manualResetEvent.WaitOne(); //parking both tasks at the start
+                    manualResetEvent.Wait(); //parking both tasks at the start
                     
                     if (task1UsesAsyncNotBeginInstall)
                     {
@@ -53,7 +53,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 
                 var racingTask2 = Task.Run(async () =>
                 {
-                    manualResetEvent.WaitOne(); //parking both tasks at the start
+                    manualResetEvent.Wait(); //parking both tasks at the start
                     
                     if (task2UsesAsyncNotBeginInstall)
                     {

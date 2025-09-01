@@ -8,8 +8,7 @@ namespace Laerdal.McuMgr.FileDownloading
 {
     public partial class FileDownloader
     {
-        public EFileDownloaderVerdict BeginDownload(
-            string remoteFilePath,
+        public void BeginDownload(string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int? initialMtuSize = null,
@@ -22,7 +21,7 @@ namespace Laerdal.McuMgr.FileDownloading
             {
                 ResetInternalStateTidbits();
 
-                return BeginDownloadCore(
+                BeginDownloadCore(
                     remoteFilePath: remoteFilePath,
                     hostDeviceModel: hostDeviceModel,
                     hostDeviceManufacturer: hostDeviceManufacturer,
@@ -37,7 +36,7 @@ namespace Laerdal.McuMgr.FileDownloading
             }
         }
         
-        protected EFileDownloaderVerdict BeginDownloadCore(
+        protected void BeginDownloadCore( //meant to be used directly by the .DownloadAsync() methods of our api surface
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
@@ -73,12 +72,14 @@ namespace Laerdal.McuMgr.FileDownloading
                 ));
             }
 
-            var verdict = NativeFileDownloaderProxy.BeginDownload(
+            var verdict = NativeFileDownloaderProxy.NativeBeginDownload(
                 remoteFilePath: remoteFilePath,
                 initialMtuSize: initialMtuSize
             );
-
-            return verdict;
+            if (verdict != EFileDownloaderVerdict.Success)
+                throw verdict == EFileDownloaderVerdict.FailedDownloadAlreadyInProgress
+                    ? new InvalidOperationException("Another download operation is already in progress")
+                    : new ArgumentException(verdict.ToString());
         }
     }
 }
