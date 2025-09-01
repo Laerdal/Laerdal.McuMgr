@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using FluentAssertions;
 using Laerdal.McuMgr.FirmwareInstallation;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
@@ -17,7 +16,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
         {
             // Arrange
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy90(new GenericNativeFirmwareInstallerCallbacksProxy_());
-            var firmwareInstaller = new FirmwareInstaller(mockedNativeFirmwareInstallerProxy);
+            var firmwareInstaller = new FirmwareInstallerSpy90(mockedNativeFirmwareInstallerProxy);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
 
@@ -52,6 +51,18 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             // Assert
             await work.Should().ThrowWithinAsync<InvalidOperationException>(TimeSpan.FromSeconds(2));
 
+            firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
+                .GuardCallsCounter
+                .Should().Be(2);
+            
+            firmwareInstaller //we need to be 100% sure that the token was released only once (by the task that started the installation process)
+                .ReleaseCallsCounter
+                .Should().Be(1);
+            
+            firmwareInstaller //we need to be 100% sure that the guard check is the one that threw the exception!
+                .InvalidOperationExceptionThrownByGuardCheckCounter
+                .Should().Be(1);
+            
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareInstallerProxy.BeginInstallationCalled.Should().BeTrue();
@@ -64,6 +75,39 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 .Be(1); // only one of the two tasks should have started the installation process
 
             //00 we dont want to disconnect the device regardless of the outcome
+        }
+        
+        private class FirmwareInstallerSpy90 : FirmwareInstaller
+        {
+            public volatile int GuardCallsCounter;
+            public volatile int ReleaseCallsCounter;
+            public volatile int InvalidOperationExceptionThrownByGuardCheckCounter;
+            
+            public FirmwareInstallerSpy90(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy) : base(nativeFirmwareInstallerProxy)
+            {
+            }
+
+            protected override void EnsureExclusiveOperationToken() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
+            {
+                Interlocked.Increment(ref GuardCallsCounter);
+                
+                try
+                {
+                    base.EnsureExclusiveOperationToken();    
+                }
+                catch (InvalidOperationException)
+                {
+                    Interlocked.Increment(ref InvalidOperationExceptionThrownByGuardCheckCounter);
+                    throw;
+                }
+            }
+
+            protected override void ReleaseExclusiveOperationToken()
+            {
+                Interlocked.Increment(ref ReleaseCallsCounter);
+                
+                base.ReleaseExclusiveOperationToken();
+            }
         }
 
         private class MockedGreenNativeFirmwareInstallerProxySpy90 : MockedNativeFirmwareInstallerProxySpy

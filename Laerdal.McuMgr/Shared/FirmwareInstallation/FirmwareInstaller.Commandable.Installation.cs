@@ -4,7 +4,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 {
     public partial class FirmwareInstaller
     {
-        protected void EnsureExclusiveOperationToken()
+        protected virtual void EnsureExclusiveOperationToken()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(FirmwareInstaller));
@@ -18,7 +18,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             }
         }
 
-        protected void ReleaseExclusiveOperationToken()
+        protected virtual void ReleaseExclusiveOperationToken()
         {
             lock (OperationCheckLock)
             {
