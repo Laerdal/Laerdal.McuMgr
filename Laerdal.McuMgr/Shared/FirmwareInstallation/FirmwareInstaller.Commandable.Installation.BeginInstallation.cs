@@ -9,7 +9,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 {
     public partial class FirmwareInstaller
     {
-        public void BeginInstallation(byte[] data,
+        public void BeginInstallation(
+            byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
@@ -22,7 +23,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             int? byteAlignment = null //     ios only        not applicable for android
         )
         {
-            EnsureExclusiveOperationToken();
+            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
             
             try
             {
