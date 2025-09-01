@@ -152,12 +152,36 @@ namespace Laerdal.McuMgr.FileDownloading
         private void OnLogEmitted(in LogEmittedEventArgs ea) => _logEmitted?.InvokeAndIgnoreExceptions(this, ea); // in the special case of log-emitted we prefer the .invoke() flavour for the sake of performance
         private void OnStateChanged(StateChangedEventArgs ea) => _stateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnBusyStateChanged(BusyStateChangedEventArgs ea) => _busyStateChanged?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadPaused(FileDownloadPausedEventArgs ea) => _fileDownloadPaused?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadResumed(FileDownloadResumedEventArgs ea) => _fileDownloadResumed?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadStarted(FileDownloadStartedEventArgs ea) => _fileDownloadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
-        private void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea) => _fileDownloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
         private void OnFileDownloadProgressPercentageAndDataThroughputChanged(FileDownloadProgressPercentageAndDataThroughputChangedEventArgs ea) => _fileDownloadProgressPercentageAndDataThroughputChanged?.InvokeAndIgnoreExceptions(this, ea);
 
+        private void OnFileDownloadCompleted(FileDownloadCompletedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: "[FD.OFUC.010] Downloading complete", category: "FileDownloader", resource: ea.RemoteFilePath));
+            
+            _fileDownloadCompleted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+        
+        private void OnFileDownloadPaused(FileDownloadPausedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: "[FD.OFUP.010] Downloading paused", category: "FileDownloader", resource: ea.RemoteFilePath));
+            
+            _fileDownloadPaused?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+        
+        private void OnFileDownloadStarted(FileDownloadStartedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: $"[FD.OFUS.010] Starting Downloading of '{ea.TotalBytesToBeDownloaded}' bytes", category: "FileDownloader", resource: ea.RemoteFilePath));
+            
+            _fileDownloadStarted?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+        
+        private void OnFileDownloadResumed(FileDownloadResumedEventArgs ea)
+        {
+            OnLogEmitted(new(level: ELogLevel.Info, message: "[FD.OFUR.010] Resumed Downloading of asset", category: "FileDownloader", resource: ea.RemoteFilePath));
+            
+            _fileDownloadResumed?.InvokeAllEventHandlersAndIgnoreExceptions(this, ea);
+        }
+        
         private void OnFatalErrorOccurred(FatalErrorOccurredEventArgs ea)
         {
             OnLogEmitted(new LogEmittedEventArgs(level: ELogLevel.Error, message: $"[{nameof(ea.GlobalErrorCode)}='{ea.GlobalErrorCode}'] {ea.ErrorMessage}", resource: ea.Resource, category: "file-downloader"));

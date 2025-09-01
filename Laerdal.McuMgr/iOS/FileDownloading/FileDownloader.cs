@@ -161,10 +161,10 @@ namespace Laerdal.McuMgr.FileDownloading
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
                 => LogMessageAdvertisement(
-                    message,
-                    category,
-                    HelpersIOS.TranslateEIOSLogLevel(level),
-                    resource
+                    level: HelpersIOS.TranslateEIOSLogLevel(level),
+                    message: message,
+                    category: category,
+                    resource: resource
                 );
 
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource) //conformance to the interface
