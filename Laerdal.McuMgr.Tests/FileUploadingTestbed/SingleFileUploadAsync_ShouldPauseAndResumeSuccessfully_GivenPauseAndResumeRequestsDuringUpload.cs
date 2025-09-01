@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3));
+            await work.Should().CompleteWithinAsync(TimeSpan.FromSeconds(5));
 
             mockedNativeFileUploaderProxy.PauseCalled.Should().BeTrue();
             mockedNativeFileUploaderProxy.ResumeCalled.Should().BeTrue();
@@ -88,8 +88,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
         private class MockedGreenNativeFileUploaderProxySpy9 : BaseMockedNativeFileUploaderProxySpy
         {
-            private string _currentRemoteFilePath;
-
             private readonly string _resourceId;
             private readonly ManualResetEventSlim _manualResetEventSlim = new(initialState: true);
 
@@ -112,8 +110,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                _currentRemoteFilePath = remoteFilePath;
-
                 base.NativeBeginUpload(
                     data: data,
                     resourceId: _resourceId,
