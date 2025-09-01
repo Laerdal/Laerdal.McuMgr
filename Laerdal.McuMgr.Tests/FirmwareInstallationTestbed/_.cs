@@ -12,6 +12,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             private readonly INativeFirmwareInstallerCallbacksProxy _firmwareInstallerCallbacksProxy;
 
             public string Nickname { get; set; }
+            public EFirmwareInstallationState CurrentState { get; set; }
 
             public bool CancelCalled { get; private set; }
             public bool DisconnectCalled { get; private set; }
@@ -64,7 +65,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 => _firmwareInstallerCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
 
             public void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
-                => _firmwareInstallerCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+            {
+                CurrentState = newState;
+                
+                _firmwareInstallerCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+            }
 
             public void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _firmwareInstallerCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event

@@ -11,8 +11,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 {
     public partial class FirmwareInstallerTestbed
     {
-        [Fact]
-        public async Task InstallAsync_ShouldThrowInvalidOperationException_GivenSecondaryAttemptInParallel()
+        [Theory] //@formatter:off                 task1UsesAsyncNotBeginInstall    task2UsesAsyncNotBeginInstall
+        [InlineData("FDT.IA.STIOE.GSAIP.010",     true,                            true                           )]
+        [InlineData("FDT.IA.STIOE.GSAIP.020",     true,                            false                          )]
+        [InlineData("FDT.IA.STIOE.GSAIP.030",     false,                           false                          )] //this case must also be checked here  @formatter:on
+        public async Task InstallAsync_ShouldThrowInvalidOperationException_GivenSecondaryAttemptInParallel(string testcaseNickname, bool task1UsesAsyncNotBeginInstall, bool task2UsesAsyncNotBeginInstall)
         {
             // Arrange
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy90(new GenericNativeFirmwareInstallerCallbacksProxy_());
@@ -23,19 +26,55 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             // Act
             var work = new Func<Task>(async () =>
             {
-                var racingTask1 = firmwareInstaller.InstallAsync(
-                    data: [1, 2, 3],
-                    maxTriesCount: 1,
-                    hostDeviceModel: "foobar",
-                    hostDeviceManufacturer: "acme corp."
-                );
+                var manualResetEvent = new ManualResetEvent(initialState: false);
                 
-                var racingTask2 = firmwareInstaller.InstallAsync(
-                    data: [4, 5, 6],
-                    maxTriesCount: 1,
-                    hostDeviceModel: "foobar",
-                    hostDeviceManufacturer: "acme corp."
-                );
+                var racingTask1 = Task.Run(async () =>
+                {
+                    manualResetEvent.WaitOne(); //parking both tasks at the start
+                    
+                    if (task1UsesAsyncNotBeginInstall)
+                    {
+                        await firmwareInstaller.InstallAsync(
+                            data: [1, 2, 3],
+                            maxTriesCount: 1,
+                            hostDeviceModel: "foobar",
+                            hostDeviceManufacturer: "acme corp."
+                        );
+                    }
+                    else
+                    {
+                        firmwareInstaller.BeginInstallation(
+                            data: [1, 2, 3],
+                            hostDeviceModel: "foobar",
+                            hostDeviceManufacturer: "acme corp."
+                        );    
+                    }
+                });
+
+                var racingTask2 = Task.Run(async () =>
+                {
+                    manualResetEvent.WaitOne(); //parking both tasks at the start
+                    
+                    if (task2UsesAsyncNotBeginInstall)
+                    {
+                        await firmwareInstaller.InstallAsync(
+                            data: [4, 5, 6],
+                            maxTriesCount: 1,
+                            hostDeviceModel: "foobar",
+                            hostDeviceManufacturer: "acme corp."
+                        );
+                    }
+                    else
+                    {
+                        firmwareInstaller.BeginInstallation(
+                            data: [4, 5, 6],
+                            hostDeviceModel: "foobar",
+                            hostDeviceManufacturer: "acme corp."
+                        );    
+                    }
+                });
+
+                manualResetEvent.Set(); //now start the core-logic of the two tasks at the exactly the same time
 
                 await Task.WhenAll(racingTask1, racingTask2); // let them race   one of the two should throw InvalidOperationException
                 
@@ -43,7 +82,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     throw new Exception("Both tasks completed successfully, which is unexpected.");
                 
                 if (racingTask1.IsFaulted && racingTask2.IsFaulted)
-                    throw new Exception("Both tasks completed successfully, which is unexpected.");
+                    throw new Exception("Both tasks errored-out, which is unexpected.");
                 
                 throw (racingTask1.IsFaulted ? racingTask1.Exception : racingTask2.Exception)!;
             });
@@ -141,14 +180,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds
                 );
 
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None); //must be outside the Task.Run()
+                Thread.Sleep(010);
+                    
+                StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle); //must be outside the Task.Run()
+                Thread.Sleep(500); //this delay needs to be a bit hefty for the sake of the beginInstall() race!
+                
                 Task.Run(function: async () => //00 vital
                 {
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.None);
-                    await Task.Delay(10);
-                    
-                    StateChangedAdvertisement(oldState: EFirmwareInstallationState.None, newState: EFirmwareInstallationState.Idle);
-                    await Task.Delay(10);
-                    
                     StateChangedAdvertisement(oldState: EFirmwareInstallationState.Idle, newState: EFirmwareInstallationState.Validating);
                     await Task.Delay(10);
                     
