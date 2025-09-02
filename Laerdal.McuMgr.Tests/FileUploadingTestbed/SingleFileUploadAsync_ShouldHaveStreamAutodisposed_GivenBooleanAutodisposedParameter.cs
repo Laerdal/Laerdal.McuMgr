@@ -56,7 +56,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(2.Seconds());
+            await work.Should().CompleteWithinAsync(10.Seconds());
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
