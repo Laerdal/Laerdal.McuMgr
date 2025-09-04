@@ -1,3 +1,5 @@
+#pragma warning disable xUnit1030
+
 using FluentAssertions;
 using Laerdal.McuMgr.FirmwareInstallation;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
@@ -19,19 +21,21 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
         public async Task InstallAsync_ShouldThrowInvalidOperationException_GivenSecondaryAttemptInParallel(string testcaseNickname, bool task1UsesAsyncNotBeginInstall, bool task2UsesAsyncNotBeginInstall)
         {
             // Arrange
-            var artificialDelayInsideBeginInstallationInMs = 5_000;
+            var artificialDelayInsideBeginInstallationInMs = 3_000;
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy90(new GenericNativeFirmwareInstallerCallbacksProxy_());
             var firmwareInstaller = new FirmwareInstallerSpy90(mockedNativeFirmwareInstallerProxy, artificialDelayInsideBeginInstallationInMs);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
+            var racingTask1 = (Task) null;
+            var racingTask2 = (Task) null;
             var work = new Func<Task>(async () =>
             {
                 var taskParkingGuard = new ManualResetEventSlim(initialState: false);
              
                 var task1ReadyGuard = new ManualResetEventSlim(initialState: false);
-                var racingTask1 = Task.Run(async () =>
+                racingTask1 = Task.Run(async () =>
                 {
                     task1ReadyGuard.Set(); //signal that task1 is parked and ready
                     taskParkingGuard.Wait(); //parking both tasks at the start
@@ -43,7 +47,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                             maxTriesCount: 1,
                             hostDeviceModel: "foobar",
                             hostDeviceManufacturer: "acme corp."
-                        );
+                        ).ConfigureAwait(false);
                     }
                     else
                     {
@@ -56,7 +60,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 });
                 
                 var task2ReadyGuard = new ManualResetEventSlim(initialState: false);
-                var racingTask2 = Task.Run(async () =>
+                racingTask2 = Task.Run(async () =>
                 {
                     task2ReadyGuard.Set(); //signal that task2 is parked and ready
                     taskParkingGuard.Wait(); //parking both tasks at the start
@@ -68,7 +72,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                             maxTriesCount: 1,
                             hostDeviceModel: "foobar",
                             hostDeviceManufacturer: "acme corp."
-                        );
+                        ).ConfigureAwait(false);
                     }
                     else
                     {
@@ -87,7 +91,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 
                 taskParkingGuard.Set(); //order  and finally start the core-logic of the two tasks at exactly the same time
 
-                await Task.WhenAll(racingTask1, racingTask2); // let them race   one of the two should throw InvalidOperationException
+                await Task.WhenAll(racingTask1, racingTask2).ConfigureAwait(false); // let them race   one of the two should throw InvalidOperationException
                 
                 if (racingTask1.IsCompletedSuccessfully && racingTask2.IsCompletedSuccessfully)
                     throw new Exception("Both tasks completed successfully, which is unexpected.");
@@ -99,8 +103,41 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 1_000));
-
+            try
+            {
+                await work.Should()
+                    .ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 4_000))
+                    .ConfigureAwait(false);
+            }
+            catch (Exception) // some times mysterious failures affect this test in our cicd - so we log some additional info to help debugging
+            {
+                // ReSharper disable ConstantNullCoalescingCondition
+                // ReSharper disable ConstantConditionalAccessQualifier
+                _logger.WriteLine($"""
+                                   ** Testcase '{testcaseNickname}' failed - additional info to help debugging:
+                                   **
+                                   ** task1UsesAsyncNotBeginInstall={task1UsesAsyncNotBeginInstall}
+                                   ** task2UsesAsyncNotBeginInstall={task2UsesAsyncNotBeginInstall}
+                                   **
+                                   ** racingTask1.Status={racingTask1?.Status.ToString() ?? "null"}
+                                   ** racingTask1.IsFaulted={racingTask1?.IsFaulted.ToString() ?? "null"}
+                                   ** racingTask1.IsCompletedSuccessfully={racingTask1?.IsCompletedSuccessfully.ToString() ?? "null"}
+                                   ** racingTask1.Exception(if any)={racingTask1?.Exception?.ToString() ?? "null"}
+                                   **
+                                   ** racingTask2.Status={racingTask2?.Status.ToString() ?? "null"}
+                                   ** racingTask2.IsFaulted={racingTask2?.IsFaulted.ToString() ?? "null"}
+                                   ** racingTask2.IsCompletedSuccessfully={racingTask2?.IsCompletedSuccessfully.ToString() ?? "null"}
+                                   ** racingTask2.Exception(if any)={racingTask2?.Exception?.ToString() ?? "null"}
+                                   **
+                                   ** GuardCallsCounter={firmwareInstaller?.GuardCallsCounter.ToString() ?? "<firmware installer is null!?>"}
+                                   ** ReleaseCallsCounter={firmwareInstaller?.ReleaseCallsCounter.ToString() ?? "<firmware installer is null!?>"}
+                                   ** InvalidOperationExceptionThrownByGuardCheckCounter={firmwareInstaller?.InvalidOperationExceptionThrownByGuardCheckCounter.ToString() ?? "<firmware installer is null!?>"}
+                                   """);
+                // ReSharper enable ConstantNullCoalescingCondition
+                // ReSharper enable ConstantConditionalAccessQualifier
+                throw;
+            }
+            
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
                 .Should().Be(2);
@@ -133,11 +170,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             public volatile int ReleaseCallsCounter;
             public volatile int InvalidOperationExceptionThrownByGuardCheckCounter;
 
-            public int ArtificialDelayInsideBeginInstallationInMs;
+            private readonly int _artificialDelayInsideBeginInstallationInMs;
             
             public FirmwareInstallerSpy90(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy, int artificialDelayInsideBeginInstallationInMs) : base(nativeFirmwareInstallerProxy)
             {
-                ArtificialDelayInsideBeginInstallationInMs = 5_000;
+                _artificialDelayInsideBeginInstallationInMs = artificialDelayInsideBeginInstallationInMs;
             }
 
             protected override void EnsureExclusiveOperationToken() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
@@ -148,7 +185,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 {
                     base.EnsureExclusiveOperationToken();
                     
-                    Thread.Sleep(ArtificialDelayInsideBeginInstallationInMs); //00
+                    Thread.Sleep(_artificialDelayInsideBeginInstallationInMs); //00
                 }
                 catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
