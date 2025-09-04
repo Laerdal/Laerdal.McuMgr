@@ -1,6 +1,7 @@
 ﻿using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
@@ -59,7 +60,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                         oldState: CurrentState,
                         newState: EFirmwareInstallationState.Error
                     );
-                    throw new InvalidOperationException("Another installation is already in progress.");
+                    throw new AnotherFirmwareInstallationIsAlreadyOngoingException();
                 }
 
                 return EFirmwareInstallationVerdict.Success;

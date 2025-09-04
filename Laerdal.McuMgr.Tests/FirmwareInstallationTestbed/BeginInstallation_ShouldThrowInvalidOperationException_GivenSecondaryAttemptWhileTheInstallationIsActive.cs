@@ -61,7 +61,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            (await work.Should().ThrowWithinAsync<InvalidOperationException>(1.Days())).WithMessage("*another installation is already in progress*");
+            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(3.Seconds());
 
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
