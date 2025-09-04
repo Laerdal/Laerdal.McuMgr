@@ -14,8 +14,7 @@ using McuMgrBindingsiOS;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
-    /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller
+    public partial class FirmwareInstaller
     {
         public FirmwareInstaller(object nativeBluetoothDevice) // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             : this(NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<CBPeripheral>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice)))
@@ -79,15 +78,15 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
-                CleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastInstallation(); // shouldnt be necessary   but just in case
 
                 _alreadyDisposed = true;
                 
                 base.Dispose(disposing: true);
             }
 
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
@@ -102,7 +101,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 _nativeFirmwareInstaller = null;
             }
 
-            public void CleanupResourcesOfLastInstallation() //00
+            public void TryCleanupResourcesOfLastInstallation() //00
             {
                 try
                 {
@@ -124,7 +123,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             public void Cancel() => _nativeFirmwareInstaller?.Cancel();
             public void Disconnect() => _nativeFirmwareInstaller?.Disconnect();
 
-            public EFirmwareInstallationVerdict BeginInstallation(
+            public EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -242,13 +241,16 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 return fatalErrorType switch
                 {
                     EIOSFirmwareInstallerFatalErrorType.Generic => EFirmwareInstallerFatalErrorType.Generic,
-                    EIOSFirmwareInstallerFatalErrorType.InvalidFirmware => EFirmwareInstallerFatalErrorType.InvalidFirmware,
                     EIOSFirmwareInstallerFatalErrorType.InvalidSettings => EFirmwareInstallerFatalErrorType.InvalidSettings,
-                    EIOSFirmwareInstallerFatalErrorType.DeploymentFailed => EFirmwareInstallerFatalErrorType.DeploymentFailed,
-                    EIOSFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout,
+                    EIOSFirmwareInstallerFatalErrorType.GivenFirmwareIsUnhealthy => EFirmwareInstallerFatalErrorType.GivenFirmwareDataUnhealthy,
                     EIOSFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut => EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut,
-                    EIOSFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress => EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress,
-
+                    EIOSFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress => EFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress,
+                    EIOSFirmwareInstallerFatalErrorType.InstallationInitializationFailed => EFirmwareInstallerFatalErrorType.InstallationInitializationFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout => EFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout,
+                    EIOSFirmwareInstallerFatalErrorType.PostInstallationDeviceRebootingFailed => EFirmwareInstallerFatalErrorType.PostInstallationDeviceRebootingFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwareExtendedDataIntegrityChecksFailed => EFirmwareInstallerFatalErrorType.FirmwareExtendedDataIntegrityChecksFailed,
+                    EIOSFirmwareInstallerFatalErrorType.FirmwarePostInstallationConfirmationFailed => EFirmwareInstallerFatalErrorType.FirmwarePostInstallationConfirmationFailed,
+                    EIOSFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed => EFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed,
                     _ => throw new ArgumentOutOfRangeException(nameof(fatalErrorType), actualValue: fatalErrorType, message: "Unknown enum value")
                 };
             }
@@ -287,10 +289,10 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             static private EFirmwareInstallationVerdict TranslateFirmwareInstallationVerdict(EIOSFirmwareInstallationVerdict verdict) => verdict switch
             {
                 EIOSFirmwareInstallationVerdict.Success => EFirmwareInstallationVerdict.Success, //0
-                EIOSFirmwareInstallationVerdict.FailedDeploymentError => EFirmwareInstallationVerdict.FailedDeploymentError,
                 EIOSFirmwareInstallationVerdict.FailedInvalidSettings => EFirmwareInstallationVerdict.FailedInvalidSettings,
-                EIOSFirmwareInstallationVerdict.FailedInvalidFirmware => EFirmwareInstallationVerdict.FailedInvalidFirmware,
+                EIOSFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy => EFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy,
                 EIOSFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress,
+                EIOSFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut => EFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut,
                 _ => throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value")
 
                 //0 we have to separate enums

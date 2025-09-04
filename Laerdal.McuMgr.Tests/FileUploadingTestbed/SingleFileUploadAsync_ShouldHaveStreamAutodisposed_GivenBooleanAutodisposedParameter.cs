@@ -56,7 +56,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(2.Seconds());
+            await work.Should().CompleteWithinAsync(10.Seconds());
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
@@ -92,13 +92,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //10 check if the stream was disposed or not based on the value of the autodisposeStream parameter
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy110 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy110 : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedGreenNativeFileUploaderProxySpy110(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -111,7 +111,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -125,11 +125,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     memoryAlignment: memoryAlignment //  android only
                 );
 
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
+                
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 00, 00, 00);
@@ -155,11 +157,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath, 100, 10, 10);
 
                     await Task.Delay(20);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //                                                            order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 });
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

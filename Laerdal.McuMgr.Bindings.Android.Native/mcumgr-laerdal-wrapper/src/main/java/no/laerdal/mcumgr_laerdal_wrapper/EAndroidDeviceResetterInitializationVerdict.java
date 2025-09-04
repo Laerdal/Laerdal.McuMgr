@@ -9,7 +9,7 @@ public enum EAndroidDeviceResetterInitializationVerdict
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidDeviceResetterInitializationVerdict(int value)
+    EAndroidDeviceResetterInitializationVerdict(final int value)
     {
         _value = value;
     }

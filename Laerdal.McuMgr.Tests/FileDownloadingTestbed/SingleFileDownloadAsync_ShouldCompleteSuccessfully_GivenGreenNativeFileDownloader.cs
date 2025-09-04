@@ -62,22 +62,22 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Downloading);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Downloading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Complete);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == expectedRemoteFilepath && args.NewState == EFileDownloaderState.Complete);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadStarted))
                 .WithSender(fileDownloader)
-                .WithArgs<FileDownloadStartedEventArgs>(args => args.ResourceId == expectedRemoteFilepath);
+                .WithArgs<FileDownloadStartedEventArgs>(args => args.RemoteFilePath == expectedRemoteFilepath);
             
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.FileDownloadCompleted))
                 .WithSender(fileDownloader)
-                .WithArgs<FileDownloadCompletedEventArgs>(args => args.ResourceId == expectedRemoteFilepath && args.Data.SequenceEqual(mockedFileData));
+                .WithArgs<FileDownloadCompletedEventArgs>(args => args.RemoteFilePath == expectedRemoteFilepath && args.Data.SequenceEqual(mockedFileData));
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -94,34 +94,35 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             }
 
             private int _tryCount;
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
                 _tryCount++;
 
-                var verdict = base.BeginDownload(
+                base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize
                 );
+                
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.None, totalBytesToBeDownloaded: 0, null);
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.Idle, totalBytesToBeDownloaded: 0, null);
 
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, totalBytesToBeDownloaded: 1_024, completeDownloadedData: null);
                     
                     await Task.Delay(20);
                     if (_tryCount < _maxNumberOfTriesForSuccess)
                     {
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
+                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error, totalBytesToBeDownloaded: 0, completeDownloadedData: null);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "fatal error occurred", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_Corrupt);
                         return;
                     }
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //   order
-                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                              order
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, 0, _mockedFileData);
                 });
 
-                return verdict;
+                return EFileDownloaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native downloader
             }

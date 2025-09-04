@@ -16,8 +16,7 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
-    /// <inheritdoc cref="IFirmwareInstaller"/>
-    public partial class FirmwareInstaller : IFirmwareInstaller
+    public partial class FirmwareInstaller
     {
         public FirmwareInstaller(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             androidContext: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<Context>(obj: androidContext, parameterName: nameof(androidContext), allowNulls: true),
@@ -92,7 +91,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastInstallation();
                 
                 _alreadyDisposed = true;
 
@@ -106,7 +106,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 }
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
@@ -118,14 +118,14 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 }
             }
             
-            public void CleanupResourcesOfLastInstallation()
+            public void TryCleanupResourcesOfLastInstallation()
             {
                 //nothing to do here for android   only ios needs this
             }
             
             #region commands
 
-            public EFirmwareInstallationVerdict BeginInstallation(
+            public EFirmwareInstallationVerdict NativeBeginInstallation(
                 byte[] data,
                 EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
                 bool? eraseSettings = null,
@@ -134,10 +134,10 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 int? windowCapacity = null,
                 int? memoryAlignment = null,
                 int? pipelineDepth = null, // ignored in android   it only affects ios
-                int? byteAlignment = null  // ignored in android   it only affects ios
+                int? byteAlignment = null // ignored in android   it only affects ios
             )
             {
-                var nativeVerdict = base.BeginInstallation(
+                return TranslateFirmwareInstallationVerdict(BeginInstallation(
                     data: data,
                     mode: TranslateFirmwareInstallationMode(mode),
                     eraseSettings: eraseSettings ?? false,
@@ -147,9 +147,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     estimatedSwapTimeInMilliseconds: estimatedSwapTimeInMilliseconds ?? -1
                     // pipelineDepth: ignored in android   it only affects ios
                     // byteAlignment: ignored in android   it only affects ios
-                );
-
-                return TranslateFirmwareInstallationVerdict(nativeVerdict);
+                ));
             }
             
             #endregion
@@ -261,25 +259,25 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 {
                     return EFirmwareInstallationVerdict.Success;
                 }
-
-                if (verdict == EAndroidFirmwareInstallationVerdict.FailedDeploymentError)
+                
+                if (verdict == EAndroidFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress)
                 {
-                    return EFirmwareInstallationVerdict.FailedDeploymentError;
+                    return EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress;
                 }
-
+                
                 if (verdict == EAndroidFirmwareInstallationVerdict.FailedInvalidSettings)
                 {
                     return EFirmwareInstallationVerdict.FailedInvalidSettings;
                 }
 
-                if (verdict == EAndroidFirmwareInstallationVerdict.FailedInvalidDataFile)
+                if (verdict == EAndroidFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy)
                 {
-                    return EFirmwareInstallationVerdict.FailedInvalidFirmware;
+                    return EFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy;
                 }
-
-                if (verdict == EAndroidFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress)
+                
+                if (verdict == EAndroidFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut)
                 {
-                    return EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress;
+                    return EFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut;
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(verdict), verdict, "Unknown enum value");
@@ -296,37 +294,57 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 {
                     return EFirmwareInstallerFatalErrorType.Generic;
                 }
-                
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidSettings)
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress) //native-state=none
+                {
+                    return EFirmwareInstallerFatalErrorType.InstallationAlreadyInProgress;
+                }
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidSettings) //native-state=none
                 {
                     return EFirmwareInstallerFatalErrorType.InvalidSettings;
                 }
-                
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InvalidFirmware)
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.GivenFirmwareDataUnhealthy) //native-state=none
                 {
-                    return EFirmwareInstallerFatalErrorType.InvalidFirmware;
+                    return EFirmwareInstallerFatalErrorType.GivenFirmwareDataUnhealthy;
                 }
-                
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.DeploymentFailed)
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.InstallationInitializationFailed) //native-state=none
                 {
-                    return EFirmwareInstallerFatalErrorType.DeploymentFailed;
+                    return EFirmwareInstallerFatalErrorType.InstallationInitializationFailed;
                 }
-                
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout)
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareStrictDataIntegrityChecksFailed) //native-state=validate
                 {
-                    return EFirmwareInstallerFatalErrorType.FirmwareImageSwapTimeout;
+                    return EFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed;
                 }
-                
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut)
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut) //native-state=upload
                 {
                     return EFirmwareInstallerFatalErrorType.FirmwareUploadingErroredOut;
                 }
-                
-                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress)
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout) //native-state=swap
                 {
-                    return EFirmwareInstallerFatalErrorType.FailedInstallationAlreadyInProgress;
+                    return EFirmwareInstallerFatalErrorType.FirmwareFinishingImageSwapTimeout;
                 }
-                
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.FirmwarePostInstallationConfirmationFailed) //native-state=confirm
+                {
+                    return EFirmwareInstallerFatalErrorType.FirmwarePostInstallationConfirmationFailed;
+                }
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed) //native-state=test
+                {
+                    return EFirmwareInstallerFatalErrorType.PostInstallationDeviceHealthcheckTestsFailed;
+                }
+
+                if (fatalErrorType == EAndroidFirmwareInstallerFatalErrorType.PostInstallationDeviceRebootingFailed) //native-state=reset
+                {
+                    return EFirmwareInstallerFatalErrorType.PostInstallationDeviceRebootingFailed;
+                }
+
                 throw new ArgumentOutOfRangeException(nameof(fatalErrorType), fatalErrorType, "Unknown enum value");
             }
 

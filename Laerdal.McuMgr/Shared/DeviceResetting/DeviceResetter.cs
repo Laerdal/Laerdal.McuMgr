@@ -137,7 +137,9 @@ namespace Laerdal.McuMgr.DeviceResetting
 
                 var verdict = BeginReset(); //00 dont use task.run here for now
                 if (verdict != EDeviceResetterInitializationVerdict.Success)
-                    throw new ArgumentException(verdict.ToString());
+                    throw verdict == EDeviceResetterInitializationVerdict.FailedOtherResetAlreadyInProgress
+                        ? new InvalidOperationException("Another reset operation is already in progress")
+                        : new ArgumentException(verdict.ToString());
 
                 await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs);
             }

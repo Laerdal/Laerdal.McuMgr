@@ -89,14 +89,14 @@ namespace Laerdal.McuMgr.FirmwareErasure
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
 
                 _alreadyDisposed = true;
 
                 base.Dispose(disposing: true);
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {

@@ -9,7 +9,7 @@ public enum EAndroidFirmwareEraserInitializationVerdict
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFirmwareEraserInitializationVerdict(int value)
+    EAndroidFirmwareEraserInitializationVerdict(final int value)
     {
         _value = value;
     }

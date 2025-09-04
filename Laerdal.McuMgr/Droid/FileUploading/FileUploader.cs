@@ -90,7 +90,8 @@ namespace Laerdal.McuMgr.FileUploading
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastUpload(); //just for the sake of completeness 
                 
                 _alreadyDisposed = true;
 
@@ -103,12 +104,13 @@ namespace Laerdal.McuMgr.FileUploading
                     //ignored
                 }
             }
-            
-            private void CleanupInfrastructure()
+
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
-                    Disconnect();
+                    // ReSharper disable once RedundantBaseQualifier
+                    base.NativeDispose(); //java-glue-library method 
                 }
                 catch
                 {
@@ -116,7 +118,7 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
 
-            public void CleanupResourcesOfLastUpload()
+            public void TryCleanupResourcesOfLastUpload()
             {
                 //nothing to do in android
             }
@@ -124,7 +126,7 @@ namespace Laerdal.McuMgr.FileUploading
             #region commands
 
             // ReSharper disable UnusedParameter.Local
-            public EFileUploaderVerdict BeginUpload(
+            public EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -135,6 +137,7 @@ namespace Laerdal.McuMgr.FileUploading
                 int? memoryAlignment //  android
             ) // ReSharper enable UnusedParameter.Local
             {
+                // ReSharper disable once RedundantBaseQualifier
                 return TranslateFileUploaderVerdict(base.BeginUpload(
                     data: data,
                     resourceId: resourceId,
@@ -145,9 +148,23 @@ namespace Laerdal.McuMgr.FileUploading
                 ));
             }
             
-            public new void Cancel(string reason = "")
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryPause()
             {
-                base.Cancel(reason);
+                return base.TryPause();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryResume()
+            {
+                return base.TryResume();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            // ReSharper disable once OptionalParameterHierarchyMismatch
+            public override bool TryCancel(string reason = "")
+            {
+                return base.TryCancel(reason);
             }
 
             public bool TrySetContext(object context) //the parameter must be of type 'object' so that it wont cause problems in platforms other than android
@@ -164,9 +181,16 @@ namespace Laerdal.McuMgr.FileUploading
                 return base.TrySetBluetoothDevice(androidBluetoothDevice);
             }
             
-            public new bool TryInvalidateCachedTransport()
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryDisconnect() //identical to base.TryDisconnect()
             {
-                return base.TryInvalidateCachedTransport();
+                return base.TryDisconnect();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryInvalidateCachedInfrastructure()
+            {
+                return base.TryInvalidateCachedInfrastructure();
             }
 
             #endregion commands
@@ -228,20 +252,6 @@ namespace Laerdal.McuMgr.FileUploading
                 
                 _fileUploaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
-            
-            public override void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath)
-            {
-                base.FileUploadStartedAdvertisement(resourceId, remoteFilePath); //just in case
-
-                _fileUploaderCallbacksProxy?.FileUploadStartedAdvertisement(resourceId, remoteFilePath);
-            }
-
-            public override void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
-            {
-                base.FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //just in case
-
-                _fileUploaderCallbacksProxy?.FileUploadCompletedAdvertisement(resourceId, remoteFilePath);
-            }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
             {
@@ -250,25 +260,27 @@ namespace Laerdal.McuMgr.FileUploading
                 _fileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState) 
+            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EAndroidFileUploaderState oldState, EAndroidFileUploaderState newState, long totalBytesToBeUploaded)
             {
-                base.StateChangedAdvertisement(resourceId, remoteFilePath, oldState, newState); //just in case
+                base.StateChangedAdvertisement(resourceId, remoteFilePath, oldState, newState, totalBytesToBeUploaded); //just in case
 
                 StateChangedAdvertisement(
                     oldState: TranslateEAndroidFileUploaderState(oldState),
                     newState: TranslateEAndroidFileUploaderState(newState),
                     resourceId: resourceId, //essentially the remote filepath
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
                 );
             }
 
-            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState)
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded) //conforms to the interface
             {
                 _fileUploaderCallbacksProxy?.StateChangedAdvertisement(
                     oldState: oldState,
                     newState: newState,
                     resourceId: resourceId,
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
                 );
             }
 
@@ -343,6 +355,11 @@ namespace Laerdal.McuMgr.FileUploading
                 if (state == EAndroidFileUploaderState.Paused)
                 {
                     return EFileUploaderState.Paused;
+                }
+                
+                if (state == EAndroidFileUploaderState.Resuming)
+                {
+                    return EFileUploaderState.Resuming;
                 }
 
                 if (state == EAndroidFileUploaderState.Complete)

@@ -11,33 +11,28 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 {
     public partial class FileUploaderTestbed
     {
-        [Theory]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.010", new[] { "/foo/bar.bin", "" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.020", new[] { "/foo/bar.bin", null })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\f/pong.bin" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "/ping\r/pong.bin" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping\n/pong.bin" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "/ping\r\n/pong.bin" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.030", new[] { "/foo/bar.bin", "ping/pong.bin/" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.040", new[] { "/foo/bar.bin", "/ping/pong.bin/" })]
-        [InlineData("FUT.MFDA.STAE.GPCWEFTD.050", new[] { "/foo/bar.bin", "  ping/pong.bin/  " })] //2nd path gets normalized to  "/ping/pong.bin/" which is invalid due to the trailing slash 
-        public async Task MultipleFilesUploadAsync_ShouldThrowArgumentException_GivenPathCollectionWithErroneousFilesToUpload(string testcaseNickname, IEnumerable<string> remoteFilePaths)
+        [Fact]
+        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenNoInputFiles()
         {
             // Arrange
-            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy11(new GenericNativeFileUploaderCallbacksProxy_());
+            var mockedNativeFileUploaderProxy = new MockedGreenNativeFileUploaderProxySpy5(new GenericNativeFileUploaderCallbacksProxy_());
             var fileUploader = new FileUploader(mockedNativeFileUploaderProxy);
 
             using var eventsMonitor = fileUploader.Monitor();
+            fileUploader.FileUploadPaused += (_, _) => throw new Exception($"{nameof(fileUploader.FileUploadStarted)} -> oops!");
+            fileUploader.FileUploadResumed += (_, _) => throw new Exception($"{nameof(fileUploader.FatalErrorOccurred)} -> oops!");
 
             // Act
-            var work = new Func<Task>(async () => await fileUploader.UploadAsync(
+            var work = new Func<Task<IEnumerable<string>>>(async () => await fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
-                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, x => (ResourceId: x, Data: new byte[] { 1 }))
+                remoteFilePathsAndTheirData: new Dictionary<string, (string, IEnumerable<byte[]>)>(0)
             ));
 
             // Assert
-            await work.Should().ThrowWithinAsync<ArgumentException>(500.Milliseconds()); //dont use throwexactlyasync<> here
+            var filesThatFailedToBeUploaded = (await work.Should().CompleteWithinAsync(500.Milliseconds())).Which;
+            
+            filesThatFailedToBeUploaded.Should().BeEmpty();
 
             eventsMonitor.OccurredEvents.Should().HaveCount(0);
 
@@ -48,13 +43,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy11 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy5 : BaseMockedNativeFileUploaderProxySpy
         {
-            public MockedGreenNativeFileUploaderProxySpy11(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
+            public MockedGreenNativeFileUploaderProxySpy5(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -67,7 +62,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -80,19 +75,20 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     windowCapacity: windowCapacity, //   android only
                     memoryAlignment: memoryAlignment //  android only
                 );
+                
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
 
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
                     
                     await Task.Delay(20);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
-                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 });
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

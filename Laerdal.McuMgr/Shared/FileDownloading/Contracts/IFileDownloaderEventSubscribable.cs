@@ -22,6 +22,12 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <summary>Event raised when the file-download has just started</summary>
         event EventHandler<FileDownloadStartedEventArgs> FileDownloadStarted;
         
+        /// <summary>Event raised when the file-download has been paused</summary>
+        event EventHandler<FileDownloadPausedEventArgs> FileDownloadPaused;
+
+        /// <summary>Event raised when the file-download has just been resumed</summary>
+        event EventHandler<FileDownloadResumedEventArgs> FileDownloadResumed;
+        
         /// <summary>Event raised when the file-download is complete</summary>
         event EventHandler<FileDownloadCompletedEventArgs> FileDownloadCompleted;
 

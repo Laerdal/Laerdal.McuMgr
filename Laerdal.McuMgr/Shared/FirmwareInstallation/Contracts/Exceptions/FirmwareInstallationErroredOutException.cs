@@ -1,20 +1,23 @@
 using System;
 using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions
 {
     public class FirmwareInstallationErroredOutException : Exception, IFirmwareInstallationException
     {
-        public EGlobalErrorCode GlobalErrorCode { get; } = EGlobalErrorCode.Unset;
+        public readonly EGlobalErrorCode GlobalErrorCode = EGlobalErrorCode.Unset;
+        public readonly EFirmwareInstallerFatalErrorType FatalErrorType = EFirmwareInstallerFatalErrorType.Generic;
 
-        public FirmwareInstallationErroredOutException(string errorMessage, EGlobalErrorCode globalErrorCode = EGlobalErrorCode.Unset)
-            : base($"An error occurred during firmware installation: '{errorMessage}' (globalErrorCode={globalErrorCode})")
+        public FirmwareInstallationErroredOutException(string errorMessage, EFirmwareInstallerFatalErrorType fatalErrorType = EFirmwareInstallerFatalErrorType.Generic, EGlobalErrorCode globalErrorCode = EGlobalErrorCode.Unset)
+            : base($"An error occurred during firmware installation: {errorMessage} [fatalErrorType={fatalErrorType}] [globalErrorCode={globalErrorCode}]")
         {
+            FatalErrorType = fatalErrorType;
             GlobalErrorCode = globalErrorCode;
         }
 
         public FirmwareInstallationErroredOutException(string errorMessage, Exception innerException)
-            : base($"An error occurred during firmware installation: '{errorMessage}'", innerException)
+            : base($"An error occurred during firmware installation: {errorMessage}", innerException)
         {
         }
     }

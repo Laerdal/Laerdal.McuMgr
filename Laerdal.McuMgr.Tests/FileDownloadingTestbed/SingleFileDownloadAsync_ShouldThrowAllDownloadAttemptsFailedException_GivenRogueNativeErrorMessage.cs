@@ -65,12 +65,12 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == remoteFilePath && args.NewState == EFileDownloaderState.Downloading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileDownloader.StateChanged))
                 .WithSender(fileDownloader)
-                .WithArgs<StateChangedEventArgs>(args => args.Resource == remoteFilePath && args.NewState == EFileDownloaderState.Error);
+                .WithArgs<StateChangedEventArgs>(args => args.RemoteFilePath == remoteFilePath && args.NewState == EFileDownloaderState.Error);
 
             //00 we dont want to disconnect the device regardless of the outcome
         }
@@ -85,27 +85,29 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 _rogueNativeErrorMessage = rogueNativeErrorMessage;
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(
+                base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize
                 );
+                
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.None, totalBytesToBeDownloaded: 0, null);
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.Idle, totalBytesToBeDownloaded: 0, null);
 
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(100);
 
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, totalBytesToBeDownloaded: 1_024, completeDownloadedData: null);
 
                     await Task.Delay(100);
                     
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Error, totalBytesToBeDownloaded: 0, completeDownloadedData: null);
                     FatalErrorOccurredAdvertisement(remoteFilePath, _rogueNativeErrorMessage, EGlobalErrorCode.Generic);
                 });
 
-                return verdict;
+                return EFileDownloaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native downloader
             }

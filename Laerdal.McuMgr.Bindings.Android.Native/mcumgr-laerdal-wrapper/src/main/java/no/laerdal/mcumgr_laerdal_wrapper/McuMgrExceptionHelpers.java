@@ -10,7 +10,7 @@ final class McuMgrExceptionHelpers
     public static int DeduceGlobalErrorCodeFromException(final Exception exception)
     {
         if (!(exception instanceof McuMgrErrorException))
-            return -99;
+            return -99; //aka "unset / unknown error"
 
         McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         McuMgrErrorCode exceptionCodeSpecs = mcuMgrErrorException.getCode();

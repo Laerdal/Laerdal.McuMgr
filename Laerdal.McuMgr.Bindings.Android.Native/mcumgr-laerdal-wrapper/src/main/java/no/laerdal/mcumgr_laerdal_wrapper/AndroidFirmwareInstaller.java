@@ -2,11 +2,7 @@ package no.laerdal.mcumgr_laerdal_wrapper;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.SystemClock;
 import androidx.annotation.NonNull;
-import io.runtime.mcumgr.McuMgrTransport;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
@@ -27,16 +23,12 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("unused")
 public class AndroidFirmwareInstaller
 {
-    private Handler _handler;
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private HandlerThread _handlerThread;
     @SuppressWarnings("FieldCanBeLocal")
     private final Context _context;
     @SuppressWarnings("FieldCanBeLocal")
     private final BluetoothDevice _bluetoothDevice;
 
-    private McuMgrTransport _transport;
+    private McuMgrBleTransport _transport;
     private FirmwareUpgradeManager _manager;
 
     private long _uploadStartTimestampInMs;
@@ -87,7 +79,7 @@ public class AndroidFirmwareInstaller
     {
         if (!IsCold()) //if an installation is already in progress we bail out
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.FAILED__INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
+            onError(EAndroidFirmwareInstallerFatalErrorType.INSTALLATION_ALREADY_IN_PROGRESS, "[AFI.BI.000] Another firmware installation is already in progress");
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_ALREADY_IN_PROGRESS;
         }
@@ -107,9 +99,9 @@ public class AndroidFirmwareInstaller
             }
             catch (final Exception ex2)
             {
-                onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_FIRMWARE, ex2.getMessage(), ex2);
+                onError(EAndroidFirmwareInstallerFatalErrorType.GIVEN_FIRMWARE_DATA_UNHEALTHY, "[AFI.BI.010] Failed to extract firmware-images" + ex2, ex2);
 
-                return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_DATA_FILE;
+                return EAndroidFirmwareInstallationVerdict.FAILED__GIVEN_FIRMWARE_UNHEALTHY;
             }
         }
 
@@ -119,10 +111,10 @@ public class AndroidFirmwareInstaller
 
         if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000)
         { //it is better to just warn the calling environment instead of erroring out
-            logMessageAdvertisement(
-                    "Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
-                    "FirmwareInstaller",
-                    "WARN"
+            emitLogEntry(
+                    "[AFI.BI.015] Estimated swap-time of '" + estimatedSwapTimeInMilliseconds + "' milliseconds seems suspiciously low - did you mean to say '" + (estimatedSwapTimeInMilliseconds * 1000) + "' milliseconds?",
+                    "firmware-installer",
+                    EAndroidLoggingLevel.Warning
             );
         }
 
@@ -141,7 +133,7 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, ex.getMessage(), ex);
+            onError(EAndroidFirmwareInstallerFatalErrorType.INVALID_SETTINGS, "[AFI.BI.020] Failed to digest settings:\n\n" + ex, ex);
 
             return EAndroidFirmwareInstallationVerdict.FAILED__INVALID_SETTINGS;
         }
@@ -154,9 +146,9 @@ public class AndroidFirmwareInstaller
         }
         catch (final Exception ex)
         {
-            onError(EAndroidFirmwareInstallerFatalErrorType.DEPLOYMENT_FAILED, ex.getMessage(), ex);
+            onError(EAndroidFirmwareInstallerFatalErrorType.INSTALLATION_INITIALIZATION_FAILED, "[AFI.BI.030] Failed to kick-start the installation:\n\n" + ex, ex);
 
-            return EAndroidFirmwareInstallationVerdict.FAILED__DEPLOYMENT_ERROR;
+            return EAndroidFirmwareInstallationVerdict.FAILED__INSTALLATION_INITIALIZATION_ERRORED_OUT;
         }
 
         return EAndroidFirmwareInstallationVerdict.SUCCESS;
@@ -195,6 +187,7 @@ public class AndroidFirmwareInstaller
     @Contract(pure = true)
     private boolean IsCold()
     {
+        // dont add .IDLE in the mix as it will cause corner-case bugs when it comes to racing threads calling beginInstall()!
         return _currentState == EAndroidFirmwareInstallationState.NONE
                 || _currentState == EAndroidFirmwareInstallationState.ERROR
                 || _currentState == EAndroidFirmwareInstallationState.COMPLETE
@@ -249,21 +242,21 @@ public class AndroidFirmwareInstaller
 
     public void disconnect()
     {
-        if (_transport == null) {
-            logMessageAdvertisement("Transport is null - no need to disconnect", "FirmwareInstaller", "VERBOSE");
+        if (_transport == null)
+        {
+            emitLogEntry("Transport is null - no need to disconnect", "firmware-installer", EAndroidLoggingLevel.Verbose);
             return;
         }
 
-        //noinspection CatchMayIgnoreException
         try
         {
             _transport.release();
-            _backgroundExecutor.shutdownNow();
-            logMessageAdvertisement("Connection closed!", "FirmwareInstaller", "INFO");
+            //_backgroundExecutor.shutdown(); //dont   this doesnt belong here
+            emitLogEntry("Connection closed!", "firmware-installer", EAndroidLoggingLevel.Info);
         }
         catch (Exception ex)
         {
-            logMessageAdvertisement("Failed to close transport connection: " + ex.getMessage(), "FirmwareInstaller", "ERROR");
+            emitLogEntry("Failed to close transport connection: " + ex.getMessage(), "firmware-installer", EAndroidLoggingLevel.Error);
         }
     }
 
@@ -279,18 +272,23 @@ public class AndroidFirmwareInstaller
 
     private void setState(final EAndroidFirmwareInstallationState newState)
     {
+        if (_currentState == newState)
+            return; //no change
+
         final EAndroidFirmwareInstallationState oldState = _currentState; //order
 
         _currentState = newState; //order
 
-        if (oldState == EAndroidFirmwareInstallationState.UPLOADING && newState == EAndroidFirmwareInstallationState.TESTING) //00   order
-        {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0);
-        }
+        fireAndForgetInTheBg(() -> {
+            if (newState == EAndroidFirmwareInstallationState.TESTING) //00
+            {
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0); //order
+            }
 
-        fireAndForgetInTheBg(() -> stateChangedAdvertisement(oldState, newState)); //order
+            stateChangedAdvertisement(oldState, newState); //order
+        });
 
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //00  trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
 
     protected void onCleared()
@@ -315,12 +313,15 @@ public class AndroidFirmwareInstaller
     {
         EAndroidFirmwareInstallationState currentStateSnapshot = _currentState; //00  order
         setState(EAndroidFirmwareInstallationState.ERROR); //                         order
-        fatalErrorOccurredAdvertisement( //                                           order
+        setBusyState(false); //                                                       order
+
+        _lastFatalErrorMessage = errorMessage; //                                     order
+        fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement( //                order
                 currentStateSnapshot,
                 fatalErrorType,
                 errorMessage,
                 McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
-        );
+        ));
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
@@ -328,7 +329,12 @@ public class AndroidFirmwareInstaller
     //this method is meant to be overridden by csharp binding libraries to intercept updates
     public void fatalErrorOccurredAdvertisement(final EAndroidFirmwareInstallationState state, final EAndroidFirmwareInstallerFatalErrorType fatalErrorType, final String errorMessage, final int globalErrorCode)
     {
-        _lastFatalErrorMessage = errorMessage;
+    }
+
+    //@Contract(pure = true) //dont
+    private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level)
+    {
+        fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString()));
     }
 
     @Contract(pure = true)
@@ -366,12 +372,11 @@ public class AndroidFirmwareInstaller
         if (!_manager.isInProgress())
             return;
 
-        setState(EAndroidFirmwareInstallationState.PAUSED);
-        _manager.pause();
-
-        // Timber.i("Upload paused"); //todo  logging
-        setLoggingEnabled(true);
         setBusyState(false);
+        setState(EAndroidFirmwareInstallationState.PAUSED);
+
+        _manager.pause();
+        setLoggingEnabledOnTransport(true);
     }
 
     public void resume()
@@ -382,7 +387,7 @@ public class AndroidFirmwareInstaller
         setBusyState(true);
         setState(EAndroidFirmwareInstallationState.UPLOADING);
 
-        setLoggingEnabled(false);
+        setLoggingEnabledOnTransport(false);
         _manager.resume();
     }
 
@@ -409,7 +414,7 @@ public class AndroidFirmwareInstaller
                 final FirmwareUpgradeManager.State newState
         )
         {
-            setLoggingEnabled(newState != State.UPLOAD);
+            setLoggingEnabledOnTransport(newState != State.UPLOAD);
 
             switch (newState)
             {
@@ -438,28 +443,58 @@ public class AndroidFirmwareInstaller
         public void onUpgradeCompleted()
         {
             setState(EAndroidFirmwareInstallationState.COMPLETE);
-            // Timber.i("Install complete");
-            setLoggingEnabled(true);
             setBusyState(false);
+
+            setLoggingEnabledOnTransport(true);
         }
 
         @Override
         public void onUpgradeFailed(final FirmwareUpgradeManager.State state, final McuMgrException ex)
         {
+            EAndroidFirmwareInstallerFatalErrorType fatalErrorType = DeduceInstallationFailureType(state, ex);
+
+            onError(fatalErrorType, "[AFI.OAF.010] Upgrade failed:\n\n" + ex, ex);
+            setBusyState(false);
+
+            setLoggingEnabledOnTransport(true);
+        }
+
+        private EAndroidFirmwareInstallerFatalErrorType DeduceInstallationFailureType(final FirmwareUpgradeManager.State state, final McuMgrException ex)
+        {
             EAndroidFirmwareInstallerFatalErrorType fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.GENERIC;
-            if (state == State.UPLOAD)
+
+            switch (state)
             {
-                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_UPLOADING_ERRORED_OUT;
-            }
-            else if (state == State.CONFIRM && ex instanceof McuMgrTimeoutException)
-            {
-                fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_IMAGE_SWAP_TIMEOUT;
+                case NONE: //impossible to happen   should default to GENERIC
+                    break;
+
+                case VALIDATE:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_STRICT_DATA_INTEGRITY_CHECKS_FAILED; //crc checks failed before the installation even commenced
+                    break;
+
+                case UPLOAD:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_UPLOADING_ERRORED_OUT; //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
+                    break;
+
+                case TEST:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.POST_INSTALLATION_DEVICE_HEALTHCHECK_TESTS_FAILED;
+                    break;
+
+                case RESET:
+                    fatalErrorType = EAndroidFirmwareInstallerFatalErrorType.POST_INSTALLATION_DEVICE_REBOOTING_FAILED;
+                    break;
+
+                case CONFIRM:
+                    fatalErrorType = ex instanceof McuMgrTimeoutException
+                                 ? EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_FINISHING_IMAGE_SWAP_TIMEOUT
+                                 : EAndroidFirmwareInstallerFatalErrorType.FIRMWARE_POST_INSTALLATION_CONFIRMATION_FAILED;
+                    break;
+
+                default:
+                    break; //better not throw here
             }
 
-            onError(fatalErrorType, ex.getMessage(), ex);
-            setLoggingEnabled(true);
-            // Timber.e(error, "Install failed");
-            setBusyState(false);
+            return fatalErrorType;
         }
 
         @Override
@@ -467,8 +502,8 @@ public class AndroidFirmwareInstaller
         {
             setState(EAndroidFirmwareInstallationState.CANCELLED);
             cancelledAdvertisement();
-            // Timber.w("Install cancelled");
-            setLoggingEnabled(true);
+
+            setLoggingEnabledOnTransport(true);
             setBusyState(false);
         }
 
@@ -478,17 +513,17 @@ public class AndroidFirmwareInstaller
             if (imageSize == 0)
                 return;
 
-            final long uptimeMillis = SystemClock.uptimeMillis();
+            fireAndForgetInTheBg(() -> {
+                int lastProgress = (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
+                float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
+                float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestamp);
 
-            int lastProgress = (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
-            float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
-            float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestamp);
-
-            fireAndForgetInTheBg(() -> firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement( //fire-and-forget in the bg to help performance a bit
-                    lastProgress,
-                    currentThroughputInKBps,
-                    totalAverageThroughputInKBps
-            ));
+                firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement( //fire-and-forget in the bg to help performance a bit
+                        lastProgress,
+                        currentThroughputInKBps,
+                        totalAverageThroughputInKBps
+                );
+            });
         }
 
         @SuppressWarnings("DuplicatedCode")
@@ -532,27 +567,31 @@ public class AndroidFirmwareInstaller
 
     private void configureConnectionSettings(int initialMtuSize)
     {
-        final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport))
-            return;
+        if (_transport == null)
+        {
+            emitLogEntry("[AFI.CCS.000] Transport is null - instantiating it now", "firmware-installer", EAndroidLoggingLevel.Warning);
 
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
+            _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
+        }
 
         if (initialMtuSize > 0)
         {
-            bleTransporter.setInitialMtu(initialMtuSize);
+            _transport.setInitialMtu(initialMtuSize);
+            emitLogEntry("[AFI.CCS.010] Initial-MTU-size set explicitly to " + initialMtuSize, "firmware-installer", EAndroidLoggingLevel.Info);
+        }
+        else
+        {
+            emitLogEntry("[AFI.CCS.020] Initial-MTU-size left to its nordic-default-value which is probably 498", "firmware-installer", EAndroidLoggingLevel.Info);
         }
 
-        bleTransporter.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
+        _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
-    private void setLoggingEnabled(final boolean enabled)
+    private void setLoggingEnabledOnTransport(final boolean enabled)
     {
-        final McuMgrTransport transporter = _manager.getTransporter();
-        if (!(transporter instanceof McuMgrBleTransport))
+        if (_transport == null)
             return;
 
-        final McuMgrBleTransport bleTransporter = (McuMgrBleTransport) transporter;
-        bleTransporter.setLoggingEnabled(enabled);
+        _transport.setLoggingEnabled(enabled);
     }
 }

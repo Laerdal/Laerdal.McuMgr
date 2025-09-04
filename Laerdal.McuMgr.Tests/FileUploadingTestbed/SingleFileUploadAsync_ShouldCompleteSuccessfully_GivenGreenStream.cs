@@ -85,7 +85,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy100 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy100 : BaseMockedNativeFileUploaderProxySpy
         {
             private readonly int _maxTriesCount;
             
@@ -95,7 +95,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             }
 
             private int _tryCounter;
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -110,7 +110,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 _tryCounter++;
 
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -124,13 +124,15 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     memoryAlignment: memoryAlignment //  android only
                 );
 
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
+                
                 Task.Run(async () => //00 vital
                 {
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Idle, totalBytesToBeUploaded: 0);
                     await Task.Delay(10);
 
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
                     await Task.Delay(10);
 
                     await Task.Delay(5);
@@ -148,7 +150,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     if (_tryCounter < _maxTriesCount)
                     {
                         await Task.Delay(20);
-                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error); // order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0); // order
                         FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "fatal error occurred", EGlobalErrorCode.Generic); // order
                         return;
                     }
@@ -165,11 +167,10 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     await Task.Delay(5);
                     FileUploadProgressPercentageAndDataThroughputChangedAdvertisement(resourceId, remoteFilePath,100, 10, 10);
 
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); // order
-                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //                                                            order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 });
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

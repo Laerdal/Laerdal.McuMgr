@@ -56,9 +56,17 @@ namespace Laerdal.McuMgr.FileUploading
             
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
-            public void Cancel(string reason = "") => _nativeFileUploader?.Cancel(reason);
-            public void Disconnect() => _nativeFileUploader?.Disconnect();
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryPause() => _nativeFileUploader?.TryPause() ?? false;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryResume() => _nativeFileUploader?.TryResume() ?? false;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryCancel(string reason = "") => _nativeFileUploader?.TryCancel(reason) ?? false;
 
+            public bool TryDisconnect() => _nativeFileUploader?.TryDisconnect() ?? false;
+            
             public new void Dispose()
             {
                 Dispose(disposing: true); //doesnt throw
@@ -85,8 +93,8 @@ namespace Laerdal.McuMgr.FileUploading
                 if (!disposing)
                     return;
 
-                CleanupInfrastructure();
-                CleanupResourcesOfLastUpload();
+                TryCleanupInfrastructure();
+                TryCleanupResourcesOfLastUpload();
 
                 _alreadyDisposed = true;
 
@@ -100,15 +108,15 @@ namespace Laerdal.McuMgr.FileUploading
                 }
             }
 
-            private void CleanupInfrastructure() // @formatter:off
+            private void TryCleanupInfrastructure() // @formatter:off
             {
-                try { Disconnect();                   } catch { /*ignored*/ }
-                try { _nativeFileUploader?.Dispose(); } catch { /*ignored*/ }
+                try { _nativeFileUploader?.NativeDispose(); } catch { /*ignored*/ } //order
+                try { _nativeFileUploader?.Dispose();       } catch { /*ignored*/ } //order
                 
                 //_nativeFileUploader = null;       @formatter:on
             }
 
-            public void CleanupResourcesOfLastUpload() //00
+            public void TryCleanupResourcesOfLastUpload() //00
             {
                 try
                 {
@@ -125,7 +133,7 @@ namespace Laerdal.McuMgr.FileUploading
 
             private NSData _nsDataOfFileInCurrentlyActiveUpload;
             
-            public EFileUploaderVerdict BeginUpload(
+            public EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -169,9 +177,9 @@ namespace Laerdal.McuMgr.FileUploading
                 return _nativeFileUploader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
             }
 
-            public bool TryInvalidateCachedTransport()
+            public bool TryInvalidateCachedInfrastructure()
             {               
-                return _nativeFileUploader?.TryInvalidateCachedTransport() ?? false;
+                return _nativeFileUploader?.TryInvalidateCachedInfrastructure() ?? false;
             }
 
             #endregion commands
@@ -208,27 +216,23 @@ namespace Laerdal.McuMgr.FileUploading
                     resourceId: resource
                 );
 
-            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EIOSFileUploaderState oldState, EIOSFileUploaderState newState)
+            public override void StateChangedAdvertisement(string resourceId, string remoteFilePath, EIOSFileUploaderState oldState, EIOSFileUploaderState newState, nint totalBytesToBeUploadedAsNint)
                 => StateChangedAdvertisement(
                     newState: TranslateEIOSFileUploaderState(newState),
                     oldState: TranslateEIOSFileUploaderState(oldState),
                     resourceId: resourceId, //essentially the local filepath most of the times
-                    remoteFilePath: remoteFilePath //essentially the remote filepath
+                    remoteFilePath: remoteFilePath, //essentially the remote filepath
+                    totalBytesToBeUploaded: totalBytesToBeUploadedAsNint
                 );
 
-            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState) //conformance to the interface
+            public void StateChangedAdvertisement(string resourceId, string remoteFilePath, EFileUploaderState oldState, EFileUploaderState newState, long totalBytesToBeUploaded) //conforms to the interface
                 => _nativeFileUploaderCallbacksProxy?.StateChangedAdvertisement(
                     oldState: oldState,
                     newState: newState,
                     resourceId: resourceId,
-                    remoteFilePath: remoteFilePath
+                    remoteFilePath: remoteFilePath,
+                    totalBytesToBeUploaded: totalBytesToBeUploaded
                 );
-
-            public override void FileUploadStartedAdvertisement(string resourceId, string remoteFilePath)
-                => _nativeFileUploaderCallbacksProxy?.FileUploadStartedAdvertisement(resourceId, remoteFilePath);
-            
-            public override void FileUploadCompletedAdvertisement(string resourceId, string remoteFilePath)
-                => _nativeFileUploaderCallbacksProxy?.FileUploadCompletedAdvertisement(resourceId, remoteFilePath);
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileUploaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
@@ -318,6 +322,7 @@ namespace Laerdal.McuMgr.FileUploading
                 EIOSFileUploaderState.Idle => EFileUploaderState.Idle,
                 EIOSFileUploaderState.Error => EFileUploaderState.Error,
                 EIOSFileUploaderState.Paused => EFileUploaderState.Paused,
+                EIOSFileUploaderState.Resuming => EFileUploaderState.Resuming,
                 EIOSFileUploaderState.Complete => EFileUploaderState.Complete,
                 EIOSFileUploaderState.Uploading => EFileUploaderState.Uploading,
                 EIOSFileUploaderState.Cancelled => EFileUploaderState.Cancelled,

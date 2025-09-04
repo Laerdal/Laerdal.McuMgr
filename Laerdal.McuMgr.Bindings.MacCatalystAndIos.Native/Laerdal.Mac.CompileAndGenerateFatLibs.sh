@@ -369,7 +369,32 @@ function create_fat_binaries() {
   find                                           \
         "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
         -type f                                  \
-        -exec sed -i.bak 's/bool TryInvalidateCachedTransport { get; }/bool TryInvalidateCachedTransport();/gi' {} \;
+        -exec sed -i.bak 's/bool TryInvalidateCachedInfrastructure { get; }/bool TryInvalidateCachedInfrastructure();/gi' {} \;
+
+  find                                           \
+        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+        -type f                                  \
+        -exec sed -i.bak 's/bool TryPause { get; }/bool TryPause();/gi' {} \;
+
+  find                                           \
+        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+        -type f                                  \
+        -exec sed -i.bak 's/bool TryResume { get; }/bool TryResume();/gi' {} \;
+
+  find                                           \
+        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+        -type f                                  \
+        -exec sed -i.bak 's/bool TryDisconnect { get; }/bool TryDisconnect();/gi' {} \;
+
+#  find                                           \
+#        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+#        -type f                                  \
+#        -exec sed -i.bak 's/FileDownloadStartedAdvertisement(string resourceId, IntPtr totalBytesToBeUploaded)/FileDownloadStartedAdvertisement(string resourceId, long totalBytesToBeUploaded);/gi' {} \;
+#
+#  find                                           \
+#        "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"   \
+#        -type f                                  \
+#        -exec sed -i.bak 's/FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, IntPtr totalBytesToBeUploaded)/FileUploadStartedAdvertisement(string resourceId, string remoteFilePath, long totalBytesToBeUploaded);/gi' {} \;
 
   rm -f "${OUTPUT_SHARPIE_HEADER_FILES_PATH}"/*.bak || :
 

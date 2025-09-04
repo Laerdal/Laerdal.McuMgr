@@ -2,6 +2,7 @@
 // ReSharper disable RedundantExtendsListEntry
 
 using System;
+using System.Linq;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -32,7 +33,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
             return new IOSNativeFileDownloaderProxy(
                 bluetoothDevice: bluetoothDevice,
-                nativeFileDownloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy()
+                nativeFileDownloaderCallbacksProxy: new FileDownloader.GenericNativeFileDownloaderCallbacksProxy()
             );
         }
 
@@ -77,7 +78,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (!disposing)
                     return;
 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
 
                 _alreadyDisposed = true;
 
@@ -91,10 +92,10 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
             }
 
-            private void CleanupInfrastructure() // @formatter:off
+            private void TryCleanupInfrastructure() // @formatter:off
             {
-                try { Disconnect();                     } catch { /*ignored*/ }
-                try { _nativeFileDownloader?.Dispose(); } catch { /*ignored*/ }
+                try { _nativeFileDownloader?.NativeDispose(); } catch { /*ignored*/ } //order
+                try { _nativeFileDownloader?.Dispose();       } catch { /*ignored*/ } //order
                 
                 //_nativeFileDownloader = null;     @formatter:on
             }
@@ -111,20 +112,26 @@ namespace Laerdal.McuMgr.FileDownloading
                 return _nativeFileDownloader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
             }
 
-            public bool TryInvalidateCachedTransport()
+            public bool TryInvalidateCachedInfrastructure()
             {
-                return _nativeFileDownloader?.TryInvalidateCachedTransport() ?? false;
+                return _nativeFileDownloader?.TryInvalidateCachedInfrastructure() ?? false;
             }
 
             #region commands
             
             public string LastFatalErrorMessage => _nativeFileDownloader?.LastFatalErrorMessage;
-            
-            public void Cancel() => _nativeFileDownloader?.Cancel();
-            
-            public void Disconnect() => _nativeFileDownloader?.Disconnect();
 
-            public EFileDownloaderVerdict BeginDownload(
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryPause() => _nativeFileDownloader?.TryPause() ?? false;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryResume() => _nativeFileDownloader?.TryResume() ?? false;
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TryCancel(string reason = "") => _nativeFileDownloader?.TryCancel(reason) ?? false;
+            public bool TryDisconnect() => _nativeFileDownloader?.TryDisconnect() ?? false;
+
+            public EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
                 int? initialMtuSize = null
             )
@@ -146,16 +153,20 @@ namespace Laerdal.McuMgr.FileDownloading
                 set => _nativeFileDownloaderCallbacksProxy!.FileDownloader = value;
             }
 
-            public override void CancelledAdvertisement()
-                => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement();
+            public override void CancelledAdvertisement(string reason)
+                => _nativeFileDownloaderCallbacksProxy?.CancelledAdvertisement(reason: reason);
+
+            public override void CancellingAdvertisement(string reason)
+                => _nativeFileDownloaderCallbacksProxy?.CancellingAdvertisement(reason: reason);
 
             public override void LogMessageAdvertisement(string message, string category, string level, string resource)
                 => LogMessageAdvertisement(
-                    message,
-                    category,
-                    HelpersIOS.TranslateEIOSLogLevel(level),
-                    resource
+                    level: HelpersIOS.TranslateEIOSLogLevel(level),
+                    message: message,
+                    category: category,
+                    resource: resource
                 );
+
             public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.LogMessageAdvertisement(
                     level: level,
@@ -164,38 +175,31 @@ namespace Laerdal.McuMgr.FileDownloading
                     resource: resource
                 );
 
-            public override void StateChangedAdvertisement(string resourceId, EIOSFileDownloaderState oldState, EIOSFileDownloaderState newState)
-                => StateChangedAdvertisement(
-                    resourceId: resourceId, //essentially the remote filepath
-                    newState: TranslateEIOSFileDownloaderState(newState),
-                    oldState: TranslateEIOSFileDownloaderState(oldState)
-                );
-            public void StateChangedAdvertisement(string resourceId, EFileDownloaderState oldState, EFileDownloaderState newState) //conformance to the interface
+            public override void StateChangedAdvertisement(
+                string remoteFilePath,
+                EIOSFileDownloaderState oldState,
+                EIOSFileDownloaderState newState,
+                nint totalBytesToBeDownloaded,
+                NSNumber[] completeDownloadedData //null unless we reach the 'completed' state
+            ) => StateChangedAdvertisement(
+                oldState: TranslateEIOSFileDownloaderState(oldState),
+                newState: TranslateEIOSFileDownloaderState(newState),
+                remoteFilePath: remoteFilePath,
+                completeDownloadedData: completeDownloadedData?.Select(x => (byte) x).ToArray() ?? Array.Empty<byte>(),
+                totalBytesToBeDownloaded: totalBytesToBeDownloaded
+            );
+
+            public void StateChangedAdvertisement(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState, long totalBytesToBeDownloaded, byte[] completeDownloadedData) //conformance to the interface
                 => _nativeFileDownloaderCallbacksProxy?.StateChangedAdvertisement(
-                    resourceId: resourceId, //essentially the remote filepath
+                    oldState: oldState,
                     newState: newState,
-                    oldState: oldState
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
                 );
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
                 => _nativeFileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
-
-            public override void FileDownloadStartedAdvertisement(string resourceId)
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resourceId);
-
-            public override void FileDownloadCompletedAdvertisement(string resourceId, NSNumber[] data)
-            {
-                var dataBytes = new byte[data.Length];
-                for (var i = 0; i < data.Length; i++)
-                {
-                    dataBytes[i] = data[i].ByteValue;
-                }
-
-                FileDownloadCompletedAdvertisement(resourceId, dataBytes);
-            }
-
-            public void FileDownloadCompletedAdvertisement(string resourceId, byte[] data) //conformance to the interface
-                => _nativeFileDownloaderCallbacksProxy?.FileDownloadCompletedAdvertisement(resourceId, data);
 
             public override void FatalErrorOccurredAdvertisement(
                 string resourceId,
@@ -255,6 +259,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 EIOSFileDownloaderState.Idle => EFileDownloaderState.Idle,
                 EIOSFileDownloaderState.Error => EFileDownloaderState.Error,
                 EIOSFileDownloaderState.Paused => EFileDownloaderState.Paused,
+                EIOSFileDownloaderState.Resuming => EFileDownloaderState.Resuming,
                 EIOSFileDownloaderState.Complete => EFileDownloaderState.Complete,
                 EIOSFileDownloaderState.Cancelled => EFileDownloaderState.Cancelled,
                 EIOSFileDownloaderState.Cancelling => EFileDownloaderState.Cancelling,

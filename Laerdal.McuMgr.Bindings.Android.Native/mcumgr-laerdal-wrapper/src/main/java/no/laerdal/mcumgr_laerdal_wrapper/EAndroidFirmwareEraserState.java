@@ -11,7 +11,7 @@ public enum EAndroidFirmwareEraserState
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFirmwareEraserState(int value)
+    EAndroidFirmwareEraserState(final int value)
     {
         _value = value;
     }

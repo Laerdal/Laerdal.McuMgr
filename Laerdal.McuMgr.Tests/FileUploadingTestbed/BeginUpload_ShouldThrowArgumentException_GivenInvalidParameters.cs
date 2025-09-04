@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Func<EFileUploaderVerdict>(() => fileUploader.BeginUpload(
+            var work = new Action(() => fileUploader.BeginUpload(
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer,
 
@@ -54,13 +54,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
         
-        private class MockedGreenNativeFileUploaderProxySpy1 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy1 : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedGreenNativeFileUploaderProxySpy1(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -71,7 +71,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -84,19 +84,20 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     windowCapacity: windowCapacity, //   android only
                     memoryAlignment: memoryAlignment //  android only
                 );
+                
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
 
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, data.Length);
 
                     await Task.Delay(20);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); //   order
-                    FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //                                                       order
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, 0);
                 });
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

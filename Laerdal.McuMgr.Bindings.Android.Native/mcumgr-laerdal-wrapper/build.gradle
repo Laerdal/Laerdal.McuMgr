@@ -12,10 +12,11 @@ tasks.register('wrapper', Wrapper) {
 android {
     namespace "no.laerdal.mcumgr_laerdal_wrapper" // per https://developer.android.com/studio/build/configure-app-module#set-namespace
 
+    //noinspection GradleDependency
     compileSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file
 
     defaultConfig {
-        minSdk 21
+        minSdk 21 //noinspection OldTargetApi
         targetSdk 34 // its best to keep this always aligned with the <TargetPlatformVersion> in the .csproj file and with BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION at the top of the github actions .yml file
 
         consumerProguardFiles "consumer-rules.pro"
@@ -42,11 +43,12 @@ android {
 }
 
 dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.11.0'
+    // to get a full list of dependencies you can also run 'sudo ./gradlew app:dependencies --scan'
+     implementation group: 'com.google.code.gson', name: 'gson', version: '2.13.1'
 
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'no.nordicsemi.android:mcumgr-ble:2.7.0'
-    implementation 'no.nordicsemi.android:mcumgr-core:2.7.0'
+    implementation 'no.nordicsemi.android:mcumgr-ble:2.7.2'
+    implementation 'no.nordicsemi.android:mcumgr-core:2.7.2'
     implementation 'com.google.android.material:material:1.12.0'
 }
 

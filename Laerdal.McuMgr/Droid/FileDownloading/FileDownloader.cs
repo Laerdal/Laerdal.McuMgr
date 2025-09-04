@@ -16,8 +16,7 @@ using Laerdal.McuMgr.FileDownloading.Contracts.Native;
 
 namespace Laerdal.McuMgr.FileDownloading
 {
-    /// <inheritdoc cref="IFileDownloader"/>
-    public partial class FileDownloader : IFileDownloader
+    public partial class FileDownloader
     {
         public FileDownloader(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             androidContext: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<Context>(obj: androidContext, parameterName: nameof(androidContext), allowNulls: true),
@@ -90,7 +89,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (!disposing)
                     return;
                 
-                CleanupInfrastructure();
+                TryCleanupInfrastructure();
                 
                 _alreadyDisposed = true;
 
@@ -104,11 +103,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
             }
             
-            private void CleanupInfrastructure()
+            private void TryCleanupInfrastructure()
             {
                 try
                 {
-                    Disconnect();
+                    TryDisconnect();
                 }
                 catch
                 {
@@ -117,8 +116,33 @@ namespace Laerdal.McuMgr.FileDownloading
             }
 
             #region commands
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryPause() //keep this override so as to amortize the native layer
+            {
+                return base.TryPause();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryResume() //keep this override so as to amortize the native layer
+            {
+                return base.TryResume();
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            // ReSharper disable once OptionalParameterHierarchyMismatch
+            public override bool TryCancel(string reason = "") //keep this override so as to amortize the native layer
+            {
+                return base.TryCancel(reason);
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public override bool TryDisconnect() //keep this override so as to amortize the native layer
+            {
+                return base.TryDisconnect();
+            }
 
-            public EFileDownloaderVerdict BeginDownload(
+            public EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
                 int? initialMtuSize = null //  android only
             )
@@ -143,9 +167,9 @@ namespace Laerdal.McuMgr.FileDownloading
                 return base.TrySetBluetoothDevice(androidBluetoothDevice);
             }
             
-            public new bool TryInvalidateCachedTransport()
+            public new bool TryInvalidateCachedInfrastructure()
             {
-                return base.TryInvalidateCachedTransport();
+                return base.TryInvalidateCachedInfrastructure();
             }
             
             #endregion commands
@@ -192,25 +216,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 );
             }
 
-            public override void CancelledAdvertisement()
+            public override void CancelledAdvertisement(string reason)
             {
-                base.CancelledAdvertisement(); //just in case
-                
-                _fileDownloaderCallbacksProxy?.CancelledAdvertisement();
-            }
-            
-            public override void FileDownloadStartedAdvertisement(string resource)
-            {
-                base.FileDownloadStartedAdvertisement(resource); //just in case
+                base.CancelledAdvertisement(reason); //just in case
 
-                _fileDownloaderCallbacksProxy?.FileDownloadStartedAdvertisement(resource);
-            }
-
-            public override void FileDownloadCompletedAdvertisement(string resource, byte[] data)
-            {
-                base.FileDownloadCompletedAdvertisement(resource, data); //just in case
-
-                _fileDownloaderCallbacksProxy?.FileDownloadCompletedAdvertisement(resource, data);
+                _fileDownloaderCallbacksProxy?.CancelledAdvertisement(reason);
             }
 
             public override void BusyStateChangedAdvertisement(bool busyNotIdle)
@@ -220,23 +230,34 @@ namespace Laerdal.McuMgr.FileDownloading
                 _fileDownloaderCallbacksProxy?.BusyStateChangedAdvertisement(busyNotIdle);
             }
 
-            public override void StateChangedAdvertisement(string resource, EAndroidFileDownloaderState oldState, EAndroidFileDownloaderState newState) 
+            public override void StateChangedAdvertisement(
+                string remoteFilePath,
+                EAndroidFileDownloaderState oldState,
+                EAndroidFileDownloaderState newState,
+                long totalBytesToBeDownloaded,
+                byte[] completeDownloadedData
+            )
             {
-                base.StateChangedAdvertisement(resource, oldState, newState); //just in case
+                base.StateChangedAdvertisement(remoteFilePath, oldState, newState, totalBytesToBeDownloaded, completeDownloadedData); //just in case
 
                 StateChangedAdvertisement(
-                    resource: resource, //essentially the remote filepath
                     oldState: TranslateEAndroidFileDownloaderState(oldState),
-                    newState: TranslateEAndroidFileDownloaderState(newState)
+                    newState: TranslateEAndroidFileDownloaderState(newState),
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
                 );
             }
 
-            public void StateChangedAdvertisement(string resource, EFileDownloaderState oldState, EFileDownloaderState newState)
+            public void StateChangedAdvertisement(string remoteFilePath, EFileDownloaderState oldState, EFileDownloaderState newState, long totalBytesToBeDownloaded, byte[] completeDownloadedData)
             {
                 _fileDownloaderCallbacksProxy?.StateChangedAdvertisement(
-                    resourceId: resource,
                     oldState: oldState,
-                    newState: newState);
+                    newState: newState,
+                    remoteFilePath: remoteFilePath,
+                    completeDownloadedData: completeDownloadedData,
+                    totalBytesToBeDownloaded: totalBytesToBeDownloaded
+                );
             }
 
             public override void FileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(string resourceId, int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
@@ -303,6 +324,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 if (state == EAndroidFileDownloaderState.Paused)
                 {
                     return EFileDownloaderState.Paused;
+                }
+                
+                if (state == EAndroidFileDownloaderState.Resuming)
+                {
+                    return EFileDownloaderState.Resuming;
                 }
 
                 if (state == EAndroidFileDownloaderState.Complete)

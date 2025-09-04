@@ -23,14 +23,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
         {
             // Arrange
             var mockedFileData = new byte[] { 1, 2, 3 };
-
+ 
             var mockedNativeFileDownloaderProxy = new MockedGreenNativeFileDownloaderProxySpy1(new GenericNativeFileDownloaderCallbacksProxy_(), mockedFileData);
             var fileDownloader = new FileDownloader(mockedNativeFileDownloaderProxy);
 
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Func<EFileDownloaderVerdict>(() => fileDownloader.BeginDownload(
+            var work = new Action(() => fileDownloader.BeginDownload(
                 remoteFilePath: remoteFilePath,
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer
@@ -58,26 +58,26 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 _mockedFileData = mockedFileData;
             }
 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(
-                    remoteFilePath,
+                base.NativeBeginDownload(
+                    remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize
                 );
+                
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.None, totalBytesToBeDownloaded: 0, null);
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.Idle, totalBytesToBeDownloaded: 0, null);
 
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, _mockedFileData.Length, completeDownloadedData: null);
 
                     await Task.Delay(20);
-                    
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); // order
-                    FileDownloadCompletedAdvertisement(remoteFilePath, _mockedFileData); //                                        order
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, totalBytesToBeDownloaded: 0, _mockedFileData);
                 });
 
-                return verdict;
+                return EFileDownloaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native downloader
             }

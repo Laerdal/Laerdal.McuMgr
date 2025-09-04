@@ -33,7 +33,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             {
                 await Task.Delay(500);
 
-                fileUploader.Cancel(reason: cancellationReason);
+                fileUploader.TryCancel(reason: cancellationReason);
             });
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
@@ -67,7 +67,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy3 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy3 : BaseMockedNativeFileUploaderProxySpy
         {
             private string _currentRemoteFilePath;
 
@@ -82,29 +82,31 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 _isCancellationLeadingToSoftLanding = isCancellationLeadingToSoftLanding;
             }
             
-            public override void Cancel(string reason = "")
+            public override bool TryCancel(string reason = "")
             {
-                base.Cancel(reason);
+                base.TryCancel(reason);
 
                 Task.Run(async () => // under normal circumstances the native implementation will bubble up these events in this exact order
                 {
-                    CancellingAdvertisement(reason); //                                                                                                order
-                    StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling); //  order
+                    CancellingAdvertisement(reason); //                                                                                                                                        order
+                    StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelling, totalBytesToBeUploaded: 0); //  order
 
                     await Task.Delay(100);
                     if (_isCancellationLeadingToSoftLanding) //00
                     {
-                        StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled); //   order
-                        CancelledAdvertisement(reason); //                                                                                                              order    
+                        StateChangedAdvertisement(_resourceId, _currentRemoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Cancelled, totalBytesToBeUploaded: 0); //   order
+                        CancelledAdvertisement(reason); //                                                                                                                                         order    
                     }
                 });
-                
+
+                return true;
+
                 //00   if the cancellation doesnt lead to a soft landing due to for example a broken ble connection the the native implementation will not call
                 //     the cancelled event at all   in this case the csharp logic will wait for a few seconds and then throw the cancelled exception manually on
                 //     a best effort basis and this is exactly what we are testing here
             }
             
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -126,7 +128,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 _currentRemoteFilePath = remoteFilePath;
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: _resourceId,
                     remoteFilePath: remoteFilePath,
@@ -140,24 +142,25 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     memoryAlignment: memoryAlignment //  android only
                 );
 
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
+                
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(100, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
 
-                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(20_000, _cancellationTokenSource.Token);
                     if (_cancellationTokenSource.IsCancellationRequested)
                         return;
                     
-                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete);
-                    FileUploadCompletedAdvertisement(_resourceId, remoteFilePath);
+                    StateChangedAdvertisement(_resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                 }, _cancellationTokenSource.Token);
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

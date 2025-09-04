@@ -36,13 +36,13 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedErroneousNativeFileUploaderProxySpy : MockedNativeFileUploaderProxySpy
+        private class MockedErroneousNativeFileUploaderProxySpy : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedErroneousNativeFileUploaderProxySpy(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
             }
 
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -55,7 +55,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,

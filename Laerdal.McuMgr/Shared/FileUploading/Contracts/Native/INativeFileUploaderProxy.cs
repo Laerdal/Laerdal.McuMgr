@@ -2,12 +2,12 @@
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 {
-    internal interface INativeFileUploaderProxy :
-        INativeFileUploaderQueryableProxy,
-        INativeFileUploaderCommandableProxy,
-        INativeFileUploaderCallbacksProxy,
+    public interface INativeFileUploaderProxy :
+        IDisposable,
         INativeFileUploaderCleanupProxy,
-        IDisposable
+        INativeFileUploaderCallbacksProxy,
+        INativeFileUploaderQueryableProxy,
+        INativeFileUploaderCommandableProxy
     {
     }
 }

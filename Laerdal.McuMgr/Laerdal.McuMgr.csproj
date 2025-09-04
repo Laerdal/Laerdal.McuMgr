@@ -162,6 +162,30 @@
     <ItemGroup>
         <Compile Include="Shared\**\*.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
+
+        <!-- FILE UPLOADER -->
+        <Compile Update="**\FileUploader.*.cs">
+            <DependentUpon>FileUploader.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FileUploader.Commandable.*.cs">
+            <DependentUpon>FileUploader.Commandable.cs</DependentUpon>
+        </Compile>
+
+        <!-- FILE DOWNLOADER -->        
+        <Compile Update="**\FileDownloader.*.cs">
+            <DependentUpon>FileDownloader.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FileDownloader.Commandable.*.cs">
+            <DependentUpon>FileDownloader.Commandable.cs</DependentUpon>
+        </Compile>
+
+        <!-- FIRMWARE INSTALLER -->
+        <Compile Update="**\FirmwareInstaller.*.cs">
+            <DependentUpon>FirmwareInstaller.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FirmwareInstaller.Commandable.*.cs">
+            <DependentUpon>FirmwareInstaller.Commandable.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->

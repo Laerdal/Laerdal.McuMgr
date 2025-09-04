@@ -128,12 +128,16 @@
     <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets"/>
 
     <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
+        <!-- dependencies and their versions can be found in the libs.versions.toml file in the nordic-android-mcumgr repo itself -->
+        <!--                                                                                                                      -->
+        <!--     https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/blob/main/gradle/libs.versions.toml    -->
+        
         <!-- these dependencies have been field-tested and are known to work at least as far back as Android 10.0 -->
-        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.16.0.3" PrivateAssets="All" />
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.17.0" PrivateAssets="All" />
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.2.0.1" />
+        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.2.10" />
         <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.10.2.1" />
     </ItemGroup>
 

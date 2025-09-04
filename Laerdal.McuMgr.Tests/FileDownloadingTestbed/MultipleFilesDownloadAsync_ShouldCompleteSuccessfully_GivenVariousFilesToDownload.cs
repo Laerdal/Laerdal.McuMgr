@@ -75,6 +75,10 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
             results.Should().BeEquivalentTo(expectedResults);
 
+            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
+            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
+            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
+            
             eventsMonitor.OccurredEvents
                 .Count(args => args.EventName == nameof(fileDownloader.FileDownloadStarted))
                 .Should()
@@ -90,10 +94,6 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 .Should()
                 .Be(10);
 
-            mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
-            mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
-            mockedNativeFileDownloaderProxy.BeginDownloadCalled.Should().BeTrue();
-
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
@@ -107,53 +107,54 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             }
 
             private int _retryCountForProblematicFile; 
-            public override EFileDownloaderVerdict BeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
             {
-                var verdict = base.BeginDownload(
+                base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize
                 );
+                
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.None, totalBytesToBeDownloaded: 0, null);
+                StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.None, EFileDownloaderState.Idle, totalBytesToBeDownloaded: 0, null);
 
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading);
-                    FileDownloadStartedAdvertisement(remoteFilePath);
+                    StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Idle, EFileDownloaderState.Downloading, totalBytesToBeDownloaded: 1_024, null);
 
                     await Task.Delay(20);
 
-                    var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
+                    var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant().Trim();
                     if (remoteFilePathUppercase.Contains("some/file/that/exist/but/is/erroring/out/when/we/try/to/download/it.bin".ToUpperInvariant()))
                     {
-                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error, 0, null);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "foobar", EGlobalErrorCode.Unset);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/doesnt/exist.bin".ToUpperInvariant()))
                     {
-                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error, 0, null);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "IN VALUE (3)", EGlobalErrorCode.SubSystemFilesystem_NotFound);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/exist/and/completes/after/a/couple/of/attempts.bin".ToUpperInvariant())
                              && _retryCountForProblematicFile++ < 3)
                     {
-                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error, 0, null);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "ping pong", EGlobalErrorCode.McuMgrErrorBeforeSmpV2_Corrupt);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/path/pointing/to/a/directory".ToUpperInvariant()))
                     {
-                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error);
+                        StateChangedAdvertisement(remoteFilePath, oldState: EFileDownloaderState.Downloading, newState: EFileDownloaderState.Error, 0, null);
                         FatalErrorOccurredAdvertisement(remoteFilePath, "BLAH BLAH (4)", EGlobalErrorCode.SubSystemFilesystem_IsDirectory);
                     }
                     else
                     {
                         _expectedResults.TryGetValue(remoteFilePath, out var expectedFileContent);
 
-                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete); //  order
-                        FileDownloadCompletedAdvertisement(remoteFilePath, expectedFileContent); //                                     order
+                        StateChangedAdvertisement(remoteFilePath, EFileDownloaderState.Downloading, EFileDownloaderState.Complete, 0, expectedFileContent);
                     }
                 });
 
-                return verdict;
+                return EFileDownloaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native downloader
             }

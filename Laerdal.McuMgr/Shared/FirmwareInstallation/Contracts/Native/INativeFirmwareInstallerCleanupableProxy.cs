@@ -1,7 +1,7 @@
 namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Native
 {
-    internal interface INativeFirmwareInstallerCleanupableProxy
+    public interface INativeFirmwareInstallerCleanupableProxy
     {
-        void CleanupResourcesOfLastInstallation();
+        void TryCleanupResourcesOfLastInstallation();
     }
 }

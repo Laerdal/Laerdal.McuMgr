@@ -4,7 +4,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts.Exceptions
 {
     public class DownloadCancelledException : OperationCanceledException, IDownloadException
     {
-        public DownloadCancelledException() : base("Download was cancelled")
+        public DownloadCancelledException(string cancellationReason) : base($"Download was cancelled: {cancellationReason}")
         {
         }
     }

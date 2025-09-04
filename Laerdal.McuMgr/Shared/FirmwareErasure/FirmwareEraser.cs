@@ -153,7 +153,9 @@ namespace Laerdal.McuMgr.FirmwareErasure
 
                 var verdict = BeginErasure(imageIndex); //00 dont use task.run here for now
                 if (verdict != EFirmwareErasureInitializationVerdict.Success)
-                    throw new ArgumentException(verdict.ToString());
+                    throw verdict == EFirmwareErasureInitializationVerdict.FailedOtherErasureAlreadyInProgress
+                        ? new InvalidOperationException("Another erase operation is already in progress")
+                        : new ArgumentException(verdict.ToString());
 
                 await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs);
             }

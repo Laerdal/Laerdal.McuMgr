@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
     public partial class FileUploaderTestbed
     {
         [Fact]
-        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousFilesToUpload()
+        public async Task MultipleFilesUploadAsync_ShouldCompleteSuccessfully_GivenVariousInputFiles()
         {
             // Arrange
             var filesThatShouldBeSuccessfullyUploaded = new[]
@@ -95,14 +95,14 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             //00 we dont want to disconnect the device regardless of the outcome
         }
 
-        private class MockedGreenNativeFileUploaderProxySpy6 : MockedNativeFileUploaderProxySpy
+        private class MockedGreenNativeFileUploaderProxySpy6 : BaseMockedNativeFileUploaderProxySpy
         {
             public MockedGreenNativeFileUploaderProxySpy6(INativeFileUploaderCallbacksProxy uploaderCallbacksProxy) : base(uploaderCallbacksProxy)
             {
             }
 
             private int _retryCountForProblematicFile;
-            public override EFileUploaderVerdict BeginUpload(
+            public override EFileUploaderVerdict NativeBeginUpload(
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
@@ -116,7 +116,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 int? memoryAlignment = null //  android only
             )
             {
-                var verdict = base.BeginUpload(
+                base.NativeBeginUpload(
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
@@ -130,39 +130,40 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     memoryAlignment: memoryAlignment //  android only
                 );
 
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
+                StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
+                
                 Task.Run(async () => //00 vital
                 {
                     await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading);
-                    FileUploadStartedAdvertisement(resourceId, remoteFilePath);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Idle, EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
                     await Task.Delay(20);
 
                     var remoteFilePathUppercase = remoteFilePath.ToUpperInvariant();
                     if (remoteFilePathUppercase.Contains("some/file/to/a/folder/that/doesnt/exist.bin", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0);
                         FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "FOOBAR (3)", EGlobalErrorCode.SubSystemFilesystem_NotFound);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/succeeds/after/a/couple/of/attempts.bin", StringComparison.InvariantCultureIgnoreCase)
                              && _retryCountForProblematicFile++ < 3)
                     {
-                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0);
                         FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "ping pong", EGlobalErrorCode.Generic);
                     }
                     else if (remoteFilePathUppercase.Contains("some/file/that/is/erroring/out/when/we/try/to/upload/it.bin", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error);
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Error, totalBytesToBeUploaded: 0);
                         FatalErrorOccurredAdvertisement(resourceId, remoteFilePath, "native symbols not loaded blah blah", EGlobalErrorCode.Generic);
                     }
                     else
                     {
-                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete); //order
-                        FileUploadCompletedAdvertisement(resourceId, remoteFilePath); //order
+                        StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.Uploading, EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
                     }
                 });
 
-                return verdict;
+                return EFileUploaderVerdict.Success;
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native uploader
             }

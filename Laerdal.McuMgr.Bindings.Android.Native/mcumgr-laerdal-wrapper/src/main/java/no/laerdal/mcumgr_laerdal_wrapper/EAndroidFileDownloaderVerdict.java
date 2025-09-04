@@ -10,7 +10,7 @@ public enum EAndroidFileDownloaderVerdict //this must mirror the enum values of 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFileDownloaderVerdict(int value)
+    EAndroidFileDownloaderVerdict(final int value)
     {
         _value = value;
     }
