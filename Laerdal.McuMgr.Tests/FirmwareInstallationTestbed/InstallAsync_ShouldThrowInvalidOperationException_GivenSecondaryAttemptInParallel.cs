@@ -2,6 +2,7 @@ using FluentAssertions;
 using Laerdal.McuMgr.FirmwareInstallation;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Events;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
 using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy;
 
@@ -97,7 +98,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            await work.Should().ThrowWithinAsync<InvalidOperationException>(TimeSpan.FromSeconds(2));
+            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromSeconds(2));
 
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
@@ -143,7 +144,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 {
                     base.EnsureExclusiveOperationToken();
                 }
-                catch (InvalidOperationException)
+                catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
                     Interlocked.Increment(ref InvalidOperationExceptionThrownByGuardCheckCounter);
                     throw;

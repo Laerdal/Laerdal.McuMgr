@@ -195,15 +195,15 @@ namespace Laerdal.McuMgr.FileUploading
                         remoteFilePath: remoteFilePath
                     ));
 
-                    throw new UploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
+                    throw new FileUploadTimeoutException(remoteFilePath, timeoutForUploadInMs, ex);
                 }
-                catch (UploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
+                catch (FileUploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
                 {
-                    if (ex is UploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
+                    if (ex is FileUploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
                         throw;
 
                     if (++triesCount > maxTriesCount) //order
-                        throw new AllUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
+                        throw new AllFileUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
 
                     if (fileUploadProgressEventsCount <= 10)
                     {
@@ -233,7 +233,7 @@ namespace Laerdal.McuMgr.FileUploading
 
                     // OnFatalErrorOccurred(); //better not   too much fuss
 
-                    throw new UploadInternalErrorException(remoteFilePath, innerException: ex);
+                    throw new FileUploadInternalErrorException(remoteFilePath, innerException: ex);
                 }
                 finally
                 {
@@ -313,9 +313,9 @@ namespace Laerdal.McuMgr.FileUploading
                 {
                     taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                     {
-                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new UploadErroredOutRemoteFolderNotFoundException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
-                        EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UploadUnauthorizedException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
-                        _ => new UploadErroredOutException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage)
+                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileUploadErroredOutRemoteFolderNotFoundException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
+                        EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new FileUploadUnauthorizedException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
+                        _ => new FileUploadErroredOutException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage)
                     });
                 }
             }

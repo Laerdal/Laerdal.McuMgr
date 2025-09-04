@@ -30,8 +30,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<AllUploadAttemptsFailedException>())
-                .WithInnerExceptionExactly<UploadUnauthorizedException>()
+            (await work.Should().ThrowExactlyAsync<AllFileUploadAttemptsFailedException>())
+                .WithInnerExceptionExactly<FileUploadUnauthorizedException>()
                 .And
                 .GlobalErrorCode.Should().Be(EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied);
 

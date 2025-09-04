@@ -3,12 +3,12 @@ using Laerdal.McuMgr.Common.Enums;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
 {
-    public class UploadErroredOutException : Exception, IUploadException
+    public class FileUploadErroredOutException : Exception, IUploadException
     {
         public string RemoteFilePath { get; }
         public EGlobalErrorCode GlobalErrorCode { get; }
 
-        public UploadErroredOutException(
+        public FileUploadErroredOutException(
             string nativeErrorMessage,
             string remoteFilePath,
             EGlobalErrorCode globalErrorCode = EGlobalErrorCode.Unset,

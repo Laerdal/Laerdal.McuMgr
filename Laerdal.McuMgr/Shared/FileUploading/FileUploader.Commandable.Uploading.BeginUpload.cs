@@ -116,9 +116,10 @@ namespace Laerdal.McuMgr.FileUploading
             if (verdict != EFileUploaderVerdict.Success)
                 throw verdict switch
                 {
+                    EFileUploaderVerdict.FailedInvalidData => new ArgumentException("The provided data were deemed invalid by the native layer (did you pass 'null' somehow - check logs for details)"),
                     EFileUploaderVerdict.FailedInvalidSettings => new ArgumentException("The provided connection settings were deemed invalid by the native layer (check logs for details)"),
-                    EFileUploaderVerdict.FailedErrorUponCommencing => new UploadInternalErrorException(remoteFilePath: remoteFilePath, message: "An internal error occurred within the native layer upon commencing the upload operation"),
-                    EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress => new InvalidOperationException("Another download operation is already in progress"),
+                    EFileUploaderVerdict.FailedErrorUponCommencing => new FileUploadInternalErrorException(remoteFilePath: remoteFilePath, message: "An internal error occurred within the native layer upon commencing the upload operation"),
+                    EFileUploaderVerdict.FailedOtherUploadAlreadyInProgress => new AnotherFileUploadIsAlreadyOngoingException(remoteFilePath: remoteFilePath),
                     _ => new ArgumentException($"An error occurred within the native layer [verdict={verdict}]"),
                 };
             

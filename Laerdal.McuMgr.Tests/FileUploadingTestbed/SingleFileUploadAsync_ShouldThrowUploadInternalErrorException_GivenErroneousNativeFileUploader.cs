@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<UploadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
+            (await work.Should().ThrowExactlyAsync<FileUploadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00

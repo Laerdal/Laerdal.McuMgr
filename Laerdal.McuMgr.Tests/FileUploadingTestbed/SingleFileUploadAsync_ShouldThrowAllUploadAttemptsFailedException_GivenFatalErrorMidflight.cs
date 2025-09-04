@@ -50,7 +50,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             // Assert
             await work.Should()
-                .ThrowWithinAsync<AllUploadAttemptsFailedException>(((maxTriesCount + 1) * 3).Seconds())
+                .ThrowWithinAsync<AllFileUploadAttemptsFailedException>(((maxTriesCount + 1) * 3).Seconds())
                 .WithMessage("*failed to upload*");
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
