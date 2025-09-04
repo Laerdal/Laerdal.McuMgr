@@ -19,8 +19,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
         public async Task InstallAsync_ShouldThrowInvalidOperationException_GivenSecondaryAttemptInParallel(string testcaseNickname, bool task1UsesAsyncNotBeginInstall, bool task2UsesAsyncNotBeginInstall)
         {
             // Arrange
+            var artificialDelayInsideBeginInstallationInMs = 5_000;
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy90(new GenericNativeFirmwareInstallerCallbacksProxy_());
-            var firmwareInstaller = new FirmwareInstallerSpy90(mockedNativeFirmwareInstallerProxy);
+            var firmwareInstaller = new FirmwareInstallerSpy90(mockedNativeFirmwareInstallerProxy, artificialDelayInsideBeginInstallationInMs);
 
             using var eventsMonitor = firmwareInstaller.Monitor();
 
@@ -98,7 +99,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromSeconds(2));
+            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 1_000));
 
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
@@ -131,9 +132,12 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             public volatile int GuardCallsCounter;
             public volatile int ReleaseCallsCounter;
             public volatile int InvalidOperationExceptionThrownByGuardCheckCounter;
+
+            public int ArtificialDelayInsideBeginInstallationInMs;
             
-            public FirmwareInstallerSpy90(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy) : base(nativeFirmwareInstallerProxy)
+            public FirmwareInstallerSpy90(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy, int artificialDelayInsideBeginInstallationInMs) : base(nativeFirmwareInstallerProxy)
             {
+                ArtificialDelayInsideBeginInstallationInMs = 5_000;
             }
 
             protected override void EnsureExclusiveOperationToken() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
@@ -144,7 +148,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 {
                     base.EnsureExclusiveOperationToken();
                     
-                    Thread.Sleep(5_000); //00
+                    Thread.Sleep(ArtificialDelayInsideBeginInstallationInMs); //00
                 }
                 catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
