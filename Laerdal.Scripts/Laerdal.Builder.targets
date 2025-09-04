@@ -101,16 +101,16 @@
     <Target Name="DeduceVersion" DependsOnTargets="PrintConfiguration">
 
         <PropertyGroup>
-            <Laerdal_Version_Major Condition=" '$(Laerdal_Version_Major)' == '' ">2</Laerdal_Version_Major>
 
             <Laerdal_Version_Script_Filepath Condition="   '$(Laerdal_Version_Script_Filepath)'  == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.Version.sh`))</Laerdal_Version_Script_Filepath>
             <Laerdal_Version_Details_Filepath Condition="  '$(Laerdal_Version_Details_Filepath)' == '' ">$([System.IO.Path]::Combine($(PackageOutputPath), `version.txt`))</Laerdal_Version_Details_Filepath>
 
+            <Laerdal_Version_Major Condition="       '$(Laerdal_Version_Major)'       == '' ">2</Laerdal_Version_Major>
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) -o '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --output-txt '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
+            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major-version '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --master-branch '$(Laerdal_Master_Branch_Name)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --develop-branch '$(Laerdal_Develop_Branch_Name)'</_Laerdal_Version_Script_Parameters>
         </PropertyGroup>
