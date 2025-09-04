@@ -28,12 +28,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
+            var racingTask1 = (Task) null;
+            var racingTask2 = (Task) null;
             var work = new Func<Task>(async () =>
             {
                 var taskParkingGuard = new ManualResetEventSlim(initialState: false);
              
                 var task1ReadyGuard = new ManualResetEventSlim(initialState: false);
-                var racingTask1 = Task.Run(async () =>
+                racingTask1 = Task.Run(async () =>
                 {
                     task1ReadyGuard.Set(); //signal that task1 is parked and ready
                     taskParkingGuard.Wait(); //parking both tasks at the start
@@ -58,7 +60,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 });
                 
                 var task2ReadyGuard = new ManualResetEventSlim(initialState: false);
-                var racingTask2 = Task.Run(async () =>
+                racingTask2 = Task.Run(async () =>
                 {
                     task2ReadyGuard.Set(); //signal that task2 is parked and ready
                     taskParkingGuard.Wait(); //parking both tasks at the start
@@ -101,10 +103,41 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            await work.Should()
-                .ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 4_000))
-                .ConfigureAwait(false);
-
+            try
+            {
+                await work.Should()
+                    .ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 4_000))
+                    .ConfigureAwait(false);
+            }
+            catch (Exception) // some times mysterious failures affect this test in our cicd - so we log some additional info to help debugging
+            {
+                // ReSharper disable ConstantNullCoalescingCondition
+                // ReSharper disable ConstantConditionalAccessQualifier
+                _logger.WriteLine($"""
+                                   ** Testcase '{testcaseNickname}' failed - additional info to help debugging:
+                                   **
+                                   ** task1UsesAsyncNotBeginInstall={task1UsesAsyncNotBeginInstall}
+                                   ** task2UsesAsyncNotBeginInstall={task2UsesAsyncNotBeginInstall}
+                                   **
+                                   ** racingTask1.Status={racingTask1?.Status.ToString() ?? "null"}
+                                   ** racingTask1.IsFaulted={racingTask1?.IsFaulted.ToString() ?? "null"}
+                                   ** racingTask1.IsCompletedSuccessfully={racingTask1?.IsCompletedSuccessfully.ToString() ?? "null"}
+                                   ** racingTask1.Exception(if any)={racingTask1?.Exception?.ToString() ?? "null"}
+                                   **
+                                   ** racingTask2.Status={racingTask2?.Status.ToString() ?? "null"}
+                                   ** racingTask2.IsFaulted={racingTask2?.IsFaulted.ToString() ?? "null"}
+                                   ** racingTask2.IsCompletedSuccessfully={racingTask2?.IsCompletedSuccessfully.ToString() ?? "null"}
+                                   ** racingTask2.Exception(if any)={racingTask2?.Exception?.ToString() ?? "null"}
+                                   **
+                                   ** GuardCallsCounter={firmwareInstaller?.GuardCallsCounter.ToString() ?? "<firmware installer is null!?>"}
+                                   ** ReleaseCallsCounter={firmwareInstaller?.ReleaseCallsCounter.ToString() ?? "<firmware installer is null!?>"}
+                                   ** InvalidOperationExceptionThrownByGuardCheckCounter={firmwareInstaller?.InvalidOperationExceptionThrownByGuardCheckCounter.ToString() ?? "<firmware installer is null!?>"}
+                                   """);
+                // ReSharper enable ConstantNullCoalescingCondition
+                // ReSharper enable ConstantConditionalAccessQualifier
+                throw;
+            }
+            
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
                 .Should().Be(2);

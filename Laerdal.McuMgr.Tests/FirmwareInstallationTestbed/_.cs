@@ -3,11 +3,20 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
+using Xunit.Abstractions;
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public partial class FirmwareInstallerTestbed
     {
+        private readonly ITestOutputHelper _logger;
+
+        public FirmwareInstallerTestbed(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
+        
         private class MockedNativeFirmwareInstallerProxySpy : INativeFirmwareInstallerProxy //template class for all spies
         {
             private readonly INativeFirmwareInstallerCallbacksProxy _firmwareInstallerCallbacksProxy;
