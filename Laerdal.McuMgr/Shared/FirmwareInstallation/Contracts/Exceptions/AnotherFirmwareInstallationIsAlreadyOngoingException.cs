@@ -5,13 +5,25 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions
 {
     public sealed class AnotherFirmwareInstallationIsAlreadyOngoingException : FirmwareInstallationErroredOutException
     {
-        public AnotherFirmwareInstallationIsAlreadyOngoingException(string nativeErrorMessage, EFirmwareInstallerFatalErrorType fatalErrorType, EGlobalErrorCode eaGlobalErrorCode)
+        public AnotherFirmwareInstallationIsAlreadyOngoingException( //@formatter:off
+            string                             nativeErrorMessage = "",
+            EFirmwareInstallerFatalErrorType   fatalErrorType     = EFirmwareInstallerFatalErrorType.Generic,
+            EGlobalErrorCode                   globalErrorCode    = EGlobalErrorCode.Generic
+        ) //@formatter:on
             : base(
-                errorMessage: $"Another firmware installation is already ongoing: {nativeErrorMessage}",
+                errorMessage: ProperlyFormatErrorMessage(nativeErrorMessage),
                 fatalErrorType: fatalErrorType,
-                globalErrorCode: eaGlobalErrorCode
+                globalErrorCode: globalErrorCode
             )
         {
+        }
+
+        static private string ProperlyFormatErrorMessage(string nativeErrorMessage)
+        {
+            const string prefix = "Another firmware installation is already ongoing";
+            return string.IsNullOrWhiteSpace(nativeErrorMessage)
+                ? prefix
+                : $"Another firmware installation is already ongoing: {nativeErrorMessage}";
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Constants;
 using Laerdal.McuMgr.Common.Exceptions;
@@ -46,13 +47,15 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <return>A task that you can await on to know when the operation has completed.</return>
         ///
-        /// <exception cref="UnauthorizedException"/>If the operation failed because the host-device is not authorized to perform the operation on the remote ble-device.
-        /// <exception cref="FirmwareInstallationTimeoutException"/>If the firmware installation took too long to complete and the timeout has expired.
-        /// <exception cref="FirmwareInstallationImageSwappingTimedOutException"/>If the confirmation stage has timed out.
-        /// <exception cref="AnotherFirmwareInstallationIsAlreadyOngoingException"/>If another firmware installation is already in progress on the remote device.
-        /// <exception cref="AllFirmwareInstallationAttemptsFailedException"/>If all the uploading stage has failed.
-        /// <exception cref="FirmwareInstallationUnhealthyFirmwareDataGivenException"/>If the bytes of the given firmware are unhealthy.
-        /// <exception cref="FirmwareInstallationErroredOutException"/>If the firmware installation has failed for any other reason.
+        /// <exception cref="ArgumentException">If one of the arguments is deemed invalid.</exception>
+        /// <exception cref="UnauthorizedException">If the operation failed because the host-device is not authorized to perform the operation on the remote ble-device.</exception>
+        /// <exception cref="FirmwareInstallationTimeoutException">If the firmware installation took too long to complete and the timeout has expired.</exception>
+        /// <exception cref="FirmwareInstallationInternalErrorException">If an hard internal error occurred within the native-layer.</exception>
+        /// <exception cref="AllFirmwareInstallationAttemptsFailedException">If all the uploading stage has failed.</exception>
+        /// <exception cref="FirmwareInstallationImageSwappingTimedOutException">If the confirmation stage has timed out.</exception>
+        /// <exception cref="AnotherFirmwareInstallationIsAlreadyOngoingException">If another firmware installation is already in progress on the remote device.</exception>
+        /// <exception cref="FirmwareInstallationUnhealthyFirmwareDataGivenException">If the bytes of the given firmware are unhealthy.</exception>
+        /// <exception cref="FirmwareInstallationErroredOutException">If the firmware installation has failed for any other reason.</exception>
         Task InstallAsync(
             byte[] data,
             string hostDeviceModel,
@@ -99,7 +102,12 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
         /// <param name="byteAlignment">(iOS only) When PipelineLength is larger than 1 (SMP Pipelining Enabled) it's necessary to set this in order for the stack
         ///     to predict offset jumps as multiple packets are sent in parallel.</param>
         /// <returns>A verdict that you can use to tell whether the installation has indeed kicked-off or not.</returns>
-        void BeginInstallation(byte[] data,
+        /// <exception cref="ArgumentException">If one of the arguments is deemed invalid.</exception>
+        /// <exception cref="FirmwareInstallationInternalErrorException">If an hard internal error occurred within the native-layer.</exception>
+        /// <exception cref="AnotherFirmwareInstallationIsAlreadyOngoingException">If another firmware installation is already in progress on the remote device.</exception>
+        /// <exception cref="FirmwareInstallationUnhealthyFirmwareDataGivenException">If the bytes of the given firmware are unhealthy.</exception>
+        void BeginInstallation(
+            byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
@@ -109,7 +117,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
             int? windowCapacity = null,
             int? memoryAlignment = null,
             int? pipelineDepth = null,
-            int? byteAlignment = null);
+            int? byteAlignment = null
+        );
 
         /// <summary>
         /// Cancels the firmware upgrade process
