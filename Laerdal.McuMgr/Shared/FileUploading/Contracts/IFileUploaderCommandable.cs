@@ -95,7 +95,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="timeoutForUploadInMs">The amount of time to wait for the upload to complete before bailing out.</param>
-        /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllUploadAttemptsFailedException"/>.</param>
+        /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllFileUploadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="autodisposeStream">If set to 'true' the mechanism will dispose of the data-stream after it has been read into a byte array (default is 'false').</param>

@@ -93,7 +93,7 @@ namespace Laerdal.McuMgr.FileUploading
                             await Task.Delay(sleepTimeBetweenUploadsInMs);
                         }
                     }
-                    catch (UploadErroredOutException)
+                    catch (FileUploadErroredOutException)
                     {
                         if (moveToNextUploadInCaseOfError) //00
                         {

@@ -4,9 +4,9 @@ using Laerdal.McuMgr.Common.Enums;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
 {
-    public sealed class UploadErroredOutRemoteFolderNotFoundException : UploadErroredOutException, IUploadException
+    public sealed class FileUploadErroredOutRemoteFolderNotFoundException : FileUploadErroredOutException, IUploadException
     {
-        public UploadErroredOutRemoteFolderNotFoundException(
+        public FileUploadErroredOutRemoteFolderNotFoundException(
             string nativeErrorMessage,
             string remoteFilePath,
             EGlobalErrorCode globalErrorCode

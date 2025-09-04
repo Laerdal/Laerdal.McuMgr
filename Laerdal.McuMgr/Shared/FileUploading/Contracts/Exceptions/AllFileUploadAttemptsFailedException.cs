@@ -2,9 +2,9 @@ using System;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
 {
-    public class AllUploadAttemptsFailedException : UploadErroredOutException, IUploadException
+    public class AllFileUploadAttemptsFailedException : FileUploadErroredOutException, IUploadException
     {
-        public AllUploadAttemptsFailedException(string remoteFilePath, int triesCount, Exception innerException = null)
+        public AllFileUploadAttemptsFailedException(string remoteFilePath, int triesCount, Exception innerException = null)
             : base(remoteFilePath, $"Failed to upload '{remoteFilePath}' after trying {triesCount} time(s)", innerException: innerException)
         {
         }

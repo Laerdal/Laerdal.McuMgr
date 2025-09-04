@@ -73,7 +73,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
                         results[path] = data;
                     }
-                    catch (DownloadErroredOutException) //10
+                    catch (FileDownloadErroredOutException) //10
                     {
                         // the exception has already been logged so we just continue
                     }

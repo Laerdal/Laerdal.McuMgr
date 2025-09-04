@@ -127,8 +127,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                 throw verdict switch
                 {
                     EFirmwareInstallationVerdict.FailedInvalidSettings => new ArgumentException("The provided connection settings were deemed invalid by the native layer (check logs for details)"),
-                    EFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy => new ArgumentException("The provided firmware was deemed invalid by the native layer (check logs for details)"),
-                    EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => new InvalidOperationException("Another installation is already in progress"),
+                    EFirmwareInstallationVerdict.FailedGivenFirmwareUnhealthy => new FirmwareInstallationUnhealthyFirmwareDataGivenException(),
+                    EFirmwareInstallationVerdict.FailedInstallationAlreadyInProgress => new AnotherFirmwareInstallationIsAlreadyOngoingException(),
                     EFirmwareInstallationVerdict.FailedInstallationInitializationErroredOut => new FirmwareInstallationInternalErrorException("The native layer failed to initialize the installation"),
                     _ => new ArgumentException($"An error occurred within the native layer [verdict={verdict}]"),
                 };

@@ -55,7 +55,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
             // Assert
             await work.Should()
-                .ThrowWithinAsync<UploadErroredOutRemoteFolderNotFoundException>(3.Seconds());
+                .ThrowWithinAsync<FileUploadErroredOutRemoteFolderNotFoundException>(3.Seconds());
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00

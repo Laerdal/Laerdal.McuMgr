@@ -81,8 +81,8 @@ namespace Laerdal.McuMgr.FileDownloading
                 throw verdict switch
                 {
                     EFileDownloaderVerdict.FailedInvalidSettings => new ArgumentException("The provided connection settings were deemed invalid by the native layer (check logs for details)"),
-                    EFileDownloaderVerdict.FailedErrorUponCommencing => new DownloadInternalErrorException("An internal error occurred within the native layer upon commencing the download operation"),
-                    EFileDownloaderVerdict.FailedDownloadAlreadyInProgress => new InvalidOperationException("Another download operation is already in progress"),
+                    EFileDownloaderVerdict.FailedErrorUponCommencing => new FileDownloadInternalErrorException(),
+                    EFileDownloaderVerdict.FailedDownloadAlreadyInProgress => new AnotherFileDownloadIsAlreadyOngoingException(),
                     _ => new ArgumentException($"An error occurred within the native layer [verdict={verdict}]"),
                 };
         }

@@ -1,4 +1,5 @@
 using System;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FirmwareInstallation
 {
@@ -12,7 +13,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             lock (OperationCheckLock)
             {
                 if (IsOperationOngoing)
-                    throw new InvalidOperationException("A firmware-installation operation is already running - cannot start another one");
+                    throw new AnotherFirmwareInstallationIsAlreadyOngoingException();
 
                 IsOperationOngoing = true;
             }

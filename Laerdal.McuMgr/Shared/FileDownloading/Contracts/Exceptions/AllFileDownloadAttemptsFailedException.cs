@@ -2,19 +2,19 @@ using System;
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts.Exceptions
 {
-    public class AllDownloadAttemptsFailedException : DownloadErroredOutException, IDownloadException
+    public class AllFileDownloadAttemptsFailedException : FileDownloadErroredOutException, IDownloadException
     {
-        public AllDownloadAttemptsFailedException(string remoteFilePath, int triesCount, Exception innerException = null)
+        public AllFileDownloadAttemptsFailedException(string remoteFilePath, int triesCount, Exception innerException = null)
             : base($"Failed to download '{remoteFilePath}' after trying {triesCount} time(s)", innerException)
         {
         }
         
-        public AllDownloadAttemptsFailedException(string errorMessage)
+        public AllFileDownloadAttemptsFailedException(string errorMessage)
             : base($"An error occurred while downloading the requested resource: '{errorMessage}'")
         {
         }
         
-        public AllDownloadAttemptsFailedException(string errorMessage, Exception innerException)
+        public AllFileDownloadAttemptsFailedException(string errorMessage, Exception innerException)
             : base($"An error occurred while downloading the requested resource: '{errorMessage}'", innerException)
         {
         }

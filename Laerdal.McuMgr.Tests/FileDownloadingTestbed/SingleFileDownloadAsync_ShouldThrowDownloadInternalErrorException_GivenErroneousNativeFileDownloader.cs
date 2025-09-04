@@ -25,7 +25,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             ));
 
             // Assert
-            (await work.Should().ThrowExactlyAsync<DownloadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
+            (await work.Should().ThrowExactlyAsync<FileDownloadInternalErrorException>()).WithInnerExceptionExactly<Exception>("native symbols not loaded blah blah");
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00
