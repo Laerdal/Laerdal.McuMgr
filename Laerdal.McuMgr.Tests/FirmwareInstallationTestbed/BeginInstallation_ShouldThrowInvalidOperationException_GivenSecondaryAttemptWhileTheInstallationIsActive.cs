@@ -3,6 +3,7 @@ using FluentAssertions.Extensions;
 using Laerdal.McuMgr.FirmwareInstallation;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Events;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
 using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy;
 
@@ -104,7 +105,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 {
                     base.EnsureExclusiveOperationToken();    
                 }
-                catch (InvalidOperationException)
+                catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
                     Interlocked.Increment(ref InvalidOperationExceptionThrownByGuardCheckCounter);
                     throw;

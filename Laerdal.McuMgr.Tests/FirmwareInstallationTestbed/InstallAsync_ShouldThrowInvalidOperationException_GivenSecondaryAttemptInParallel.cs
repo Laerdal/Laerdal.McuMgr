@@ -143,12 +143,18 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 try
                 {
                     base.EnsureExclusiveOperationToken();
+                    
+                    Thread.Sleep(5_000); //00
                 }
                 catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
                     Interlocked.Increment(ref InvalidOperationExceptionThrownByGuardCheckCounter);
                     throw;
                 }
+                
+                //00  deliberate delay to ensure that the other task will hit the guard check while this one is still ongoing
+                //    if omit this delay then in the case that .BeginInstallation() passes through very quickly the other task might hit the guard
+                //    check only after this one has already released the token and completed the entire mock-install (rare but we have seen it happen)
             }
 
             protected override void ReleaseExclusiveOperationToken()
