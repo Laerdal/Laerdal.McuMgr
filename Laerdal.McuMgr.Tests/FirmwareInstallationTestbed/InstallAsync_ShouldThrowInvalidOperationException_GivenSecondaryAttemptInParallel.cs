@@ -1,3 +1,5 @@
+#pragma warning disable xUnit1030
+
 using FluentAssertions;
 using Laerdal.McuMgr.FirmwareInstallation;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
@@ -19,7 +21,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
         public async Task InstallAsync_ShouldThrowInvalidOperationException_GivenSecondaryAttemptInParallel(string testcaseNickname, bool task1UsesAsyncNotBeginInstall, bool task2UsesAsyncNotBeginInstall)
         {
             // Arrange
-            var artificialDelayInsideBeginInstallationInMs = 5_000;
+            var artificialDelayInsideBeginInstallationInMs = 3_000;
             var mockedNativeFirmwareInstallerProxy = new MockedGreenNativeFirmwareInstallerProxySpy90(new GenericNativeFirmwareInstallerCallbacksProxy_());
             var firmwareInstaller = new FirmwareInstallerSpy90(mockedNativeFirmwareInstallerProxy, artificialDelayInsideBeginInstallationInMs);
 
@@ -43,7 +45,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                             maxTriesCount: 1,
                             hostDeviceModel: "foobar",
                             hostDeviceManufacturer: "acme corp."
-                        );
+                        ).ConfigureAwait(false);
                     }
                     else
                     {
@@ -68,7 +70,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                             maxTriesCount: 1,
                             hostDeviceModel: "foobar",
                             hostDeviceManufacturer: "acme corp."
-                        );
+                        ).ConfigureAwait(false);
                     }
                     else
                     {
@@ -87,7 +89,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 
                 taskParkingGuard.Set(); //order  and finally start the core-logic of the two tasks at exactly the same time
 
-                await Task.WhenAll(racingTask1, racingTask2); // let them race   one of the two should throw InvalidOperationException
+                await Task.WhenAll(racingTask1, racingTask2).ConfigureAwait(false); // let them race   one of the two should throw InvalidOperationException
                 
                 if (racingTask1.IsCompletedSuccessfully && racingTask2.IsCompletedSuccessfully)
                     throw new Exception("Both tasks completed successfully, which is unexpected.");
@@ -99,7 +101,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 4_000));
+            await work.Should()
+                .ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 4_000))
+                .ConfigureAwait(false);
 
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
