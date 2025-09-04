@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             ));
 
             // Assert
-            await work.Should().ThrowWithinAsync<DownloadTimeoutException>(5.Seconds());
+            await work.Should().ThrowWithinAsync<FileDownloadTimeoutException>(5.Seconds());
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00

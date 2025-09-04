@@ -147,11 +147,11 @@ namespace Laerdal.McuMgr.FileDownloading
                         newState: EFileDownloaderState.Error
                     ));
 
-                    throw new DownloadTimeoutException(remoteFilePath, timeoutForDownloadInMs, ex);
+                    throw new FileDownloadTimeoutException(remoteFilePath, timeoutForDownloadInMs, ex);
                 }
-                catch (DownloadErroredOutException ex)
+                catch (FileDownloadErroredOutException ex)
                 {
-                    if (ex is DownloadErroredOutRemoteFileNotFoundException or DownloadErroredOutRemotePathPointsToDirectoryException) //order   no point to retry if the filepath is problematic
+                    if (ex is FileDownloadErroredOutRemoteFileNotFoundException or FileDownloadErroredOutRemotePathPointsToDirectoryException) //order   no point to retry if the filepath is problematic
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
                         throw;
@@ -160,7 +160,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     if (++triesCount > maxTriesCount) //order
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
-                        throw new AllDownloadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
+                        throw new AllFileDownloadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
                     }
 
                     if (fileDownloadProgressEventsCount <= 10)
@@ -190,7 +190,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
                     //OnFatalErrorOccurred(); //dont   not worth it in this case  
 
-                    throw new DownloadInternalErrorException(innerException: ex);
+                    throw new FileDownloadInternalErrorException(innerException: ex);
                 }
                 finally
                 {
@@ -265,10 +265,10 @@ namespace Laerdal.McuMgr.FileDownloading
                 {
                     taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                     {
-                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new DownloadErroredOutRemoteFileNotFoundException(remoteFilePath), // remote file not found
-                        EGlobalErrorCode.SubSystemFilesystem_IsDirectory => new DownloadErroredOutRemotePathPointsToDirectoryException(remoteFilePath), // remote filepath points to a directory
+                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileDownloadErroredOutRemoteFileNotFoundException(remoteFilePath), // remote file not found
+                        EGlobalErrorCode.SubSystemFilesystem_IsDirectory => new FileDownloadErroredOutRemotePathPointsToDirectoryException(remoteFilePath), // remote filepath points to a directory
                         EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UnauthorizedException(remoteFilePath, ea_.ErrorMessage), // unauthorized
-                        _ => new DownloadErroredOutException(remoteFilePath, ea_.GlobalErrorCode)
+                        _ => new FileDownloadErroredOutException(remoteFilePath, ea_.GlobalErrorCode)
                     });
                 }
             }

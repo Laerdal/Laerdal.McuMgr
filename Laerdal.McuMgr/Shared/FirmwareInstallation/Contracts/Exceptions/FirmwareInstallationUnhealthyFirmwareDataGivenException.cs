@@ -20,11 +20,11 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions
 
         static private string ProperlyFormatErrorMessage(string nativeErrorMessage)
         {
-            const string prefix = "Another firmware installation is already ongoing";
+            const string prefix = "Another firmware-installation is already ongoing";
 
             return string.IsNullOrWhiteSpace(nativeErrorMessage)
                 ? prefix
-                : $"Another firmware installation is already ongoing: {nativeErrorMessage}";
+                : $"{prefix}: {nativeErrorMessage}";
         }
     }
 }

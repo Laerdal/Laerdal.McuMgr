@@ -50,7 +50,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <returns>A dictionary containing the bytes of each remote file that got fetched over.</returns>
         /// <throws cref="ArgumentException">Thrown if one of the parameters fails validation</throws>
         /// <throws cref="InvalidOperationException">Thrown if a download operation is already ongoing (parallel downloads are not supported)</throws>
-        /// <throws cref="AllDownloadAttemptsFailedException">Thrown if all download attempts failed</throws>
+        /// <throws cref="AllFileDownloadAttemptsFailedException">Thrown if all download attempts failed</throws>
         Task<IDictionary<string, byte[]>> DownloadAsync( //@formatter:off
             IEnumerable<string> remoteFilePaths,
 
@@ -74,7 +74,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="timeoutForDownloadInMs">The amount of time to wait for the operation to complete before bailing out.</param>
-        /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllDownloadAttemptsFailedException"/>.</param>
+        /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllFileDownloadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
@@ -91,10 +91,10 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <returns>The bytes of the remote file that got fetched over.</returns>
         /// <throws cref="ArgumentException">Thrown if one of the parameters fails validation</throws>
-        /// <throws cref="DownloadTimeoutException">Thrown if the operation timed out</throws>
         /// <throws cref="InvalidOperationException">Thrown if a download operation is already ongoing (parallel downloads are not supported)</throws>
         /// <throws cref="OperationCanceledException">Thrown if the operation was cancelled</throws>
-        /// <throws cref="AllDownloadAttemptsFailedException">Thrown if all download attempts failed</throws>
+        /// <throws cref="FileDownloadTimeoutException">Thrown if the operation timed out</throws>
+        /// <throws cref="AllFileDownloadAttemptsFailedException">Thrown if all download attempts failed</throws>
         Task<byte[]> DownloadAsync( //@formatter:off
             string remoteFilePath,
             string hostDeviceModel,

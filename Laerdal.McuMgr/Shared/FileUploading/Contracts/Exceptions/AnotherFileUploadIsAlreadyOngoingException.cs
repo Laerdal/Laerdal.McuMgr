@@ -1,4 +1,4 @@
-// ReSharper disable once RedundantExtendsListEntry
+// ReSharper disable RedundantExtendsListEntry
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
 {
@@ -7,17 +7,17 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
         public AnotherFileUploadIsAlreadyOngoingException( //@formatter:off
             string remoteFilePath,
             string nativeErrorMessage = ""
-        ) //@formatter:on
-            : base(remoteFilePath, ProperlyFormatErrorMessage(nativeErrorMessage))
+        ) : base(remoteFilePath, ProperlyFormatErrorMessage(nativeErrorMessage)) //@formatter:on
         {
         }
 
         static private string ProperlyFormatErrorMessage(string nativeErrorMessage)
         {
             const string prefix = "Another file-upload operation is already ongoing";
+            
             return string.IsNullOrWhiteSpace(nativeErrorMessage)
                 ? prefix
-                : $"Another firmware installation is already ongoing: {nativeErrorMessage}";
+                : $"{prefix}: {nativeErrorMessage}";
         }
     }
 }

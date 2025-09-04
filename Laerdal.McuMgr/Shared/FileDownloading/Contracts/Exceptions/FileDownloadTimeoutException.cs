@@ -4,9 +4,9 @@ using System;
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts.Exceptions
 {
-    public sealed class DownloadTimeoutException : DownloadErroredOutException, IDownloadException
+    public sealed class FileDownloadTimeoutException : FileDownloadErroredOutException, IDownloadException
     {
-        public DownloadTimeoutException(string remoteFilePath, int timeoutInMs, Exception innerException)
+        public FileDownloadTimeoutException(string remoteFilePath, int timeoutInMs, Exception innerException)
             : base($"Failed to download '{remoteFilePath}' from the device within {timeoutInMs}ms", innerException)
         {
         }
