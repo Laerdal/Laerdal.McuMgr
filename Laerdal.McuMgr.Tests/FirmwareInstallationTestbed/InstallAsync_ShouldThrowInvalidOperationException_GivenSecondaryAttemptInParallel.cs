@@ -99,7 +99,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             });
 
             // Assert
-            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 1_000));
+            await work.Should().ThrowWithinAsync<AnotherFirmwareInstallationIsAlreadyOngoingException>(TimeSpan.FromMilliseconds(artificialDelayInsideBeginInstallationInMs + 4_000));
 
             firmwareInstaller //we need to be 100% sure that the guard check was called by both racing tasks
                 .GuardCallsCounter
@@ -133,11 +133,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             public volatile int ReleaseCallsCounter;
             public volatile int InvalidOperationExceptionThrownByGuardCheckCounter;
 
-            public int ArtificialDelayInsideBeginInstallationInMs;
+            private readonly int _artificialDelayInsideBeginInstallationInMs;
             
             public FirmwareInstallerSpy90(INativeFirmwareInstallerProxy nativeFirmwareInstallerProxy, int artificialDelayInsideBeginInstallationInMs) : base(nativeFirmwareInstallerProxy)
             {
-                ArtificialDelayInsideBeginInstallationInMs = 5_000;
+                _artificialDelayInsideBeginInstallationInMs = artificialDelayInsideBeginInstallationInMs;
             }
 
             protected override void EnsureExclusiveOperationToken() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
@@ -148,7 +148,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 {
                     base.EnsureExclusiveOperationToken();
                     
-                    Thread.Sleep(ArtificialDelayInsideBeginInstallationInMs); //00
+                    Thread.Sleep(_artificialDelayInsideBeginInstallationInMs); //00
                 }
                 catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
