@@ -33,7 +33,7 @@ From the respective 'Readme' files of these projects:
 << nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview), a management subsystem
 supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.
 
-**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, 
+**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol,
 NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
 
 McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests from compatible devices.
@@ -86,17 +86,17 @@ Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
-in case you try to perform a firmware-upgrade on the desired device.**
+  in case you try to perform a firmware-upgrade on the desired device.**
 
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
-to the device.**
+  to the device.**
 
 - **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
 
 - **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
-  
+
 - **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.1.**
-    The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better. 
+  The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better.
 
 ## 🚀 Using the Nugets in your Projects
 
@@ -118,6 +118,16 @@ Make sure to always get the latest versions of the above packages.
 ## 🤖 Android
 
 - Installing a firmware:
+
+       Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
+       in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
+       any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
+
+       This was done deliberately so as to minimize (even eradicate) the chances that bugs or glitches in your
+       event-handlers might interfere with the firmware-installation process itself - this naturally works in your
+       favour most of the time.
+
+       Just be sure to pay attention to the logs for anything that looks fishy in your event-handling logic.
 
 ```c#
 
@@ -389,6 +399,14 @@ private void CleanupDeviceResetter()
          2. The library doesn't support streaming files. You must load each file's bytes as an array in memory before you can upload it. As long as you stay
             within reasonable limits (a few MBs) this shouldn't be a problem for most smartphones / tablets.
 
+         3. Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
+            in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
+            any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
+
+            This was done deliberately so as to minimize (even eradicate) the chances that bugs or glitches in your
+            event-handlers might interfere with the native file-operations - this naturally works in your favour most of
+            the time. Just pay attention to the logs for anything that looks fishy in your event-handling logic.
+
 ```c#
 
     private Dictionary<string, byte[]> _massFileUploadSelectedFileNamesAndTheirRawBytes; //set this appropriately
@@ -618,7 +636,7 @@ private void CleanupDeviceResetter()
 - To perform file-downloading from the device:
 
          Note:
- 
+
          The library doesn't support streaming files. The bytes of each file you download will be stored
          in memory as a byte-array before being returned to you. As long as you stay within reasonable limits
          (a few MBs) this shouldn't be a problem for most smartphones / tablets.
@@ -944,7 +962,7 @@ git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch deve
 
 ```bash
 # cd into the root folder of the repo
-WORKLOAD_VERSION=8.0.402                                 \
+WORKLOAD_VERSION=_check_the_yaml_file_for_the_proper_version_  \
 &&                                                       \
 sudo    dotnet                                           \
              workload                                    \
@@ -1024,7 +1042,7 @@ brew install --cask microsoft-openjdk@17
 brew install gradle@7
 ```
 
-#### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
+#### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!
 
 #### 5) Set MSBuild version to ver.17+
 
@@ -1064,7 +1082,7 @@ dotnet                                              \
 
 ## Known issues
 
-- Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
+- Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events.
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
 - Trying to use the iOS/Android flavours of this library in desktop-simulators for iOS/Android will probably result in compilation errors.
@@ -1072,7 +1090,7 @@ dotnet                                              \
 
 ```xml
 <PackageReference Include="Laerdal.McuMgr" Version="2.3.4-force-dud">
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
+  <NoWarn>$(NoWarn);NU1605</NoWarn>
 </PackageReference>
 ```
 
@@ -1085,8 +1103,8 @@ We welcome contributions to this project in the form of bug reports, feature req
 - Pull requests should be made against the `develop` branch.
 - Pull requests should be made from a fork of the repository, not a clone.
 - Pull requests should have a descriptive title and include a link to the relevant issue.
-- Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to 
-the aspects being affected.
+- Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to
+  the aspects being affected.
 
 ## Lead Maintainers
 
@@ -1106,6 +1124,6 @@ the aspects being affected.
 Special thanks goes to:
 
 - [Francois Raminosona](https://www.linkedin.com/in/francois-raminosona/) for his insights and guidance on the entire spectrum of Xamarin development and underlying build system. This project
-  would have been impossible to bring to fruition in such a short period of time without Francois' know-how.  
+  would have been impossible to bring to fruition in such a short period of time without Francois' know-how.
 
 - [Geir-Inge T.](https://www.linkedin.com/in/geir-inge-t-68749629) for his immense contributions in terms of field-testing the library and providing invaluable feedback and insights.
