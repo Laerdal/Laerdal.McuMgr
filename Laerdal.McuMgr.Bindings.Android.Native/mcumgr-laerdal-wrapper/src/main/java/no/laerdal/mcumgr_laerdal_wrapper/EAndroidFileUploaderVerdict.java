@@ -11,7 +11,7 @@ public enum EAndroidFileUploaderVerdict //this must mirror the enum values of E[
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFileUploaderVerdict(int value)
+    EAndroidFileUploaderVerdict(final int value)
     {
         _value = value;
     }

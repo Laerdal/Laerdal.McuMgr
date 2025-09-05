@@ -10,11 +10,17 @@ public class IOSFileUploader: NSObject {
     private var _fileSystemManager: FileSystemManager!
 
     private var _currentState: EIOSFileUploaderState = .none
-    private var _lastBytesSend: Int = 0
+    private var _currentBusyState: Bool = false
+
     private var _cancellationReason: String = ""
     private var _lastFatalErrorMessage: String = ""
-    private var _lastBytesSendTimestamp: Date? = nil
-    private var _remoteFilePathSanitized: String!
+
+    private var _lastBytesSent: Int = 0
+    private var _uploadStartTimestamp: Date? = nil
+    private var _lastBytesSentTimestamp: Date? = nil
+
+    private var _resourceId: String = ""
+    private var _remoteFilePathSanitized: String = ""
 
     @objc
     public init(_ listener: IOSListenerForFileUploader!) {
@@ -33,7 +39,7 @@ public class IOSFileUploader: NSObject {
             return false
         }
 
-        if !tryInvalidateCachedTransport() { //order
+        if !tryInvalidateCachedInfrastructure() { //order
             return false
         }
 
@@ -42,27 +48,26 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func tryInvalidateCachedTransport() -> Bool {
-        if _transporter == nil { //already scrapped
-            return true
-        }
+    public func nativeDispose() {
+        tryInvalidateCachedInfrastructure() //doesnt throw
+    }
 
-        if !isIdleOrCold() { //if the upload is already in progress we bail out
-            return false
-        }
+    @objc
+    public func tryInvalidateCachedInfrastructure() -> Bool { // must be public
+        var success1 = tryDisposeFilesystemManager() // order
+        var success2 = tryDisposeTransport() //         order
 
-        disposeFilesystemManager() // order
-        disposeTransport() //         order
-
-        return true;
+        return success1 && success2
     }
 
     @objc
     public func beginUpload(
+            _ resourceId: String,
             _ remoteFilePath: String,
             _ data: Data?,
             _ pipelineDepth: Int,
-            _ byteAlignment: Int
+            _ byteAlignment: Int,
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFileUploadingInitializationVerdict {
 
         if !isCold() { //keep first   if another upload is already in progress we bail out
@@ -71,6 +76,7 @@ public class IOSFileUploader: NSObject {
             return .failedOtherUploadAlreadyInProgress
         }
 
+        _resourceId = resourceId //it is ok if it is dud
         _remoteFilePathSanitized = remoteFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         if _remoteFilePathSanitized.isEmpty {
             onError("[IOSFU.BU.020] Target-file provided is dud")
@@ -97,7 +103,7 @@ public class IOSFileUploader: NSObject {
         }
 
         if _cbPeripheral == nil {
-            onError("[IOSFU.BU.060] No bluetooth-device specified - call trySetBluetoothDevice() first");
+            onError("[IOSFU.BU.060] No bluetooth-device specified - call trySetBluetoothDevice() first")
 
             return .failedInvalidSettings;
         }
@@ -115,31 +121,53 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
-        resetUploadState() //order
-        disposeFilesystemManager() //00 vital hack
-        ensureTransportIsInitializedExactlyOnce() //order
+        if (initialMtuSize > 5_000) { //negative or zero value are ok however
+            onError("[IOSFU.BU.085] Invalid mtu value '\(initialMtuSize)': Must be zero or positive and less than or equal to 5_000")
+
+            return .failedInvalidSettings
+        }
+
+        resetState() //order
+        tryDisposeFilesystemManager() //00 vital hack
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
         if (pipelineDepth >= 0) {
             configuration.pipelineDepth = pipelineDepth
         }
-                
-        let success = _fileSystemManager.upload( //order
-            name: _remoteFilePathSanitized,
-            data: data!,
-            using: configuration,
-            delegate: self
-        )
-        if !success {
-            onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
 
-            return .failedErrorUponCommencing
-        }
+        setState(.idle)
 
-        return .success
+        let verdict: EIOSFileUploadingInitializationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                let success = _fileSystemManager?.upload( //order
+                        name: _remoteFilePathSanitized,
+                        data: data!,
+                        using: configuration,
+                        delegate: self
+                ) ?? false
+                if !success {
+                    onError("[IOSFU.BU.090] Failed to commence file-uploading (check logs for details)")
+
+                    return .failedErrorUponCommencing
+                }
+
+                return .success
+
+            } catch let ex {
+                onError("[IOSFU.BU.095] Failed to commence file-uploading", ex)
+
+                return .failedErrorUponCommencing
+            }
+        })
+
+        return verdict
 
         //00  normally we shouldnt need this   but there seems to be a bug in the lib   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/209
+        //
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
     }
     
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
@@ -167,41 +195,123 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func pause() {
-        _fileSystemManager?.pauseTransfer()
+    public func tryPause() -> Bool {
+        if (_currentState == .paused) { //order
+            logInBg("[IOSFU.TPS.010] Ignoring 'pause' request in the native layer because we're already in 'paused' state anyway", McuMgrLogLevel.info)
+            return true // already paused which is ok
+        }
 
-        setState(.paused)
+        if (_currentState != .uploading) { //order
+            logInBg("[IOSFU.TPS.020] Ignoring 'pause' request in the native layer because we're not in a 'uploading' state to begin with", McuMgrLogLevel.info)
+            return false
+        }
+        
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                if (_fileSystemManager == nil) { //order
+                    logInBg("[IOSFU.TPS.030] Ignoring 'pause' request in the native layer because the file-system-manager has been trashed", McuMgrLogLevel.info)
+                    return false
+                }
+
+                logInBg("[IOSFU.TPS.040] Pausing uploading ...", McuMgrLogLevel.verbose)
+                
+                _fileSystemManager?.pauseTransfer()
+                
+                setState(.paused)
+                setBusyState(false)
+
+                return true
+            } catch let ex {
+                onError("[IOSFU.TPS.050] Failed to pause", ex)
+                return false
+            }
+        })
+        
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
     }
 
     @objc
-    public func resume() {
-        _fileSystemManager?.continueTransfer()
+    public func tryResume() -> Bool {
+        if _currentState == .uploading || _currentState == .resuming { //order
+            logInBg("[IOSFU.TR.010] Ignoring 'resume' request because we're already in 'uploading/resuming' state anyway", McuMgrLogLevel.info)
+            return true //already downloading which is ok
+        }
 
-        setState(.uploading)
+        if (_currentState != .paused) { //order
+            logInBg("[IOSFU.TR.020] Ignoring 'resume' request because we're not in a 'paused' state to begin with", McuMgrLogLevel.info)
+            return false
+        }
+        
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                if (_fileSystemManager == nil) { //vital to double-check
+                    logInBg("[IOSFU.TR.030] Ignoring 'resume' request because the file-system-manager is null", McuMgrLogLevel.info)
+                    return false
+                }
+
+                logInBg("[IOSFU.TR.040] Resuming uploading ...", McuMgrLogLevel.verbose)
+
+                _fileSystemManager?.continueTransfer()
+                
+                setState(.resuming)
+                setBusyState(true)
+
+                return true
+            } catch let ex {
+                onError("[IOSFU.RESUME.050] Failed to resume", ex)
+                return false
+            }
+        })
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
     }
 
     @objc
-    public func cancel(_ reason: String = "") {
+    public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
+        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
+        setState(.cancelling) //                                                                 order
 
-        cancellingAdvertisement(reason)
-        setState(.cancelling) //order
+        if (_fileSystemManager == nil) {
+            return true
+        }
+        
+        return ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                _fileSystemManager?.cancelTransfer() //order
+                return true
+            } catch let ex {
+                onError("[IOSFU.CANCEL.010] Failed to cancel", ex)
+                return false
+            }
+        })
 
-        _fileSystemManager?.cancelTransfer() //order
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
     }
 
     @objc
-    public func disconnect() {
-        disposeTransport()
+    public func tryDisconnect() -> Bool {
+        do
+        {
+            _transporter?.close()
+            //_transporter = nil //dont
+            return true
+        }
+        catch let ex
+        {
+            logInBg("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogLevel.warning)
+            return false
+        }
     }
 
-    private func resetUploadState() {
-        _lastBytesSend = 0
-        _lastBytesSendTimestamp = nil
+    private func resetState() {
+        _uploadStartTimestamp = nil
 
-        setState(.idle)
-        busyStateChangedAdvertisement(true)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        _lastBytesSent = 0
+        _lastBytesSentTimestamp = nil
+
+        setState(.none)
+        setBusyState(false)
     }
 
     private func ensureFilesystemManagerIsInitializedExactlyOnce() {
@@ -215,22 +325,46 @@ public class IOSFileUploader: NSObject {
         //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below via IOSFileUploader: McuMgrLogDelegate
     }
 
-    private func ensureTransportIsInitializedExactlyOnce() {
-        if _transporter != nil {
-            return
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize < 0 // -1=laerdal-mtu-default, 0=mtu-autoconfigured-by-nordic-libs, 1-and-above=user-mtu-custom-value
+                ? Constants.DefaultMtuForFileUploads
+                : initialMtuSize
+
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
+            _transporter.mtu = properMtu
+
+            logInBg("[IOSFU.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogLevel.info)
+        } else {
+            logInBg("[IOSFU.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogLevel.info)
+        }
+    }
+
+    private func tryDisposeTransport() -> Bool {
+        if (_transporter == nil) {
+            return true //already disconnected
         }
 
-        _transporter = McuMgrBleTransport(_cbPeripheral)
+        do
+        {
+            _transporter?.close()
+            _transporter = nil
+            return true
+        }
+        catch let ex
+        {
+            logInBg("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
+            return false
+        }
     }
 
-    private func disposeTransport() {
-        _transporter?.close()
-        _transporter = nil
-    }
-
-    private func disposeFilesystemManager() {
+    private func tryDisposeFilesystemManager() -> Bool {
         //_fileSystemManager?.cancelTransfer()  dont
         _fileSystemManager = nil
+        return true
     }
 
     private func isIdleOrCold() -> Bool {
@@ -248,32 +382,43 @@ public class IOSFileUploader: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         _lastFatalErrorMessage = errorMessage
 
-        setState(.error) //                           order
-        _listener.fatalErrorOccurredAdvertisement( // order
-                _remoteFilePathSanitized,
-                errorMessage,
-                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
-        )
+        setState(.error) //       order
+        setBusyState(false) //    order
+
+        let resourceIdSnapshot = _resourceId
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
+
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.fatalErrorOccurredAdvertisement(// order
+                    resourceIdSnapshot,
+                    remoteFilePathSanitizedSnapshot,
+                    errorMessage,
+                    McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+            )
+        }
+    }
+
+    private static let DefaultLogCategory = "FileUploader";
+
+    private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
+        let resourceIdSnapshot = _resourceId
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, resourceIdSnapshot)
+        }
+    }
+
+    private func log(_ message: String, _ level: McuMgrLogLevel) {
+        self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, _resourceId)
     }
 
     //@objc   dont
-    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
-        _listener.logMessageAdvertisement(message, category, level, _remoteFilePathSanitized)
-    }
-
-    //@objc   dont
-    private func cancellingAdvertisement(_ reason: String) {
+    private func cancellingAdvertisement(_ reason: String?) {
         _listener.cancellingAdvertisement(reason)
     }
 
     //@objc   dont
-    private func cancelledAdvertisement(_ reason: String) {
+    private func cancelledAdvertisement(_ reason: String?) {
         _listener.cancelledAdvertisement(reason)
-    }
-
-    //@objc   dont
-    private func fileUploadedAdvertisement() {
-        _listener.fileUploadedAdvertisement(_remoteFilePathSanitized)
     }
 
     //@objc   dont
@@ -282,25 +427,46 @@ public class IOSFileUploader: NSObject {
     }
 
     //@objc   dont
-    private func stateChangedAdvertisement(
-            _ oldState: EIOSFileUploaderState,
-            _ newState: EIOSFileUploaderState
-    ) {
-        _listener.stateChangedAdvertisement(_remoteFilePathSanitized, oldState, newState)
+    private func stateChangedAdvertisement( //@formatter:off
+            _ resourceId:              String?,
+            _ remoteFilePathSanitized: String?,
+            _ oldState:                EIOSFileUploaderState,
+            _ newState:                EIOSFileUploaderState,
+            _ totalBytesToBeUploaded:  Int
+    ) {  //@formatter:off
+        _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState, totalBytesToBeUploaded)
     }
 
     //@objc   dont
     private func fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+            _ resourceId: String?,
+            _ remoteFilePathSanitized: String?,
             _ progressPercentage: Int,
-            _ averageThroughput: Float32
+            _ currentThroughputInKbps: Float32,
+            _ totalAverageThroughputInKbps: Float32
     ) {
         _listener.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                resourceId,
+                remoteFilePathSanitized,
                 progressPercentage,
-                averageThroughput
+                currentThroughputInKbps,
+                totalAverageThroughputInKbps
         )
     }
 
-    private func setState(_ newState: EIOSFileUploaderState) {
+    private func setBusyState(_ newBusyState: Bool) {
+        if (_currentBusyState == newBusyState) {
+            return
+        }
+
+        busyStateChangedAdvertisement(newBusyState)
+    }
+
+    private func setState(_ newState: EIOSFileUploaderState, totalBytesToBeUploaded: Int = 0) {
+        if (_currentState == .paused && newState == .uploading) {
+            return; // after pausing we might still get a quick UPLOADING update from the native-layer - we must ignore it
+        }
+
         if (_currentState == newState) {
             return
         }
@@ -309,66 +475,101 @@ public class IOSFileUploader: NSObject {
 
         _currentState = newState //order
 
-        stateChangedAdvertisement(oldState, newState) //order
+        let resourceIdSnapshot = _resourceId
+        let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        if (oldState == .uploading && newState == .complete) //00
-        {
-            fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0)
+        DispatchQueue.global(qos: .background).async { //50 fire and forget to boost performance
+            self.stateChangedAdvertisement(
+                    resourceIdSnapshot,
+                    remoteFilePathSanitizedSnapshot,
+                    oldState,
+                    newState,
+                    totalBytesToBeUploaded //60
+            )
         }
 
-        //00 trivial hotfix to deal with the fact that the file-upload progress% doesn't fill up to 100%
+        //50   to simplify the native layers of android and ios we delegated the responsibility of firing the file-upload-started/paused/resumed/completed events
+        //     to the csharp layer so that we can strike many birds with one stone
+        //
+        //60   the total-bytes-to-be-uploaded is only relevant when entering the UPLOADING state   in all other states it will be zero which is fine
     }
 }
 
 extension IOSFileUploader: FileUploadDelegate {
 
     public func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(.uploading)
-        let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
-        let uploadProgressPercentage = (bytesSent * 100) / fileSize
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond)
+        setState(.uploading, totalBytesToBeUploaded: fileSize)
+        setBusyState(true)
+        
+        let resourceIdSnapshot  = _resourceId;
+        let remoteFilePathSanitizedSnapshot  = _remoteFilePathSanitized;
+
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            let uploadProgressPercentage = (bytesSent * 100) / fileSize
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+
+            self.fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                resourceIdSnapshot,
+                remoteFilePathSanitizedSnapshot,
+                uploadProgressPercentage,
+                currentThroughputInKbps,
+                totalAverageThroughputInKbps
+            )
+        }
     }
 
     public func uploadDidFail(with error: Error) {
         onError(error.localizedDescription, error)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
     public func uploadDidCancel() {
         setState(.cancelled)
-        busyStateChangedAdvertisement(false)
-        fileUploadProgressPercentageAndDataThroughputChangedAdvertisement(0, 0)
+        setBusyState(false)
         cancelledAdvertisement(_cancellationReason)
     }
 
     public func uploadDidFinish() {
         setState(.complete)
-        fileUploadedAdvertisement()
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
-    private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
-        if (_lastBytesSendTimestamp == nil) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+    private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_lastBytesSentTimestamp == nil) {
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSendTimestamp!).truncatingRemainder(dividingBy: 1))
-        if (intervalInSeconds == 0) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!))
+        if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let throughputKilobytesPerSecond = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSent) / (intervalInSeconds * 1024) //order
 
-        _lastBytesSend = bytesSent
-        _lastBytesSendTimestamp = timestamp
+        _lastBytesSent = bytesSent //order
+        _lastBytesSentTimestamp = timestamp //order
 
-        return throughputKilobytesPerSecond
+        return currentThroughputInKbps
     }
 
+    private func calculateTotalAverageThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_uploadStartTimestamp == nil) {
+            _uploadStartTimestamp = timestamp
+            return 0
+        }
+
+        let secondsSinceUploadStart = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
+        if (secondsSinceUploadStart == 0) { //should be impossible but just in case
+            return 0
+        }
+
+        return Float32(bytesSent) / (secondsSinceUploadStart * 1024)
+    }
 }
 
 extension IOSFileUploader: McuMgrLogDelegate {
@@ -377,10 +578,6 @@ extension IOSFileUploader: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
-        logMessageAdvertisement(
-                msg,
-                category.rawValue,
-                level.name
-        )
+        logInBg(msg, level, category.rawValue)
     }
 }

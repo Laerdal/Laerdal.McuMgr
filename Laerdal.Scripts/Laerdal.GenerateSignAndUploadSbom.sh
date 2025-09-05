@@ -224,7 +224,7 @@ function install_dotnet_cyclonedx() {
     install \
     --global CycloneDX
   declare exitCode=$?
-  if [ $exitCode != 0 ]; then
+  if [ ${exitCode} != 0 ]; then
     echo "Something went wrong with the CycloneDX tool for dotnet."
     exit 10
   fi
@@ -233,7 +233,7 @@ function install_dotnet_cyclonedx() {
   echo "** CycloneDX:"
   which dotnet-CycloneDX && dotnet cyclonedx --version
   declare exitCode=$?
-  if [ $exitCode != 0 ]; then
+  if [ ${exitCode} != 0 ]; then
     echo "Something's wrong with 'dotnet-CycloneDX'."
     exit 12
   fi
@@ -246,11 +246,35 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
 
   sniff_and_validate_host_os_and_architecture
 
-  echo "** Installing cyclonedx cli tool for '${host_os}'"
-  if [[ ${host_os} == "Mac" ]] || [[ ${host_os} == "Linux" ]]; then
-    brew install cyclonedx/cyclonedx/cyclonedx-cli # both the macos and linux vmimages support brew so we can use it
+  echo "** Installing cyclonedx cli tool for '${host_os_and_architecture}'"
+
+  declare -r cyclonedx_version="0.27.2"
+
+  if [[ "${host_os_and_architecture}" == "Linux-arm" ]]; then 
+
+    # even though macos and linux vmimages do support brew  unfortunately it doesnt support version-pinning for the sake of consistency    so we cannot use this
+    # brew install cyclonedx/cyclonedx/cyclonedx-cli
+
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-linux-arm &&
+      chmod +x cyclonedx
     declare exitCode=$?
-    if [ $exitCode != 0 ]; then
+    if [ ${exitCode} != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 1
+    fi
+
+    return
+  fi
+  
+  if [[ "${host_os_and_architecture}" == "Linux-arm64" ]]; then 
+
+    # even though macos and linux vmimages do support brew  unfortunately it doesnt support version-pinning for the sake of consistency    so we cannot use this
+    # brew install cyclonedx/cyclonedx/cyclonedx-cli
+
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-linux-arm64 &&
+      chmod +x cyclonedx
+    declare exitCode=$?
+    if [ ${exitCode} != 0 ]; then
       echo "Failed to install 'cyclonedx'."
       exit 1
     fi
@@ -258,11 +282,15 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
     return
   fi
 
-  if [[ ${host_os_and_architecture} == "Windows-x86" ]]; then # windows does not support brew and chocolatey does not have a cyclonedx-cli package as of Q3 2024
-    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x86.exe &&
+  if [[ "${host_os_and_architecture}" == Mac-arm* ]]; then # Mac-arm64    we use a wildcard to make it more future proof 
+
+    # even though macos and linux vmimages do support brew  unfortunately it doesnt support version-pinning for the sake of consistency    so we cannot use this
+    # brew install cyclonedx/cyclonedx/cyclonedx-cli
+
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-osx-arm64 &&
       chmod +x cyclonedx
     declare exitCode=$?
-    if [ $exitCode != 0 ]; then
+    if [ ${exitCode} != 0 ]; then
       echo "Failed to install 'cyclonedx'."
       exit 1
     fi
@@ -270,11 +298,11 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
     return
   fi
 
-  if [[ ${host_os_and_architecture} == "Windows-x64" ]]; then
-    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-x64.exe &&
+  if [[ "${host_os_and_architecture}" == "Windows-x86" ]]; then # windows does not support brew and chocolatey does not have a cyclonedx-cli package as of Q3 2024
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-win-x86.exe &&
       chmod +x cyclonedx
     declare exitCode=$?
-    if [ $exitCode != 0 ]; then
+    if [ ${exitCode} != 0 ]; then
       echo "Failed to install 'cyclonedx'."
       exit 1
     fi
@@ -282,11 +310,23 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
     return
   fi
 
-  if [[ ${host_os_and_architecture} == "Windows-arm" ]]; then
-    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-arm.exe &&
+  if [[ "${host_os_and_architecture}" == "Windows-x64" ]]; then
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-win-x64.exe &&
       chmod +x cyclonedx
     declare exitCode=$?
-    if [ $exitCode != 0 ]; then
+    if [ ${exitCode} != 0 ]; then
+      echo "Failed to install 'cyclonedx'."
+      exit 1
+    fi
+
+    return
+  fi
+
+  if [[ "${host_os_and_architecture}" == "Windows-arm" ]]; then
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-win-arm.exe &&
+      chmod +x cyclonedx
+    declare exitCode=$?
+    if [ ${exitCode} != 0 ]; then
       echo "Failed to install 'cyclonedx'."
       exit 10
     fi
@@ -294,11 +334,11 @@ function install_cyclonedx_standalone() { # we need to install the CycloneDX too
     return
   fi
 
-  if [[ ${host_os_and_architecture} == "Windows-arm64" ]]; then
-    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.1/cyclonedx-win-arm64.exe &&
+  if [[ "${host_os_and_architecture}" == "Windows-arm64" ]]; then
+    curl --output cyclonedx --url https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${cyclonedx_version}/cyclonedx-win-arm64.exe &&
       chmod +x cyclonedx
     declare exitCode=$?
-    if [ $exitCode != 0 ]; then
+    if [ ${exitCode} != 0 ]; then
       echo "Failed to install 'cyclonedx'."
       exit 10
     fi
@@ -396,8 +436,8 @@ function generate_sign_and_upload_sbom() {
 }
 
 function main() {
-  parse_arguments "$@"          #           order
-  install_tools                 #                  order
+  parse_arguments "$@"          #  order
+  install_tools                 #  order
   generate_sign_and_upload_sbom #  order
 }
 

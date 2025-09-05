@@ -13,5 +13,5 @@ public protocol IOSListenerForFirmwareInstaller {
     func stateChangedAdvertisement(_ oldState: EIOSFirmwareInstallationState, _ newState: EIOSFirmwareInstallationState)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
     func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ globalErrorCode: Int)
-    func firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(_ progressPercentage: Int, _ averageThroughput: Float32)
+    func firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(_ progressPercentage: Int, _ averageThroughputInKbps: Float32, _ totalAverageThroughputInKbps: Float32)
 }

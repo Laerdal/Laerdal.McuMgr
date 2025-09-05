@@ -10,6 +10,7 @@
     <File Path="Laerdal.Scripts\Laerdal.SetupBuildEnvironment.sh" />
     <File Path=".github\workflows\github-actions.yml" />
     <File Path="Laerdal.Scripts\Laerdal.GenerateSignAndUploadSbom.sh" />
+    <File Path=".github\dependabot.yml" />
   </Folder>
   <Folder Name="/_Tests/">
     <Project Path="Laerdal.McuMgr.Tests\Laerdal.McuMgr.Tests.csproj" Type="Classic C#" />

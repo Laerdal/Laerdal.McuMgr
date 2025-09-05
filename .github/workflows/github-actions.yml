@@ -20,17 +20,19 @@ env:
   SCL_DEPENDENCY_TRACKER_SERVER_URL: ${{          secrets.SCL_DEPENDENCY_TRACKER_SERVER_URL          }}
   SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY: ${{ secrets.SCL_DEPENDENCY_TRACKER_SIGNING_PRIVATE_KEY }}
 
-  DOTNET_TARGET_WORKLOAD_VERSION: "8.0.402" # dont upgrade this lightheartedly   the workload snapshot implicitly defines which versions of Android/iOS/MacCatalyst SDKs are supported
+  DOTNET_TARGET_WORKLOAD_VERSION: "8.0.405" #   dont upgrade this lightheartedly   the workload snapshot implicitly defines which versions of Android/iOS/MacCatalyst SDKs are supported
 
   BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION: "34" # for the csproj file
 
-  BINDINGS_IOS___SDK_VERSION: "18.1" # for xcodebuild
-  BINDINGS_IOS___XCODE_IDE_DEV_PATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
-  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "17.0" # for the csproj file
+  BINDINGS_IOS___SDK_VERSION: "18.2" #                                                            for xcodebuild
+  BINDINGS_IOS___MIN_SUPPORTED_VERSION: "14.5" #                                                  for xcodebuild
+  BINDINGS_IOS___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.2.app/Contents/Developer" #    for xcodebuild
+  BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION: "18.0" #                                         for the csproj file
 
-  BINDINGS_MACCATALYST___SDK_VERSION: "15.1" # for xcodebuild
-  BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH: "/Applications/Xcode_16.1.app/Contents/Developer" # for xcodebuild
-  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "17.0" # for the csproj file
+  BINDINGS_MACCATALYST___SDK_VERSION: "15.2" #                                                         for xcodebuild
+  BINDINGS_MACCATALYST___MIN_SUPPORTED_VERSION: "14.6" #                                               for xcodebuild
+  BINDINGS_MACCATALYST___XCODE_IDE_DEV_FOLDERPATH: "/Applications/Xcode_16.2.app/Contents/Developer" # for xcodebuild
+  BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION: "18.0" #                                      for the csproj file
 
 on:
   workflow_call: #     so that other workflows can trigger this
@@ -43,7 +45,6 @@ on:
   pull_request: # we need to build on pull requests so that we can generate and upload the sbom before merging onto main/develop branches
     branches:
       - '**'
-
 
 jobs:
   
@@ -59,10 +60,32 @@ jobs:
     steps:
 
       - name: '🔽 Checkout'
-        uses: 'actions/checkout@v4'
+        uses: 'actions/checkout@v5'
         with:
           fetch-tags: true # https://github.com/actions/checkout/issues/1471#issuecomment-1771231294
           fetch-depth: 0
+
+      - name: '🗂️ Try Restore Dotnet NuGets from Cache'
+        id: 'cache-dotnet-nugets'
+        uses: 'actions/cache@v4'
+        with:
+          path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
+            ~/.nuget/packages
+            %USERPROFILE%\.nuget\packages
+          key: dotnet-nugets-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.fsproj') }}-${{ env.DOTNET_TARGET_WORKLOAD_VERSION }}
+          restore-keys: |
+            dotnet-nugets-${{ runner.os }}-
+
+      - name: '🗂️ Try Restore Dotnet Workloads from Cache'
+        id: 'cache-dotnet-workloads'
+        uses: 'actions/cache@v4'
+        with:
+          path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
+            ~/.dotnet
+            %USERPROFILE%\.dotnet
+          key: dotnet-workloads-${{ runner.os }}-${{ env.DOTNET_TARGET_WORKLOAD_VERSION }}
+          restore-keys: |
+            dotnet-workloads-${{ runner.os }}-
 
       - name: '🛠 Setup Build Environment'
         shell: 'bash'
@@ -74,7 +97,8 @@ jobs:
                              "https://nuget.pkg.github.com/Laerdal/index.json"                                \
                              "${{env.SCL_GITHUB_NUGET_FEED_USERNAME}}"                                        \
                              "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                               \
-                             "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"
+                             "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                 \
+                             "${{steps.cache-dotnet-workloads.outputs.cache-hit == 'true' && 'false' || 'true' }}" # if the cache was hit, we do not need to install the workloads again
 
       - name: '🏗 📦 Build, Pack & Announce New Release (if appropriate)'
         shell: 'bash'
@@ -102,11 +126,13 @@ jobs:
                    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion="${{env.BINDINGS_ANDROID___DOTNET_TARGET_PLATFORM_VERSION}}"                                          \
                                                                                                                                                                                    \
                                        -p:Laerdal_Bindings_iOS___Sdk_Version="${{env.BINDINGS_IOS___SDK_VERSION}}"                                                                 \
-                                -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Path="${{env.BINDINGS_IOS___XCODE_IDE_DEV_PATH}}"                                                          \
+                             -p:Laerdal_Bindings_iOS___Min_Supported_Version="${{env.BINDINGS_IOS___MIN_SUPPORTED_VERSION}}"                                                       \
+                          -p:Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath="${{env.BINDINGS_IOS___XCODE_IDE_DEV_FOLDERPATH}}"                                                    \
                        -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion="${{env.BINDINGS_IOS___DOTNET_TARGET_PLATFORM_VERSION}}"                                              \
                                                                                                                                                                                    \
                                -p:Laerdal_Bindings_MacCatalyst___Sdk_Version="${{env.BINDINGS_MACCATALYST___SDK_VERSION}}"                                                         \
-                        -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Path="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_PATH}}"                                                  \
+                     -p:Laerdal_Bindings_MacCatalyst___Min_Supported_Version="${{env.BINDINGS_MACCATALYST___MIN_SUPPORTED_VERSION}}"                                               \
+                  -p:Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath="${{env.BINDINGS_MACCATALYST___XCODE_IDE_DEV_FOLDERPATH}}"                                            \
                -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion="${{env.BINDINGS_MACCATALYST___DOTNET_TARGET_PLATFORM_VERSION}}"                                      \
                                                                                                                                                                                    \
                                     -p:Laerdal_Dependency_Tracker_Server_Url="${{env.SCL_DEPENDENCY_TRACKER_SERVER_URL}}"                                                          \
@@ -115,34 +141,11 @@ jobs:
                    &&                                                                                                                                                              \
           rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
-      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
-        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
-        if: always() # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed
-        with:
-          files: |
-            TestResults/**/TEST-*.xml
-            TestResults/**/TEST-*.trx
-
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
         uses: 'actions/upload-artifact@v4'
         with:
           name: 'Artifacts'
           path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'
-
-      - name: '🚀 Publish Nugets over to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
-        shell: 'bash'
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        run: |
-          cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                          \
-                    &&                                                                  \
-          ls .                                                                          \
-                    &&                                                                  \
-          dotnet                                                                        \
-                  nuget                                                                 \
-                  push                                                                  \
-                  --source   "https://nuget.pkg.github.com/Laerdal/index.json"          \
-                  --api-key  "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                         \
-                  *nupkg
 
       - name: '🚀 Publish Nugets over to Nuget.org'
         shell: 'bash'
@@ -158,3 +161,29 @@ jobs:
                   --source   "https://api.nuget.org/v3/index.json"                                \
                   --api-key  "${{env.SCL_NUGET_ORG_FEED_API_KEY}}"                                \
                   *.nupkg
+
+      - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
+        uses: 'EnricoMi/publish-unit-test-result-action/macos@v2'
+        continue-on-error: true # sometimes this action spazes out and fails   we ignore such hiccups because they are not really critical
+        if: always() && github.actor != 'dependabot[bot]' # this means: "run even if prior steps fail"   if tests fail, the build will fail, but at least we will know exactly what failed   we skip this for dependabot triggered runs because they have permissions issues
+        with:
+          files: |
+            TestResults/**/*.xml
+            TestResults/**/*.trx
+
+      # we no longer publish our nugets to the github feed considering that we are already publishing them to nuget.org right above
+      #
+      # - name: '🚀 Publish Nugets over to the Laerdal Nuget Server on Github' # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry
+      #   shell: 'bash'
+      #   if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      #   run: |
+      #     cd "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/"                          \
+      #               &&                                                                  \
+      #     ls .                                                                          \
+      #               &&                                                                  \
+      #     dotnet                                                                        \
+      #             nuget                                                                 \
+      #             push                                                                  \
+      #             --source   "https://nuget.pkg.github.com/Laerdal/index.json"          \
+      #             --api-key  "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                         \
+      #             *nupkg

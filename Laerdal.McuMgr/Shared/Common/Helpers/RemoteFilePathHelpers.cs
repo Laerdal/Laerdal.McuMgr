@@ -1,17 +1,38 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Laerdal.McuMgr.Common.Helpers
 {
     static internal class RemoteFilePathHelpers
     {
-        static public void ValidateRemoteFilePathsWithDataBytes<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        static internal string ValidateAndSanitizeRemoteFilePath(string remoteFilePath)
         {
-            remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
+            ValidateRemoteFilePath(remoteFilePath); //throws an exception if something is wrong
 
-            foreach (var pathAndDataBytes in remoteFilePathsWithTheirDataBytes)
+            return SanitizeRemoteFilePath(remoteFilePath);
+        }
+
+        static internal FrozenDictionary<string, T> ValidateAndSanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        {
+            ValidateRemoteFilePathsWithData(remoteFilePathsWithTheirDataBytes); //throws an exception if something is wrong
+
+            return SanitizeRemoteFilePathsWithData(remoteFilePathsWithTheirDataBytes);
+        }
+        
+        static internal string[] ValidateAndSanitizeRemoteFilePaths(IEnumerable<string> remoteFilePaths)
+        {
+            ValidateRemoteFilePaths(remoteFilePaths); //throws an exception if something is wrong
+
+            return SanitizeRemoteFilePaths(remoteFilePaths);
+        }
+        
+        static internal void ValidateRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirData)
+        {
+            remoteFilePathsWithTheirData = remoteFilePathsWithTheirData ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirData));
+
+            foreach (var pathAndDataBytes in remoteFilePathsWithTheirData)
             {
                 ValidatePayload(pathAndDataBytes.Value);
                 ValidateRemoteFilePath(pathAndDataBytes.Key);
@@ -43,16 +64,22 @@ namespace Laerdal.McuMgr.Common.Helpers
             if (remoteFilePath.EndsWith('/')) //00
                 throw new ArgumentException($"The given {nameof(remoteFilePath)} points to a directory not a file!");
 
-            if (remoteFilePath.Contains('\r') || remoteFilePath.Contains('\n') || remoteFilePath.Contains('\f')) //order
+            if (remoteFilePath.Contains('\r', StringComparison.InvariantCultureIgnoreCase)
+                || remoteFilePath.Contains('\n', StringComparison.InvariantCultureIgnoreCase)
+                || remoteFilePath.Contains('\f', StringComparison.InvariantCultureIgnoreCase)) //order
                 throw new ArgumentException($"The given {nameof(remoteFilePath)} contains newline characters!");
 
             //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
         }
         
         //used by the uploader
-        static public IReadOnlyDictionary<string, T> SanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
+        static internal FrozenDictionary<string, T> SanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
+
+            var isAlreadySane = remoteFilePathsWithTheirDataBytes.Select(x => x.Key).All(path => path == SanitizeRemoteFilePath(path));
+            if (isAlreadySane)
+                return remoteFilePathsWithTheirDataBytes.ToFrozenDictionary(); //optimization
 
             var results = new Dictionary<string, T>(remoteFilePathsWithTheirDataBytes.Count);
             foreach (var pathWithDataBytes in remoteFilePathsWithTheirDataBytes)
@@ -68,9 +95,9 @@ namespace Laerdal.McuMgr.Common.Helpers
                 results.Add(sanitizedPath, pathWithDataBytes.Value);
             }
 
-            return results;
+            return results.ToFrozenDictionary();
         }
-        
+
         //used by the downloader
         static internal string[] SanitizeRemoteFilePaths(IEnumerable<string> remoteFilePaths)
         {

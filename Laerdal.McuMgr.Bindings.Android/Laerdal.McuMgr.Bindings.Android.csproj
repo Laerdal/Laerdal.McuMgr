@@ -6,12 +6,7 @@
         <IsHostMachineUnix Condition="     '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
 
         <LangVersion>10.0</LangVersion>
-        
-        <!-- to future maintainers     we stick with net8 for now in android because as it turned out the net8 toolchain generates broken      -->
-        <!-- to future maintainers     android dlls that cause missing-symbols-errors in runtime   what a freakshow net8 turned out to be man  -->
-        <!--                                                                                                                                   -->
-        <!--                                             https://github.com/dotnet/maui/issues/21102                                           -->
-        <!--                                                                                                                                   -->
+
         <TargetFramework>net8.0-android</TargetFramework>
 
         <IsNet8 Condition="               '$(TargetFramework.ToLower().StartsWith(net8))' == 'true'          ">true</IsNet8>
@@ -29,7 +24,7 @@
         <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
         <IsBindingProject>true</IsBindingProject>
 
-        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;BG8605;BG8606;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0108;CS0114;BG8700;BG8605;BG8606;NETSDK1202;CA1008;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -62,10 +57,11 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1092.0</Version>
-        <FileVersion>1.0.1092.0</FileVersion>
-        <PackageVersion>1.0.1092.0</PackageVersion>
-        <AssemblyVersion>1.0.1092.0</AssemblyVersion>
+        <Version>2.53.34</Version>
+
+        <FileVersion>$(Version)</FileVersion>
+        <PackageVersion>$(Version)</PackageVersion>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -103,18 +99,18 @@
         <Message Importance="High" Text="PackageVersion:   '$(PackageVersion)'   "/>
         <Message Importance="High" Text="TargetFramework:  '$(TargetFramework)'  "/>
         <Message Importance="High" Text="DefineConstants:  '$(DefineConstants)'  "/>
-        <Message Importance="high" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
-        <Message Importance="high" Text="BuildingProject:  '$(BuildingProject)'  "/>
-        <Message Importance="high" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
+        <Message Importance="High" Text="DesignTimeBuild:  '$(DesignTimeBuild)'  "/>
+        <Message Importance="High" Text="BuildingProject:  '$(BuildingProject)'  "/>
+        <Message Importance="High" Text="MSBuildNodeCount: '$(MSBuildNodeCount)' "/>
 
-        <Message Importance="high" Text="IsNet8:             '$(IsNet8)'             "/>
-        <Message Importance="high" Text="IsNetX:             '$(IsNetX)'             "/>
-        <Message Importance="high" Text="AndroidApplication: '$(AndroidApplication)' "/>
+        <Message Importance="High" Text="IsNet8:             '$(IsNet8)'             "/>
+        <Message Importance="High" Text="IsNetX:             '$(IsNetX)'             "/>
+        <Message Importance="High" Text="AndroidApplication: '$(AndroidApplication)' "/>
 
-        <Message Importance="high" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
-        <Message Importance="high" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
+        <Message Importance="High" Text="TargetPlatformVersion:        '$(TargetPlatformVersion)'      "/>
+        <Message Importance="High" Text="SupportedOSPlatformVersion:   '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="ShouldBuildNativeLibraries:   '$(ShouldBuildNativeLibraries)' "/>
+        <Message Importance="High" Text="ShouldBuildNativeLibraries:   '$(ShouldBuildNativeLibraries)' "/>
     </Target>
 
     <!-- considering the highly customized nature of the build system we need to ensure that parallelization is turned off otherwise we will end up with   -->
@@ -122,21 +118,27 @@
     <!-- intended way of building stuff is to let net8.0-android build the android libs and once that is done then and only then proceed to any additional -->
     <!-- target-frameworks which will find the .aar and .jars already in place                                                                             -->
     <Target Name="EnsureThatParallelizedBuildingIsDisabled"
+            Condition=" '$(BuildingProject)' == 'true' "
             BeforeTargets="PrepareForBuild">
-        <Error Condition=" '$(MSBuildNodeCount)' != '' AND $(MSBuildNodeCount) &gt; 1 "
-               Text="Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
+        <Error Condition=" '$(MSBuildNodeCount)' != '' and $(MSBuildNodeCount) &gt; 1 "
+               Text="** Detected that parallelization is turned on (MSBuildNodeCount: $(MSBuildNodeCount) > 1). Refusing to build because parallelized builds are destined to fail with cryptic errors. Turn off parallelization via BuildInParallel=false or /m:1 (see: https://stackoverflow.com/a/76340699/863651)"/>
     </Target>
 
     <Import Condition=" '$(ShouldBuildNativeLibraries)' == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NativeBuilder.targets"/>
     <Import Condition=" '$(IsNetX)'                     == 'true' " Project="Laerdal.McuMgr.Bindings.Android.NetX.targets"/>
 
     <ItemGroup Condition=" '$(IsNetX)' == 'true' " >
+        <!-- dependencies and their versions can be found in the libs.versions.toml file in the nordic-android-mcumgr repo itself -->
+        <!--                                                                                                                      -->
+        <!--     https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/blob/main/gradle/libs.versions.toml    -->
+        
         <!-- these dependencies have been field-tested and are known to work at least as far back as Android 10.0 -->
-        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.12.0.4" PrivateAssets="All" />
+        <PackageReference Include="Xamarin.AndroidX.Core" Version="1.17.0" PrivateAssets="All" />
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.8.0.1" />
+        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.2.10" />
+        <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.10.2.1" />
     </ItemGroup>
 
 </Project>

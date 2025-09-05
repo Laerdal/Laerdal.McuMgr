@@ -10,22 +10,44 @@
         <LangVersion>12.0</LangVersion>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
+        
+        <!-- vital for dependabot to work properly -->
+        <BuildOnlyDudNet8>true</BuildOnlyDudNet8>
+
+        <!-- these are needed so that we dont get a warning when building this project or when dependabot is analyzing it -->
+        <UseMaui>true</UseMaui>
+        <UseMauiEssentials>true</UseMauiEssentials>
+        <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <!-- FluentAssertions versions 8+ are free for open source projects                -->
+        <!-- and non commercial use but commercial use requires a paid license             -->
+        <!--                                                                               -->
+        <!-- Version 7 will remain fully open source indefinitely and receive              -->
+        <!-- bugfixes and other important corrections                                      -->
+        <!--                                                                               -->
+        <!-- Notice that we cant use version-ranging here ala [7.1.0, 8) because           -->
+        <!-- dependabot has an issue with version ranges causing it to spazz and error out -->
+        <PackageReference Include="FluentAssertions" Version="7.2.0" />
 
-        <PackageReference Include="xunit" Version="2.9.2" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
 
-        <PackageReference Include="coverlet.collector" Version="6.0.2">
+        <PackageReference Include="coverlet.collector" Version="6.0.4">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+
+        <!-- these are needed so that we dont get a warning when building this project or when dependabot is analyzing it -->
+        <!-- Warning MA002 : Starting with .NET 8, setting  <UseMaui>true</UseMaui>  does not automatically include NuGet package references in your project. -->
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100"/>
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100"/>
     </ItemGroup>
 
     <ItemGroup>

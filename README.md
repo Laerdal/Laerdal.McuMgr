@@ -2,25 +2,7 @@
 
 ![Platforms](https://img.shields.io/badge/Platforms-_MAUI_|_iOS_|_MacCatalyst_|_Android_-blue.svg)
 
-- Latest Nugets:
-
-
-      Laerdal.McuMgr Nugets:
-  
-  [![Laerdal.McuMgr package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr)
-
-      Laerdal.McuMgr.Bindings.iOS Nugets:
-
-  [![Laerdal.McuMgr.Bindings.iOS package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.iOS)
-
-      Laerdal.McuMgr.Bindings.Android Nugets:
-
-  [![Laerdal.McuMgr.Bindings.Android package on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.Android)
-
-      Laerdal.McuMgr.Bindings.NetStandard Nugets (WIP!):
-
-  [![Laerdal.McuMgr.Bindings.NetStandard package (WIP!) on Github](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)](https://github.com/Laerdal/Laerdal.McuMgr/pkgs/nuget/Laerdal.McuMgr.Bindings.NetStandard)
-
+( other platforms like Windows will only compile but they will throw NotImplemented exceptions at runtime )
 
 - Release Build Status (main branch):
 
@@ -51,7 +33,7 @@ From the respective 'Readme' files of these projects:
 << nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview), a management subsystem
 supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.
 
-**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, 
+**It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol,
 NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**.
 
 McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests from compatible devices.
@@ -76,9 +58,27 @@ The following types of operations are supported on devices running on Nordic's n
 
 ## ✅ Nuget Platform-Support Matrix
 
-| Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0)                                                   |
-|-----------|---------------------------------------------------------------------------|------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------|   
-| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 15.0 <br/> (api-levels: 20 / 30 / 35) | ✅ 12.0+ <br/> ( sdk: iphoneos-sdk 17.5 ) | ✅ 13.1+ <br/> ( MacOS: 10.15+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)                                                         | 
+Note that even though the Laerdal.McuMgr.Bindings.* have been built on dotnet8 using Android-SDK=34 and iPhoneOS-SDK=17.0 the generated nugets have been tested and they do work
+even on Dotnet10-preview7 MAUI-Apps targeting Android-SDK=36 and iOS-SDK=18.5
+
+| Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0) |
+|-----------|---------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------|   
+| DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 15.0 <br/> (api-levels: 20 / 30 / 35) | ✅ 14.5+ <br/> ( sdk: iphoneos-sdk 18.1 ) | ✅ 14.6+ <br/> ( MacOS: 14.6+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)       | 
+
+## ⚡ FW Installation Performance: File-Uploading Stage
+
+Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0):
+
+| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
+|------------------|----------------|-----------------------|--------------------------|-------------------------|
+| 495 (max)        | 2              | 2                     | ~60                      | Spikes above 100 kb/sec |
+| 495              | 3              | 2                     | ~63.5                    |                         |
+| 495              | 4              | 2                     | ~63.7                    |                         |
+| 495              | 4              | 4                     | ~75.6                    |                         |
+| 80               | 2              | -                     | ~33                      |                         |
+| 80               | 3              | 2                     | ~54.3                    |                         |
+| 80               | 4              | 4                     | ~66.5                    |                         |
+| 250              | 4              | 4                     | ~86                      | Best performance!       |
 
 
 ## ❗️ Salient Points
@@ -86,17 +86,17 @@ The following types of operations are supported on devices running on Nordic's n
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
-in case you try to perform a firmware-upgrade on the desired device.**
+  in case you try to perform a firmware-upgrade on the desired device.**
 
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
-to the device.**
+  to the device.**
 
 - **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
 
 - **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
-  
-- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 15.4 and iPhoneOS SDK 17.5.**
-    The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better. 
+
+- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.1.**
+  The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better.
 
 ## 🚀 Using the Nugets in your Projects
 
@@ -119,29 +119,46 @@ Make sure to always get the latest versions of the above packages.
 
 - Installing a firmware:
 
+       1. Using .ConfigureAwait(false) is vital to avoid deadlocks in certain cornercases. It doesn't hurt to use it and it can
+          save you from a lot of headaches.
+
+       2. Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
+          in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
+          any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
+
+          This was done deliberately so as to minimize (even eradicate) the chances that bugs or glitches in your
+          event-handlers might interfere with the firmware-installation process itself - this naturally works in your
+          favour most of the time.
+
+          Just be sure to pay attention to the logs for anything that looks fishy in your event-handling logic.
+
 ```c#
 
-private Laerdal.McuMgr.FirmwareInstaller.IFirmwareInstaller _firmwareInstaller;
+private Laerdal.McuMgr.FirmwareInstallation.IFirmwareInstaller _firmwareInstaller;
 
 public async Task InstallFirmwareAsync()
 {
     var firmwareRawBytes = ...; //byte[]
-    var desiredBluetoothDevice = ...; //android bluetooth device here 
+    var desiredBluetoothDevice = ...; //android/ios bluetooth device here 
 
     try
     {
         _firmwareInstaller = new FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice);
-    
+
         ToggleSubscriptionsOnFirmwareInstallerEvents(subscribeNotUnsubscribe: true);
-    
+
         await _firmwareInstaller.InstallAsync(
-            data: firmwareRawBytes,
-            pipelineDepth: FirmwareInstallationPipelineDepth, //ios only
-            byteAlignment: FirmwareInstallationByteAlignment, //ios only
-            windowCapacity: FirmwareInstallationWindowCapacity, //android only
-            memoryAlignment: FirmwareInstallationMemoryAlignment, //android only
+            data: rawFirmwareBytes,
+            hostDeviceModel: DeviceInfo.Model,
+            hostDeviceManufacturer: DeviceInfo.Manufacturer,
+            maxTriesCount: FirmwareInstallationMaxTries,
+            initialMtuSize: FirmwareInstallationInitialMtuSize <= 0 ? null : FirmwareInstallationInitialMtuSize, // both for android and ios
+            pipelineDepth: FirmwareInstallationPipelineDepth <= 0 ? null : FirmwareInstallationPipelineDepth, //       ios only
+            byteAlignment: FirmwareInstallationByteAlignment <= 0 ? null : FirmwareInstallationByteAlignment, //       ios only
+            windowCapacity: FirmwareInstallationWindowCapacity <= 0 ? null : FirmwareInstallationWindowCapacity, //    android only
+            memoryAlignment: FirmwareInstallationMemoryAlignment <= 0 ? null : FirmwareInstallationMemoryAlignment, // android only
             estimatedSwapTimeInMilliseconds: FirmwareInstallationEstimatedSwapTimeInSecs * 1000
-        );
+        ).ConfigureAwait(false); //vital to avoid deadlocks
     }
     catch (FirmwareInstallationCancelledException) //order
     {
@@ -191,14 +208,12 @@ private void ToggleSubscriptionsOnFirmwareInstallerEvents(bool subscribeNotUnsub
     if (subscribeNotUnsubscribe)
     {
         _firmwareInstaller.LogEmitted += FirmwareInstaller_LogEmitted;
-        _firmwareInstaller.StateChanged += FirmwareInstaller_StateChanged;
-        _firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged += FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged;
+        _firmwareInstaller.OverallProgressPercentageChanged += FirmwareInstaller_OverallProgressPercentageChanged;
     }
     else
     {
         _firmwareInstaller.LogEmitted -= FirmwareInstaller_LogEmitted;
-        _firmwareInstaller.StateChanged -= FirmwareInstaller_StateChanged;
-        _firmwareInstaller.FirmwareUploadProgressPercentageAndDataThroughputChanged -= FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged;
+        _firmwareInstaller.OverallProgressPercentageChanged -= FirmwareInstaller_OverallProgressPercentageChanged;
     }
 }
 
@@ -216,51 +231,10 @@ private static void FirmwareInstaller_IdenticalFirmwareCachedOnTargetDeviceDetec
     }
 }
 
-private void FirmwareInstaller_StateChanged(object sender, StateChangedEventArgs ea)
+private void FirmwareInstaller_OverallProgressPercentageChanged(object sender, OverallProgressPercentageChangedEventArgs ea)
 {
-    Console.Error.WriteLineAsync($"** {nameof(FirmwareInstaller_StateChanged)}: OldState='{ea.OldState}' NewState='{ea.NewState}'");
-
-    if (ea.NewState == EFirmwareInstallationState.Idle) {
-        FirmwareInstallationAttemptCount += 1; //00
-    }
-
-    FirmwareInstallationStage = ea.NewState.ToString();
-    FirmwareInstallationOverallProgressPercentage = GetProgressMilestonePercentageForState(ea.NewState) ?? FirmwareInstallationOverallProgressPercentage;
-    
-    //00  if a firmware installation fails then we retry up to 10 times     each time we
-    //    reattempt we start from scratch so the state will be reset back to being none again etc
+    FirmwareInstallationOverallProgressPercentage = ea.ProgressPercentage;
 }
-
-private void FirmwareInstaller_FirmwareUploadProgressPercentageAndDataThroughputChanged(EventPattern<FirmwareUploadProgressPercentageAndDataThroughputChangedEventArgs> eventPattern)
-{
-    var ea = eventPattern.EventArgs; //00
-    FirmwareUploadAverageThroughputInKilobytes = ea.AverageThroughput;
-
-    if (FirmwareInstallationOverallProgressPercentage < 50) //10  hack
-    {
-        FirmwareInstallationOverallProgressPercentage = UploadingPhaseProgressMilestonePercent + (int)(ea.ProgressPercentage * 0.4f); //10% to 50%
-    }
-
-    //00  we could use a background task here per https://stackoverflow.com/a/15957165/863651 but we wouldnt notice a dramatic difference in performance
-    //10  we noticed that there is a small race condition between state changes and the progress% updates   we first get a state change to 'resetting' (70%)
-    //    and then a file-upload progress% update to 100%   we would like to fix this inside the native firmware installer library but its quite hard to do so
-}
-
-private static readonly int UploadingPhaseProgressMilestonePercent = GetProgressMilestonePercentageForState(EFirmwareInstallationState.Uploading)!.Value;
-private static int? GetProgressMilestonePercentageForState(EFirmwareInstallationState state) => state switch
-{
-    EFirmwareInstallationState.None => 0,
-    EFirmwareInstallationState.Idle => 1,
-    EFirmwareInstallationState.Validating => 2,
-    EFirmwareInstallationState.Uploading => 10, //00
-    EFirmwareInstallationState.Testing => 50,
-    EFirmwareInstallationState.Resetting => 70,
-    EFirmwareInstallationState.Confirming => 80,
-    EFirmwareInstallationState.Complete => 100,
-    _ => null // .error .paused .cancelled .cancelling    we shouldnt throw an exception here
-    
-    //00   note that the progress% is further updated from 10% to 50% by the upload process via the event FirmwareUploadProgressPercentageAndDataThroughputChanged
-};
 
 private void CleanupFirmwareInstaller()
 {
@@ -284,7 +258,7 @@ public async Task EraseFirmwareAsync()
         
         ToggleSubscriptionsOnFirmwareEraserEvents(subscribeNotUnsubscribe: true);
 
-        await _firmwareEraser.EraseAsync(imageIndex: IndexOfFirmwareImageToErase);
+        await _firmwareEraser.EraseAsync(imageIndex: IndexOfFirmwareImageToErase).ConfigureAwait(false);
     }
     catch (FirmwareErasureErroredOutException ex)
     {
@@ -356,9 +330,9 @@ private IDeviceResetter _deviceResetter;
 
 private void ResetDevice()
 {
-    var desiredBluetoothDevice = await Laerdal.Ble.Scanner.Instance.WaitForDeviceToAppearAsync(/*device id here*/); 
+    var desiredBluetoothDevice = /*... grab your ble-device your device's ble-scanner ... */; 
 
-    _deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
+    _deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluetoothDevice.BluetoothDevice);
 
     ToggleSubscriptionsOnDeviceResetterEvents(subscribeNotUnsubscribe: true);
 
@@ -418,12 +392,26 @@ private void CleanupDeviceResetter()
 
          Note:
 
-         The very first upload always feels slow and takes quite a bit of time to commence because Zephyr chipsets perform filesystem cleanup. There is nothing we can do about this.
-         The culprit lies in issues plaguing littlefs
+         1. Using .ConfigureAwait(false) is vital to avoid deadlocks in certain cornercases. It doesn't hurt to use it and it can
+            save you from a lot of headaches.
 
-         https://github.com/littlefs-project/littlefs/issues/797
-         https://github.com/littlefs-project/littlefs/issues/783
-         https://github.com/littlefs-project/littlefs/issues/810
+         2. The very first data-upload might feel slow to start because certain Nordic chipsets perform filesystem cleanup on the very first file-upload.
+            There is nothing we can do about this. The culprit lies in issues plaguing littlefs itself:
+
+            https://github.com/littlefs-project/littlefs/issues/797
+            https://github.com/littlefs-project/littlefs/issues/783
+            https://github.com/littlefs-project/littlefs/issues/810
+
+         3. The library doesn't support streaming files. You must load each file's bytes as an array in memory before you can upload it. As long as you stay
+            within reasonable limits (a few MBs) this shouldn't be a problem for most smartphones / tablets.
+
+         4. Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
+            in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
+            any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
+
+            This was done deliberately so as to minimize (even eradicate) the chances that bugs or glitches in your
+            event-handlers might interfere with the native file-operations - this naturally works in your favour most of
+            the time. Just pay attention to the logs for anything that looks fishy in your event-handling logic.
 
 ```c#
 
@@ -481,7 +469,7 @@ private void CleanupDeviceResetter()
 
         try
         {            
-            _massFileUploader = new FileUploader.FileUploader(/*Android device*/);
+            _massFileUploader = new FileUploader.FileUploader(/*native ble-device*/);
 
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: true);
 
@@ -493,11 +481,19 @@ private void CleanupDeviceResetter()
             );
             
             await _massFileUploader.UploadAsync(
-                maxTriesPerUpload: MassFileUploadingMaxTriesPerUpload,
-                timeoutPerUploadInMs: 4 * 60 * 1_000, //4mins per upload
+                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData,
+                
+                hostDeviceModel: DeviceInfo.Model,
+                hostDeviceManufacturer: DeviceInfo.Manufacturer,
+                
+                initialMtuSize: MassFileUploaderInitialMtuSize <= 0 ? null : MassFileUploaderInitialMtuSize,
+                maxTriesPerUpload: MassFileUploadingMaxRetriesPerUpload,
+                timeoutPerUploadInMs: MassFileUploadingTimeoutPerUploadInSeconds * 1_000,
+                sleepTimeBetweenUploadsInMs: MassFileUploadingSleepTimeBetweenUploadsInMs,
                 sleepTimeBetweenRetriesInMs: MassFileUploadingSleepTimeBetweenRetriesInSecs * 1_000,
-                remoteFilePathsAndTheirData: remoteFilePathsAndTheirData
-            );
+
+                moveToNextUploadInCaseOfError: MassFileUploadingMoveToNextUploadInCaseOfError
+            ).ConfigureAwait(false); //vital to avoid deadlocks
         }
         catch (UploadCancelledException) //order
         {
@@ -542,7 +538,6 @@ private void CleanupDeviceResetter()
         }
         finally
         {
-            await Device.DisconnectAsync();
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: false); //     order
             CleanupFileUploader(); //                                                           order    
         }
@@ -558,7 +553,7 @@ private void CleanupDeviceResetter()
         MassFileUploaderStage = "";
         MassFileUploadProgressPercentage = 0;
         MassFileUploadCurrentlyUploadedFile = "";
-        MassFileUploadAverageThroughputInKilobytes = 0;
+        MassFileUploadCurrentThroughputInKBps = 0;
         MassFileUploaderNumberOfFilesUploadedSuccessfully = 0;
         MassFileUploaderNumberOfFailuresToUploadCurrentFile = 0;
     }
@@ -605,7 +600,7 @@ private void CleanupDeviceResetter()
     private void CleanupFileUploader()
     {
         MassFileUploadProgressPercentage = 0;
-        MassFileUploadAverageThroughputInKilobytes = 0;
+        MassFileUploadCurrentThroughputInKBps = 0;
 
         _massFileUploader?.Disconnect();
         _massFileUploader = null;
@@ -640,25 +635,302 @@ private void CleanupDeviceResetter()
     {
         MassFileUploadProgressPercentage = ea.ProgressPercentage;
         MassFileUploadCurrentlyUploadedFile = Path.GetFileName(ea.RemoteFilePath);
-        MassFileUploadAverageThroughputInKilobytes = ea.AverageThroughput;
+        MassFileUploadCurrentThroughputInKBps = ea.CurrentThroughputInKBps;
     }
 ```
 
+- To perform file-downloading from the device:
 
+         Note:
+
+         The library doesn't support streaming files. The bytes of each file you download will be stored
+         in memory as a byte-array before being returned to you. As long as you stay within reasonable limits
+         (a few MBs) this shouldn't be a problem for most smartphones / tablets.
+
+         We might add streaming support in the future if there's a serious reason for it.
+
+```csharp
+    private async Task DownloadSingleFileButtonClickedAsync()
+    {
+        var bytes = (byte[]?)null;
+        try
+        {
+            _fileDownloader = new FileUploader(/*native ble-device*/);
+
+            ToggleSubscriptionsOnSingleFileDownloaderEvents(_fileDownloader, subscribeNotUnsubscribe: true); //  order
+            
+            SingleFileDownloaderStage = "";
+            bytes = await _fileDownloader!.DownloadAsync( // order
+                maxTriesCount: SingleFileDownloaderMaxTries,
+                hostDeviceModel: DeviceInfo.Model,
+                hostDeviceManufacturer: DeviceInfo.Manufacturer,
+
+                remoteFilePath: remoteFilePathToDownload,
+                initialMtuSize: SingleFileDownloaderInitialMtuSize < 0 ? null : SingleFileDownloaderInitialMtuSize
+            ).ConfigureAwait(false); //good practice to avoid deadlocks
+            if (bytes == null) //shouldnt happen but just in case 
+                return;
+        }
+        catch (DownloadCancelledException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Cancelled",
+                message: "The operation was cancelled"
+            );
+            return;
+        }
+        catch (DownloadErroredOutRemotePathPointsToDirectoryException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: $"Filepath '{remoteFilePathToDownload}' points to a directory on the remote device!"
+            );
+            return;
+        }
+        catch (DownloadErroredOutRemoteFileNotFoundException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: $"File '{remoteFilePathToDownload}' not found in the remote device!"
+            );
+            return;
+        }
+        catch (DownloadTimeoutException) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: "The operation didn't complete within the appropriate amount time!"
+            );
+            return;
+        }
+        catch (DownloadErroredOutException ex) //order
+        {
+            App.DisplayAlert(
+                title: "File-Download Failed",
+                message: $"An error occurred:{S.nl2}{ex}"
+            );
+            return;
+        }
+        catch (Exception ex) //order
+        {
+            App.DisplayAlert(
+                title: "[BUG] File-Download Failed",
+                message: $"An unexpected error occurred:{S.nl2}{ex}"
+            );
+            return;
+        }
+        finally
+        {
+            ToggleSubscriptionsOnSingleFileDownloaderEvents(_fileDownloader, subscribeNotUnsubscribe: false); // order
+            CleanupFileDownloader(); //                                                                          order
+
+            // if (shouldRestartScannerAfterInstallation)
+            // {
+            //     await Scanner.Instance.StartScanningAsync(); //order
+            // }
+        }
+
+        var localSavePath = (string?)null;
+        try
+        {
+            SingleFileDownloaderStage += "-> Saving to local file ...";
+
+            localSavePath = await SaveBytesToLocalFileAsync(
+                bytes: bytes,
+                filename: Path.GetFileName(SingleFileDownloaderRemoteFilePathToDownload),
+                directory: SingleFileDownloaderLocalSavePath
+            );
+        }
+        catch (Exception ex)
+        {
+            App.DisplayAlert(
+                title: "File-Save Error",
+                message: $"File downloaded successfully but saving it to local file-system failed:\r\n\r\n{ex}"
+            );
+            return;
+        }
+        
+        SingleFileDownloaderStage += " -> Done";
+        
+        App.DisplayAlert(
+            title: "File-Download Complete",
+            message: $"File downloaded and saved successfully at:\r\n\r\n{localSavePath}"
+        );
+
+        //00 file downloading on aed devices requires the connection to be authed to work
+    }
+    
+    private void CancelSingleFileDownloadButtonClicked()
+    {
+        _fileDownloader?.TryCancel();
+    }
+    
+    private void ToggleSubscriptionsOnSingleFileDownloaderEvents(IFileDownloader? singleFileDownloaderSnapshot, bool subscribeNotUnsubscribe)
+    {
+        if (singleFileDownloaderSnapshot == null)
+            return;
+
+        if (subscribeNotUnsubscribe)
+        {
+            singleFileDownloaderSnapshot.LogEmitted += SingleFileDownloader_LogEmitted;
+            singleFileDownloaderSnapshot.StateChanged += SingleFileDownloader_StateChanged;
+            
+            this.Try(() => _massFileUploaderFUPPADTCEventStreamSubscription?.Dispose());
+            _massFileUploaderFUPPADTCEventStreamSubscription = Observable
+                .FromEventPattern<FileDownloadProgressPercentageAndDataThroughputChangedEventArgs>(
+                    addHandler: h => singleFileDownloaderSnapshot.FileDownloadProgressPercentageAndDataThroughputChanged += h,
+                    removeHandler: h => singleFileDownloaderSnapshot.FileDownloadProgressPercentageAndDataThroughputChanged -= h
+                )
+                .Throttle(TimeSpan.FromMilliseconds(75))
+                .SubscribeAndHandleAllExceptions(
+                    onNext: SingleFileDownloader_FileDownloadProgressPercentageAndDataThroughputChanged,
+                    onError: ErrorHandler
+                );
+
+            //_fileDownloader.Cancelled += SingleFileDownloader_Cancelled;
+            //_fileDownloader.BusyStateChanged += SingleFileDownloader_BusyStateChanged;
+            //_fileDownloader.DownloadCompleted += SingleFileDownloader_DownloadCompleted;
+            //_fileDownloader.FatalErrorOccurred += SingleFileDownloader_FatalErrorOccurred;
+        }
+        else
+        {
+            
+            singleFileDownloaderSnapshot.LogEmitted -= SingleFileDownloader_LogEmitted;
+            singleFileDownloaderSnapshot.StateChanged -= SingleFileDownloader_StateChanged;
+            
+            this.Try(() => _massFileUploaderFUPPADTCEventStreamSubscription?.Dispose());
+
+            //_fileDownloader.Cancelled -= SingleFileDownloader_Cancelled;
+            //_fileDownloader.BusyStateChanged -= SingleFileDownloader_BusyStateChanged;
+            //_fileDownloader.DownloadCompleted -= SingleFileDownloader_DownloadCompleted;
+            //_fileDownloader.FatalErrorOccurred -= SingleFileDownloader_FatalErrorOccurred;
+        }
+        
+        return;
+        
+        void ErrorHandler(Exception exception, bool isComingFromSourceNotFromOnNext)
+        {
+            this.Error($"""[SDPVM.SFD.EH.010] isComingFromSourceNotFromOnNext={isComingFromSourceNotFromOnNext} Error :\n\n{exception.Message}\n\nFull Details :\n\n{exception}""", ExtraLoggingFlags.FileDownloader);
+        }
+    }
+
+    static private async Task<string> SaveBytesToLocalFileAsync(byte[] bytes, string directory, string filename)
+    {
+        Directory.CreateDirectory(directory);
+
+        var localSavePath = Path.Combine(directory, filename);
+
+        await using var fileStream = new FileStream(
+            path: localSavePath,
+            mode: FileMode.Create,
+            access: FileAccess.Write
+        );
+
+        await fileStream.WriteAsync(
+            buffer: bytes,
+            count: bytes.Length,
+            offset: 0
+        );
+
+        return localSavePath;
+    }
+
+    private void CleanupFileDownloader()
+    {
+        SingleFileDownloadProgressPercentage = 0;
+        SingleFileDownloadCurrentThroughputInKBps = 0;
+
+        this.Try(() => _fileDownloader?.Dispose()); //calls disconnect under the hood
+        _fileDownloader = null;
+    }
+
+    private void SingleFileDownloader_LogEmitted(object? sender, in LogEmittedEventArgs ea)
+    {
+        SingleFileDownloaderLogProperly(ea.Level.ToLaerdalLogLevel(),  $"[category={ea.Category}] [resource={ea.Resource}] {ea.Message}");
+    }
+```
 
 ## 📱 iOS
 
-Same as in Android with the only difference being that the constructors change a bit:
+Same as in Android. Just make sure to pass a CBPeripheral to the constructors change a bit:
 
 ```c#
-_fileUploader = new Laerdal.McuMgr.FileUploader.FileUploader(desiredBluetoothDevice.CbPeripheral);
-_firmwareEraser   = new Laerdal.McuMgr.FirmwareEraser.FirmwareEraser(desiredBluetoothDevice.CbPeripheral);
-_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstaller.FirmwareInstaller(desiredBluetoothDevice.CbPeripheral);
+_fileUploader = new Laerdal.McuMgr.FileUploading.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareEraser   = new Laerdal.McuMgr.FirmwareErasure.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
+_firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
 
-_deviceResetter = new Laerdal.McuMgr.DeviceResetter.DeviceResetter(desiredBluetoothDevice.CbPeripheral);
+_deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluetoothDevice); // must be a CBPeripheral
 ```
 
+Note that the constructors support passing both a native device (CBPeripheral on iOS and BluetoothDevice on Android) or simply an 'object' that is castable to either of these types.
+This is done to help you write more uniform code across platforms. You might want to create your own factory-service to smoothen things even further on your:
 
+```c#
+using Laerdal.Ble.Abstraction;
+using Laerdal.McuMgr.DeviceResetting.Contracts;
+using Laerdal.McuMgr.FileDownloading.Contracts;
+using Laerdal.McuMgr.FileUploading.Contracts;
+using Laerdal.McuMgr.FirmwareErasure.Contracts;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts;
+using YourApp.Contracts;
+
+namespace YourApp.Services;
+
+public interface IPlatformSpecificMcumgrFactoryService
+{
+    IFileUploader? SpawnFileUploader(IDevice device);
+    IFileDownloader? SpawnFileDownloader(IDevice device);
+    IFirmwareEraser? SpawnFirmwareEraser(IDevice device);
+    IDeviceResetter? SpawnDeviceResetter(IDevice device);
+    IFirmwareInstaller? SpawnFirmwareInstaller(IDevice device);
+}
+
+public sealed class McumgrFactoryService : IPlatformSpecificMcumgrFactoryService
+{
+    public IFileDownloader SpawnFileDownloader(IYourAbstractBleDevice yourAbstractBleDevice)
+    {
+        return new FileDownloading.FileDownloader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice); // .NativeDevice is defined as 'object' and points to either iOS/CBPeripheral or Android/BluetoothDevice depending on the underlying platform
+    }
+    
+    public IFileUploader SpawnFileUploader(IDevice device)
+    {
+        return new FileUploading.FileUploader(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+
+    public IFirmwareEraser SpawnFirmwareEraser(IDevice device)
+    {
+        return new FirmwareErasing.FirmwareEraser(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+
+    public IDeviceResetter SpawnDeviceResetter(IDevice device)
+    {
+        return new DeviceResetting.DeviceResetter(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+
+    public IFirmwareInstaller SpawnFirmwareInstaller(IDevice device)
+    {
+        return new FirmwareInstallation.FirmwareInstaller(nativeBluetoothDevice: yourAbstractBleDevice.NativeDevice);
+    }
+}
+
+// and then use it inside your UI classes
+
+public class YourViewModel
+{
+    private readonly IPlatformSpecificMcumgrFactoryService _mcumgrFactoryService;
+
+    public YourViewModel(IPlatformSpecificMcumgrFactoryService mcumgrFactoryService) //injected via DI
+    {
+        _mcumgrFactoryService = mcumgrFactoryService;
+    }
+
+    public void DoSomething()
+    {
+        var fileUploader = _mcumgrFactoryService.SpawnFileUploader(yourAbstractBleDevice); //works the same across all platforms
+        // ...
+    }
+}
+````
 
 ## 💻 Windows / UWP
 
@@ -696,7 +968,7 @@ git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch deve
 
 ```bash
 # cd into the root folder of the repo
-WORKLOAD_VERSION=8.0.402                                 \
+WORKLOAD_VERSION=_check_the_yaml_file_for_the_proper_version_  \
 &&                                                       \
 sudo    dotnet                                           \
              workload                                    \
@@ -762,11 +1034,25 @@ maui-windows               8.0.61/8.0.100         SDK 8.0.300, VS 17.10.35027.16
 
 #### 3) Make sure that Java17 is installed on your machine along with Gradle 7.6 (Gradle 8.x or above will NOT work!)
 
-#### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!   
+On a MacOS you can install Java17 and Gradle 7.6 using 'brew' like so:
 
-#### 5) Set MSBuild version to ver.17
+```bash
+# brew will install the latest version of jdk17 under '/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home'
+# 
+# export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin/:$PATH"
+# export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"
+#
+# also note that if you use a flaky antivirus then your openjdk installation might get silently deleted by it behind your back!
+#
+brew install --cask microsoft-openjdk@17
+brew install gradle@7
+```
 
-#### 6) On Mac make sure to install XCode 14.3+ (if you have multiple XCodes installed then make SDK 14.3+ the default by running 'sudo xcode-select --switch /Applications/Xcode_XYZ.app/Contents/Developer').
+#### 4) Make sure you have installed Android SDKs starting from 31 up. You will need to install them using the Visual Studio installer. If you use Rider you will need to install them a second time using the Rider Android SDK manager too!
+
+#### 5) Set MSBuild version to ver.17+
+
+#### 6) On Mac make sure to install XCode 16.2 (16.3 doesn't work atm - if you have multiple XCodes installed then make 16.2 the default by running 'sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer' assuming that xcode 16.2 is installed in that fs-path).
 
 #### 7) On Windows you will probably have to also enable in the OS (registry) 'Long Path Support' otherwise the build will most probably fail due to extremely long paths being involved during the build process.
 
@@ -802,9 +1088,17 @@ dotnet                                              \
 
 ## Known issues
 
-- Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events. 
+- Intercepting logs emitted by the underlying McuMgr libs is supported in iOS through the 'LogEmitted' family of events.
   But the same family of events in Android is never triggered from the underlying McuMgr libs of Nordic (it's only triggered when we want to emit certain warnings ourselves) so logging
   in Android is very limited.
+- Trying to use the iOS/Android flavours of this library in desktop-simulators for iOS/Android will probably result in compilation errors.
+  If you want to perform general purpose UI-testing on your desktop using such simulators you need to tweak your nuget references to use the `-force-dud` nuget of `Laerdal.McuMgr` like so:
+
+```xml
+<PackageReference Include="Laerdal.McuMgr" Version="2.3.4-force-dud">
+  <NoWarn>$(NoWarn);NU1605</NoWarn>
+</PackageReference>
+```
 
 ## Contributing
 
@@ -815,8 +1109,8 @@ We welcome contributions to this project in the form of bug reports, feature req
 - Pull requests should be made against the `develop` branch.
 - Pull requests should be made from a fork of the repository, not a clone.
 - Pull requests should have a descriptive title and include a link to the relevant issue.
-- Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to 
-the aspects being affected.
+- Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to
+  the aspects being affected.
 
 ## Lead Maintainers
 
@@ -836,6 +1130,6 @@ the aspects being affected.
 Special thanks goes to:
 
 - [Francois Raminosona](https://www.linkedin.com/in/francois-raminosona/) for his insights and guidance on the entire spectrum of Xamarin development and underlying build system. This project
-  would have been impossible to bring to fruition in such a short period of time without Francois' know-how.  
+  would have been impossible to bring to fruition in such a short period of time without Francois' know-how.
 
 - [Geir-Inge T.](https://www.linkedin.com/in/geir-inge-t-68749629) for his immense contributions in terms of field-testing the library and providing invaluable feedback and insights.

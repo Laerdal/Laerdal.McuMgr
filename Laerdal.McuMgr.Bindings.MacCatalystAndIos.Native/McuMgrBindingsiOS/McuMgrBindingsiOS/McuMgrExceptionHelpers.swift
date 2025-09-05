@@ -2,7 +2,7 @@ import Foundation
 import iOSMcuManagerLibrary
 
 internal class McuMgrExceptionHelpers {
-    static func deduceGlobalErrorCodeFromException(_ error: Error? = nil) -> Int { //00
+    internal static func deduceGlobalErrorCodeFromException(_ error: Error? = nil) -> Int { //00
         guard let mcuMgrError = error as? McuMgrError else {
             return -99
         }
@@ -21,7 +21,7 @@ internal class McuMgrExceptionHelpers {
 
         return groupSubsystemId == 0
                 ? errorCode
-                : ((groupSubsystemId + 1) * 1000 + groupErrorCode);
+                : ((groupSubsystemId + 1) * 1_000 + groupErrorCode);
 
         //00   https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/issues/198
     }

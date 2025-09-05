@@ -1,0 +1,119 @@
+﻿using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Enums;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
+using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
+using Xunit.Abstractions;
+
+namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
+{
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public partial class FirmwareInstallerTestbed
+    {
+        private readonly ITestOutputHelper _logger;
+
+        public FirmwareInstallerTestbed(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
+        
+        private class MockedNativeFirmwareInstallerProxySpy : INativeFirmwareInstallerProxy //template class for all spies
+        {
+            private readonly INativeFirmwareInstallerCallbacksProxy _firmwareInstallerCallbacksProxy;
+
+            public string Nickname { get; set; }
+            public EFirmwareInstallationState CurrentState { get; private set; }
+
+            public bool CancelCalled { get; private set; }
+            public bool DisconnectCalled { get; private set; }
+            public bool BeginInstallationCalled { get; private set; }
+
+            public string LastFatalErrorMessage => "";
+
+            public IFirmwareInstallerEventEmittable FirmwareInstaller //keep this to conform to the interface
+            {
+                get => _firmwareInstallerCallbacksProxy!.FirmwareInstaller;
+                set => _firmwareInstallerCallbacksProxy!.FirmwareInstaller = value;
+            }
+
+            protected MockedNativeFirmwareInstallerProxySpy(INativeFirmwareInstallerCallbacksProxy firmwareInstallerCallbacksProxy)
+            {
+                _firmwareInstallerCallbacksProxy = firmwareInstallerCallbacksProxy;
+            }
+
+            private bool IsCold()
+            {
+                return CurrentState == EFirmwareInstallationState.None //        this is what the native-layer does
+                       || CurrentState == EFirmwareInstallationState.Error //    and we must keep this mock updated
+                       || CurrentState == EFirmwareInstallationState.Complete // to reflect this fact
+                       || CurrentState == EFirmwareInstallationState.Cancelled;
+            }
+
+            public virtual EFirmwareInstallationVerdict NativeBeginInstallation(
+                byte[] data,
+                EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
+                bool? eraseSettings = null,
+                int? estimatedSwapTimeInMilliseconds = null,
+                int? initialMtuSize = null,
+                int? windowCapacity = null,
+                int? memoryAlignment = null,
+                int? pipelineDepth = null,
+                int? byteAlignment = null
+            )
+            {
+                BeginInstallationCalled = true; //order
+                
+                if (!IsCold()) //order   emulating the native-layer
+                {
+                    StateChangedAdvertisement( //emulating the native-layer
+                        oldState: CurrentState,
+                        newState: EFirmwareInstallationState.Error
+                    );
+                    throw new AnotherFirmwareInstallationIsAlreadyOngoingException();
+                }
+
+                return EFirmwareInstallationVerdict.Success;
+            }
+
+            public virtual void Cancel()
+            {
+                CancelCalled = true;
+            }
+
+            public virtual void Disconnect()
+            {
+                DisconnectCalled = true;
+            }
+
+            public void CancelledAdvertisement() 
+                => _firmwareInstallerCallbacksProxy.CancelledAdvertisement(); //raises the actual event
+            
+            public void LogMessageAdvertisement(string message, string category, ELogLevel level, string resource)
+                => _firmwareInstallerCallbacksProxy.LogMessageAdvertisement(message, category, level, resource); //raises the actual event
+
+            public void StateChangedAdvertisement(EFirmwareInstallationState oldState, EFirmwareInstallationState newState)
+            {
+                CurrentState = newState;
+                
+                _firmwareInstallerCallbacksProxy.StateChangedAdvertisement(newState: newState, oldState: oldState); //raises the actual event
+            }
+
+            public void BusyStateChangedAdvertisement(bool busyNotIdle)
+                => _firmwareInstallerCallbacksProxy.BusyStateChangedAdvertisement(busyNotIdle); //raises the actual event
+            
+            public void FatalErrorOccurredAdvertisement(EFirmwareInstallationState state, EFirmwareInstallerFatalErrorType fatalErrorType, string errorMessage, EGlobalErrorCode globalErrorCode)
+                => _firmwareInstallerCallbacksProxy.FatalErrorOccurredAdvertisement(state, fatalErrorType, errorMessage, globalErrorCode); //raises the actual event
+            
+            public void FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(int progressPercentage, float currentThroughputInKBps, float totalAverageThroughputInKBps)
+                => _firmwareInstallerCallbacksProxy.FirmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, currentThroughputInKBps, totalAverageThroughputInKBps); //raises the actual event
+
+            public void TryCleanupResourcesOfLastInstallation()
+            {
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+    }
+}

@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.Android", "Laerdal.McuMgr.Bindings.Android\Laerdal.McuMgr.Bindings.Android.csproj", "{131E5D65-002C-354A-58D9-743F2733D18B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.iOS", "Laerdal.McuMgr.Bindings.iOS\Laerdal.McuMgr.Bindings.iOS.csproj", "{B3BB4F82-8427-49D7-5E69-E0F8FFBB8BE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.MacCatalyst", "Laerdal.McuMgr.Bindings.MacCatalyst\Laerdal.McuMgr.Bindings.MacCatalyst.csproj", "{1EEBCA17-FD57-B6CC-ECE8-1A5895CD083F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Bindings.NetStandard", "Laerdal.McuMgr.Bindings.NetStandard\Laerdal.McuMgr.Bindings.NetStandard.csproj", "{962E09E8-0E53-1451-63B3-13D08DEAC464}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr", "Laerdal.McuMgr\Laerdal.McuMgr.csproj", "{94474637-1B5F-7EB0-8A7F-7E95AA6C0C0B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Misc", "_Misc", "{CA6B9B85-6741-BFCC-4D82-A4E1DDFBD942}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		LICENSE = LICENSE
+		.gitignore = .gitignore
+		Laerdal.Scripts\Laerdal.CreateNewReleaseInGithub.sh = Laerdal.Scripts\Laerdal.CreateNewReleaseInGithub.sh
+		Laerdal.Scripts\Laerdal.Builder.targets = Laerdal.Scripts\Laerdal.Builder.targets
+		Laerdal.Scripts\Laerdal.Version.sh = Laerdal.Scripts\Laerdal.Version.sh
+		global.json = global.json
+		Laerdal.Scripts\Laerdal.SetupBuildEnvironment.sh = Laerdal.Scripts\Laerdal.SetupBuildEnvironment.sh
+		.github\workflows\github-actions.yml = .github\workflows\github-actions.yml
+		Laerdal.Scripts\Laerdal.GenerateSignAndUploadSbom.sh = Laerdal.Scripts\Laerdal.GenerateSignAndUploadSbom.sh
+		.github\dependabot.yml = .github\dependabot.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Tests", "_Tests", "{1FAF337C-2DA5-4A8E-7132-92C4765BD121}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laerdal.McuMgr.Tests", "Laerdal.McuMgr.Tests\Laerdal.McuMgr.Tests.csproj", "{7674D292-10B2-C83C-9CD9-47A43552EE3A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{131E5D65-002C-354A-58D9-743F2733D18B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{131E5D65-002C-354A-58D9-743F2733D18B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{131E5D65-002C-354A-58D9-743F2733D18B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{131E5D65-002C-354A-58D9-743F2733D18B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3BB4F82-8427-49D7-5E69-E0F8FFBB8BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3BB4F82-8427-49D7-5E69-E0F8FFBB8BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3BB4F82-8427-49D7-5E69-E0F8FFBB8BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3BB4F82-8427-49D7-5E69-E0F8FFBB8BE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EEBCA17-FD57-B6CC-ECE8-1A5895CD083F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EEBCA17-FD57-B6CC-ECE8-1A5895CD083F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EEBCA17-FD57-B6CC-ECE8-1A5895CD083F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EEBCA17-FD57-B6CC-ECE8-1A5895CD083F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{962E09E8-0E53-1451-63B3-13D08DEAC464}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{962E09E8-0E53-1451-63B3-13D08DEAC464}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{962E09E8-0E53-1451-63B3-13D08DEAC464}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{962E09E8-0E53-1451-63B3-13D08DEAC464}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94474637-1B5F-7EB0-8A7F-7E95AA6C0C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94474637-1B5F-7EB0-8A7F-7E95AA6C0C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94474637-1B5F-7EB0-8A7F-7E95AA6C0C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94474637-1B5F-7EB0-8A7F-7E95AA6C0C0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7674D292-10B2-C83C-9CD9-47A43552EE3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7674D292-10B2-C83C-9CD9-47A43552EE3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7674D292-10B2-C83C-9CD9-47A43552EE3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7674D292-10B2-C83C-9CD9-47A43552EE3A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7674D292-10B2-C83C-9CD9-47A43552EE3A} = {1FAF337C-2DA5-4A8E-7132-92C4765BD121}
+	EndGlobalSection
+EndGlobal

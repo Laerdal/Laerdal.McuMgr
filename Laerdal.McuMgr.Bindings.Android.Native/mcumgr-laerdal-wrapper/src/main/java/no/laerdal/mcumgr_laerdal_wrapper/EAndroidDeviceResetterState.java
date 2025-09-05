@@ -11,7 +11,7 @@ public enum EAndroidDeviceResetterState
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidDeviceResetterState(int value)
+    EAndroidDeviceResetterState(final int value)
     {
         _value = value;
     }

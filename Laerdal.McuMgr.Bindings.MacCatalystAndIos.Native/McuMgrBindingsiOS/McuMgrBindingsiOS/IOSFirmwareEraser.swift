@@ -69,7 +69,7 @@ public class IOSFirmwareEraser: NSObject {
         fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
     }
 
-    private var _lastFatalErrorMessage: String
+    private var _lastFatalErrorMessage: String = ""
 
     @objc
     public func getLastFatalErrorMessage() -> String {

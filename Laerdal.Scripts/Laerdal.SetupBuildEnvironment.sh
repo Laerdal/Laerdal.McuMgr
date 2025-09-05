@@ -1,12 +1,14 @@
 #!/bin/bash
 
-declare -r DOTNET_TARGET_WORKLOAD_VERSION="$1"
+declare -r DOTNET_TARGET_WORKLOAD_VERSION="${1}"
 
-declare -r NUGET_FEED_URL="$2"
-declare -r NUGET_FEED_USERNAME="$3"
-declare -r NUGET_FEED_ACCESSTOKEN="$4"
+declare -r NUGET_FEED_URL="${2}"
+declare -r NUGET_FEED_USERNAME="${3}"
+declare -r NUGET_FEED_ACCESSTOKEN="${4}"
 
-declare -r ARTIFACTS_FOLDER_PATH="$5"
+declare -r ARTIFACTS_FOLDER_PATH="${5}"
+
+declare -r SHOULD_RESTORE_WORKLOADS="${6:-true}"  # this is a boolean parameter that defaults to true
 
 if [ -z "${DOTNET_TARGET_WORKLOAD_VERSION}" ]; then
   echo "##vso[task.logissue type=error]Missing 'DOTNET_TARGET_WORKLOAD_VERSION' which was expected to be parameter #1."
@@ -48,25 +50,47 @@ brew   reinstall     gradle@7
 #fi
 
 # in github ci gradle@7 is installed under    /opt/homebrew/opt/gradle@7/bin
-# but in azure devops it is installed under   /usr/local/opt/gradle@7/bin
-echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
-echo 'export PATH="/usr/local/opt/gradle@7/bin:/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
+# (but in azure devops it is installed under   /usr/local/opt/gradle@7/bin)
+
+if [[ ! -d "/opt/homebrew/opt/gradle@7/bin" ]];then
+  echo "##vso[task.logissue type=error]Gradle doesn't appear to have been installed under '/opt/homebrew/opt/gradle@7/bin/' as expected - cannot proceed"
+  exit 25
+fi
+
+echo 'export PATH="/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export PATH="/opt/homebrew/opt/gradle@7/bin:$PATH"' >> /Users/runner/.bash_profile
 source /Users/runner/.bash_profile
 
-brew   install   openjdk@17
+brew  install  --cask   microsoft-openjdk@17  # brew   install   openjdk@17   this installs the temurin flavour of openjdk which is not that great  
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'openjdk@17'."
+  echo "##vso[task.logissue type=error]Failed to install java through 'openjdk@17'."
   exit 30
 fi
 
-# install a specific version of dotnet8 to ensure consistent results
-curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 8.0 -Version 8.0.100
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to install 'dotnet8'."
-  exit 40
+if [[ ! -d "/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home" ]];then
+  echo "##vso[task.logissue type=error]Java doesn't appear to have been installed under '/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home' as expected - cannot proceed"
+  exit 35
 fi
+
+echo 'export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin:$PATH"' >> /Users/runner/.zprofile
+echo 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"     ' >> /Users/runner/.zprofile
+
+echo 'export PATH="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home/bin:$PATH"' >> /Users/runner/.bash_profile
+echo 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home"     ' >> /Users/runner/.bash_profile
+source /Users/runner/.bash_profile
+
+echo "** Path now is :"
+echo
+echo "$PATH"
+
+# we enforce this via global.json
+# curl -sSL "https://dot.net/v1/dotnet-install.sh" | bash /dev/stdin -Channel 8.0 -Version 8.0.405
+# declare exitCode=$?
+# if [ $exitCode != 0 ]; then
+#   echo "##vso[task.logissue type=error]Failed to install 'dotnet8'."
+#   exit 40
+# fi
 
 echo
 echo "** Dotnet CLI:"
@@ -84,39 +108,47 @@ fi
 # also note that issuing a 'dotnet workload restore' doesnt work reliably and this is why resorted
 # to being so explicit about the workloads we need 
 #
-sudo    dotnet                                           \
-             workload                                    \
-             install                                     \
-                 ios                                     \
-                 android                                 \
-                 maccatalyst                             \
-                 maui                                    \
-                 maui-ios                                \
-                 maui-tizen                              \
-                 maui-android                            \
-                 maui-maccatalyst    --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 60
-fi
 
-cd "Laerdal.McuMgr.Bindings.iOS"
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS"
-  exit 65
-fi
-sudo         dotnet                                      \
-             workload                                    \
-             restore
+if [ "${SHOULD_RESTORE_WORKLOADS}" != "true" ]; then
+  echo "** Skipping dotnet workload restoration per 'SHOULD_RESTORE_WORKLOADS=${SHOULD_RESTORE_WORKLOADS}'!=true (meaning we had a happy cache-hit in this run)."
 
-declare exitCode=$?
-if [ $exitCode != 0 ]; then
-  echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
-  exit 70
+else
+
+  echo "** Restoring dotnet-workloads ver. '${DOTNET_TARGET_WORKLOAD_VERSION}' because it seems we had a cache-miss in this run ..."
+  sudo    dotnet                                           \
+               workload                                    \
+               install                                     \
+                   ios                                     \
+                   android                                 \
+                   maccatalyst                             \
+                   maui                                    \
+                   maui-ios                                \
+                   maui-tizen                              \
+                   maui-android                            \
+                   maui-maccatalyst    --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
+    exit 60
+  fi
+  
+  cd "Laerdal.McuMgr.Bindings.iOS"
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to cd to Laerdal.McuMgr.Bindings.iOS"
+    exit 65
+  fi
+
+  sudo         dotnet                                      \
+               workload                                    \
+               restore  --version "${DOTNET_TARGET_WORKLOAD_VERSION}"
+  declare exitCode=$?
+  if [ $exitCode != 0 ]; then
+    echo "##vso[task.logissue type=error]Failed to restore dotnet workloads."
+    exit 70
+  fi
+  cd - || exit 71
 fi
-cd - || exit 71
 
 cd "Laerdal.McuMgr.Bindings.Android"
 declare exitCode=$?
@@ -173,12 +205,20 @@ if [ $exitCode != 0 ]; then
 fi
 
 
+echo "** Default-Java Location:"
+which    java
+declare exitCode=$?
+if [ $exitCode != 0 ]; then
+  echo "##vso[task.logissue type=error]Failed to find 'java'."
+  exit 100
+fi
+
 echo "** Java Version:"
 java               -version
 declare exitCode=$?
 if [ $exitCode != 0 ]; then
   echo "##vso[task.logissue type=error]Failed to find 'java'."
-  exit 100
+  exit 105
 fi
 
 echo

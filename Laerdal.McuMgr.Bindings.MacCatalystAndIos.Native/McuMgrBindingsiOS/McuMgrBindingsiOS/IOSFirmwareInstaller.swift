@@ -7,19 +7,25 @@ public class IOSFirmwareInstaller: NSObject {
     private var _manager: FirmwareUpgradeManager!
     private var _listener: IOSListenerForFirmwareInstaller!
     private var _transporter: McuMgrBleTransport!
+    private var _cbPeripheral: CBPeripheral!
     private var _currentState: EIOSFirmwareInstallationState
-    private var _lastFatalErrorMessage: String;
+    private var _currentBusyState: Bool = false
+    private var _lastFatalErrorMessage: String = ""
 
-    private var _lastBytesSend: Int = -1;
-    private var _lastBytesSendTimestamp: Date? = nil;
+    private var _lastBytesSent: Int = -1
+    private var _uploadStartTimestamp: Date? = nil
+    private var _lastBytesSentTimestamp: Date? = nil
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
         _listener = listener
-        _transporter = McuMgrBleTransport(cbPeripheral)
+        _cbPeripheral = cbPeripheral
+
         _currentState = .none
         _lastFatalErrorMessage = ""
     }
+
+    private let EstimatedSwapTimeoutInMillisecondsWarningMinThreshold : Int16 = 1_000;
 
     @objc
     public func beginInstallation(
@@ -28,21 +34,23 @@ public class IOSFirmwareInstaller: NSObject {
             _ eraseSettings: Bool,
             _ estimatedSwapTimeInMilliseconds: Int,
             _ pipelineDepth: Int,
-            _ byteAlignment: Int
+            _ byteAlignment: Int,
+            _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
     ) -> EIOSFirmwareInstallationVerdict {
         if !isCold() { //if another installation is already in progress we bail out
-            onError(.failedInstallationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
+            onError(.installationAlreadyInProgress, "[IOSFI.BI.000] Another firmware installation is already in progress")
 
             return .failedInstallationAlreadyInProgress
         }
 
-        _lastBytesSend = -1
-        _lastBytesSendTimestamp = nil
+        _lastBytesSent = -1
+        _uploadStartTimestamp = nil
+        _lastBytesSentTimestamp = nil
 
         if (imageData.isEmpty) {
-            onError(.invalidFirmware, "[IOSFI.BI.010] The firmware data-bytes given are dud")
+            onError(.givenFirmwareIsUnhealthy, "[IOSFI.BI.010] The firmware data-bytes given are dud")
 
-            return .failedInvalidFirmware
+            return .failedGivenFirmwareUnhealthy
         }
 
         if (pipelineDepth >= 2 && byteAlignment <= 1) {
@@ -58,67 +66,131 @@ public class IOSFirmwareInstaller: NSObject {
             return .failedInvalidSettings
         }
 
-        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= 1000) { //its better to just warn the calling environment instead of erroring out
-            logMessageAdvertisement(
-                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1000)' milliseconds?",
+        if (initialMtuSize > 5_000) { //negative or zero values are ok
+            onError(.invalidSettings, "[IOSFI.BI.035] Invalid mtu value '\(initialMtuSize)': Must be zero or positive and less than or equal to 5_000")
+
+            return .failedInvalidSettings
+        }
+
+        if (estimatedSwapTimeInMilliseconds >= 0 && estimatedSwapTimeInMilliseconds <= EstimatedSwapTimeoutInMillisecondsWarningMinThreshold) { //its better to just warn the calling environment instead of erroring out
+            emitLogEntry(
+                    "[IOSFI.BI.040] Estimated swap-time of '\(estimatedSwapTimeInMilliseconds)' milliseconds seems suspiciously low - did you mean to say '\(estimatedSwapTimeInMilliseconds * 1_000)' milliseconds instead?",
                     "firmware-installer",
                     iOSMcuManagerLibrary.McuMgrLogLevel.warning.name
             )
         }
 
-        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) // the delegate aspect is implemented in the extension below
+        setState(.none) //                                         order
+        setBusyState(false) //                                     order
+        ensureTransportIsInitializedExactlyOnce(initialMtuSize) // order
+        ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() //  order
+
+        let firmwareUpgradeConfiguration = spawnFirmwareUpgradeConfiguration( //order
+            mode,
+            eraseSettings,
+            pipelineDepth,
+            byteAlignmentEnum!,
+            estimatedSwapTimeInMilliseconds
+        )
+        if firmwareUpgradeConfiguration == nil {
+            return .failedInvalidSettings //no need to log here  the spawn method takes care of logging
+        }
+
+        setState(.idle)
+
+        let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
+            do {
+                try _manager.start(
+                        images: [
+                            ImageManager.Image( //20
+                                    image: 0,
+                                    slot: 1,
+                                    hash: try McuMgrImage(data: imageData).hash,
+                                    data: imageData
+                            )
+                        ],
+                        using: firmwareUpgradeConfiguration!
+                )
+
+                return .success
+
+            } catch let ex {
+                onError(.installationInitializationFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
+
+                return .failedInstallationInitializationErroredOut
+            }
+        })
+
+        return verdict
+
+        //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
+        //    kinda sad really considering that we fought against such an approach but to no avail
+        //
+        //20  the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+    }
+
+    private func ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() {
+        if _manager != nil { //already initialized?
+            return
+        }
+
+        _manager = FirmwareUpgradeManager(transport: _transporter, delegate: self) //00
         _manager.logDelegate = self
 
-        var firmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(
-                eraseAppSettings: eraseSettings,
-                byteAlignment: byteAlignmentEnum!
-        )
+        //00  this doesnt throw an error   the log-delegate aspect is implemented in the extension below
+    }
+
+    private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
+        let properMtu = initialMtuSize < 0 // -1=laerdal-mtu-default, 0=mtu-autoconfigured-by-nordic-libs, 1-and-above=user-mtu-custom-value
+                ? Constants.DefaultMtuForFirmwareInstallations //00
+                : initialMtuSize
+
+        _transporter = _transporter == nil
+                ? McuMgrBleTransport(_cbPeripheral)
+                : _transporter
+
+        if properMtu > 0 {
+            _transporter.mtu = properMtu
+
+            emitLogEntry("[IOSFI.ETIIEO.010] applied explicit initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        } else {
+            emitLogEntry("[IOSFI.ETIIEO.020] using pre-set initial-mtu-size transporter.mtu='\(String(describing: _transporter.mtu))'", McuMgrLogCategory.transport.rawValue, McuMgrLogLevel.info.name)
+        }
+
+        //00  set to DefaultMtuForFirmwareInstallations as an explicit sturdy default-mtu for the special case of ios firmware installations
+        //    note that we had to resort to this because nordic 1.9.2 defaults to mtu=20(!) for some weird reason
+        //    which seems to be a bug ofcourse because it causes the fw installation to fail before it even begins
+    }
+
+    private func spawnFirmwareUpgradeConfiguration(
+        _ mode: EIOSFirmwareInstallationMode,
+        _ eraseSettings: Bool,
+        _ pipelineDepth: Int,
+        _ byteAlignmentEnum: ImageUploadAlignment,
+        _ estimatedSwapTimeInMilliseconds: Int
+    ) -> FirmwareUpgradeConfiguration? {
+        var configuration = FirmwareUpgradeConfiguration(eraseAppSettings: eraseSettings, byteAlignment: byteAlignmentEnum)
 
         do {
-            firmwareUpgradeConfiguration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
-            
+            configuration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
+
             if (pipelineDepth >= 0) {
-                firmwareUpgradeConfiguration.pipelineDepth = pipelineDepth
+                configuration.pipelineDepth = pipelineDepth
             }
 
             if (estimatedSwapTimeInMilliseconds >= 0) {
-                firmwareUpgradeConfiguration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1000) //1 nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
+                configuration.estimatedSwapTime = TimeInterval(estimatedSwapTimeInMilliseconds / 1_000) //1
             }
 
         } catch let ex {
             onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
 
-            return .failedInvalidSettings
+            return nil
         }
 
-        do {
-            setState(.idle)
-
-            try _manager.start(
-                    images: [
-                        ImageManager.Image( //2
-                                image: 0,
-                                slot: 1,
-                                hash: try McuMgrImage(data: imageData).hash,
-                                data: imageData
-                        )
-                    ],
-                    using: firmwareUpgradeConfiguration
-            )
-
-        } catch let ex {
-            onError(.deploymentFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
-
-            return .failedDeploymentError
-        }
-
-        return .success
-
-        //0 set the installation mode
-        //
-        //1 rF52840 due to how the flash memory works requires ~20 sec to erase images
-        //
-        //2 the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+        return configuration
+        
+        //1  nRF52840 requires ~10 seconds for swapping images   adjust this parameter for your device
     }
 
     private func isCold() -> Bool {
@@ -127,17 +199,17 @@ public class IOSFirmwareInstaller: NSObject {
                 || _currentState == .complete
                 || _currentState == .cancelled
     }
-    
+
     private func calculateHashBytesOfData(_ data: Data) -> Data {
         var hasher = Hasher()
         hasher.combine(data)
 
         let hashNumeric = hasher.finalize()
-        
+
         let hashData = withUnsafeBytes(of: hashNumeric.littleEndian) { Data($0) } //00
 
         return hashData
-        
+
         //00   notice that we have to be explicit in terms of endianess to avoid nasty surprises when transmitting bytes over the air
         //     https://stackoverflow.com/a/28681106/863651
     }
@@ -195,12 +267,18 @@ public class IOSFirmwareInstaller: NSObject {
     private func onError(_ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ error: Error? = nil) {
         let currentStateSnapshot = _currentState //00  order
         setState(.error) //                            order
-        fatalErrorOccurredAdvertisement( //            order
-            currentStateSnapshot,
-            fatalErrorType,
-            errorMessage,
-            McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
-        )
+        setBusyState(false) //                         order
+
+        _lastFatalErrorMessage = errorMessage //order
+
+        DispatchQueue.global(qos: .background).async { //order  fire and forget to boost performance
+            self.fatalErrorOccurredAdvertisement(
+                    currentStateSnapshot,
+                    fatalErrorType,
+                    errorMessage,
+                    McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+            )
+        }
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
     }
@@ -208,20 +286,23 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func fatalErrorOccurredAdvertisement(_ currentState: EIOSFirmwareInstallationState, _ fatalErrorType: EIOSFirmwareInstallerFatalErrorType, _ errorMessage: String, _ globalErrorCode: Int) {
-        _lastFatalErrorMessage = errorMessage
         _listener.fatalErrorOccurredAdvertisement(currentState, fatalErrorType, errorMessage, globalErrorCode)
     }
 
     //@objc   dont
 
-    private func logMessageAdvertisement(_ message: String, _ category: String, _ level: String) {
-        _listener.logMessageAdvertisement(message, category, level);
+    private func emitLogEntry(_ message: String, _ category: String, _ level: String) {
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.logMessageAdvertisement(message, category, level)
+        }
     }
 
     //@objc   dont
 
     private func cancelledAdvertisement() {
-        _listener.cancelledAdvertisement()
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self._listener.cancelledAdvertisement()
+        }
     }
 
     //@objc   dont
@@ -243,26 +324,43 @@ public class IOSFirmwareInstaller: NSObject {
 
     private func firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
             _ progressPercentage: Int,
-            _ averageThroughput: Float32
+            _ averageThroughput: Float32,
+            _ totalAverageThroughputInKbps: Float32
     ) {
-        _listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(progressPercentage, averageThroughput)
+        _listener.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(
+                progressPercentage,
+                averageThroughput,
+                totalAverageThroughputInKbps
+        )
+    }
+
+    private func setBusyState(_ newBusyState: Bool) {
+        if (_currentBusyState == newBusyState) {
+            return
+        }
+
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            self.busyStateChangedAdvertisement(newBusyState)
+        }
     }
 
     private func setState(_ newState: EIOSFirmwareInstallationState) {
         if (_currentState == newState) {
-            return;
+            return
         }
 
-        let oldState = _currentState; //order
+        let oldState = _currentState //order
 
-        _currentState = newState; //order
+        _currentState = newState //order
 
-        if (oldState == .uploading && newState == .testing) //00  order
-        {
-            firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0);
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            if (oldState == .uploading && newState == .testing) //00  order
+            {
+                self.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
+            }
+
+            self.stateChangedAdvertisement(oldState, newState) //order
         }
-
-        stateChangedAdvertisement(oldState, newState); //order
 
         //00 trivial hotfix to deal with the fact that the file-upload progress% doesnt fill up to 100%
     }
@@ -278,7 +376,7 @@ public class IOSFirmwareInstaller: NSObject {
             return FirmwareUpgradeMode.testAndConfirm
 
         default:
-            throw InvalidFirmwareInstallationModeError.runtimeError("Mode \(mode) is invalid")
+            throw givenFirmwareIsUnhealthyInstallationModeError.runtimeError("Mode \(mode) is invalid")
         }
     }
 }
@@ -286,8 +384,8 @@ public class IOSFirmwareInstaller: NSObject {
 extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate throughput too!
 
     public func upgradeDidStart(controller: FirmwareUpgradeController) {
-        busyStateChangedAdvertisement(true);
         setState(.validating);
+        setBusyState(true);
     }
 
     public func upgradeStateDidChange(from oldState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
@@ -312,55 +410,106 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
 
     public func upgradeDidComplete() {
         setState(.complete)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
     }
 
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
-        if (state == .upload) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
-            fatalErrorType = .firmwareUploadingErroredOut
-
-        } else if (state == .confirm && error.localizedDescription.isEmpty) { //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
-            fatalErrorType = .firmwareImageSwapTimeout
-        }
+        let fatalErrorType = deduceInstallationFailureType(state, error)
 
         onError(fatalErrorType, error.localizedDescription, error)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
+    }
+
+    private func deduceInstallationFailureType(_ state: FirmwareUpgradeState, _ error: Error) -> EIOSFirmwareInstallerFatalErrorType {
+        var fatalErrorType = EIOSFirmwareInstallerFatalErrorType.generic
+
+        switch (state) {
+        case .none: //impossible to happen   should default to .generic
+            break
+
+        case .validate:
+            fatalErrorType = .firmwareExtendedDataIntegrityChecksFailed //crc checks failed before the installation even commenced
+            break
+
+        case .upload:
+            fatalErrorType = .firmwareUploadingErroredOut //todo  improve this heuristic once we figure out the exact type of exception we get in case of an upload error
+            break
+
+        case .test:
+            fatalErrorType = .postInstallationDeviceHealthcheckTestsFailed
+            break
+
+        case .reset:
+            fatalErrorType = .postInstallationDeviceRebootingFailed
+            break
+
+        case .confirm:
+            fatalErrorType = error.localizedDescription.isEmpty //todo  improve this heuristic once we figure out the exact type of exception we get in case of a swap-timeout
+                    ? .firmwareFinishingImageSwapTimeout
+                    : .firmwarePostInstallationConfirmationFailed
+            break
+
+        default:
+            break
+        }
+
+        return fatalErrorType
     }
 
     public func upgradeDidCancel(state: FirmwareUpgradeState) {
         setState(.cancelled)
-        busyStateChangedAdvertisement(false)
+        setBusyState(false)
         cancelledAdvertisement()
     }
 
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        let throughputKilobytesPerSecond = calculateThroughput(bytesSent: bytesSent, timestamp: timestamp)
-        let uploadProgressPercentage = (bytesSent * 100) / imageSize
+        if (imageSize == 0) {
+            return
+        }
 
-        firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, throughputKilobytesPerSecond);
+        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+            let uploadProgressPercentage = (bytesSent * 100) / imageSize
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+
+            self.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
+        }
     }
 
-    private func calculateThroughput(bytesSent: Int, timestamp: Date) -> Float32 {
-        if (_lastBytesSendTimestamp == nil) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+    private func calculateCurrentThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_lastBytesSentTimestamp == nil) {
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSendTimestamp!).truncatingRemainder(dividingBy: 1))
-        if (intervalInSeconds == 0) {
-            _lastBytesSend = bytesSent
-            _lastBytesSendTimestamp = timestamp
+        let intervalInSeconds = Float32(timestamp.timeIntervalSince(_lastBytesSentTimestamp!))
+        if (intervalInSeconds == 0) { //almost impossible to happen but just in case
+            _lastBytesSent = bytesSent
+            _lastBytesSentTimestamp = timestamp
             return 0
         }
 
-        let throughputKilobytesPerSecond = Float32(bytesSent - _lastBytesSend) / (intervalInSeconds * 1024)
+        let currentThroughputInKbps = Float32(bytesSent - _lastBytesSent) / (intervalInSeconds * 1024) //order
 
-        _lastBytesSend = bytesSent
-        _lastBytesSendTimestamp = timestamp
+        _lastBytesSent = bytesSent //          order
+        _lastBytesSentTimestamp = timestamp // order
 
-        return throughputKilobytesPerSecond
+        return currentThroughputInKbps
+    }
+
+    private func calculateTotalAverageThroughputInKbps(bytesSent: Int, timestamp: Date) -> Float32 {
+        if (_uploadStartTimestamp == nil) {
+            _uploadStartTimestamp = timestamp
+            return 0
+        }
+
+        let secondsSinceUploadStart = Float32(timestamp.timeIntervalSince(_uploadStartTimestamp!))
+        if (secondsSinceUploadStart == 0) { //should be impossible but just in case
+            return 0
+        }
+
+        return Float32(bytesSent) / (secondsSinceUploadStart * 1024)
     }
 }
 
@@ -370,7 +519,7 @@ extension IOSFirmwareInstaller: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
-        logMessageAdvertisement(
+        emitLogEntry(
                 msg,
                 category.rawValue,
                 level.name

@@ -37,26 +37,26 @@
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-databind.jar" />
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-annotations.jar" />
         <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/jackson-dataformat-cbor.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.9.0.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-2.2.1.jar" />
-        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-2.2.1.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-ble-2.10.2.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-ble-2.7.2.jar" />
+        <AndroidJavaLibrary Include="$(AndroidLibsFolder)/Dependencies/nordicsemi-android-mcumgr-core-2.7.2.jar" />
     </ItemGroup>
 
     <Target Name="PrintBindingConfiguration" AfterTargets="CoreCompile">
         <Message Importance="High" Text="**** Transform files to use for NetX-Android (@(TransformFile->Count()) in total):      " />
-        <Message Importance="high" Text="****                                                                                    " />
-        <Message Importance="high" Text="****   '%(TransformFile.Identity)'                                                      " />
-        <Message Importance="high" Text="****                                                                                    " />
+        <Message Importance="High" Text="****                                                                                    " />
+        <Message Importance="High" Text="****   '%(TransformFile.Identity)'                                                      " />
+        <Message Importance="High" Text="****                                                                                    " />
         
         <Message Importance="High" Text="**** Android libraries to embed for NetX-Android (@(AndroidLibrary->Count()) in total): " />
-        <Message Importance="high" Text="****                                                                                    " />
-        <Message Importance="high" Text="****   '%(AndroidLibrary.Identity)'                                                     " />
-        <Message Importance="high" Text="****                                                                                    " />
+        <Message Importance="High" Text="****                                                                                    " />
+        <Message Importance="High" Text="****   '%(AndroidLibrary.Identity)'                                                     " />
+        <Message Importance="High" Text="****                                                                                    " />
         
         <Message Importance="High" Text="**** Android Java-libraries to embed for NetX-Android (@(AndroidJavaLibrary->Count()) in total): " />
-        <Message Importance="high" Text="****                                                                                             " />
-        <Message Importance="high" Text="****   '%(AndroidJavaLibrary.Identity)'                                                          " />
-        <Message Importance="high" Text="****                                                                                             " />
+        <Message Importance="High" Text="****                                                                                             " />
+        <Message Importance="High" Text="****   '%(AndroidJavaLibrary.Identity)'                                                          " />
+        <Message Importance="High" Text="****                                                                                             " />
 
         <Error Condition=" @(TransformFile->Count()) == 0     " Text="No transform files found on disk! This looks fishy ... erroring out ..."/>
         <Error Condition=" !Exists($(CoreAarLibrary))         " Text="The core .aar library wasn't found on path '$(CoreAarLibrary)'! This looks fishy ... erroring out ..."/>

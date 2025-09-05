@@ -6,15 +6,16 @@ public enum EAndroidFileDownloaderState
     IDLE(1),
     DOWNLOADING(2),
     PAUSED(3),
-    COMPLETE(4),
-    CANCELLED(5),
-    ERROR(6),
-    CANCELLING(7);
+    RESUMING(4),
+    COMPLETE(5),
+    CANCELLED(6),
+    ERROR(7),
+    CANCELLING(8);
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final int _value;
 
-    EAndroidFileDownloaderState(int value)
+    EAndroidFileDownloaderState(final int value)
     {
         _value = value;
     }

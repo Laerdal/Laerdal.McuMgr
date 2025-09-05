@@ -1,3 +1,4 @@
+using System;
 using Laerdal.McuMgr.Common.Constants;
 
 namespace Laerdal.McuMgr.Common.Helpers
@@ -8,12 +9,23 @@ namespace Laerdal.McuMgr.Common.Helpers
             bool uploadingNotDownloading,
             int triesCount,
             int maxTriesCount,
-            int suspiciousTransportFailuresCount
+            int suspiciousTransportFailuresCount,
+            int? resortToFailSafeSettingOnSuspiciousFailureCount = null //todo   we should consider making configurable via the options object!
         )
         {
-            var isConnectionTooUnstableForUploading = triesCount >= 2 && (triesCount == maxTriesCount || triesCount >= 3 && suspiciousTransportFailuresCount >= 2);
+            resortToFailSafeSettingOnSuspiciousFailureCount ??= Math.Min(10, maxTriesCount - 3); // last few tries reserved for the last-ditch effort to salvage the connection!
+            
+            var isConnectionTooUnstableForUploading = triesCount >= 2 && (triesCount == maxTriesCount || triesCount >= 3 && suspiciousTransportFailuresCount >= resortToFailSafeSettingOnSuspiciousFailureCount);
             if (!isConnectionTooUnstableForUploading)
                 return null;
+
+            var initialMtuSize = OperatingSystem.IsAndroid()
+                ? uploadingNotDownloading //android                                                   when noticing persistent failures when uploading/downloading we
+                    ? AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize //     resort to forcing the most failsafe settings we know of just in case
+                    : AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize //   we manage to salvage this situation (works with SamsungA8 android tablets)
+                : uploadingNotDownloading //ios + maccatalyst
+                    ? AppleTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize
+                    : -1; //ios doesnt have support for initial-mtu-size in the download side ...
             
             var byteAlignment = uploadingNotDownloading // ios + maccatalyst
                 ? AppleTidbits.BleConnectionFailsafeSettings.ForUploading.ByteAlignment
@@ -21,10 +33,7 @@ namespace Laerdal.McuMgr.Common.Helpers
             var pipelineDepth = uploadingNotDownloading // ios + maccatalyst
                 ? AppleTidbits.BleConnectionFailsafeSettings.ForUploading.PipelineDepth
                 : (int?)null; //pipelineDepth is not applicable for downloads
-            
-            var initialMtuSize = uploadingNotDownloading  //android                                when noticing persistent failures when uploading/downloading we
-                ? AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.InitialMtuSize //      resort to forcing the most failsafe settings we know of just in case
-                : AndroidTidbits.BleConnectionFailsafeSettings.ForDownloading.InitialMtuSize; //   we manage to salvage this situation (works with SamsungA8 android tablets)
+
             var windowCapacity = uploadingNotDownloading
                 ? AndroidTidbits.BleConnectionFailsafeSettings.ForUploading.WindowCapacity
                 : (int?)null; //window-capacity is not applicable for downloads    
@@ -39,9 +48,9 @@ namespace Laerdal.McuMgr.Common.Helpers
             bool uploadingNotDownloading,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
-            int? initialMtuSize = null,
             int? windowCapacity = null,
             int? memoryAlignment = null
         )

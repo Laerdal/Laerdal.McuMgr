@@ -1,22 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <!-- ================== HOST MACHINE DETECTION ==================== -->
+    <PropertyGroup>
+        <IsHostMachineOSX>false</IsHostMachineOSX>
+        <IsHostMachineOSX Condition=" $([System.OperatingSystem]::IsMacOS()) ">true</IsHostMachineOSX>
+
+        <IsHostMachineLinux>false</IsHostMachineLinux>
+        <IsHostMachineLinux Condition=" $([System.OperatingSystem]::IsLinux()) ">true</IsHostMachineLinux>
+
+        <IsHostMachineWindows>false</IsHostMachineWindows>
+        <IsHostMachineWindows Condition=" $([System.OperatingSystem]::IsWindows()) ">true</IsHostMachineWindows>
+
+        <!-- keep dead last -->
+        <IsHostMachineUnix>false</IsHostMachineUnix>
+        <IsHostMachineUnix Condition=" $(IsHostMachineOSX) Or $(IsHostMachineLinux) ">true</IsHostMachineUnix>
+    </PropertyGroup>
+
     <!-- SHARED -->
     <PropertyGroup>
-        <IsHostMachineOSX Condition="      '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'     == 'true' ">true</IsHostMachineOSX>
-        <IsHostMachineLinux Condition="    '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'   == 'true' ">true</IsHostMachineLinux>
-        <IsHostMachineWindows Condition="  '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true' ">true</IsHostMachineWindows>
-        <IsHostMachineUnix Condition="     '$(IsHostMachineOSX)' == 'true' OR '$(IsHostMachineLinux)' == 'true' ">true</IsHostMachineUnix>
-
-        <!-- - note that we build against netstandard2.1 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
+        <!-- - note that we build against net8.0 merely as a dud-placeholder for windows in which we are bound to get not-implemented exceptions all over the place -->
+        <!-- - the dud build for net8 also comes in handy when we want to launch an application inside an ios-simulator in the macos desktop (for UI testing purposes) -->
         <!-- - also note it only makes sense to build ios stuff under osx because xcodebuild is only available there -->
         <!-- - in azure we omit building maccatalyst for the time being because net8 needs maccatalyst 17.2+ which is only available on macos14 which microsoft currently (Q1 2024) doesn't provide us with in azure just yet -->
 
-        <TargetFrameworks>$(TargetFrameworks)net8.0;</TargetFrameworks>
-        <TargetFrameworks>$(TargetFrameworks)net8.0-android;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios11;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(IsHostMachineOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
+        <PackageVersionPostfix Condition=" '$(BuildOnlyDudNet8)' == 'true' ">-force-dud</PackageVersionPostfix>
 
-        <IsDudNet8_0 Condition="     '$(TargetFramework)'                                              == 'net8.0' ">true</IsDudNet8_0>
+        <TargetFrameworks>$(TargetFrameworks)net8.0;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true'                                                                                ">$(TargetFrameworks)net8.0-android;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(IsHostMachineOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(IsHostMachineOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
+
+        <IsDudNet8_0 Condition="       '$(TargetFramework)'                                            == 'net8.0' ">true</IsDudNet8_0>
         <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true'   ">true</IsNet8>
         <IsNet8IOS Condition="         '$(TargetFramework.ToLower().StartsWith(net8.0-ios))'           == 'true'   ">true</IsNet8IOS>
         <IsNet8Android Condition="     '$(TargetFramework.ToLower().StartsWith(net8.0-android))'       == 'true'   ">true</IsNet8Android>
@@ -37,11 +51,13 @@
         <!-- #1 these properties must be kept in sync between this file and laerdal.mcumgr.bindings.[android|ios|maccatalyst].csproj -->
         <!-- #2 even though this is library is pure csharp we still have to specify the target-plaform-version for each target because if we dont dont the build system throws a tantrum from oct 2024 onwards -->
         <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)'         != '' ">$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
         <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)'     != '' ">$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>
+
+        <TargetPlatformVersion Condition=" '$(IsIOS)'          == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">18.0</TargetPlatformVersion>
         <TargetPlatformVersion Condition=" '$(IsAndroid)'      == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">34</TargetPlatformVersion>
-        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)' != '' ">$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion)</TargetPlatformVersion>        
-        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">17.0</TargetPlatformVersion>
+        <TargetPlatformVersion Condition=" '$(IsMacCatalyst)'  == 'true'  and  '$(TargetPlatformVersion)'                                      == '' ">18.0</TargetPlatformVersion>
+
         <!-- minimum ios/android/maccatalyst os versions that we support -->
         <SupportedOSPlatformVersion  Condition=" '$(IsIOS)'         == 'true' ">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion  Condition=" '$(IsAndroid)'     == 'true' ">21</SupportedOSPlatformVersion>
@@ -71,10 +87,14 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>1.0.1092.0</Version>
-        <FileVersion>1.0.1092.0</FileVersion>
-        <PackageVersion>1.0.1092.0</PackageVersion>
-        <AssemblyVersion>1.0.1092.0</AssemblyVersion>
+        <Version>2.53.34</Version>
+
+        <FileVersion>$(Version)</FileVersion>
+        <PackageVersion>$(Version)</PackageVersion>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        
+        <!-- keep this because it is needed to generate the *-force-dud nuget packages! -->
+        <PackageVersion>$(PackageVersion)$(PackageVersionPostfix)</PackageVersion>
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
@@ -102,7 +122,7 @@
         <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
         <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->
         <!-- Otherwise add the new keyword. Can be ignored.                                                                                                  -->
-        <NoWarn>$(NoWarn);CS0114;CS0618;CS0108;NETSDK1202;</NoWarn>
+        <NoWarn>$(NoWarn);CS0114;CS0618;CS0108;NETSDK1202;CA1008;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -120,28 +140,52 @@
         <Message Importance="High" Text="PackageVersion:                '$(PackageVersion)'             "/>
         <Message Importance="High" Text="TargetFramework:               '$(TargetFramework)'            "/>
         <Message Importance="High" Text="DefineConstants:               '$(DefineConstants)'            "/>
-        <Message Importance="high" Text="MSBuildNodeCount:              '$(MSBuildNodeCount)'           "/>
-        <Message Importance="high" Text="Should_Skip_MacCatalyst:       '$(Should_Skip_MacCatalyst)'    "/>
+        <Message Importance="High" Text="MSBuildNodeCount:              '$(MSBuildNodeCount)'           "/>
+        <Message Importance="High" Text="Should_Skip_MacCatalyst:       '$(Should_Skip_MacCatalyst)'    "/>
 
-        <Message Importance="high" Text="TargetPlatformVersion:         '$(TargetPlatformVersion)'      "/>
-        <Message Importance="high" Text="SupportedOSPlatformVersion:    '$(SupportedOSPlatformVersion)' "/>
+        <Message Importance="High" Text="TargetPlatformVersion:         '$(TargetPlatformVersion)'      "/>
+        <Message Importance="High" Text="SupportedOSPlatformVersion:    '$(SupportedOSPlatformVersion)' "/>
 
-        <Message Importance="high" Text="IsNet8:                        '$(IsNet8)'                     "/>
-        <Message Importance="high" Text="IsNetX:                        '$(IsNetX)'                     "/>
+        <Message Importance="High" Text="IsNet8:                        '$(IsNet8)'                     "/>
+        <Message Importance="High" Text="IsNetX:                        '$(IsNetX)'                     "/>
 
-        <Message Importance="high" Text="IsNetXAndroid:                 '$(IsNetXAndroid)'              "/>
-        <Message Importance="high" Text="IsNet8MacCatalyst:             '$(IsNet8MacCatalyst)'          "/>
-        <Message Importance="high" Text="IsNetXMacCatalyst:             '$(IsNetXMacCatalyst)'          "/>
+        <Message Importance="High" Text="IsNetXAndroid:                 '$(IsNetXAndroid)'              "/>
+        <Message Importance="High" Text="IsNet8MacCatalyst:             '$(IsNet8MacCatalyst)'          "/>
+        <Message Importance="High" Text="IsNetXMacCatalyst:             '$(IsNetXMacCatalyst)'          "/>
 
-        <Message Importance="high" Text="IsIOS:                         '$(IsIOS)'                      "/>
-        <Message Importance="high" Text="IsAndroid:                     '$(IsAndroid)'                  "/>
-        <Message Importance="high" Text="IsAppleStuff:                  '$(IsAppleStuff)'               "/>
+        <Message Importance="High" Text="IsIOS:                         '$(IsIOS)'                      "/>
+        <Message Importance="High" Text="IsAndroid:                     '$(IsAndroid)'                  "/>
+        <Message Importance="High" Text="IsAppleStuff:                  '$(IsAppleStuff)'               "/>
     </Target>
 
     <!-- SHARED -->
     <ItemGroup>
         <Compile Include="Shared\**\*.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
+
+        <!-- FILE UPLOADER -->
+        <Compile Update="**\FileUploader.*.cs">
+            <DependentUpon>FileUploader.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FileUploader.Commandable.*.cs">
+            <DependentUpon>FileUploader.Commandable.cs</DependentUpon>
+        </Compile>
+
+        <!-- FILE DOWNLOADER -->        
+        <Compile Update="**\FileDownloader.*.cs">
+            <DependentUpon>FileDownloader.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FileDownloader.Commandable.*.cs">
+            <DependentUpon>FileDownloader.Commandable.cs</DependentUpon>
+        </Compile>
+
+        <!-- FIRMWARE INSTALLER -->
+        <Compile Update="**\FirmwareInstaller.*.cs">
+            <DependentUpon>FirmwareInstaller.cs</DependentUpon>
+        </Compile>
+        <Compile Update="**\FirmwareInstaller.Commandable.*.cs">
+            <DependentUpon>FirmwareInstaller.Commandable.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <!-- ANDROID -->
@@ -167,21 +211,22 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="2.53.34"/>
     </ItemGroup>
 
-    <!-- IOS/MacCatalyst -->
+    <!-- IOS -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="2.53.34"/>
     </ItemGroup>
 
+    <!-- MACCATALYST -->
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="2.53.34"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsDudNet8_0)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="1.0.1092.0"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="2.53.34"/>
     </ItemGroup>
 
 </Project>

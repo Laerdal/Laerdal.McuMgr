@@ -1,0 +1,93 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+registries:
+
+  nuget-org:
+    url: "https://api.nuget.org/v3/index.json"
+    type: "nuget-feed"
+
+
+updates:
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "develop"
+  
+  #  - package-ecosystem: "nuget"
+  #    directory: "Laerdal.McuMgr/" # disabled for now because it needs additional work to get it working
+  #    registries:
+  #      - nuget-org
+  #    schedule:
+  #      interval: "weekly"
+  #      time: "02:00"
+  #      timezone: "Europe/London"
+  #    target-branch: "develop"
+
+  #  - package-ecosystem: "nuget"
+  #    directory: "Laerdal.McuMgr.Bindings.Android/" # doesn't really work due to a shortcoming of dependabot https://stackoverflow.com/questions/79501615/dependabot-error-while-trying-to-restore-nugets-for-a-dotnet8-android-project
+  #    registries:
+  #      - nuget-org
+  #    schedule:
+  #      interval: "weekly"
+  #      time: "02:00"
+  #      timezone: "Europe/London"
+  #    target-branch: "develop"
+
+  #  - package-ecosystem: "nuget"
+  #    directory: "Laerdal.McuMgr.Bindings.iOS/" # disabled due to https://stackoverflow.com/questions/79501652/dependabot-dependency-file-not-found-error-while-analyzing-dotnet8-ios-projec
+  #    registries:
+  #      - nuget-org
+  #    schedule:
+  #      interval: "weekly"
+  #      time: "02:00"
+  #      timezone: "Europe/London"
+  #    target-branch: "develop"
+  #
+  #  - package-ecosystem: "nuget"
+  #    directory: "Laerdal.McuMgr.Bindings.MacCatalyst/" # disabled due to https://stackoverflow.com/questions/79501652/dependabot-dependency-file-not-found-error-while-analyzing-dotnet8-ios-projec
+  #    registries:
+  #      - nuget-org
+  #    schedule:
+  #      interval: "weekly"
+  #      time: "02:00"
+  #      timezone: "Europe/London"
+  #    target-branch: "develop"
+  
+  #  - package-ecosystem: "nuget"
+  #    directory: "Laerdal.McuMgr.Bindings.NetStandard/" # no need
+  #    registries:
+  #      - nuget-org
+  #    schedule:
+  #      interval: "daily"
+  #      time: "02:00"
+  #      timezone: "Europe/London"
+  #    target-branch: "develop"
+
+  - package-ecosystem: "nuget"
+    directory: "Laerdal.McuMgr.Tests/"
+    registries:
+      - nuget-org
+    schedule:
+      interval: "daily"
+      time: "02:00"
+      timezone: "Europe/London"
+    target-branch: "develop"
+    ignore:
+      - dependency-name: "FluentAssertions" #            ignore major-version updates FluentAssertions from version 8 and above
+        versions: [ "8.*", "9.*", "10.*", "11.*" ] #     because FluentAssertions requires a paid license for corporate use
+        update-types: [ "version-update:semver-major" ] 
+      - dependency-name: "Microsoft.Maui.*"
+        versions: [ "8.*", "9.*", "10.*", "11.*" ]
+        update-types: [ "version-update:semver-major" ] 
+      - dependency-name: "Laerdal.McuMgr.*"
+        versions: [ "2.*", "3.*", "4.*", "5.*" ]
+        update-types: [ "version-update:semver-major" ] 
