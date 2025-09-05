@@ -24,14 +24,14 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             //00 made async to allow for future overrides or future iterations that might need to actually await something
         }
 
-        protected virtual async Task ReleaseExclusiveOperationTokenAsync() //00 async
+        protected virtual Task ReleaseExclusiveOperationTokenAsync() //00 async
         {
             lock (OperationCheckLock)
             {
                 IsOperationOngoing = false;
             }
             
-            await Task.CompletedTask;
+            return Task.CompletedTask;
             
             //00 made async to allow for future overrides or future iterations that might need to actually await something
         }

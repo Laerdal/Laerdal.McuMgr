@@ -34,7 +34,7 @@ namespace Laerdal.McuMgr.FileUploading
             int?   memoryAlignment = null
         ) where TData : notnull //@formatter:on
         {
-            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
 
             try
             {
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.FileUploading
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
 
             async Task<IEnumerable<string>> MultiUploadCoreAsync_()

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
@@ -9,7 +10,7 @@ namespace Laerdal.McuMgr.FileUploading
 {
     public partial class FileUploader
     {
-        public void BeginUpload( //this is meant to be used by the users   but our .UploadAsync() methods should *never* use this method
+        public async Task BeginUploadAsync( //this is meant to be used by the users   but our .UploadAsync() methods should *never* use this method
             byte[] data,
             string resourceId,
             string remoteFilePath,
@@ -22,7 +23,7 @@ namespace Laerdal.McuMgr.FileUploading
             int? memoryAlignment = null // android
         )
         {
-            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
 
             try
             {
@@ -46,7 +47,7 @@ namespace Laerdal.McuMgr.FileUploading
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
         }
 
