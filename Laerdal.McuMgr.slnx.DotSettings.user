@@ -68,6 +68,9 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=edfaaad2_002D8558_002D4df1_002Dbb18_002D1c7a506ec7a5/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from Solution #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f7eee5b8_002D164d_002D4ed8_002D8e46_002De500c2604deb/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Solution /&gt;
+&lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=131e5d65_002D002c_002D354a_002D58d9_002D743f2733d18b_0023Laerdal_002EMcuMgr_002EBindings_002EAndroid/@EntryIndexedValue">True</s:Boolean>
 	
 	

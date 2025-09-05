@@ -106,7 +106,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts
         /// <exception cref="FirmwareInstallationInternalErrorException">If an hard internal error occurred within the native-layer.</exception>
         /// <exception cref="AnotherFirmwareInstallationIsAlreadyOngoingException">If another firmware installation is already in progress on the remote device.</exception>
         /// <exception cref="FirmwareInstallationUnhealthyFirmwareDataGivenException">If the bytes of the given firmware are unhealthy.</exception>
-        void BeginInstallation(
+        Task BeginInstallationAsync(
             byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,

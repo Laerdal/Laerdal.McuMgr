@@ -119,15 +119,18 @@ Make sure to always get the latest versions of the above packages.
 
 - Installing a firmware:
 
-       Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
-       in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
-       any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
+       1. Using .ConfigureAwait(false) is vital to avoid deadlocks in certain cornercases. It doesn't hurt to use it and it can
+          save you from a lot of headaches.
 
-       This was done deliberately so as to minimize (even eradicate) the chances that bugs or glitches in your
-       event-handlers might interfere with the firmware-installation process itself - this naturally works in your
-       favour most of the time.
+       2. Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
+          in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
+          any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
 
-       Just be sure to pay attention to the logs for anything that looks fishy in your event-handling logic.
+          This was done deliberately so as to minimize (even eradicate) the chances that bugs or glitches in your
+          event-handlers might interfere with the firmware-installation process itself - this naturally works in your
+          favour most of the time.
+
+          Just be sure to pay attention to the logs for anything that looks fishy in your event-handling logic.
 
 ```c#
 
@@ -389,17 +392,20 @@ private void CleanupDeviceResetter()
 
          Note:
 
-         1. The very first data-upload might feel slow to start because certain Nordic chipsets perform filesystem cleanup on the very first file-upload.
+         1. Using .ConfigureAwait(false) is vital to avoid deadlocks in certain cornercases. It doesn't hurt to use it and it can
+            save you from a lot of headaches.
+
+         2. The very first data-upload might feel slow to start because certain Nordic chipsets perform filesystem cleanup on the very first file-upload.
             There is nothing we can do about this. The culprit lies in issues plaguing littlefs itself:
 
             https://github.com/littlefs-project/littlefs/issues/797
             https://github.com/littlefs-project/littlefs/issues/783
             https://github.com/littlefs-project/littlefs/issues/810
 
-         2. The library doesn't support streaming files. You must load each file's bytes as an array in memory before you can upload it. As long as you stay
+         3. The library doesn't support streaming files. You must load each file's bytes as an array in memory before you can upload it. As long as you stay
             within reasonable limits (a few MBs) this shouldn't be a problem for most smartphones / tablets.
 
-         3. Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
+         4. Quick note about events such as LogEmitted, OverallProgressPercentageChanged, etc: These events are raised
             in a fire-and-forget fashion from the native Nordic libs (in background executors/threads) and because of this
             any and all exceptions you might throw or delays you might induce in your event-handlers will be swallowed and ignored.
 

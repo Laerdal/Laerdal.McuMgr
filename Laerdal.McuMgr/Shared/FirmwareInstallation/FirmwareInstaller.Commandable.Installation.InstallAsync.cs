@@ -14,35 +14,35 @@ namespace Laerdal.McuMgr.FirmwareInstallation
     public partial class FirmwareInstaller
     {
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
-        public async Task InstallAsync(
+        public async Task InstallAsync( //@formater:off
             byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
-            int? initialMtuSize = null,
-            int? windowCapacity = null, //    android only
+            int? initialMtuSize  = null, //   ios + android
+            int? windowCapacity  = null, //   android only
             int? memoryAlignment = null, //   android only
-            int? pipelineDepth = null, //     ios only
-            int? byteAlignment = null, //     ios only
-            int timeoutInMs = -1,
-            int maxTriesCount = 10,
-            int sleepTimeBetweenRetriesInMs = 100,
+            int? pipelineDepth   = null, //   ios only
+            int? byteAlignment   = null, //   ios only
+            int timeoutInMs      = -1,
+            int maxTriesCount    = 10,
+            int sleepTimeBetweenRetriesInMs     = 100,
             int gracefulCancellationTimeoutInMs = 2_500
-        )
+        ) //@formater:on
         {
-            EnsureExclusiveOperationToken();
-            
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false);
+
             try
             {
-                await InstallCoreAsync_();
+                await InstallCoreAsync_().ConfigureAwait(false);
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
-            
+
             return;
 
             async Task InstallCoreAsync_()
@@ -117,7 +117,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                             memoryAlignment: memoryAlignment //   android only
                         );
 
-                        await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs);
+                        await taskCompletionSource.WaitAndFossilizeTaskOnOptionalTimeoutAsync(timeoutInMs).ConfigureAwait(false);
                     }
                     catch (TimeoutException ex)
                     {

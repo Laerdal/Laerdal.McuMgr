@@ -127,7 +127,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
-        void BeginDownload(string remoteFilePath,
+        Task BeginDownloadAsync(string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int? initialMtuSize = null,

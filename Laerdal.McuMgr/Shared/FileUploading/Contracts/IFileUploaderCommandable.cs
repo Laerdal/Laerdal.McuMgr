@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Laerdal.McuMgr.FileUploading.Contracts.Enums;
 using Laerdal.McuMgr.FileUploading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts
@@ -162,7 +161,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
         /// <param name="memoryAlignment">(Android only) Set the selected memory alignment. Defaults to 4 to match Nordic devices.</param>
-        void BeginUpload(
+        Task BeginUploadAsync( //@formatter:off
             byte[] data,
             string resourceId,
             string remoteFilePath,
@@ -172,10 +171,8 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int? pipelineDepth = null, //  ios
             int? byteAlignment = null, //  ios
             int? windowCapacity = null, // android
-            int? memoryAlignment = null
-
-            // android
-        );
+            int? memoryAlignment = null // android
+        ); //@formatter:on
         
         /// <summary>
         /// Scraps the current transport. This is useful in case the transport is in a bad state and needs to be restarted.

@@ -1,10 +1,11 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Laerdal.McuMgr.FileDownloading
 {
     public partial class FileDownloader
     {
-        protected void EnsureExclusiveOperationToken()
+        protected Task EnsureExclusiveOperationTokenAsync()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(FileDownloader));
@@ -16,14 +17,18 @@ namespace Laerdal.McuMgr.FileDownloading
 
                 IsOperationOngoing = true;
             }
+            
+            return Task.CompletedTask;
         }
 
-        protected void ReleaseExclusiveOperationToken()
+        protected Task ReleaseExclusiveOperationTokenAsync()
         {
             lock (OperationCheckLock)
             {
                 IsOperationOngoing = false;
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

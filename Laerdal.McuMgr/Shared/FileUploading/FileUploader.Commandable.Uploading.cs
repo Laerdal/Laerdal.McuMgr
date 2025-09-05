@@ -1,10 +1,11 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Laerdal.McuMgr.FileUploading
 {
     public partial class FileUploader
     {
-        protected void EnsureExclusiveOperationToken()
+        protected Task EnsureExclusiveOperationTokenAsync()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(FileUploader));
@@ -16,14 +17,18 @@ namespace Laerdal.McuMgr.FileUploading
 
                 IsOperationOngoing = true;
             }
+            
+            return Task.CompletedTask;
         }
 
-        protected void ReleaseExclusiveOperationToken()
+        protected Task ReleaseExclusiveOperationTokenAsync()
         {
             lock (OperationCheckLock)
             {
                 IsOperationOngoing = false;
             }
+            
+            return Task.CompletedTask;
         }
     }
 }

@@ -16,19 +16,21 @@ namespace Laerdal.McuMgr.FileDownloading
     {
         private const int DefaultGracefulCancellationTimeoutInMs = 2_500;
 
-        public async Task<byte[]> DownloadAsync(
+        public async Task<byte[]> DownloadAsync( //@formatter:off
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+
             int timeoutForDownloadInMs          = IFileDownloaderCommandable.Defaults.TimeoutPerDownloadInMs,
             int maxTriesCount                   = IFileDownloaderCommandable.Defaults.MaxTriesPerDownload,
             int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
-            int? initialMtuSize = null,
-            int? windowCapacity = null
-        )
+            
+            int? initialMtuSize                 = null,
+            int? windowCapacity                 = null
+        )  //@formatter:on
         {
-            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
 
             try
             {
@@ -51,7 +53,7 @@ namespace Laerdal.McuMgr.FileDownloading
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
         }
         

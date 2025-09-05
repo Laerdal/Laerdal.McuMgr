@@ -10,15 +10,15 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 {
     public partial class FileUploaderTestbed
     {
-        [Theory]
-        [InlineData("FUT.BD.STAE.GIP.010", "", "foobar", "acme corp.")]
-        [InlineData("FUT.BD.STAE.GIP.020", null, "foobar", "acme corp.")]
-        [InlineData("FUT.BD.STAE.GIP.030", "foo/bar/", "foobar", "acme corp.")] //  paths are not allowed
-        [InlineData("FUT.BD.STAE.GIP.040", "/foo/bar/", "foobar", "acme corp.")] // to end with a slash
-        [InlineData("FUT.BD.STAE.GIP.050", "/foo/bar", "", "acme corp.")] //        invalid hostDeviceModel
-        [InlineData("FUT.BD.STAE.GIP.060", "/foo/bar", "  ", "acme corp.")] //      invalid hostDeviceModel
-        [InlineData("FUT.BD.STAE.GIP.070", "/foo/bar", "foobar", "")] //            invalid hostDeviceManufacturer
-        [InlineData("FUT.BD.STAE.GIP.080", "/foo/bar", "foobar", "  ")] //          invalid hostDeviceManufacturer
+        [Theory] //@formatter:off           remoteFilePath     hostDeviceModel     hostDeviceManufacturer
+        [InlineData("FUT.BD.STAE.GIP.010",  "",                "foobar",           "acme corp."          )]
+        [InlineData("FUT.BD.STAE.GIP.020",  null,              "foobar",           "acme corp."          )]
+        [InlineData("FUT.BD.STAE.GIP.030",  "foo/bar/",        "foobar",           "acme corp."          )] //  paths are not allowed
+        [InlineData("FUT.BD.STAE.GIP.040",  "/foo/bar/",       "foobar",           "acme corp."          )] //  to end with a slash
+        [InlineData("FUT.BD.STAE.GIP.050",  "/foo/bar",        "",                 "acme corp."          )] //  invalid hostDeviceModel
+        [InlineData("FUT.BD.STAE.GIP.060",  "/foo/bar",        "  ",               "acme corp."          )] //  invalid hostDeviceModel
+        [InlineData("FUT.BD.STAE.GIP.070",  "/foo/bar",        "foobar",           ""                    )] //  invalid hostDeviceManufacturer
+        [InlineData("FUT.BD.STAE.GIP.080",  "/foo/bar",        "foobar",           "  "                  )] //  invalid hostDeviceManufacturer     @formatter:on
         public void BeginUpload_ShouldThrowArgumentException_GivenInvalidParameters(string testcaseNickname, string remoteFilePath, string hostDeviceModel, string hostDeviceManufacturer)
         {
             // Arrange
@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             using var eventsMonitor = fileUploader.Monitor();
 
             // Act
-            var work = new Action(() => fileUploader.BeginUpload(
+            var work = new Func<Task>(async () => await fileUploader.BeginUploadAsync(
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer,
 
@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            work.Should().ThrowExactly<ArgumentException>();
+            work.Should().ThrowWithinAsync<ArgumentException>(TimeSpan.FromSeconds(3));
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00

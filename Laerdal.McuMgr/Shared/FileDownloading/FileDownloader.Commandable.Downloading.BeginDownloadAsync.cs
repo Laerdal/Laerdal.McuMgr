@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
@@ -9,14 +10,15 @@ namespace Laerdal.McuMgr.FileDownloading
 {
     public partial class FileDownloader
     {
-        public void BeginDownload(string remoteFilePath,
+        public async Task BeginDownloadAsync(
+            string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             int? initialMtuSize = null,
             int? windowCapacity = null //not applicable currently   but nordic considers these for future use
         )
         {
-            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
 
             try
             {
@@ -33,7 +35,7 @@ namespace Laerdal.McuMgr.FileDownloading
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
         }
         
