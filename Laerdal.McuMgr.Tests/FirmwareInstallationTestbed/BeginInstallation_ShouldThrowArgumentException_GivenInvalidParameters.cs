@@ -26,14 +26,14 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             using var eventsMonitor = firmwareInstaller.Monitor();
 
             // Act
-            var work = new Action(() => firmwareInstaller.BeginInstallation(
+            var work = new Func<Task>(async () => await firmwareInstaller.BeginInstallationAsync(
                 data: mockedFileData,
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer
             ));
 
             // Assert
-            work.Should().Throw<ArgumentException>();
+            work.Should().ThrowWithinAsync<ArgumentException>(TimeSpan.FromSeconds(3));
 
             mockedNativeFirmwareInstallerProxy.CancelCalled.Should().BeFalse();
             mockedNativeFirmwareInstallerProxy.DisconnectCalled.Should().BeFalse(); //00

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Events;
 using Laerdal.McuMgr.Common.Helpers;
@@ -10,21 +11,21 @@ namespace Laerdal.McuMgr.FirmwareInstallation
 {
     public partial class FirmwareInstaller
     {
-        public void BeginInstallation(
+        public async Task BeginInstallationAsync( //@formatter:off
             byte[] data,
             string hostDeviceModel,
             string hostDeviceManufacturer,
             EFirmwareInstallationMode mode = EFirmwareInstallationMode.TestAndConfirm,
             bool? eraseSettings = null,
             int? estimatedSwapTimeInMilliseconds = null,
-            int? initialMtuSize = null,
-            int? windowCapacity = null, //   android only    not applicable for ios
-            int? memoryAlignment = null, //  android only    not applicable for ios
-            int? pipelineDepth = null, //    ios only        not applicable for android
-            int? byteAlignment = null //     ios only        not applicable for android
-        )
+            int? initialMtuSize  = null, //   ios + android
+            int? windowCapacity  = null, //   android only    not applicable for ios
+            int? memoryAlignment = null, //   android only    not applicable for ios
+            int? pipelineDepth   = null, //   ios only        not applicable for android
+            int? byteAlignment   = null //    ios only        not applicable for android
+        ) //@formatter:on
         {
-            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
             
             try
             {
@@ -49,7 +50,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
         }
         

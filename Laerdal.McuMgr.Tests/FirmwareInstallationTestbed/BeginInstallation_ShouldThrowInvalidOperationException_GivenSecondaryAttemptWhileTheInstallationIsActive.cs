@@ -33,11 +33,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 
                     manualResetEvent.Wait(); //parking it until the first installation starts validating+uploading
 
-                    firmwareInstaller.BeginInstallation(
+                    await firmwareInstaller.BeginInstallationAsync(
                         data: [4, 5, 6],
                         hostDeviceModel: "foobar",
                         hostDeviceManufacturer: "acme corp."
-                    );
+                    ).ConfigureAwait(false);
                 });
                 
                 await Task.Yield();
@@ -51,11 +51,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                     }
                 };
                 
-                firmwareInstaller.BeginInstallation(
+                await firmwareInstaller.BeginInstallationAsync(
                     data: [1, 2, 3],
                     hostDeviceModel: "foobar",
                     hostDeviceManufacturer: "acme corp."
-                );
+                ).ConfigureAwait(false);
                 
                 await racingTask;
             });
@@ -97,13 +97,13 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
             {
             }
 
-            protected override void EnsureExclusiveOperationToken() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
+            protected override async Task EnsureExclusiveOperationTokenAsync() //we need this spy in order to be 100% sure that the guard check is the one that threw the exception!
             {
                 Interlocked.Increment(ref GuardCallsCounter);
                 
                 try
                 {
-                    base.EnsureExclusiveOperationToken();    
+                    await base.EnsureExclusiveOperationTokenAsync();    
                 }
                 catch (AnotherFirmwareInstallationIsAlreadyOngoingException)
                 {
@@ -112,11 +112,11 @@ namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
                 }
             }
 
-            protected override void ReleaseExclusiveOperationToken()
+            protected override async Task ReleaseExclusiveOperationTokenAsync()
             {
                 Interlocked.Increment(ref ReleaseCallsCounter);
                 
-                base.ReleaseExclusiveOperationToken();
+                await base.ReleaseExclusiveOperationTokenAsync();
             }
         }
 
