@@ -10,15 +10,15 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 {
     public partial class FileDownloaderTestbed
     {
-        [Theory]
-        [InlineData("FDT.BD.STAE.GIP.010", "", "foobar", "acme corp.")]
-        [InlineData("FDT.BD.STAE.GIP.020", null, "foobar", "acme corp.")]
-        [InlineData("FDT.BD.STAE.GIP.030", "foo/bar/", "foobar", "acme corp.")] //  paths are not allowed
-        [InlineData("FDT.BD.STAE.GIP.040", "/foo/bar/", "foobar", "acme corp.")] // to end with a slash
-        [InlineData("FDT.BD.STAE.GIP.050", "/foo/bar", "", "acme corp.")] //        invalid hostDeviceModel
-        [InlineData("FDT.BD.STAE.GIP.060", "/foo/bar", "  ", "acme corp.")] //      invalid hostDeviceModel
-        [InlineData("FDT.BD.STAE.GIP.070", "/foo/bar", "foobar", "")] //            invalid hostDeviceManufacturer
-        [InlineData("FDT.BD.STAE.GIP.080", "/foo/bar", "foobar", "  ")] //          invalid hostDeviceManufacturer
+        [Theory] //@formatter:off             remoteFilePath     hostDeviceModel     hostDeviceManufacturer                                                          
+        [InlineData("FDT.BD.STAE.GIP.010",    "",                "foobar",           "acme corp."          )]                                                        
+        [InlineData("FDT.BD.STAE.GIP.020",    null,              "foobar",           "acme corp."          )]                                                        
+        [InlineData("FDT.BD.STAE.GIP.030",    "foo/bar/",        "foobar",           "acme corp."          )] //  paths are not allowed                              
+        [InlineData("FDT.BD.STAE.GIP.040",    "/foo/bar/",       "foobar",           "acme corp."          )] //  to end with a slash                                
+        [InlineData("FDT.BD.STAE.GIP.050",    "/foo/bar",        "",                 "acme corp."          )] //  invalid hostDeviceModel                            
+        [InlineData("FDT.BD.STAE.GIP.060",    "/foo/bar",        "  ",               "acme corp."          )] //  invalid hostDeviceModel                            
+        [InlineData("FDT.BD.STAE.GIP.070",    "/foo/bar",        "foobar",           ""                    )] //  invalid hostDeviceManufacturer                     
+        [InlineData("FDT.BD.STAE.GIP.080",    "/foo/bar",        "foobar",           "  "                  )] //  invalid hostDeviceManufacturer     @formatter:on   
         public void BeginDownload_ShouldThrowArgumentException_GivenInvalidParameters(string testcaseNickname, string remoteFilePath, string hostDeviceModel, string hostDeviceManufacturer)
         {
             // Arrange
@@ -30,14 +30,14 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             using var eventsMonitor = fileDownloader.Monitor();
 
             // Act
-            var work = new Action(() => fileDownloader.BeginDownload(
+            var work = new Func<Task>(async () => await fileDownloader.BeginDownloadAsync(
                 remoteFilePath: remoteFilePath,
                 hostDeviceModel: hostDeviceModel,
                 hostDeviceManufacturer: hostDeviceManufacturer
             ));
 
             // Assert
-            work.Should().ThrowExactly<ArgumentException>();
+            work.Should().ThrowWithinAsync<ArgumentException>(TimeSpan.FromSeconds(3));
 
             mockedNativeFileDownloaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileDownloaderProxy.DisconnectCalled.Should().BeFalse(); //00

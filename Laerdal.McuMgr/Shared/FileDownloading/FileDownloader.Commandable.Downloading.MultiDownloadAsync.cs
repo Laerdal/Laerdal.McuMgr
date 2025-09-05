@@ -20,12 +20,12 @@ namespace Laerdal.McuMgr.FileDownloading
             int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
 
-            int? initialMtuSize = null,
-            int? windowCapacity = null,
-            int? memoryAlignment = null
+            int? initialMtuSize                 = null,
+            int? windowCapacity                 = null,
+            int? memoryAlignment                = null
         ) //@formatter:on
         {
-            EnsureExclusiveOperationToken(); //keep this outside of the try-finally block!
+            await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
 
             try
             {
@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.FileDownloading
             }
             finally
             {
-                ReleaseExclusiveOperationToken();
+                await ReleaseExclusiveOperationTokenAsync().ConfigureAwait(false);
             }
 
             async Task<IDictionary<string, byte[]>> DownloadCoreAsync_()
