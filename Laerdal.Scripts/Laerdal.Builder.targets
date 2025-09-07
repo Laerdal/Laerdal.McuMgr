@@ -105,7 +105,7 @@
             <Laerdal_Version_Script_Filepath Condition="   '$(Laerdal_Version_Script_Filepath)'  == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.Version.sh`))</Laerdal_Version_Script_Filepath>
             <Laerdal_Version_Details_Filepath Condition="  '$(Laerdal_Version_Details_Filepath)' == '' ">$([System.IO.Path]::Combine($(PackageOutputPath), `version.txt`))</Laerdal_Version_Details_Filepath>
 
-            <Laerdal_Version_Major Condition="       '$(Laerdal_Version_Major)'       == '' ">2</Laerdal_Version_Major>
+            <Laerdal_Version_Major Condition="       '$(Laerdal_Version_Major)'       == '' ">3</Laerdal_Version_Major>
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
             <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
