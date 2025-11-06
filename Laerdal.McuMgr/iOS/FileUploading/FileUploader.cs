@@ -137,6 +137,7 @@ namespace Laerdal.McuMgr.FileUploading
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
+                ELogLevel? minimumLogLevel = null,
                 int? initialMtuSize = null,
                 int? pipelineDepth = null, //    ios only
                 int? byteAlignment = null, //    ios only
@@ -150,6 +151,7 @@ namespace Laerdal.McuMgr.FileUploading
                     data: nsDataOfFileToUpload,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    //minimumLogLevel: (int) (minimumLogLevel ?? ELogLevel.Error), //todo
 
                     pipelineDepth: pipelineDepth ?? -1,
                     byteAlignment: byteAlignment ?? -1,
