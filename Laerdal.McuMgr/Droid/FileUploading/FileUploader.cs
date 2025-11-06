@@ -143,11 +143,17 @@ namespace Laerdal.McuMgr.FileUploading
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
-                    //minimumLogLevel: (int) (minimumLogLevel ?? ELogLevel.Error),
+                    minimumLogLevelNumeric: (int) (minimumLogLevel ?? ELogLevel.Error),
                     initialMtuSize: initialMtuSize ?? -1,
                     windowCapacity: windowCapacity ?? -1,
                     memoryAlignment: memoryAlignment ?? -1
                 ));
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel)
+            {
+                return base.TrySetMinimumLogLevel((int) minimumLogLevel);
             }
             
             // ReSharper disable once RedundantOverriddenMember

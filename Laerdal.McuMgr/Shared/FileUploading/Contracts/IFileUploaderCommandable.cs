@@ -39,7 +39,8 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
         /// <param name="sleepTimeBetweenUploadsInMs">The time to sleep, in milliseconds, between successful uploads. Defaults to zero.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep, in milliseconds, between each retry after a failed try. Defaults to 100ms.</param>
-        /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
+        /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the
+        /// mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="timeoutPerUploadInMs">The amount of time to wait for each upload to complete before bailing out.</param>
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
@@ -181,6 +182,11 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int?        windowCapacity  = null, // android
             int?        memoryAlignment = null // android
         ); //@formatter:on
+
+        /// <summary>Sets the minimum log level for the ongoing download operation</summary>
+        /// <param name="minimumLogLevel">The minimum log level to set</param>
+        /// <returns>Always returns true</returns>
+        bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel);
         
         /// <summary>
         /// Scraps the current transport. This is useful in case the transport is in a bad state and needs to be restarted.

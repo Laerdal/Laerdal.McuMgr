@@ -4,6 +4,8 @@ import CoreBluetooth
 // @objc(IOSFileUploadX)
 public class IOSFileUploader: NSObject {
 
+    private var _minimumLogLevel: McuMgrLogLevel = .error
+
     private let _listener: IOSListenerForFileUploader!
     private var _transporter: McuMgrBleTransport!
     private var _cbPeripheral: CBPeripheral!
@@ -49,13 +51,13 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func nativeDispose() {
-        tryInvalidateCachedInfrastructure() //doesnt throw
+        _ = tryInvalidateCachedInfrastructure() //doesnt throw
     }
 
     @objc
     public func tryInvalidateCachedInfrastructure() -> Bool { // must be public
-        var success1 = tryDisposeFilesystemManager() // order
-        var success2 = tryDisposeTransport() //         order
+        let success1 = tryDisposeFilesystemManager() // order
+        let success2 = tryDisposeTransport() //         order
 
         return success1 && success2
     }
@@ -65,6 +67,7 @@ public class IOSFileUploader: NSObject {
             _ resourceId: String,
             _ remoteFilePath: String,
             _ data: Data?,
+            _ minimumLogLevelNumeric: Int,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
             _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
@@ -127,8 +130,10 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+
         resetState() //order
-        tryDisposeFilesystemManager() //00 vital hack
+        _ = tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
@@ -169,7 +174,7 @@ public class IOSFileUploader: NSObject {
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
     }
-    
+
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
         if (alignment <= 0) {
             return .disabled;
@@ -187,6 +192,13 @@ public class IOSFileUploader: NSObject {
         default:
             return nil
         }
+    }
+
+    @objc
+    public func trySetMinimumLogLevel(_ minimumLogLevelNumeric: Int) -> Bool {
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+
+        return true
     }
 
     @objc
@@ -578,6 +590,10 @@ extension IOSFileUploader: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
+        if (level < _minimumLogLevel) {
+            return
+        }
+
         logInBg(msg, level, category.rawValue)
     }
 }
