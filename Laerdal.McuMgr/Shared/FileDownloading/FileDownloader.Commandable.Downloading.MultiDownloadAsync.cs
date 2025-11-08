@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileDownloading.Contracts;
 using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
@@ -19,6 +20,8 @@ namespace Laerdal.McuMgr.FileDownloading
             int maxTriesPerDownload             = IFileDownloaderCommandable.Defaults.MaxTriesPerDownload,
             int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
+            
+            ELogLevel? minimumLogLevel          = null,
 
             int? initialMtuSize                 = null,
             int? windowCapacity                 = null,
@@ -61,6 +64,8 @@ namespace Laerdal.McuMgr.FileDownloading
                             remoteFilePath: path,
                             hostDeviceModel: hostDeviceModel,
                             hostDeviceManufacturer: hostDeviceManufacturer,
+                            
+                            minimumLogLevel: minimumLogLevel,
 
                             maxTriesCount: maxTriesPerDownload,
                             timeoutForDownloadInMs: timeoutPerDownloadInMs,

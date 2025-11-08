@@ -183,7 +183,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int?        memoryAlignment = null // android
         ); //@formatter:on
 
-        /// <summary>Sets the minimum log level for the ongoing download operation</summary>
+        /// <summary>Sets the minimum log level for the ongoing uploading operation</summary>
         /// <param name="minimumLogLevel">The minimum log level to set</param>
         /// <returns>Always returns true</returns>
         bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel);

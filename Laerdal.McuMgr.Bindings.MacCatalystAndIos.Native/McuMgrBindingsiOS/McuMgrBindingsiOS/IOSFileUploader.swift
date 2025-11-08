@@ -413,6 +413,10 @@ public class IOSFileUploader: NSObject {
     private static let DefaultLogCategory = "FileUploader";
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
+        if (level < _minimumLogLevel) {
+            return
+        }
+
         let resourceIdSnapshot = _resourceId
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
             self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, resourceIdSnapshot)
@@ -420,6 +424,10 @@ public class IOSFileUploader: NSObject {
     }
 
     private func log(_ message: String, _ level: McuMgrLogLevel) {
+        if (level < _minimumLogLevel) {
+            return
+        }
+
         self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, _resourceId)
     }
 
@@ -590,10 +598,6 @@ extension IOSFileUploader: McuMgrLogDelegate {
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,
             atLevel level: iOSMcuManagerLibrary.McuMgrLogLevel
     ) {
-        if (level < _minimumLogLevel) {
-            return
-        }
-
         logInBg(msg, level, category.rawValue)
     }
 }

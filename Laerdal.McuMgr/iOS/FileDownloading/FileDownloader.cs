@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using CoreBluetooth;
 using Foundation;
 using Laerdal.McuMgr.Common;
@@ -100,6 +101,11 @@ namespace Laerdal.McuMgr.FileDownloading
                 //_nativeFileDownloader = null;     @formatter:on
             }
             
+            public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel)
+            {
+                return _nativeFileDownloader?.TrySetMinimumLogLevel((int) minimumLogLevel) ?? true; //just return true even if we have no native uploader
+            }
+
             public bool TrySetContext(object context)
             {
                 return true; //nothing to do in ios   only android needs this and supports it
@@ -131,14 +137,12 @@ namespace Laerdal.McuMgr.FileDownloading
             public bool TryCancel(string reason = "") => _nativeFileDownloader?.TryCancel(reason) ?? false;
             public bool TryDisconnect() => _nativeFileDownloader?.TryDisconnect() ?? false;
 
-            public EFileDownloaderVerdict NativeBeginDownload(
-                string remoteFilePath,
-                int? initialMtuSize = null
-            )
+            public EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumLogLevel = null, int? initialMtuSize = null)
             {
                 return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(
                     remoteFilePath: remoteFilePath,
-                    initialMtuSize: initialMtuSize ?? -1
+                    initialMtuSize: initialMtuSize ?? -1,
+                    minimumLogLevelNumeric: (int) (minimumLogLevel ?? ELogLevel.Error)
                 ));
             }
 
