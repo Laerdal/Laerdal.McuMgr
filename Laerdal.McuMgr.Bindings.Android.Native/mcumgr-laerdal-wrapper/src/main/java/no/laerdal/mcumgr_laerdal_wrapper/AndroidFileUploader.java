@@ -18,6 +18,8 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFileUploader
 {
+    private EAndroidLoggingLevel _minimumLogLevel = EAndroidLoggingLevel.Error;
+
     private Context _context;
     private BluetoothDevice _bluetoothDevice;
 
@@ -106,6 +108,7 @@ public class AndroidFileUploader
             final String resourceId,
             final String remoteFilePath,
             final byte[] data,
+            final int minimumLogLevelNumeric,
             final int initialMtuSize,
             final int windowCapacity,
             final int memoryAlignment
@@ -131,6 +134,8 @@ public class AndroidFileUploader
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
+
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
 
         _resourceId = resourceId;
         _remoteFilePathSanitized = remoteFilePath.trim();
@@ -204,6 +209,13 @@ public class AndroidFileUploader
 
         //00   file-uploader is the new improved way of performing the file upload   it makes use of the window uploading mechanism
         //     aka sending multiple packets without waiting for the response
+    }
+
+    public boolean trySetMinimumLogLevel(final int minimumLogLevelNumeric)
+    {
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
+
+        return true;
     }
 
     private void resetUploadState()
@@ -633,12 +645,18 @@ public class AndroidFileUploader
     private final String DefaultLogCategory = "FileUploader";
     private void logInBg(final String message, final EAndroidLoggingLevel level)
     {
+        if (level.ordinal() < _minimumLogLevel.ordinal())
+            return;
+
         String resourceIdSnapshot = _resourceId; //snapshot
         fireAndForgetInTheBg(() -> logMessageAdvertisement(message, DefaultLogCategory, level.toString(), resourceIdSnapshot));
     }
 
     public void log(final String message, final EAndroidLoggingLevel level)
     {
+        if (level.ordinal() < _minimumLogLevel.ordinal())
+            return;
+
         logMessageAdvertisement(message, DefaultLogCategory, level.toString(), _resourceId);
     }
 

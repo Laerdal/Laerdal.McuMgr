@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploading;
 using Laerdal.McuMgr.FileUploading.Contracts.Enums;
 using Laerdal.McuMgr.FileUploading.Contracts.Native;
@@ -66,6 +67,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 string resourceId,
                 string remoteFilePath,
 
+                ELogLevel? minimumLogLevel = null,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only

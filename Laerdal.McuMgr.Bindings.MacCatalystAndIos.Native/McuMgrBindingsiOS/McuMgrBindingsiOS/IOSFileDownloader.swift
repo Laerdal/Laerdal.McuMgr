@@ -4,6 +4,8 @@ import CoreBluetooth
 // @objc(IOSFileDownloadX)
 public class IOSFileDownloader: NSObject {
 
+    private var _minimumLogLevel: McuMgrLogLevel = .error
+
     private var _listener: IOSListenerForFileDownloader!
     private var _transporter: McuMgrBleTransport!
     private var _cbPeripheral: CBPeripheral!
@@ -76,7 +78,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func beginDownload(_ remoteFilePath: String, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
+    public func beginDownload(_ remoteFilePath: String, _ minimumLogLevelNumeric: Int, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("[IOSFD.BD.010] Another download is already in progress")
 
@@ -101,6 +103,8 @@ public class IOSFileDownloader: NSObject {
 
             return .failedInvalidSettings
         }
+
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
 
         resetState() //order
         tryDisposeFilesystemManager() //00 vital hack
@@ -131,6 +135,13 @@ public class IOSFileDownloader: NSObject {
 
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
+    }
+
+    @objc
+    public func trySetMinimumLogLevel(_ minimumLogLevelNumeric: Int) -> Bool {
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+
+        return true
     }
 
     @objc
@@ -338,6 +349,10 @@ public class IOSFileDownloader: NSObject {
     private static let DefaultLogCategory = "FileUploader";
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
+        if (level < _minimumLogLevel) {
+            return
+        }
+
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
             self._listener.logMessageAdvertisement(message, category, level.name, remoteFilePathSanitizedSnapshot)
@@ -345,6 +360,10 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func log(_ message: String, _ level: McuMgrLogLevel) {
+        if (level < _minimumLogLevel) {
+            return
+        }
+
         self._listener.logMessageAdvertisement(message, IOSFileDownloader.DefaultLogCategory, level.name, _remoteFilePathSanitized)
     }
 

@@ -20,6 +20,8 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFileDownloader
 {
+    private EAndroidLoggingLevel _minimumLogLevel = EAndroidLoggingLevel.Error;
+
     private Context _context;
     private BluetoothDevice _bluetoothDevice;
 
@@ -101,7 +103,8 @@ public class AndroidFileDownloader
      */
     public EAndroidFileDownloaderVerdict beginDownload(
             final String remoteFilePath,
-            final int initialMtuSize
+            final int initialMtuSize,
+            final int minimumLogLevelNumeric
             // final int windowCapacity, //theoretically nordic firmwares at some point will support this for downloads   but as of Q3 2024 there is no support for this
     )
     {
@@ -147,6 +150,8 @@ public class AndroidFileDownloader
 
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
+
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
 
         try
         {
@@ -341,6 +346,13 @@ public class AndroidFileDownloader
 
         setState(EAndroidFileDownloaderState.NONE);
         setBusyState(false);
+    }
+
+    public boolean trySetMinimumLogLevel(final int minimumLogLevelNumeric)
+    {
+        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
+
+        return true;
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize)
@@ -611,6 +623,9 @@ public class AndroidFileDownloader
     private final String DefaultLogCategory = "FileDownloader";
     private void logInBg(final String message, final EAndroidLoggingLevel level)
     {
+        if (level.ordinal() < _minimumLogLevel.ordinal())
+            return;
+
         String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //snapshot
 
         fireAndForgetInTheBg(() -> logMessageAdvertisement(message, DefaultLogCategory, level.toString(), remoteFilePathSanitizedSnapshot));
@@ -619,6 +634,9 @@ public class AndroidFileDownloader
     @Contract(pure = true) //wrapper utility method so that we will not have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
     private void log(final String message, final EAndroidLoggingLevel level)
     {
+        if (level.ordinal() < _minimumLogLevel.ordinal())
+            return;
+
         logMessageAdvertisement(message, DefaultLogCategory, level.toString(), _remoteFilePathSanitized);
     }
 
