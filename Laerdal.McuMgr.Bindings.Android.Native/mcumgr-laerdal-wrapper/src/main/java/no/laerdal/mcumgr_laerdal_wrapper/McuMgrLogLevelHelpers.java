@@ -6,9 +6,9 @@ import io.runtime.mcumgr.response.HasReturnCode;
 
 final class McuMgrLogLevelHelpers
 {
-    public static EAndroidLoggingLevel translateLogLevel(final int minimumLogLevelNumeric)
+    public static EAndroidLoggingLevel translateLogLevel(final int minimumNativeLogLevelNumeric)
     {
-        switch (minimumLogLevelNumeric)
+        switch (minimumNativeLogLevelNumeric)
         {
             case 0:
                 return EAndroidLoggingLevel.Debug;

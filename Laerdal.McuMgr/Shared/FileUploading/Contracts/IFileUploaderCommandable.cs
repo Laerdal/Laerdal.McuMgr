@@ -45,7 +45,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// <param name="maxTriesPerUpload">Maximum amount of tries per upload before bailing out. In case of errors the mechanism will try "maxTriesPerUpload" before bailing out.</param>
         /// <param name="moveToNextUploadInCaseOfError">If set to 'true' (which is the default) the mechanism will move to the next file to upload whenever a particular file fails to be uploaded despite all retries</param>
         /// <param name="autodisposeStreams">If set to 'true' the mechanism will dispose of the data-streams after they have been read into their respective byte arrays (default is 'false').</param>
-        /// <param name="minimumLogLevel">The minimum log-level required to greenlit for bubbling up the logs emitted by the uploader during the upload process. Defaults to 'ELogLevel.Error'.</param>
+        /// <param name="minimumNativeLogLevel">The minimum log-level required to greenlit for bubbling up the logs emitted by the uploader during the upload process. Defaults to 'ELogLevel.Error'.</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -75,7 +75,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int        maxTriesPerUpload               = Defaults.MaxTriesPerUpload,
             bool       moveToNextUploadInCaseOfError   = Defaults.MoveToNextUploadInCaseOfError,
             bool       autodisposeStreams              = Defaults.AutodisposeStreams,
-            ELogLevel? minimumLogLevel                 = null,
+            ELogLevel? minimumNativeLogLevel                 = null,
             
             int? initialMtuSize = null,
             int? pipelineDepth = null,
@@ -103,7 +103,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// <param name="sleepTimeBetweenRetriesInMs">The time to sleep between each retry after a failed try.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
         /// <param name="autodisposeStream">If set to 'true' the mechanism will dispose of the data-stream after it has been read into a byte array (default is 'false').</param>
-        /// <param name="minimumLogLevel">The minimum log-level required to greenlit for bubbling up the logs emitted by the uploader during the upload process. Defaults to 'ELogLevel.Error'.</param>
+        /// <param name="minimumNativeLogLevel">The minimum log-level required to greenlit for bubbling up the logs emitted by the uploader during the upload process. Defaults to 'ELogLevel.Error'.</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -134,7 +134,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int         sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
             int         gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
             bool        autodisposeStream               = Defaults.AutodisposeStreams,
-            ELogLevel?  minimumLogLevel                 = null,
+            ELogLevel?  minimumNativeLogLevel                 = null,
             
             int? initialMtuSize  = null,
             int? pipelineDepth   = null,
@@ -151,7 +151,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         /// <param name="remoteFilePath">The remote file-path to upload the data to</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
-        /// <param name="minimumLogLevel">The minimum log-level required to greenlit for bubbling up the logs emitted by the uploader during the upload process. Defaults to 'ELogLevel.Error'.</param>
+        /// <param name="minimumNativeLogLevel">The minimum log-level required to greenlit for bubbling up the logs emitted by the uploader during the upload process. Defaults to 'ELogLevel.Error'.</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -175,7 +175,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            ELogLevel?  minimumLogLevel = null,
+            ELogLevel?  minimumNativeLogLevel = null,
             int?        initialMtuSize  = null,
             int?        pipelineDepth   = null, //  ios
             int?        byteAlignment   = null, //  ios
@@ -184,9 +184,9 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
         ); //@formatter:on
 
         /// <summary>Sets the minimum log level for the ongoing uploading operation</summary>
-        /// <param name="minimumLogLevel">The minimum log level to set</param>
+        /// <param name="minimumNativeLogLevel">The minimum log level to set</param>
         /// <returns>Always returns true</returns>
-        bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel);
+        bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel);
         
         /// <summary>
         /// Scraps the current transport. This is useful in case the transport is in a bad state and needs to be restarted.

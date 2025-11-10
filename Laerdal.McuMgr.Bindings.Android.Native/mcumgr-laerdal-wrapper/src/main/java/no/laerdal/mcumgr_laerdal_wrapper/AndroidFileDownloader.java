@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFileDownloader
 {
-    private EAndroidLoggingLevel _minimumLogLevel = EAndroidLoggingLevel.Error;
+    private EAndroidLoggingLevel _minimumNativeLogLevel = EAndroidLoggingLevel.Error;
 
     private Context _context;
     private BluetoothDevice _bluetoothDevice;
@@ -104,7 +104,7 @@ public class AndroidFileDownloader
     public EAndroidFileDownloaderVerdict beginDownload(
             final String remoteFilePath,
             final int initialMtuSize,
-            final int minimumLogLevelNumeric
+            final int minimumNativeLogLevelNumeric
             // final int windowCapacity, //theoretically nordic firmwares at some point will support this for downloads   but as of Q3 2024 there is no support for this
     )
     {
@@ -151,7 +151,7 @@ public class AndroidFileDownloader
             return EAndroidFileDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
 
         try
         {
@@ -348,9 +348,9 @@ public class AndroidFileDownloader
         setBusyState(false);
     }
 
-    public boolean trySetMinimumLogLevel(final int minimumLogLevelNumeric)
+    public boolean trySetMinimumNativeLogLevel(final int minimumNativeLogLevelNumeric)
     {
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
 
         return true;
     }
@@ -623,7 +623,7 @@ public class AndroidFileDownloader
     private final String DefaultLogCategory = "FileDownloader";
     private void logInBg(final String message, final EAndroidLoggingLevel level)
     {
-        if (level.ordinal() < _minimumLogLevel.ordinal())
+        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
             return;
 
         String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //snapshot
@@ -634,7 +634,7 @@ public class AndroidFileDownloader
     @Contract(pure = true) //wrapper utility method so that we will not have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
     private void log(final String message, final EAndroidLoggingLevel level)
     {
-        if (level.ordinal() < _minimumLogLevel.ordinal())
+        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
             return;
 
         logMessageAdvertisement(message, DefaultLogCategory, level.toString(), _remoteFilePathSanitized);

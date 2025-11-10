@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
             public virtual EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
-                ELogLevel? minimumLogLevel = null,
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null
             )
             {
@@ -111,7 +111,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             
             public virtual bool TryCancel(string reason = "") => CancelCalled = true;
             
-            public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel) => true; //nothing to mock here really
+            public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel) => true; //nothing to mock here really
 
             public virtual bool TryDisconnect() => DisconnectCalled = true;
 

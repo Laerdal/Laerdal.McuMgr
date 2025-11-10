@@ -101,9 +101,9 @@ namespace Laerdal.McuMgr.FileDownloading
                 //_nativeFileDownloader = null;     @formatter:on
             }
             
-            public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel)
+            public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel)
             {
-                return _nativeFileDownloader?.TrySetMinimumLogLevel((int) minimumLogLevel) ?? true; //just return true even if we have no native uploader
+                return _nativeFileDownloader?.TrySetMinimumNativeLogLevel((int) minimumNativeLogLevel) ?? true; //just return true even if we have no native uploader
             }
 
             public bool TrySetContext(object context)
@@ -137,12 +137,12 @@ namespace Laerdal.McuMgr.FileDownloading
             public bool TryCancel(string reason = "") => _nativeFileDownloader?.TryCancel(reason) ?? false;
             public bool TryDisconnect() => _nativeFileDownloader?.TryDisconnect() ?? false;
 
-            public EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumLogLevel = null, int? initialMtuSize = null)
+            public EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             {
                 return TranslateFileDownloaderVerdict(_nativeFileDownloader.BeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize ?? -1,
-                    minimumLogLevelNumeric: (int) (minimumLogLevel ?? ELogLevel.Error)
+                    minimumNativeLogLevelNumeric: (int) (minimumNativeLogLevel ?? ELogLevel.Error)
                 ));
             }
 

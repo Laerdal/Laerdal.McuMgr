@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFileUploader
 {
-    private EAndroidLoggingLevel _minimumLogLevel = EAndroidLoggingLevel.Error;
+    private EAndroidLoggingLevel _minimumNativeLogLevel = EAndroidLoggingLevel.Error;
 
     private Context _context;
     private BluetoothDevice _bluetoothDevice;
@@ -108,7 +108,7 @@ public class AndroidFileUploader
             final String resourceId,
             final String remoteFilePath,
             final byte[] data,
-            final int minimumLogLevelNumeric,
+            final int minimumNativeLogLevelNumeric,
             final int initialMtuSize,
             final int windowCapacity,
             final int memoryAlignment
@@ -135,7 +135,7 @@ public class AndroidFileUploader
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
 
         _resourceId = resourceId;
         _remoteFilePathSanitized = remoteFilePath.trim();
@@ -211,9 +211,9 @@ public class AndroidFileUploader
         //     aka sending multiple packets without waiting for the response
     }
 
-    public boolean trySetMinimumLogLevel(final int minimumLogLevelNumeric)
+    public boolean trySetMinimumNativeLogLevel(final int minimumNativeLogLevelNumeric)
     {
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric);
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
 
         return true;
     }
@@ -645,7 +645,7 @@ public class AndroidFileUploader
     private final String DefaultLogCategory = "FileUploader";
     private void logInBg(final String message, final EAndroidLoggingLevel level)
     {
-        if (level.ordinal() < _minimumLogLevel.ordinal())
+        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
             return;
 
         String resourceIdSnapshot = _resourceId; //snapshot
@@ -654,7 +654,7 @@ public class AndroidFileUploader
 
     public void log(final String message, final EAndroidLoggingLevel level)
     {
-        if (level.ordinal() < _minimumLogLevel.ordinal())
+        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
             return;
 
         logMessageAdvertisement(message, DefaultLogCategory, level.toString(), _resourceId);

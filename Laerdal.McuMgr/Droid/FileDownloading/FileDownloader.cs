@@ -118,9 +118,9 @@ namespace Laerdal.McuMgr.FileDownloading
             #region commands
             
             // ReSharper disable once RedundantOverriddenMember
-            public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel)
+            public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel)
             {
-                return base.TrySetMinimumLogLevel((int) minimumLogLevel);
+                return base.TrySetMinimumNativeLogLevel((int) minimumNativeLogLevel);
             }
             
             // ReSharper disable once RedundantOverriddenMember
@@ -150,14 +150,14 @@ namespace Laerdal.McuMgr.FileDownloading
 
             public EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
-                ELogLevel? minimumLogLevel = null,
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null //  android only
             )
             {
                 return TranslateFileDownloaderVerdict(base.BeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize ?? -1,
-                    minimumLogLevelNumeric: (int) (minimumLogLevel ?? ELogLevel.Error)
+                    minimumNativeLogLevelNumeric: (int) (minimumNativeLogLevel ?? ELogLevel.Error)
                 ));
             }
             

@@ -9,13 +9,13 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         bool TryResume();
         bool TryCancel(string reason = "");
         bool TryDisconnect();
-        bool TrySetMinimumLogLevel(ELogLevel level);
+        bool TrySetMinimumNativeLogLevel(ELogLevel level);
 
         EFileUploaderVerdict NativeBeginUpload(
             byte[] data,
             string resourceId,
             string remoteFilePath,
-            ELogLevel? minimumLogLevel = null,
+            ELogLevel? minimumNativeLogLevel = null,
             int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,
