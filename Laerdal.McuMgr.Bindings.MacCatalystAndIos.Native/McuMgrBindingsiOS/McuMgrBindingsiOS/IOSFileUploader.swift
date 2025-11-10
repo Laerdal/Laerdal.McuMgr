@@ -4,7 +4,7 @@ import CoreBluetooth
 // @objc(IOSFileUploadX)
 public class IOSFileUploader: NSObject {
 
-    private var _minimumLogLevel: McuMgrLogLevel = .error
+    private var _minimumNativeLogLevel: McuMgrLogLevel = .error
 
     private let _listener: IOSListenerForFileUploader!
     private var _transporter: McuMgrBleTransport!
@@ -67,7 +67,7 @@ public class IOSFileUploader: NSObject {
             _ resourceId: String,
             _ remoteFilePath: String,
             _ data: Data?,
-            _ minimumLogLevelNumeric: Int,
+            _ minimumNativeLogLevelNumeric: Int,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
             _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
@@ -130,7 +130,7 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
 
         resetState() //order
         _ = tryDisposeFilesystemManager() //00 vital hack
@@ -195,8 +195,8 @@ public class IOSFileUploader: NSObject {
     }
 
     @objc
-    public func trySetMinimumLogLevel(_ minimumLogLevelNumeric: Int) -> Bool {
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+    public func trySetMinimumNativeLogLevel(_ minimumNativeLogLevelNumeric: Int) -> Bool {
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
 
         return true
     }
@@ -413,7 +413,7 @@ public class IOSFileUploader: NSObject {
     private static let DefaultLogCategory = "FileUploader";
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
-        if (level < _minimumLogLevel) {
+        if (level < _minimumNativeLogLevel) {
             return
         }
 
@@ -424,7 +424,7 @@ public class IOSFileUploader: NSObject {
     }
 
     private func log(_ message: String, _ level: McuMgrLogLevel) {
-        if (level < _minimumLogLevel) {
+        if (level < _minimumNativeLogLevel) {
             return
         }
 

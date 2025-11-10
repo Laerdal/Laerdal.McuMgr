@@ -4,7 +4,7 @@ import CoreBluetooth
 // @objc(IOSFileDownloadX)
 public class IOSFileDownloader: NSObject {
 
-    private var _minimumLogLevel: McuMgrLogLevel = .error
+    private var _minimumNativeLogLevel: McuMgrLogLevel = .error
 
     private var _listener: IOSListenerForFileDownloader!
     private var _transporter: McuMgrBleTransport!
@@ -78,7 +78,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func beginDownload(_ remoteFilePath: String, _ minimumLogLevelNumeric: Int, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
+    public func beginDownload(_ remoteFilePath: String, _ minimumNativeLogLevelNumeric: Int, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("[IOSFD.BD.010] Another download is already in progress")
 
@@ -104,7 +104,7 @@ public class IOSFileDownloader: NSObject {
             return .failedInvalidSettings
         }
 
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
 
         resetState() //order
         _ = tryDisposeFilesystemManager() //00 vital hack
@@ -138,8 +138,8 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func trySetMinimumLogLevel(_ minimumLogLevelNumeric: Int) -> Bool {
-        _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
+    public func trySetMinimumNativeLogLevel(_ minimumNativeLogLevelNumeric: Int) -> Bool {
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
 
         return true
     }
@@ -349,7 +349,7 @@ public class IOSFileDownloader: NSObject {
     private static let DefaultLogCategory = "FileUploader";
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
-        if (level < _minimumLogLevel) {
+        if (level < _minimumNativeLogLevel) {
             return
         }
 
@@ -360,7 +360,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     private func log(_ message: String, _ level: McuMgrLogLevel) {
-        if (level < _minimumLogLevel) {
+        if (level < _minimumNativeLogLevel) {
             return
         }
 

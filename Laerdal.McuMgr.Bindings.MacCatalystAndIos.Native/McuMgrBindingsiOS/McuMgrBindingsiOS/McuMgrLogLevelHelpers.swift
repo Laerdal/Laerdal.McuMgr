@@ -2,8 +2,8 @@ import Foundation
 import iOSMcuManagerLibrary
 
 internal class McuMgrLogLevelHelpers {
-    internal static func translateLogLevel(_ minimumLogLevelNumeric: Int) -> McuMgrLogLevel {
-        switch minimumLogLevelNumeric {
+    internal static func translateLogLevel(_ minimumNativeLogLevelNumeric: Int) -> McuMgrLogLevel {
+        switch minimumNativeLogLevelNumeric {
         case 0:
             return .debug
         case 1:

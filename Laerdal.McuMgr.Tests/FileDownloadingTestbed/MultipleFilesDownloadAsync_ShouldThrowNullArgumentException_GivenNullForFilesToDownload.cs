@@ -47,7 +47,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             {
             }
 
-            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumLogLevel = null, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             {
                 base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,

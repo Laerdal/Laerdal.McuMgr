@@ -35,7 +35,7 @@ namespace Laerdal.McuMgr.FileUploading
             int        sleepTimeBetweenRetriesInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int        gracefulCancellationTimeoutInMs = IFileUploaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
             bool       autodisposeStream               = IFileUploaderCommandable.Defaults.AutodisposeStreams,
-            ELogLevel? minimumLogLevel                 = null,
+            ELogLevel? minimumNativeLogLevel                 = null,
             
             int? pipelineDepth   = null,
             int? byteAlignment   = null,
@@ -61,7 +61,7 @@ namespace Laerdal.McuMgr.FileUploading
                     maxTriesCount: maxTriesCount,
                     timeoutForUploadInMs: timeoutForUploadInMs,
 
-                    minimumLogLevel: minimumLogLevel,
+                    minimumNativeLogLevel: minimumNativeLogLevel,
                     autodisposeStream: autodisposeStream,
                     
                     sleepTimeBetweenRetriesInMs: sleepTimeBetweenRetriesInMs,
@@ -93,7 +93,7 @@ namespace Laerdal.McuMgr.FileUploading
             int sleepTimeBetweenRetriesInMs, //     = Defaults.SleepTimeBetweenRetriesInMs
             int gracefulCancellationTimeoutInMs, // = Defaults.GracefulCancellationTimeoutInMs
             bool autodisposeStream, //              = Defaults.AutodisposeStreams
-            ELogLevel? minimumLogLevel, //          = null
+            ELogLevel? minimumNativeLogLevel, //          = null
 
             int? pipelineDepth, //                  = null,
             int? byteAlignment, //                  = null,
@@ -178,7 +178,7 @@ namespace Laerdal.McuMgr.FileUploading
                         hostDeviceManufacturer: hostDeviceManufacturer,
 
                         initialMtuSize: initialMtuSize,
-                        minimumLogLevel: minimumLogLevel,
+                        minimumNativeLogLevel: minimumNativeLogLevel,
 
                         pipelineDepth: pipelineDepth, //      ios only
                         windowCapacity: windowCapacity, //    ios only

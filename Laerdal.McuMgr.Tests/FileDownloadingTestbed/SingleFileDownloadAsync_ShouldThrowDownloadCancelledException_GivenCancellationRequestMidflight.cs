@@ -118,7 +118,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 //     a best effort basis and this is exactly what we are testing here
             }
 
-            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumLogLevel = null, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 

@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.FileUploading
             int         maxTriesPerUpload               = IFileUploaderCommandable.Defaults.MaxTriesPerUpload,
             bool        moveToNextUploadInCaseOfError   = IFileUploaderCommandable.Defaults.MoveToNextUploadInCaseOfError,
             bool        autodisposeStreams              = IFileUploaderCommandable.Defaults.AutodisposeStreams,
-            ELogLevel?  minimumLogLevel                 = null,
+            ELogLevel?  minimumNativeLogLevel                 = null,
 
             int? initialMtuSize = null,
             int? pipelineDepth = null,
@@ -82,7 +82,7 @@ namespace Laerdal.McuMgr.FileUploading
                             gracefulCancellationTimeoutInMs: gracefulCancellationTimeoutInMs,
 
                             autodisposeStream: autodisposeStreams,
-                            minimumLogLevel: minimumLogLevel,
+                            minimumNativeLogLevel: minimumNativeLogLevel,
 
                             initialMtuSize: initialMtuSize, //    both ios and android
                             pipelineDepth: pipelineDepth, //      ios only

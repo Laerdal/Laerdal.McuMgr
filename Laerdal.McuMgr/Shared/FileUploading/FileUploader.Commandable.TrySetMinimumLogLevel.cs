@@ -7,9 +7,9 @@ namespace Laerdal.McuMgr.FileUploading
 {
     public partial class FileUploader
     {
-        public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel)
+        public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel)
         {
-            return NativeFileUploaderProxy?.TrySetMinimumLogLevel(minimumLogLevel) ?? true;
+            return NativeFileUploaderProxy?.TrySetMinimumNativeLogLevel(minimumNativeLogLevel) ?? true;
         }
     }
 }

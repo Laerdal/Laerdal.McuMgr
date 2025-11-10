@@ -39,7 +39,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
-                ELogLevel? minimumLogLevel = null,
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null,
                 int? pipelineDepth = null, //   ios
                 int? byteAlignment = null, //   ios
@@ -74,7 +74,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                        || CurrentState == EFileUploaderState.Cancelled;
             }
 
-            public bool TrySetMinimumLogLevel(ELogLevel level)
+            public bool TrySetMinimumNativeLogLevel(ELogLevel level)
             {
                 return true; //nothing to mock here really
             }

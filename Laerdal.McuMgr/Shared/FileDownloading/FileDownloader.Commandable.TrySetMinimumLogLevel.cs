@@ -4,9 +4,9 @@ namespace Laerdal.McuMgr.FileDownloading
 {
     public partial class FileDownloader
     {
-        public bool TrySetMinimumLogLevel(ELogLevel minimumLogLevel)
+        public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel)
         {
-            return NativeFileDownloaderProxy?.TrySetMinimumLogLevel(minimumLogLevel) ?? true;
+            return NativeFileDownloaderProxy?.TrySetMinimumNativeLogLevel(minimumNativeLogLevel) ?? true;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.FileDownloading
             int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
             
-            ELogLevel? minimumLogLevel          = null,
+            ELogLevel? minimumNativeLogLevel          = null,
             
             int? initialMtuSize                 = null,
             int? windowCapacity                 = null
@@ -44,7 +44,7 @@ namespace Laerdal.McuMgr.FileDownloading
                     hostDeviceModel: hostDeviceModel,
                     hostDeviceManufacturer: hostDeviceManufacturer,
                     
-                    minimumLogLevel: minimumLogLevel,
+                    minimumNativeLogLevel: minimumNativeLogLevel,
 
                     maxTriesCount: maxTriesCount,
                     timeoutForDownloadInMs: timeoutForDownloadInMs,
@@ -65,7 +65,7 @@ namespace Laerdal.McuMgr.FileDownloading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
-            ELogLevel? minimumLogLevel,
+            ELogLevel? minimumNativeLogLevel,
             int timeoutForDownloadInMs,
             int maxTriesCount,
             int sleepTimeBetweenRetriesInMs,
@@ -137,7 +137,7 @@ namespace Laerdal.McuMgr.FileDownloading
                         hostDeviceModel: hostDeviceModel,
                         hostDeviceManufacturer: hostDeviceManufacturer,
                         
-                        minimumLogLevel: minimumLogLevel,
+                        minimumNativeLogLevel: minimumNativeLogLevel,
 
                         initialMtuSize: initialMtuSize,
                         windowCapacity: windowCapacity
