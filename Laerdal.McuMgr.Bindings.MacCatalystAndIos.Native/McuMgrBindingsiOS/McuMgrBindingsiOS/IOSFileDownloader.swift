@@ -107,7 +107,7 @@ public class IOSFileDownloader: NSObject {
         _minimumLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumLogLevelNumeric)
 
         resetState() //order
-        tryDisposeFilesystemManager() //00 vital hack
+        _ = tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
