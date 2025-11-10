@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.FileDownloading
             int sleepTimeBetweenRetriesInMs     = IFileDownloaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = IFileDownloaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
             
-            ELogLevel? minimumNativeLogLevel          = null,
+            ELogLevel? minimumNativeLogLevel    = null,
             
             int? initialMtuSize                 = null,
             int? windowCapacity                 = null

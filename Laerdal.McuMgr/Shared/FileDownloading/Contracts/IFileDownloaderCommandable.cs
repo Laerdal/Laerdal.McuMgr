@@ -64,7 +64,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
             int sleepTimeBetweenRetriesInMs      = Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs  = Defaults.GracefulCancellationTimeoutInMs,
             
-            ELogLevel? minimumNativeLogLevel           = null,
+            ELogLevel? minimumNativeLogLevel     = null,
 
             int? initialMtuSize = null,
             int? windowCapacity = null,
@@ -110,7 +110,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
             int sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
             
-            ELogLevel? minimumNativeLogLevel          = null,
+            ELogLevel? minimumNativeLogLevel    = null,
             
             int? initialMtuSize = null,
             int? windowCapacity = null
