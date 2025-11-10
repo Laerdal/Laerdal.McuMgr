@@ -35,7 +35,8 @@ namespace Laerdal.McuMgr.FileUploading
             int        sleepTimeBetweenRetriesInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
             int        gracefulCancellationTimeoutInMs = IFileUploaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
             bool       autodisposeStream               = IFileUploaderCommandable.Defaults.AutodisposeStreams,
-            ELogLevel? minimumNativeLogLevel                 = null,
+            
+            ELogLevel? minimumNativeLogLevel           = null,
             
             int? pipelineDepth   = null,
             int? byteAlignment   = null,
