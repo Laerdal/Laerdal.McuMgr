@@ -83,6 +83,10 @@ Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2
 
 ## ❗️ Salient Points
 
+- **Note that when uploading files to a BLE device it's good to ensure that the remote file-system is resilient against random/abrupt failures. For example Nordic employs "littlefs" which is disruption-resilience.
+  For example it can handle random power failures that can disrupt file-uploads. All file operations have strong copy-on-write guarantees and if power is lost the filesystem will fall back to the last known good
+  state so as to not to suffer from file corruption.**
+
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
