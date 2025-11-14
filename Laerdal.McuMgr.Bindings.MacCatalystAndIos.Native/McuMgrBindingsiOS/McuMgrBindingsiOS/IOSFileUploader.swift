@@ -311,7 +311,7 @@ public class IOSFileUploader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogLevel.warning)
+            logInBg("[IOSFU.TDC.010] Failed to disconnect: '\(ex.localizedDescription)'", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -368,7 +368,7 @@ public class IOSFileUploader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
+            logInBg("[IOSFU.DT.010] Failed to dispose the transport: '\(ex.localizedDescription)'", McuMgrLogLevel.warning)
             return false
         }
     }

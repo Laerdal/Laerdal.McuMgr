@@ -183,7 +183,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
+            onError(.invalidSettings, "[IOSFI.SFUC.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
 
             return nil
         }
