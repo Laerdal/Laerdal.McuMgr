@@ -63,6 +63,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize,
+                    minimumNativeLogLevel: minimumNativeLogLevel,
 
                     pipelineDepth: pipelineDepth, //     ios only
                     byteAlignment: byteAlignment, //     ios only
