@@ -51,7 +51,7 @@ public class IOSFileDownloader: NSObject {
 
     @objc
     public func nativeDispose() {
-        tryInvalidateCachedInfrastructure() //doesnt throw
+        _ = tryInvalidateCachedInfrastructure() //doesnt throw
     }
 
     @objc
@@ -64,7 +64,7 @@ public class IOSFileDownloader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFD.DC.010] Failed to disconnect", McuMgrLogLevel.warning)
+            logInBg("[IOSFD.DC.010] Failed to disconnect: '\(ex.localizedDescription)", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -315,7 +315,7 @@ public class IOSFileDownloader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFD.TDT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
+            logInBg("[IOSFD.TDT.010] Failed to dispose the transport: '\(ex.localizedDescription)'", McuMgrLogLevel.warning)
             return false
         }
     }

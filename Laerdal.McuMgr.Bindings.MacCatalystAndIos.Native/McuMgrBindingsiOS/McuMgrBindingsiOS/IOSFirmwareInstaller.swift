@@ -174,7 +174,7 @@ public class IOSFirmwareInstaller: NSObject {
         do {
             configuration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
 
-            if (pipelineDepth >= 0) {
+            if (pipelineDepth > 0) { // do NOT include zero here   if the depth is set to zero then the operation will hang forever!
                 configuration.pipelineDepth = pipelineDepth
             }
 
@@ -183,7 +183,7 @@ public class IOSFirmwareInstaller: NSObject {
             }
 
         } catch let ex {
-            onError(.invalidSettings, "[IOSFI.BI.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
+            onError(.invalidSettings, "[IOSFI.SFUC.050] Failed to configure the firmware-installer: '\(ex.localizedDescription)")
 
             return nil
         }

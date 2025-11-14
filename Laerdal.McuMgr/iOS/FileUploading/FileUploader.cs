@@ -178,12 +178,12 @@ namespace Laerdal.McuMgr.FileUploading
             public bool TrySetBluetoothDevice(object bluetoothDevice)
             {
                 var iosBluetoothDevice = bluetoothDevice as CBPeripheral ?? throw new ArgumentException($"Expected {nameof(bluetoothDevice)} to be of type {nameof(CBPeripheral)}", nameof(bluetoothDevice));
-                
+
                 return _nativeFileUploader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
             }
 
             public bool TryInvalidateCachedInfrastructure()
-            {               
+            {
                 return _nativeFileUploader?.TryInvalidateCachedInfrastructure() ?? false;
             }
 
