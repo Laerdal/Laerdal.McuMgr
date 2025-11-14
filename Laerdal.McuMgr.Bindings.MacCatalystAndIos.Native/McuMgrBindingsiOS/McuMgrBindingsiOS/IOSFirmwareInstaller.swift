@@ -174,7 +174,7 @@ public class IOSFirmwareInstaller: NSObject {
         do {
             configuration.upgradeMode = try translateFirmwareInstallationMode(mode) //0
 
-            if (pipelineDepth >= 0) {
+            if (pipelineDepth > 0) { // do NOT include zero here   if the depth is set to zero then the operation will hang forever!
                 configuration.pipelineDepth = pipelineDepth
             }
 
