@@ -137,9 +137,9 @@ public class IOSFileUploader: NSObject {
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
-        var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
-        if (pipelineDepth > 0) { // do NOT include zero here   if the depth is set to zero then the operation will hang forever!
-            configuration.pipelineDepth = pipelineDepth
+        let configuration = spawnFileUploadingConfiguration(pipelineDepth, byteAlignmentEnum!)
+        if configuration == nil {
+            return .failedInvalidSettings //no need to log here  the spawn method takes care of logging
         }
 
         setState(.idle)
@@ -149,7 +149,7 @@ public class IOSFileUploader: NSObject {
                 let success = _fileSystemManager?.upload( //order
                         name: _remoteFilePathSanitized,
                         data: data!,
-                        using: configuration,
+                        using: configuration!,
                         delegate: self
                 ) ?? false
                 if !success {
@@ -174,6 +174,30 @@ public class IOSFileUploader: NSObject {
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
     }
+
+    private func spawnFileUploadingConfiguration(
+            _ pipelineDepth: Int,
+            _ byteAlignmentEnum: ImageUploadAlignment
+    ) -> FirmwareUpgradeConfiguration? { // for some weird reason the nordic libs employ the FirmwareUpgradeConfiguration class for the file-uploading aspects    go figure ...
+        do {
+            var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum)
+            if (pipelineDepth > 0) { // do NOT include zero here   if the depth is set to zero then the operation will hang forever!
+                configuration.pipelineDepth = pipelineDepth
+
+                logInBg("[IOSFU.SFUC.010] applied explicit pipeline-depth='\(String(describing: configuration.pipelineDepth))'", McuMgrLogLevel.info)
+            }
+            else {
+                logInBg("[IOSFU.SFUC.020] using pre-set pipeline-depth='\(String(describing: configuration.pipelineDepth))'", McuMgrLogLevel.info)
+            }
+
+            return configuration
+
+        } catch let ex {
+            onError("[IOSFU.SFUC.050] Failed to configure the file-uploader", ex)
+            return nil
+        }
+    }
+
 
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
         if (alignment <= 0) {
