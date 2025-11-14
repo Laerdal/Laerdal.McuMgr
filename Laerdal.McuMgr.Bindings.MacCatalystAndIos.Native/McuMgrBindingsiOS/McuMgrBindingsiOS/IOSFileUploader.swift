@@ -138,7 +138,7 @@ public class IOSFileUploader: NSObject {
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
         var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
-        if (pipelineDepth >= 0) {
+        if (pipelineDepth > 0) { // do NOT include zero here   if the depth is set to zero then the operation will hang forever!
             configuration.pipelineDepth = pipelineDepth
         }
 
