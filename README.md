@@ -482,7 +482,9 @@ private void CleanupDeviceResetter()
 
             MassFileUploaderNumberOfFilesUploadedSuccessfully = 0;
 
-            var remoteFilePathsAndTheirData = _massFileUploadSelectedFileNamesAndTheirRawBytes.ToDictionary(
+             // even though from dotnet5 onwards simple dictionaries preserve the insertion order its better to play it safe and
+             // use frozen (or immutable) dictionaries in order to ensure 100% that your given file-order will be honored indeed
+            var remoteFilePathsAndTheirData = _massFileUploadSelectedFileNamesAndTheirRawBytes.ToFrozenDictionary(
                 keySelector: x => $"{MassFileUploadRemoteTargetFolderPath.TrimEnd('/')}/{x.Key}", //dont use path.combine here   it would be a bad idea
                 elementSelector: x => x.Value
             );

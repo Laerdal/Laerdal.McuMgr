@@ -143,6 +143,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     data: data,
                     resourceId: _resourceId,
                     remoteFilePath: remoteFilePath,
+                    
+                    minimumNativeLogLevel: minimumNativeLogLevel,
 
                     initialMtuSize: initialMtuSize,
 

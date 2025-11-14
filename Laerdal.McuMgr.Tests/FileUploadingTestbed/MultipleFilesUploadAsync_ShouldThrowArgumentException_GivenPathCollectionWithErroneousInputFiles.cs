@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.Common.Enums;
@@ -34,7 +35,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var work = new Func<Task>(async () => await fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
-                remoteFilePathsAndTheirData: remoteFilePaths.ToDictionary(x => x, x => (ResourceId: x, Data: new byte[] { 1 }))
+                remoteFilePathsAndTheirData: remoteFilePaths.ToFrozenDictionary(x => x, x => (ResourceId: x, Data: new byte[] { 1 })) //immutable dictionary preserve insertion order which is highly desirable here!
             ));
 
             // Assert
@@ -74,6 +75,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
+                    minimumNativeLogLevel: minimumNativeLogLevel,
 
                     initialMtuSize: initialMtuSize,
 
