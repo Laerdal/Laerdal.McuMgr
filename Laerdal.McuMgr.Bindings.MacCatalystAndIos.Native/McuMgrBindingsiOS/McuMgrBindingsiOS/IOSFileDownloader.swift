@@ -406,7 +406,7 @@ public class IOSFileDownloader: NSObject {
         return setState(newState, 0, data)
     }
 
-    private func setState(_ newState: EIOSFileDownloaderState, _ totalBytesToBeUploaded: Int = 0, _ data: [UInt8]? = nil) {
+    private func setState(_ newState: EIOSFileDownloaderState, _ totalBytesToBeDownloaded: Int = 0, _ data: [UInt8]? = nil) {
         if (_currentState == .paused && newState == .downloading) {
             return; // after pausing we might still get a quick DOWNLOADING update from the native-layer - we must ignore it
         }
@@ -420,14 +420,14 @@ public class IOSFileDownloader: NSObject {
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized //  order
 
         DispatchQueue.global(qos: .background).async {
-            self._listener.stateChangedAdvertisement(remoteFilePathSanitizedSnapshot, oldState, newState, totalBytesToBeUploaded, data)
+            self._listener.stateChangedAdvertisement(remoteFilePathSanitizedSnapshot, oldState, newState, totalBytesToBeDownloaded, data)
         }
     }
 }
 
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(.downloading)
+        setState(.downloading, fileSize)
         setBusyState(true)
 
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
