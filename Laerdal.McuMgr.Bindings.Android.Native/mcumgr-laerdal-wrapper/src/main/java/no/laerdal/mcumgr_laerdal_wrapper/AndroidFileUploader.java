@@ -102,6 +102,7 @@ public class AndroidFileUploader
      *                        Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
      * @param windowCapacity  specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param minimumNativeLogLevelNumeric sets the minimum log-level for the native-layer logging - see EAndroidLoggingLevel for details
      * @return a verdict indicating whether the file uploading was started successfully or not
      */
     public EAndroidFileUploaderVerdict beginUpload(
