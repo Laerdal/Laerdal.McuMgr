@@ -16,7 +16,7 @@ namespace Laerdal.McuMgr.Common.Extensions
                 var result = memoryStream.ToArray();
                 
                 if (disposeStream)
-                    await stream.DisposeAsync();
+                    await stream.DisposeAsync().ConfigureAwait(false);
                 
                 return result;
             }
@@ -32,7 +32,7 @@ namespace Laerdal.McuMgr.Common.Extensions
             );
 
             if (disposeStream)
-                await stream.DisposeAsync();
+                await stream.DisposeAsync().ConfigureAwait(false);
 
             return tempMemoryStream.ToArray();
         }

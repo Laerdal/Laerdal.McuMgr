@@ -34,7 +34,7 @@ namespace Laerdal.McuMgr.FileDownloading
             {
                 ResetInternalStateTidbits();
 
-                return await DownloadCoreAsync_();
+                return await DownloadCoreAsync_().ConfigureAwait(false);
             }
             finally
             {

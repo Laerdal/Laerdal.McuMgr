@@ -42,7 +42,7 @@ namespace Laerdal.McuMgr.FileUploading
             {
                 ResetInternalStateTidbits();
 
-                return await MultiUploadCoreAsync_();
+                return await MultiUploadCoreAsync_().ConfigureAwait(false);
             }
             finally
             {

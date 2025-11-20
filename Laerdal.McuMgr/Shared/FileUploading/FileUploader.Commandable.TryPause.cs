@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.FileUploading
                 OnFileUploadPaused(new(resourceId: resourceId, remoteFilePath: remoteFilePath)); //                                                  of the native layer
             }
         
-            await KeepGoing.WaitAsync(); //10
+            await KeepGoing.WaitAsync().ConfigureAwait(false); //10
             
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(FileUploader));
