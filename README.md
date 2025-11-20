@@ -434,7 +434,7 @@ private void CleanupDeviceResetter()
             var selectedFilesAndTheirRawBytes = new Dictionary<string, byte[]>(selectedFiles.Length);
             foreach (var x in selectedFiles)
             {
-                using var stream = await x.OpenReadAsync();
+                using var stream = await x.OpenReadAsync().ConfigureAwait(false);
                 using var memoryStream = new MemoryStream();
                 
                 await stream.CopyToAsync(memoryStream);
@@ -735,7 +735,7 @@ private void CleanupDeviceResetter()
 
             // if (shouldRestartScannerAfterInstallation)
             // {
-            //     await Scanner.Instance.StartScanningAsync(); //order
+            //     await Scanner.Instance.StartScanningAsync().ConfigureAwait(false); //order
             // }
         }
 
