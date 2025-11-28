@@ -19,10 +19,10 @@ Read the LICENSE file before you begin.
 
 # Summary
 
-The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|Android|NetStandard' (note: NetStandard is still WIP).
+The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|MacCatalyst|Android|NetStandard' (note: NetStandard is still WIP).
 The goal is to have 'Laerdal.McuMgr' provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for
-iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/) **as long as they run on
-firmware that has been built using 'nRFConnect SDK' or the 'Zephyr SDK'** (devices running on firmware built with the 'nRF5 SDK' however are inherently incompatible!):
+iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/) **as long as they run on firmware that has been built using 'nRFConnect SDK'
+or the 'Zephyr SDK'** (devices running on firmware built with the 'nRF5 SDK' however are inherently incompatible!):
 
 - [IOS-nRF-Connect-Device-Manager](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)
 
@@ -51,9 +51,9 @@ The following types of operations are supported on devices running on Nordic's n
 
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
-      Note: In theaory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the custom firmware being installed in the sense
-      that if the firmware uses more than half of the flash-bank-memory then only a single flask-bank will be available (no backup flash bank). Same if the firmware-devs explicitly
-      disable the 'dual flask-bank' feature programmatically!
+      Note: In theaory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the
+      custom firmware being installed in the sense that if the firmware uses more than half of the flash-bank-memory then only a single
+      flask-bank will be available (no backup flash bank). Same if the firmware-devs explicitly disable the 'dual flask-bank' feature programmatically!
 
 
 ## ✅ Nuget Platform-Support Matrix
@@ -93,21 +93,21 @@ Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2
 
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to
   'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device
-  will revert back to its previous firmware image.**
+  will revert back to its previous firmware image.**<br/><br/>
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
-  in case you try to perform a firmware-upgrade on the desired device.**
+  in case you try to perform a firmware-upgrade on the desired device.**<br/><br/>
 
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
-  to the device.**
+  to the device.**<br/><br/>
 
-- **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
+- **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**<br/><br/>
 
-- **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
+- **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**<br/><br/>
 
-- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.2.** (iPhoneOS SDK 18.3+ are problematic and will cause compilation errors!)
+- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.2.** (iPhoneOS SDK 18.3+ are problematic and will cause compilation errors!)<br/><br/>
 
-  The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better.
+  The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better.<br/><br/>
 
   To grab the old installer of XCode 16.2 go to https://xcodereleases.com/?q=16.2 (better make sure your MacOS is compatible though!)
 
