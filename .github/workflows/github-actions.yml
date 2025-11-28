@@ -60,7 +60,7 @@ jobs:
     steps:
 
       - name: '🔽 Checkout'
-        uses: 'actions/checkout@v5'
+        uses: 'actions/checkout@v6'
         with:
           fetch-tags: true # https://github.com/actions/checkout/issues/1471#issuecomment-1771231294
           fetch-depth: 0
