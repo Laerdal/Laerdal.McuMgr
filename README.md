@@ -2,15 +2,15 @@
 
 ![Platforms](https://img.shields.io/badge/Platforms-_MAUI_|_iOS_|_MacCatalyst_|_Android_-blue.svg)
 
-( other platforms like Windows will only compile but they will throw NotImplemented exceptions at runtime )
+(*) note: other platforms such as Windows will compile but they will throw NotImplemented exceptions at runtime
 
 - Release Build Status (main branch):
 
-  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
+  [![Main: Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 - Beta Build Status (develop branch):
 
-  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
+  [![Develop: Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 
 # Forward Licensing Disclaimer
@@ -51,15 +51,15 @@ The following types of operations are supported on devices running on Nordic's n
 
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
-      Note: In theaory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the
+      Note: In theory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the
       custom firmware being installed in the sense that if the firmware uses more than half of the flash-bank-memory then only a single
-      flask-bank will be available (no backup flash bank). Same if the firmware-devs explicitly disable the 'dual flask-bank' feature programmatically!
+      flash-bank will be available (no backup flash bank). Same if the firmware-devs explicitly disable the 'dual flash-bank' feature programmatically!
 
 
 ## ✅ Nuget Platform-Support Matrix
 
 Note that even though the Laerdal.McuMgr.Bindings.* have been built on dotnet8 using Android-SDK=34 and iPhoneOS-SDK=17.0 the generated nugets have been tested and they do work
-even on Dotnet10-preview7 MAUI-Apps targeting Android-SDK=36 and iOS-SDK=18.5
+even on Dotnet10 MAUI-Apps that target Android-SDK=36 and iOS-SDK=18.5 in the csproj.
 
 | Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0) |
 |-----------|---------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------|   
@@ -69,30 +69,30 @@ even on Dotnet10-preview7 MAUI-Apps targeting Android-SDK=36 and iOS-SDK=18.5
 
 Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0):
 
-| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
-|------------------|----------------|-----------------------|--------------------------|-------------------------|
-| 495 (max)        | 2              | 2                     | ~60                      | Spikes above 100 kb/sec |
-| 495              | 3              | 2                     | ~63.5                    |                         |
-| 495              | 4              | 2                     | ~63.7                    |                         |
-| 495              | 4              | 4                     | ~75.6                    |                         |
-| 80               | 2              | -                     | ~33                      |                         |
-| 80               | 3              | 2                     | ~54.3                    |                         |
-| 80               | 4              | 4                     | ~66.5                    |                         |
-| 250              | 4              | 4                     | ~86                      | Best performance!       |
+| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (KB/s) | Notes                 |
+|------------------|----------------|-----------------------|------------------------|-----------------------|
+| 495 (max)        | 2              | 2                     | ~60                    | Spikes above 100 KB/s |
+| 495              | 3              | 2                     | ~63.5                  |                       |
+| 495              | 4              | 2                     | ~63.7                  |                       |
+| 495              | 4              | 4                     | ~75.6                  |                       |
+| 80               | 2              | -                     | ~33                    |                       |
+| 80               | 3              | 2                     | ~54.3                  |                       |
+| 80               | 4              | 4                     | ~66.5                  |                       |
+| 250              | 4              | 4                     | ~86                    | Best performance!     |
 
 
 ## ❗️ Salient Points
 
 - **Note that when uploading files to a BLE device it's good to ensure that the remote file-system is resilient against random/abrupt failures.
-  For example Nordic employs "littlefs" which is disruption-resilience and it can handle random power failures that can disrupt file-uploads.
+  For example Nordic employs "littlefs" which is disruption-resilient and it can handle random power failures that can disrupt file-uploads.
   All file operations have strong copy-on-write guarantees and if power is lost the filesystem will fall back to the last known good
-  state so as to not to suffer from file corruption.**<br/><br/>
+  state so as not to suffer from file-corruptions.**<br/><br/>
   
   **Side-Note: It's highly advisable that your device-firmware employs version3.1+ of the "littlefs driver" from the Nordic SDK because prior
   versions [are known to suffer from file-corruption issues due to bugs in the "littlefs-driver" itself](https://github.com.mcas.ms/littlefs-project/littlefs/pull/1058)!**<br/><br/>
 
 - **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to
-  'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device
+  'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the device
   will revert back to its previous firmware image.**<br/><br/>
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
@@ -482,7 +482,7 @@ private void CleanupDeviceResetter()
 
         try
         {            
-            _massFileUploader = new FileUploader.FileUploader(/*native ble-device*/);
+            _massFileUploader = new FileUploading.FileUploader(/*native ble-device*/);
 
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: true);
 
@@ -670,7 +670,7 @@ private void CleanupDeviceResetter()
         var bytes = (byte[]?)null;
         try
         {
-            _fileDownloader = new FileUploader(/*native ble-device*/);
+            _fileDownloader = new FileDownloader(/*native ble-device*/);
 
             ToggleSubscriptionsOnSingleFileDownloaderEvents(_fileDownloader, subscribeNotUnsubscribe: true); //  order
             
@@ -979,7 +979,7 @@ git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
+#### 2) Make sure you have .Net8 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
 ```bash
 # cd into the root folder of the repo
