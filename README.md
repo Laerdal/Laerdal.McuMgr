@@ -2,15 +2,15 @@
 
 ![Platforms](https://img.shields.io/badge/Platforms-_MAUI_|_iOS_|_MacCatalyst_|_Android_-blue.svg)
 
-( other platforms like Windows will only compile but they will throw NotImplemented exceptions at runtime )
+(*) note: other platforms such as Windows will compile but they will throw NotImplemented exceptions at runtime
 
 - Release Build Status (main branch):
 
-  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
+  [![Main: Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 - Beta Build Status (develop branch):
 
-  [![Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
+  [![Develop: Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
 
 # Forward Licensing Disclaimer
@@ -19,10 +19,10 @@ Read the LICENSE file before you begin.
 
 # Summary
 
-The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|Android|NetStandard' (note: NetStandard is still WIP).
+The project generates multiple Nugets called 'Laerdal.McuMgr' & 'Laerdal.McuMgr.Bindings.iOS|MacCatalyst|Android|NetStandard' (note: NetStandard is still WIP).
 The goal is to have 'Laerdal.McuMgr' provide an elegant high-level C# abstraction for the native device-managers that Nordic provides us with for
-iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/) **as long as they run on
-firmware that has been built using 'nRFConnect SDK' or the 'Zephyr SDK'** (devices running on firmware built with the 'nRF5 SDK' however are inherently incompatible!):
+iOS and Android respectively to interact with [nRF5x series of BLE chips](https://embeddedcentric.com/nrf5x-soc-overview/) **as long as they run on firmware that has been built using 'nRFConnect SDK'
+or the 'Zephyr SDK'** (devices running on firmware built with the 'nRF5 SDK' however are inherently incompatible!):
 
 - [IOS-nRF-Connect-Device-Manager](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)
 
@@ -51,15 +51,15 @@ The following types of operations are supported on devices running on Nordic's n
 
       Note: The library doesn't support "Windows Desktop" applications (Windows/UWP) just yet (WIP).
 
-      Note: In theaory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the custom firmware being installed in the sense
-      that if the firmware uses more than half of the flash-bank-memory then only a single flask-bank will be available (no backup flash bank). Same if the firmware-devs explicitly
-      disable the 'dual flask-bank' feature programmatically!
+      Note: In theory all nRF5x chipsets support 'dual bank firmware storage (active / backup)', but in practice this co-depends on the
+      custom firmware being installed in the sense that if the firmware uses more than half of the flash-bank-memory then only a single
+      flash-bank will be available (no backup flash bank). Same if the firmware-devs explicitly disable the 'dual flash-bank' feature programmatically!
 
 
 ## ✅ Nuget Platform-Support Matrix
 
 Note that even though the Laerdal.McuMgr.Bindings.* have been built on dotnet8 using Android-SDK=34 and iPhoneOS-SDK=17.0 the generated nugets have been tested and they do work
-even on Dotnet10-preview7 MAUI-Apps targeting Android-SDK=36 and iOS-SDK=18.5
+even on Dotnet10 MAUI-Apps that target Android-SDK=36 and iOS-SDK=18.5 in the csproj.
 
 | Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0) |
 |-----------|---------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------|   
@@ -69,39 +69,45 @@ even on Dotnet10-preview7 MAUI-Apps targeting Android-SDK=36 and iOS-SDK=18.5
 
 Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2+) vs an nRF52840-based device (Zephyr 3.2.0):
 
-| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (kb/sec) | Notes                   |
-|------------------|----------------|-----------------------|--------------------------|-------------------------|
-| 495 (max)        | 2              | 2                     | ~60                      | Spikes above 100 kb/sec |
-| 495              | 3              | 2                     | ~63.5                    |                         |
-| 495              | 4              | 2                     | ~63.7                    |                         |
-| 495              | 4              | 4                     | ~75.6                    |                         |
-| 80               | 2              | -                     | ~33                      |                         |
-| 80               | 3              | 2                     | ~54.3                    |                         |
-| 80               | 4              | 4                     | ~66.5                    |                         |
-| 250              | 4              | 4                     | ~86                      | Best performance!       |
+| Initial MTU Size | Pipeline Depth | Memory Byte Alignment | Avg. Throughput (KB/s) | Notes                 |
+|------------------|----------------|-----------------------|------------------------|-----------------------|
+| 495 (max)        | 2              | 2                     | ~60                    | Spikes above 100 KB/s |
+| 495              | 3              | 2                     | ~63.5                  |                       |
+| 495              | 4              | 2                     | ~63.7                  |                       |
+| 495              | 4              | 4                     | ~75.6                  |                       |
+| 80               | 2              | -                     | ~33                    |                       |
+| 80               | 3              | 2                     | ~54.3                  |                       |
+| 80               | 4              | 4                     | ~66.5                  |                       |
+| 250              | 4              | 4                     | ~86                    | Best performance!     |
 
 
 ## ❗️ Salient Points
 
-- **Note that when uploading files to a BLE device it's good to ensure that the remote file-system is resilient against random/abrupt failures. For example Nordic employs "littlefs" which is disruption-resilience.
-  For example it can handle random power failures that can disrupt file-uploads. All file operations have strong copy-on-write guarantees and if power is lost the filesystem will fall back to the last known good
-  state so as to not to suffer from file corruption.**
+- **Note that when uploading files to a BLE device it's good to ensure that the remote file-system is resilient against random/abrupt failures.
+  For example Nordic employs "littlefs" which is disruption-resilient and it can handle random power failures that can disrupt file-uploads.
+  All file operations have strong copy-on-write guarantees and if power is lost the filesystem will fall back to the last known good
+  state so as not to suffer from file-corruptions.**<br/><br/>
+  
+  **Side-Note: It's highly advisable that your device-firmware employs version3.1+ of the "littlefs driver" from the Nordic SDK because prior
+  versions [are known to suffer from file-corruption issues due to bugs in the "littlefs-driver" itself](https://github.com.mcas.ms/littlefs-project/littlefs/pull/1058)!**<br/><br/>
 
-- **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
+- **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to
+  'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the device
+  will revert back to its previous firmware image.**<br/><br/>
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
-  in case you try to perform a firmware-upgrade on the desired device.**
+  in case you try to perform a firmware-upgrade on the desired device.**<br/><br/>
 
 - **Make sure to clean up after your apps when using the firmware-upgrader, device-resetter or firmware-eraser. Calling .Disconnect() is vital to avoid leaving behind latent connections
-  to the device.**
+  to the device.**<br/><br/>
 
-- **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**
+- **At the time of this writing the generated ios-nugets are built based on the iphoneos16.2 sdk**<br/><br/>
 
-- **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**
+- **For the time being Nordics' Android/Java libs are compiled in a way that emits Java1.8 bytecode so as to keep the libraries backwards compatible with versions of Android all the way back to 7. Our Java "glue-code" under 'Laerdal.McuMgr.Bindings.Android.Native' is compiled in the same fashion.**<br/><br/>
 
-- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.2.** (iPhoneOS SDK 18.3+ are problematic and will cause compilation errors!)
+- **To compile the iOS/MacCatalyst libs on localdev with their default settings you will need MacOS with XCode version 16.2 and iPhoneOS SDK 18.2.** (iPhoneOS SDK 18.3+ are problematic and will cause compilation errors!)<br/><br/>
 
-  The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better.
+  The reason McuMgr libs only support iPhones that can run iOS17 or better is simply because as of April 2024 all iOS and iPadOS apps submitted to the App Store must be built with a minimum of Xcode 15.x and the iOS 17.x SDK! The iOS 17.x SDK only supports iPhones/iPads that can run version 17.x of their respective OSes or better.<br/><br/>
 
   To grab the old installer of XCode 16.2 go to https://xcodereleases.com/?q=16.2 (better make sure your MacOS is compatible though!)
 
@@ -476,7 +482,7 @@ private void CleanupDeviceResetter()
 
         try
         {            
-            _massFileUploader = new FileUploader.FileUploader(/*native ble-device*/);
+            _massFileUploader = new FileUploading.FileUploader(/*native ble-device*/);
 
             ToggleSubscriptionsOnMassFileUploaderEvents(subscribeNotUnsubscribe: true);
 
@@ -664,7 +670,7 @@ private void CleanupDeviceResetter()
         var bytes = (byte[]?)null;
         try
         {
-            _fileDownloader = new FileUploader(/*native ble-device*/);
+            _fileDownloader = new FileDownloader(/*native ble-device*/);
 
             ToggleSubscriptionsOnSingleFileDownloaderEvents(_fileDownloader, subscribeNotUnsubscribe: true); //  order
             
@@ -973,7 +979,7 @@ git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    mcumgr.mst
 git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch develop      mcumgr.dev
 ```
 
-#### 2) Make sure you have .Net7 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
+#### 2) Make sure you have .Net8 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
 
 ```bash
 # cd into the root folder of the repo
