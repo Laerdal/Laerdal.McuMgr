@@ -83,11 +83,17 @@ Using iPhone Xs Max (18.5) and Laerdal.McuMgr 2.55.x (Nordic iOS Libs ver. 1.9.2
 
 ## ❗️ Salient Points
 
-- **Note that when uploading files to a BLE device it's good to ensure that the remote file-system is resilient against random/abrupt failures. For example Nordic employs "littlefs" which is disruption-resilience.
-  For example it can handle random power failures that can disrupt file-uploads. All file operations have strong copy-on-write guarantees and if power is lost the filesystem will fall back to the last known good
-  state so as to not to suffer from file corruption.**
+- **Note that when uploading files to a BLE device it's good to ensure that the remote file-system is resilient against random/abrupt failures.
+  For example Nordic employs "littlefs" which is disruption-resilience and it can handle random power failures that can disrupt file-uploads.
+  All file operations have strong copy-on-write guarantees and if power is lost the filesystem will fall back to the last known good
+  state so as to not to suffer from file corruption.**<br/><br/>
+  
+  **Side-Note: It's highly advisable that your device-firmware employs version3.1+ of the "littlefs driver" from the Nordic SDK because prior
+  versions [are known to suffer from file-corruption issues due to bugs in the "littlefs-driver" itself](https://github.com.mcas.ms/littlefs-project/littlefs/pull/1058)!**<br/><br/>
 
-- **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to 'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device will revert back to its previous firmware image.**
+- **For the firmware-upgrade to actually persist through the rebooting of the device it's absolutely vital to set the upgrade mode to
+  'Test & Confirm'. If you set it to just 'Test' then the effects of the firmware-upgrade will only last up to the next reboot and the the device
+  will revert back to its previous firmware image.**
 
 - **Make sure to explicitly un-bond any app (including the NRF apps!) from the devices you are trying to upgrade. Any device in the vicinity that's still bonded will cause problems
   in case you try to perform a firmware-upgrade on the desired device.**
