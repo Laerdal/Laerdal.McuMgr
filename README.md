@@ -55,6 +55,16 @@ The following types of operations are supported on devices running on Nordic's n
       custom firmware being installed in the sense that if the firmware uses more than half of the flash-bank-memory then only a single
       flash-bank will be available (no backup flash bank). Same if the firmware-devs explicitly disable the 'dual flash-bank' feature programmatically!
 
+## Quick Start
+
+```xml
+<PackageReference Include="Laerdal.McuMgr" Version="3.*" />
+
+<!-- not really needed   the appropriate version will be implicitly included by the build system -->
+<!-- <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="3.*"         Condition="$([MSBuild]::IsOSPlatform('iOS'))" />          -->
+<!-- <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="3.*"     Condition="$([MSBuild]::IsOSPlatform('Android'))" />      -->
+<!-- <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="3.*" Condition="$([MSBuild]::IsOSPlatform('MacCatalyst'))" />  -->
+```
 
 ## ✅ Nuget Platform-Support Matrix
 
@@ -145,7 +155,7 @@ Make sure to always get the latest versions of the above packages.
 
           Just be sure to pay attention to the logs for anything that looks fishy in your event-handling logic.
 
-```c#
+```csharp
 
 private Laerdal.McuMgr.FirmwareInstallation.IFirmwareInstaller _firmwareInstaller;
 
@@ -258,7 +268,7 @@ private void CleanupFirmwareInstaller()
 
 - To erase a specific firmware:
 
-```c#
+```csharp
 private IFirmwareEraser _firmwareEraser;
 
 public async Task EraseFirmwareAsync()
@@ -338,7 +348,7 @@ private void CleanupFirmwareEraser()
 
 - To reboot ('reset') the device:
 
-```c#
+```csharp
 private IDeviceResetter _deviceResetter;
 
 private void ResetDevice()
@@ -426,7 +436,7 @@ private void CleanupDeviceResetter()
             event-handlers might interfere with the native file-operations - this naturally works in your favour most of
             the time. Just pay attention to the logs for anything that looks fishy in your event-handling logic.
 
-```c#
+```csharp
 
     private Dictionary<string, byte[]> _massFileUploadSelectedFileNamesAndTheirRawBytes; //set this appropriately
     private async Task PickLocalFilesToMassUploadButtonClickedAsync()
@@ -869,7 +879,7 @@ private void CleanupDeviceResetter()
 
 Same as in Android. Just make sure to pass a CBPeripheral to the constructors change a bit:
 
-```c#
+```csharp
 _fileUploader = new Laerdal.McuMgr.FileUploading.FileUploader(desiredBluetoothDevice); // must be a CBPeripheral
 _firmwareEraser   = new Laerdal.McuMgr.FirmwareErasure.FirmwareEraser(desiredBluetoothDevice); // must be a CBPeripheral
 _firmwareUpgrader = new Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller(desiredBluetoothDevice); // must be a CBPeripheral
@@ -880,7 +890,7 @@ _deviceResetter = new Laerdal.McuMgr.DeviceResetting.DeviceResetter(desiredBluet
 Note that the constructors support passing both a native device (CBPeripheral on iOS and BluetoothDevice on Android) or simply an 'object' that is castable to either of these types.
 This is done to help you write more uniform code across platforms. You might want to create your own factory-service to smoothen things even further on your:
 
-```c#
+```csharp
 using Laerdal.Ble.Abstraction;
 using Laerdal.McuMgr.DeviceResetting.Contracts;
 using Laerdal.McuMgr.FileDownloading.Contracts;
