@@ -57,6 +57,28 @@
         <!-- JAVA_HOME [WINDOWS] -->
         <PropertyGroup Condition=" '$(JavaHome)' == '' and '$(IsHostMachineWindows)' == 'true' ">
             <!-- this is completely stupid but as long as we dont use a bash script for something more intelligent we are stuck with this heuristic -->
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.20-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.20-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.19-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.19-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.18-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.18-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.17-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.17-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.16-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.16-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.15-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.15-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.14-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.14-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.13-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.13-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.12-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.12-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.11-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.11-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.10-hotspot\bin\java.exe')  ">C:\\Program Files\\Microsoft\\jdk-17.0.17.10-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.9-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.9-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.8-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.8-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.7-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.7-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.6-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.6-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.5-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.5-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.4-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.4-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.3-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.3-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.2-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.2-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.1-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.1-hotspot</JavaHome>
+            <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.17.0-hotspot\bin\java.exe')   ">C:\\Program Files\\Microsoft\\jdk-17.0.17.0-hotspot</JavaHome>
+            
             <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.12-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.16.12-hotspot</JavaHome>
             <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.11-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.16.11-hotspot</JavaHome>
             <JavaHome Condition="  '$(JavaHome)' == '' and Exists('C:\Program Files\Microsoft\jdk-17.0.16.10-hotspot\bin\java.exe') ">C:\\Program Files\\Microsoft\\jdk-17.0.16.10-hotspot</JavaHome>
