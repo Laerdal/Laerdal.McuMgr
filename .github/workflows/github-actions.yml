@@ -142,7 +142,7 @@ jobs:
           rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
-        uses: 'actions/upload-artifact@v5'
+        uses: 'actions/upload-artifact@v6'
         with:
           name: 'Artifacts'
           path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'
