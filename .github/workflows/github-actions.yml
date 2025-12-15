@@ -67,7 +67,7 @@ jobs:
 
       - name: '🗂️ Try Restore Dotnet NuGets from Cache'
         id: 'cache-dotnet-nugets'
-        uses: 'actions/cache@v4'
+        uses: 'actions/cache@v5'
         with:
           path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
             ~/.nuget/packages
@@ -78,7 +78,7 @@ jobs:
 
       - name: '🗂️ Try Restore Dotnet Workloads from Cache'
         id: 'cache-dotnet-workloads'
-        uses: 'actions/cache@v4'
+        uses: 'actions/cache@v5'
         with:
           path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
             ~/.dotnet
