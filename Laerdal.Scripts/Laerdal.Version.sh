@@ -605,6 +605,7 @@ if [ "${GITHUB_STEP_SUMMARY}" != "" ]; then
     echo "</details>" >>"$GITHUB_STEP_SUMMARY"
 fi
 
+# the very last line printed on stdout *must* be the full-version otherwise the build-systems calling this sh-script will most definately break!
 echo "$version_full"
 
 exit 0
