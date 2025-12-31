@@ -117,10 +117,10 @@
 
         <Message Importance="High" Text="  bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters)  "/>
 
-        <!-- its useful to allow specifying the version through the command line for testing and development purposes on localdev -->
+        <!-- RUN    note that using 'grep . | tail -n 1' is absolutely vital to grab only the full-version that is printed to the console -->
         <Exec Condition=" '$(Laerdal_Version_Full)' == '' "
+              Command=" sh '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters) | grep . | tail -n 1"
               EchoOff="true"
-              Command=" bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters) "
               ConsoleToMSBuild="true"
               WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)">
             <Output TaskParameter="ConsoleOutput" PropertyName="Laerdal_Version_Full"/>
