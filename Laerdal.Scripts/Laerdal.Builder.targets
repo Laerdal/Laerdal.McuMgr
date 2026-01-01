@@ -117,10 +117,10 @@
 
         <Message Importance="High" Text="  bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters)  "/>
 
-        <!-- RUN    note that using 'grep . | tail -n 1' is absolutely vital to grab only the full-version that is printed to the console -->
+        <!-- RUN    note that using '... 2>&1 |grep . | tail -n 1' is absolutely vital to grab only the full-version that is printed to the console -->
         <Exec Condition=" '$(Laerdal_Version_Full)' == '' "
-              Command=" sh '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters) | grep . | tail -n 1"
-              EchoOff="true"
+              Command=" sh '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters) 2>&amp;1 | grep . | tail -n 1"
+              EchoOff="false"
               ConsoleToMSBuild="true"
               WorkingDirectory="$(Laerdal_RootDirectory_Folderpath)">
             <Output TaskParameter="ConsoleOutput" PropertyName="Laerdal_Version_Full"/>
