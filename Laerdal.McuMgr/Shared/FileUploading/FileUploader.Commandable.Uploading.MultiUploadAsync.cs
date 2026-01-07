@@ -27,7 +27,7 @@ namespace Laerdal.McuMgr.FileUploading
             int         maxTriesPerUpload               = IFileUploaderCommandable.Defaults.MaxTriesPerUpload,
             bool        moveToNextUploadInCaseOfError   = IFileUploaderCommandable.Defaults.MoveToNextUploadInCaseOfError,
             bool        autodisposeStreams              = IFileUploaderCommandable.Defaults.AutodisposeStreams,
-            ELogLevel?  minimumNativeLogLevel                 = null,
+            ELogLevel?  minimumNativeLogLevel           = null,
 
             int? initialMtuSize = null,
             int? pipelineDepth = null,

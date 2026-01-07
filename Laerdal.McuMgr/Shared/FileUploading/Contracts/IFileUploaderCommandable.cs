@@ -135,7 +135,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts
             int         sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
             int         gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
             bool        autodisposeStream               = Defaults.AutodisposeStreams,
-            ELogLevel?  minimumNativeLogLevel                 = null,
+            ELogLevel?  minimumNativeLogLevel           = null,
             
             int? initialMtuSize  = null,
             int? pipelineDepth   = null,
