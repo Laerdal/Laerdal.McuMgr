@@ -656,7 +656,7 @@ public class AndroidFileDownloader
 
             final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
             fireAndForgetInTheBg(() -> {
-                int fileDownloadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / fileSize);
+                int fileDownloadProgressPercentage = fileSize == 0 ? 100 : (int) (totalBytesSentSoFar * 100.f / fileSize);
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 
