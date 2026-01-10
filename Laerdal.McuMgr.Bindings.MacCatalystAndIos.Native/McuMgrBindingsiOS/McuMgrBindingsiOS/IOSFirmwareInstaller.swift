@@ -468,7 +468,7 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
         }
 
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            let uploadProgressPercentage = (bytesSent * 100) / imageSize
+            let uploadProgressPercentage = imageSize == 0 ? 100 : ((bytesSent * 100) / imageSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
