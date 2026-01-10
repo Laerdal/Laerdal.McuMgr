@@ -433,7 +433,7 @@ extension IOSFileDownloader: FileDownloadDelegate {
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            let downloadProgressPercentage = (bytesSent * 100) / fileSize
+            let downloadProgressPercentage = fileSize == 0 ? 100 : ((bytesSent * 100) / fileSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
