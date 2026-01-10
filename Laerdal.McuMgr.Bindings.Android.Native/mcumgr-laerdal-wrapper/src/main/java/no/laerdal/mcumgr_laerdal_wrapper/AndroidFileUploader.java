@@ -678,7 +678,7 @@ public class AndroidFileUploader
             final String resourceIdSnapshot = _resourceId; //order
             final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
             fireAndForgetInTheBg(() -> {
-                int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / totalBytesToBeUploaded);
+                int fileUploadProgressPercentage = totalBytesToBeUploaded == 0 ? 100 : (int) (totalBytesSentSoFar * 100.f / totalBytesToBeUploaded);
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 
