@@ -305,7 +305,11 @@ public class IOSFileUploader: NSObject {
     @objc
     public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
-        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self.cancellingAdvertisement(reason) // order
+        }
         setState(.cancelling) //                                                                 order
 
         if (_fileSystemManager == nil) {
@@ -424,8 +428,10 @@ public class IOSFileUploader: NSObject {
         let resourceIdSnapshot = _resourceId
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fatalErrorOccurredAdvertisement(// order
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self._listener.fatalErrorOccurredAdvertisement( // order
                     resourceIdSnapshot,
                     remoteFilePathSanitizedSnapshot,
                     errorMessage,
@@ -442,7 +448,10 @@ public class IOSFileUploader: NSObject {
         }
 
         let resourceIdSnapshot = _resourceId
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, resourceIdSnapshot)
         }
     }
@@ -522,7 +531,9 @@ public class IOSFileUploader: NSObject {
         let resourceIdSnapshot = _resourceId
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //50 fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //50 fire and forget to boost performance
+            guard let self else { return }
+
             self.stateChangedAdvertisement(
                     resourceIdSnapshot,
                     remoteFilePathSanitizedSnapshot,
@@ -548,7 +559,9 @@ extension IOSFileUploader: FileUploadDelegate {
         let resourceIdSnapshot  = _resourceId;
         let remoteFilePathSanitizedSnapshot  = _remoteFilePathSanitized;
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             let uploadProgressPercentage = fileSize == 0 ? 100 : ((bytesSent * 100) / fileSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)

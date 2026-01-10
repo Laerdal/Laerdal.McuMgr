@@ -271,7 +271,9 @@ public class IOSFirmwareInstaller: NSObject {
 
         _lastFatalErrorMessage = errorMessage //order
 
-        DispatchQueue.global(qos: .background).async { //order  fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self.fatalErrorOccurredAdvertisement(
                     currentStateSnapshot,
                     fatalErrorType,
@@ -292,7 +294,9 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func emitLogEntry(_ message: String, _ category: String, _ level: String) {
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.logMessageAdvertisement(message, category, level)
         }
     }
@@ -300,7 +304,9 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func cancelledAdvertisement() {
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.cancelledAdvertisement()
         }
     }
@@ -308,7 +314,11 @@ public class IOSFirmwareInstaller: NSObject {
     //@objc   dont
 
     private func busyStateChangedAdvertisement(_ busyNotIdle: Bool) {
-        _listener.busyStateChangedAdvertisement(busyNotIdle)
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self._listener.busyStateChangedAdvertisement(busyNotIdle)
+        }
     }
 
     //@objc   dont
@@ -339,7 +349,9 @@ public class IOSFirmwareInstaller: NSObject {
             return
         }
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self.busyStateChangedAdvertisement(newBusyState)
         }
     }
@@ -353,7 +365,9 @@ public class IOSFirmwareInstaller: NSObject {
 
         _currentState = newState //order
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             if (oldState == .uploading && newState == .testing) //00  order
             {
                 self.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(100, 0, 0)
@@ -467,7 +481,9 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             return
         }
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             let uploadProgressPercentage = imageSize == 0 ? 100 : ((bytesSent * 100) / imageSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
