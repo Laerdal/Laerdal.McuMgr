@@ -477,7 +477,7 @@ public class IOSFileUploader: NSObject {
             _ oldState:                EIOSFileUploaderState,
             _ newState:                EIOSFileUploaderState,
             _ totalBytesToBeUploaded:  Int
-    ) {  //@formatter:off
+    ) { //@formatter:on
         _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState, totalBytesToBeUploaded)
     }
 
@@ -549,7 +549,7 @@ extension IOSFileUploader: FileUploadDelegate {
         let remoteFilePathSanitizedSnapshot  = _remoteFilePathSanitized;
 
         DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            let uploadProgressPercentage = (bytesSent * 100) / fileSize
+            let uploadProgressPercentage = fileSize == 0 ? 100 : ((bytesSent * 100) / fileSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 

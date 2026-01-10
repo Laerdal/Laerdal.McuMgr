@@ -514,7 +514,7 @@ public class AndroidFirmwareInstaller
                 return;
 
             fireAndForgetInTheBg(() -> {
-                int lastProgress = (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
+                int lastProgress = imageSize == 0 ? 100 : (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestamp);
 
