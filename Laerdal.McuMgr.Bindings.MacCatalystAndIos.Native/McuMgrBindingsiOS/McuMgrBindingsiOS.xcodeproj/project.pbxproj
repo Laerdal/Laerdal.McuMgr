@@ -277,7 +277,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 6B4XDDTX8B;
+				DEVELOPMENT_TEAM = SNV78A3JQK;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -370,7 +370,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 6B4XDDTX8B;
+				DEVELOPMENT_TEAM = SNV78A3JQK;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -477,10 +477,10 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		B0CFA8112D8A053A007BC223 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git";
+			repositoryURL = "http://github.com/Laerdal/IOS-nRF-Connect-Device-Manager.git";
 			requirement = {
-				kind = revision;
-				revision = 772471e8b405ecd727d70e91324681ad26daf2f2;
+				branch = v1_13_with_dependencies_version_pinned;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
