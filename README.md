@@ -1079,6 +1079,8 @@ brew install gradle@7
 
 #### 6) On Mac make sure to install XCode 16.2 (16.3 doesn't work atm - if you have multiple XCodes installed then make 16.2 the default by running 'sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer' assuming that xcode 16.2 is installed in that fs-path).
 
+Note that if you try to build through Jetbrains Rider IDE you must first restart the IDE after switching XCode version to 16.2 so that Rider can really pick-up the new XCode path properly!
+
 #### 7) On Windows you will probably have to also enable in the OS (registry) 'Long Path Support' otherwise the build will most probably fail due to extremely long paths being involved during the build process.
 
 #### 8) Open 'Laerdal.McuMgr.sln' and build it.

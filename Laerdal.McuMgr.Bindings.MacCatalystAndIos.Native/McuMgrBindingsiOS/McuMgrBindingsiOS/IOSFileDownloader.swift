@@ -230,8 +230,12 @@ public class IOSFileDownloader: NSObject {
     @objc
     public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
-        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
-        setState(.cancelling) //                                                                 order
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self.cancellingAdvertisement(reason)
+        }
+        setState(.cancelling) //order
 
         if (_fileSystemManager == nil) { //order
             return false
@@ -336,7 +340,9 @@ public class IOSFileDownloader: NSObject {
 
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.fatalErrorOccurredAdvertisement( //  order
                     remoteFilePathSanitizedSnapshot,
                     errorMessage,
@@ -354,7 +360,10 @@ public class IOSFileDownloader: NSObject {
         }
 
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.logMessageAdvertisement(message, category, level.name, remoteFilePathSanitizedSnapshot)
         }
     }
@@ -397,7 +406,9 @@ public class IOSFileDownloader: NSObject {
             return
         }
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self.busyStateChangedAdvertisement(newBusyState)
         }
     }
@@ -419,7 +430,9 @@ public class IOSFileDownloader: NSObject {
         _currentState = newState //                                        order
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized //  order
 
-        DispatchQueue.global(qos: .background).async {
+        Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.stateChangedAdvertisement(remoteFilePathSanitizedSnapshot, oldState, newState, totalBytesToBeDownloaded, data)
         }
     }
@@ -432,7 +445,9 @@ extension IOSFileDownloader: FileDownloadDelegate {
 
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance
+            guard let self else { return }
+
             let downloadProgressPercentage = fileSize == 0 ? 100 : ((bytesSent * 100) / fileSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
@@ -453,7 +468,11 @@ extension IOSFileDownloader: FileDownloadDelegate {
 
     public func downloadDidCancel() {
         setState(.cancelled) //                                                                                    order
-        DispatchQueue.global(qos: .background).async { self.cancelledAdvertisement(self._cancellationReason) } //  order
+        Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance                  order
+            guard let self else { return }
+
+            self.cancelledAdvertisement(self._cancellationReason)
+        }
         setBusyState(false) //                                                                                     order
     }
 

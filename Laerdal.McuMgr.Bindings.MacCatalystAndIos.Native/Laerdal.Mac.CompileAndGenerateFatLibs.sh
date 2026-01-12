@@ -124,6 +124,12 @@ function build() {
             -project   "${SWIFT_PROJECT_FOLDERPATH}"     \
       -configuration   "${SWIFT_BUILD_CONFIGURATION}"
 
+  # local exitCode=$? # better not error out here
+  # if [ ${exitCode} -ne 0 ]; then
+  #   echo "** [FAILED] Failed to clean previous build artifacts for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'"
+  #   exit 1
+  # fi
+
   echo "**** (Build 2/3) Restore packages for '${XCODEBUILD_TARGET_SDK_WITH_VERSION_IF_ANY}'" # @formatter:off
 
   # starting from xcode 16+ xcodebuild doesnt allow using -target along with -scheme    in fact -scheme is the
