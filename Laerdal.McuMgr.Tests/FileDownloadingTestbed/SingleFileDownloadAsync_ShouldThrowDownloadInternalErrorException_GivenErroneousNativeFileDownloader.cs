@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloading;
 using Laerdal.McuMgr.FileDownloading.Contracts.Enums;
 using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
@@ -40,7 +41,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             {
             }
 
-            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             {
                 base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,

@@ -37,7 +37,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 OnFileDownloadPaused(new(remoteFilePath: remoteFilePath)); //                                                    of the native layer
             }
         
-            await KeepGoing.WaitAsync(); //order 10
+            await KeepGoing.WaitAsync().ConfigureAwait(false); //order 10
 
             if (IsDisposed) //order
                 throw new ObjectDisposedException(nameof(FileDownloader));

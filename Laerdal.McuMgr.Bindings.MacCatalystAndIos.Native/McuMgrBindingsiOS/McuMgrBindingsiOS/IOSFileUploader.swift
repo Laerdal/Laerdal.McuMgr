@@ -4,6 +4,8 @@ import CoreBluetooth
 // @objc(IOSFileUploadX)
 public class IOSFileUploader: NSObject {
 
+    private var _minimumNativeLogLevel: McuMgrLogLevel = .error
+
     private let _listener: IOSListenerForFileUploader!
     private var _transporter: McuMgrBleTransport!
     private var _cbPeripheral: CBPeripheral!
@@ -49,13 +51,13 @@ public class IOSFileUploader: NSObject {
 
     @objc
     public func nativeDispose() {
-        tryInvalidateCachedInfrastructure() //doesnt throw
+        _ = tryInvalidateCachedInfrastructure() //doesnt throw
     }
 
     @objc
     public func tryInvalidateCachedInfrastructure() -> Bool { // must be public
-        var success1 = tryDisposeFilesystemManager() // order
-        var success2 = tryDisposeTransport() //         order
+        let success1 = tryDisposeFilesystemManager() // order
+        let success2 = tryDisposeTransport() //         order
 
         return success1 && success2
     }
@@ -65,6 +67,7 @@ public class IOSFileUploader: NSObject {
             _ resourceId: String,
             _ remoteFilePath: String,
             _ data: Data?,
+            _ minimumNativeLogLevelNumeric: Int,
             _ pipelineDepth: Int,
             _ byteAlignment: Int,
             _ initialMtuSize: Int //if zero or negative then it will be set to DefaultMtuForFileUploads
@@ -127,14 +130,16 @@ public class IOSFileUploader: NSObject {
             return .failedInvalidSettings
         }
 
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
+
         resetState() //order
-        tryDisposeFilesystemManager() //00 vital hack
+        _ = tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
-        var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum!)
-        if (pipelineDepth >= 0) {
-            configuration.pipelineDepth = pipelineDepth
+        let configuration = spawnFileUploadingConfiguration(pipelineDepth, byteAlignmentEnum!)
+        if configuration == nil {
+            return .failedInvalidSettings //no need to log here  the spawn method takes care of logging
         }
 
         setState(.idle)
@@ -144,7 +149,7 @@ public class IOSFileUploader: NSObject {
                 let success = _fileSystemManager?.upload( //order
                         name: _remoteFilePathSanitized,
                         data: data!,
-                        using: configuration,
+                        using: configuration!,
                         delegate: self
                 ) ?? false
                 if !success {
@@ -169,7 +174,31 @@ public class IOSFileUploader: NSObject {
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
     }
-    
+
+    private func spawnFileUploadingConfiguration(
+            _ pipelineDepth: Int,
+            _ byteAlignmentEnum: ImageUploadAlignment
+    ) -> FirmwareUpgradeConfiguration? { // for some weird reason the nordic libs employ the FirmwareUpgradeConfiguration class for the file-uploading aspects    go figure ...
+        do {
+            var configuration = FirmwareUpgradeConfiguration(byteAlignment: byteAlignmentEnum)
+            if (pipelineDepth > 0) { // do NOT include zero here   if the depth is set to zero then the operation will hang forever!
+                configuration.pipelineDepth = pipelineDepth
+
+                logInBg("[IOSFU.SFUC.010] applied explicit pipeline-depth='\(String(describing: configuration.pipelineDepth))'", McuMgrLogLevel.info)
+            }
+            else {
+                logInBg("[IOSFU.SFUC.020] using pre-set pipeline-depth='\(String(describing: configuration.pipelineDepth))'", McuMgrLogLevel.info)
+            }
+
+            return configuration
+
+        } catch let ex {
+            onError("[IOSFU.SFUC.050] Failed to configure the file-uploader", ex)
+            return nil
+        }
+    }
+
+
     private func translateByteAlignmentMode(_ alignment: Int) -> ImageUploadAlignment? {
         if (alignment <= 0) {
             return .disabled;
@@ -187,6 +216,13 @@ public class IOSFileUploader: NSObject {
         default:
             return nil
         }
+    }
+
+    @objc
+    public func trySetMinimumNativeLogLevel(_ minimumNativeLogLevelNumeric: Int) -> Bool {
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
+
+        return true
     }
 
     @objc
@@ -269,7 +305,11 @@ public class IOSFileUploader: NSObject {
     @objc
     public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
-        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self.cancellingAdvertisement(reason) // order
+        }
         setState(.cancelling) //                                                                 order
 
         if (_fileSystemManager == nil) {
@@ -299,7 +339,7 @@ public class IOSFileUploader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFU.TDC.010] Failed to disconnect", McuMgrLogLevel.warning)
+            logInBg("[IOSFU.TDC.010] Failed to disconnect: '\(ex.localizedDescription)'", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -356,7 +396,7 @@ public class IOSFileUploader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFU.DT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
+            logInBg("[IOSFU.DT.010] Failed to dispose the transport: '\(ex.localizedDescription)'", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -388,8 +428,10 @@ public class IOSFileUploader: NSObject {
         let resourceIdSnapshot = _resourceId
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            self._listener.fatalErrorOccurredAdvertisement(// order
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self._listener.fatalErrorOccurredAdvertisement( // order
                     resourceIdSnapshot,
                     remoteFilePathSanitizedSnapshot,
                     errorMessage,
@@ -401,13 +443,24 @@ public class IOSFileUploader: NSObject {
     private static let DefaultLogCategory = "FileUploader";
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
+        if (level < _minimumNativeLogLevel) {
+            return
+        }
+
         let resourceIdSnapshot = _resourceId
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, resourceIdSnapshot)
         }
     }
 
     private func log(_ message: String, _ level: McuMgrLogLevel) {
+        if (level < _minimumNativeLogLevel) {
+            return
+        }
+
         self._listener.logMessageAdvertisement(message, IOSFileUploader.DefaultLogCategory, level.name, _resourceId)
     }
 
@@ -433,7 +486,7 @@ public class IOSFileUploader: NSObject {
             _ oldState:                EIOSFileUploaderState,
             _ newState:                EIOSFileUploaderState,
             _ totalBytesToBeUploaded:  Int
-    ) {  //@formatter:off
+    ) { //@formatter:on
         _listener.stateChangedAdvertisement(resourceId, remoteFilePathSanitized, oldState, newState, totalBytesToBeUploaded)
     }
 
@@ -478,7 +531,9 @@ public class IOSFileUploader: NSObject {
         let resourceIdSnapshot = _resourceId
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //50 fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //50 fire and forget to boost performance
+            guard let self else { return }
+
             self.stateChangedAdvertisement(
                     resourceIdSnapshot,
                     remoteFilePathSanitizedSnapshot,
@@ -504,8 +559,10 @@ extension IOSFileUploader: FileUploadDelegate {
         let resourceIdSnapshot  = _resourceId;
         let remoteFilePathSanitizedSnapshot  = _remoteFilePathSanitized;
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            let uploadProgressPercentage = (bytesSent * 100) / fileSize
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            let uploadProgressPercentage = fileSize == 0 ? 100 : ((bytesSent * 100) / fileSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 

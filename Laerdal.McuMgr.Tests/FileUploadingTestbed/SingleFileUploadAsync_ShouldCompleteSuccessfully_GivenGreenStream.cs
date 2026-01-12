@@ -99,6 +99,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
+                
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -114,6 +116,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    
+                    minimumNativeLogLevel: minimumNativeLogLevel,
                     
                     initialMtuSize: initialMtuSize,
 

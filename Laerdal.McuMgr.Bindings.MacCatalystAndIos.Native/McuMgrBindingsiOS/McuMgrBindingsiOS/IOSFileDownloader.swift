@@ -4,6 +4,8 @@ import CoreBluetooth
 // @objc(IOSFileDownloadX)
 public class IOSFileDownloader: NSObject {
 
+    private var _minimumNativeLogLevel: McuMgrLogLevel = .error
+
     private var _listener: IOSListenerForFileDownloader!
     private var _transporter: McuMgrBleTransport!
     private var _cbPeripheral: CBPeripheral!
@@ -49,7 +51,7 @@ public class IOSFileDownloader: NSObject {
 
     @objc
     public func nativeDispose() {
-        tryInvalidateCachedInfrastructure() //doesnt throw
+        _ = tryInvalidateCachedInfrastructure() //doesnt throw
     }
 
     @objc
@@ -62,7 +64,7 @@ public class IOSFileDownloader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFD.DC.010] Failed to disconnect", McuMgrLogLevel.warning)
+            logInBg("[IOSFD.DC.010] Failed to disconnect: '\(ex.localizedDescription)", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -76,7 +78,7 @@ public class IOSFileDownloader: NSObject {
     }
 
     @objc
-    public func beginDownload(_ remoteFilePath: String, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
+    public func beginDownload(_ remoteFilePath: String, _ minimumNativeLogLevelNumeric: Int, _ initialMtuSize: Int) -> EIOSFileDownloadingInitializationVerdict {
         if !isCold() { //keep first   if another download is already in progress we bail out
             onError("[IOSFD.BD.010] Another download is already in progress")
 
@@ -102,8 +104,10 @@ public class IOSFileDownloader: NSObject {
             return .failedInvalidSettings
         }
 
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
+
         resetState() //order
-        tryDisposeFilesystemManager() //00 vital hack
+        _ = tryDisposeFilesystemManager() //00 vital hack
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
         ensureFilesystemManagerIsInitializedExactlyOnce() //order
 
@@ -131,6 +135,13 @@ public class IOSFileDownloader: NSObject {
 
         //10  starting from nordic libs version 1.10.1-alpha nordic devs enforced main-ui-thread affinity for all file-io operations upload/download/pause/cancel etc
         //    kinda sad really considering that we fought against such an approach but to no avail
+    }
+
+    @objc
+    public func trySetMinimumNativeLogLevel(_ minimumNativeLogLevelNumeric: Int) -> Bool {
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
+
+        return true
     }
 
     @objc
@@ -219,8 +230,12 @@ public class IOSFileDownloader: NSObject {
     @objc
     public func tryCancel(_ reason: String = "") -> Bool {
         _cancellationReason = reason
-        DispatchQueue.global(qos: .background).async { self.cancellingAdvertisement(reason) } // order
-        setState(.cancelling) //                                                                 order
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
+            self.cancellingAdvertisement(reason)
+        }
+        setState(.cancelling) //order
 
         if (_fileSystemManager == nil) { //order
             return false
@@ -304,7 +319,7 @@ public class IOSFileDownloader: NSObject {
         }
         catch let ex
         {
-            logInBg("[IOSFD.TDT.010] Failed to dispose the transport", McuMgrLogLevel.warning)
+            logInBg("[IOSFD.TDT.010] Failed to dispose the transport: '\(ex.localizedDescription)'", McuMgrLogLevel.warning)
             return false
         }
     }
@@ -325,7 +340,9 @@ public class IOSFileDownloader: NSObject {
 
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.fatalErrorOccurredAdvertisement( //  order
                     remoteFilePathSanitizedSnapshot,
                     errorMessage,
@@ -338,13 +355,24 @@ public class IOSFileDownloader: NSObject {
     private static let DefaultLogCategory = "FileUploader";
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel, _ category: String = DefaultLogCategory) {
+        if (level < _minimumNativeLogLevel) {
+            return
+        }
+
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self._listener.logMessageAdvertisement(message, category, level.name, remoteFilePathSanitizedSnapshot)
         }
     }
 
     private func log(_ message: String, _ level: McuMgrLogLevel) {
+        if (level < _minimumNativeLogLevel) {
+            return
+        }
+
         self._listener.logMessageAdvertisement(message, IOSFileDownloader.DefaultLogCategory, level.name, _remoteFilePathSanitized)
     }
 
@@ -378,7 +406,9 @@ public class IOSFileDownloader: NSObject {
             return
         }
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
+        Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
+            guard let self else { return }
+
             self.busyStateChangedAdvertisement(newBusyState)
         }
     }
@@ -387,7 +417,7 @@ public class IOSFileDownloader: NSObject {
         return setState(newState, 0, data)
     }
 
-    private func setState(_ newState: EIOSFileDownloaderState, _ totalBytesToBeUploaded: Int = 0, _ data: [UInt8]? = nil) {
+    private func setState(_ newState: EIOSFileDownloaderState, _ totalBytesToBeDownloaded: Int = 0, _ data: [UInt8]? = nil) {
         if (_currentState == .paused && newState == .downloading) {
             return; // after pausing we might still get a quick DOWNLOADING update from the native-layer - we must ignore it
         }
@@ -400,21 +430,25 @@ public class IOSFileDownloader: NSObject {
         _currentState = newState //                                        order
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized //  order
 
-        DispatchQueue.global(qos: .background).async {
-            self._listener.stateChangedAdvertisement(remoteFilePathSanitizedSnapshot, oldState, newState, totalBytesToBeUploaded, data)
+        Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance
+            guard let self else { return }
+
+            self._listener.stateChangedAdvertisement(remoteFilePathSanitizedSnapshot, oldState, newState, totalBytesToBeDownloaded, data)
         }
     }
 }
 
 extension IOSFileDownloader: FileDownloadDelegate {
     public func downloadProgressDidChange(bytesDownloaded bytesSent: Int, fileSize: Int, timestamp: Date) {
-        setState(.downloading)
+        setState(.downloading, fileSize)
         setBusyState(true)
 
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
-        DispatchQueue.global(qos: .background).async { //fire and forget to boost performance
-            let downloadProgressPercentage = (bytesSent * 100) / fileSize
+        Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance
+            guard let self else { return }
+
+            let downloadProgressPercentage = fileSize == 0 ? 100 : ((bytesSent * 100) / fileSize)
             let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
             let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
 
@@ -434,7 +468,11 @@ extension IOSFileDownloader: FileDownloadDelegate {
 
     public func downloadDidCancel() {
         setState(.cancelled) //                                                                                    order
-        DispatchQueue.global(qos: .background).async { self.cancelledAdvertisement(self._cancellationReason) } //  order
+        Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance                  order
+            guard let self else { return }
+
+            self.cancelledAdvertisement(self._cancellationReason)
+        }
         setBusyState(false) //                                                                                     order
     }
 

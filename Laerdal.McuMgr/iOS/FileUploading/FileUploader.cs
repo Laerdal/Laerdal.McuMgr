@@ -57,6 +57,9 @@ namespace Laerdal.McuMgr.FileUploading
             public string LastFatalErrorMessage => _nativeFileUploader?.LastFatalErrorMessage;
             
             // ReSharper disable once RedundantOverriddenMember
+            public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel) => _nativeFileUploader?.TrySetMinimumNativeLogLevel((int) minimumNativeLogLevel) ?? true; //just return true even if we have no native uploader
+
+            // ReSharper disable once RedundantOverriddenMember
             public bool TryPause() => _nativeFileUploader?.TryPause() ?? false;
             
             // ReSharper disable once RedundantOverriddenMember
@@ -137,6 +140,7 @@ namespace Laerdal.McuMgr.FileUploading
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null,
                 int? pipelineDepth = null, //    ios only
                 int? byteAlignment = null, //    ios only
@@ -150,6 +154,7 @@ namespace Laerdal.McuMgr.FileUploading
                     data: nsDataOfFileToUpload,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    minimumNativeLogLevelNumeric: (int) (minimumNativeLogLevel ?? ELogLevel.Error),
 
                     pipelineDepth: pipelineDepth ?? -1,
                     byteAlignment: byteAlignment ?? -1,
@@ -173,12 +178,12 @@ namespace Laerdal.McuMgr.FileUploading
             public bool TrySetBluetoothDevice(object bluetoothDevice)
             {
                 var iosBluetoothDevice = bluetoothDevice as CBPeripheral ?? throw new ArgumentException($"Expected {nameof(bluetoothDevice)} to be of type {nameof(CBPeripheral)}", nameof(bluetoothDevice));
-                
+
                 return _nativeFileUploader?.TrySetBluetoothDevice(iosBluetoothDevice) ?? false;
             }
 
             public bool TryInvalidateCachedInfrastructure()
-            {               
+            {
                 return _nativeFileUploader?.TryInvalidateCachedInfrastructure() ?? false;
             }
 

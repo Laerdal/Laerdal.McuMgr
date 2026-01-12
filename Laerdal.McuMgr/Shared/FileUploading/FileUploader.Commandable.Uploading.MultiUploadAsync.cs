@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.Common.Helpers;
 using Laerdal.McuMgr.FileUploading.Contracts;
 using Laerdal.McuMgr.FileUploading.Contracts.Exceptions;
@@ -15,23 +16,24 @@ namespace Laerdal.McuMgr.FileUploading
     {
         public async Task<IEnumerable<string>> UploadAsync<TData>( //@formatter:off
             IDictionary<string, (string ResourceId, TData Data)> remoteFilePathsAndTheirData,
-
+            
             string hostDeviceModel,
             string hostDeviceManufacturer,
             
-            int    sleepTimeBetweenUploadsInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenUploadsInMs,
-            int    sleepTimeBetweenRetriesInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
-            int    gracefulCancellationTimeoutInMs = IFileUploaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
-            int    timeoutPerUploadInMs            = IFileUploaderCommandable.Defaults.TimeoutPerUploadInMs,
-            int    maxTriesPerUpload               = IFileUploaderCommandable.Defaults.MaxTriesPerUpload,
-            bool   moveToNextUploadInCaseOfError   = IFileUploaderCommandable.Defaults.MoveToNextUploadInCaseOfError,
-            bool   autodisposeStreams              = IFileUploaderCommandable.Defaults.AutodisposeStreams,
-            
-            int?   initialMtuSize = null,
-            int?   pipelineDepth = null,
-            int?   byteAlignment = null,
-            int?   windowCapacity = null,
-            int?   memoryAlignment = null
+            int         sleepTimeBetweenUploadsInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenUploadsInMs,
+            int         sleepTimeBetweenRetriesInMs     = IFileUploaderCommandable.Defaults.SleepTimeBetweenRetriesInMs,
+            int         gracefulCancellationTimeoutInMs = IFileUploaderCommandable.Defaults.GracefulCancellationTimeoutInMs,
+            int         timeoutPerUploadInMs            = IFileUploaderCommandable.Defaults.TimeoutPerUploadInMs,
+            int         maxTriesPerUpload               = IFileUploaderCommandable.Defaults.MaxTriesPerUpload,
+            bool        moveToNextUploadInCaseOfError   = IFileUploaderCommandable.Defaults.MoveToNextUploadInCaseOfError,
+            bool        autodisposeStreams              = IFileUploaderCommandable.Defaults.AutodisposeStreams,
+            ELogLevel?  minimumNativeLogLevel           = null,
+
+            int? initialMtuSize = null,
+            int? pipelineDepth = null,
+            int? byteAlignment = null,
+            int? windowCapacity = null,
+            int? memoryAlignment = null
         ) where TData : notnull //@formatter:on
         {
             await EnsureExclusiveOperationTokenAsync().ConfigureAwait(false); //keep this outside of the try-finally block!
@@ -40,7 +42,7 @@ namespace Laerdal.McuMgr.FileUploading
             {
                 ResetInternalStateTidbits();
 
-                return await MultiUploadCoreAsync_();
+                return await MultiUploadCoreAsync_().ConfigureAwait(false);
             }
             finally
             {
@@ -80,6 +82,7 @@ namespace Laerdal.McuMgr.FileUploading
                             gracefulCancellationTimeoutInMs: gracefulCancellationTimeoutInMs,
 
                             autodisposeStream: autodisposeStreams,
+                            minimumNativeLogLevel: minimumNativeLogLevel,
 
                             initialMtuSize: initialMtuSize, //    both ios and android
                             pipelineDepth: pipelineDepth, //      ios only

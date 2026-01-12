@@ -130,11 +130,12 @@ namespace Laerdal.McuMgr.FileUploading
                 byte[] data,
                 string resourceId,
                 string remoteFilePath,
-                int? initialMtuSize, //both ios and android
-                int? pipelineDepth, //   ios
-                int? byteAlignment, //   ios
-                int? windowCapacity, //  android
-                int? memoryAlignment //  android
+                ELogLevel? minimumNativeLogLevel = null,
+                int? initialMtuSize = null, //both ios and android
+                int? pipelineDepth = null, //   ios
+                int? byteAlignment = null, //   ios
+                int? windowCapacity = null, //  android
+                int? memoryAlignment = null //  android
             ) // ReSharper enable UnusedParameter.Local
             {
                 // ReSharper disable once RedundantBaseQualifier
@@ -142,10 +143,17 @@ namespace Laerdal.McuMgr.FileUploading
                     data: data,
                     resourceId: resourceId,
                     remoteFilePath: remoteFilePath,
+                    minimumNativeLogLevelNumeric: (int) (minimumNativeLogLevel ?? ELogLevel.Error),
                     initialMtuSize: initialMtuSize ?? -1,
                     windowCapacity: windowCapacity ?? -1,
                     memoryAlignment: memoryAlignment ?? -1
                 ));
+            }
+            
+            // ReSharper disable once RedundantOverriddenMember
+            public bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel)
+            {
+                return base.TrySetMinimumNativeLogLevel((int) minimumNativeLogLevel);
             }
             
             // ReSharper disable once RedundantOverriddenMember

@@ -14,6 +14,7 @@ namespace Laerdal.McuMgr.FileDownloading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            ELogLevel? minimumNativeLogLevel = null,
             int? initialMtuSize = null,
             int? windowCapacity = null //not applicable currently   but nordic considers these for future use
         )
@@ -28,6 +29,8 @@ namespace Laerdal.McuMgr.FileDownloading
                     remoteFilePath: remoteFilePath,
                     hostDeviceModel: hostDeviceModel,
                     hostDeviceManufacturer: hostDeviceManufacturer,
+                    
+                    minimumNativeLogLevel: minimumNativeLogLevel,
 
                     initialMtuSize: initialMtuSize,
                     windowCapacity: windowCapacity
@@ -43,6 +46,7 @@ namespace Laerdal.McuMgr.FileDownloading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            ELogLevel? minimumNativeLogLevel,
             int? initialMtuSize,
             int? windowCapacity //not applicable currently   but nordic considers these for future use
         )
@@ -77,7 +81,8 @@ namespace Laerdal.McuMgr.FileDownloading
 
             var verdict = NativeFileDownloaderProxy.NativeBeginDownload(
                 remoteFilePath: remoteFilePath,
-                initialMtuSize: initialMtuSize
+                initialMtuSize: initialMtuSize,
+                minimumNativeLogLevel: minimumNativeLogLevel
             );
             if (verdict != EFileDownloaderVerdict.Success)
                 throw verdict switch

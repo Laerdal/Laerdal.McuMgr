@@ -87,7 +87,7 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>2.53.34</Version>
+        <Version>9.0.150.0</Version>
 
         <FileVersion>$(Version)</FileVersion>
         <PackageVersion>$(Version)</PackageVersion>
@@ -211,22 +211,22 @@
     
     <!-- ANDROID -->
     <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="2.53.34"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="9.0.150.0"/>
     </ItemGroup>
 
     <!-- IOS -->
     <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="2.53.34"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="9.0.150.0"/>
     </ItemGroup>
 
     <!-- MACCATALYST -->
     <ItemGroup Condition=" '$(IsNetXMacCatalyst)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="2.53.34"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.MacCatalyst" Version="9.0.150.0"/>
     </ItemGroup>
 
     <!-- NETSTANDARD -->
     <ItemGroup Condition=" '$(IsDudNet8_0)' == 'true' ">
-        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="2.53.34"/>
+        <PackageReference Include="Laerdal.McuMgr.Bindings.NetStandard" Version="9.0.150.0"/>
     </ItemGroup>
 
 </Project>

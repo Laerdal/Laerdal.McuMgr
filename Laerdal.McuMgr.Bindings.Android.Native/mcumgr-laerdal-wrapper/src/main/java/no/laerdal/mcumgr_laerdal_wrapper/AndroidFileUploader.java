@@ -18,6 +18,8 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFileUploader
 {
+    private EAndroidLoggingLevel _minimumNativeLogLevel = EAndroidLoggingLevel.Error;
+
     private Context _context;
     private BluetoothDevice _bluetoothDevice;
 
@@ -100,12 +102,14 @@ public class AndroidFileUploader
      *                        Note that if less than 0 it gets ignored and if it doesn't fall within the range [23, 517] it will cause a hard error.
      * @param windowCapacity  specifies the windows-capacity for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
      * @param memoryAlignment specifies the memory-alignment to use for the data transfers of the BLE connection - if zero or negative the value provided gets ignored and will be set to 1 by default
+     * @param minimumNativeLogLevelNumeric sets the minimum log-level for the native-layer logging - see EAndroidLoggingLevel for details
      * @return a verdict indicating whether the file uploading was started successfully or not
      */
     public EAndroidFileUploaderVerdict beginUpload(
             final String resourceId,
             final String remoteFilePath,
             final byte[] data,
+            final int minimumNativeLogLevelNumeric,
             final int initialMtuSize,
             final int windowCapacity,
             final int memoryAlignment
@@ -131,6 +135,8 @@ public class AndroidFileUploader
 
             return EAndroidFileUploaderVerdict.FAILED__INVALID_SETTINGS;
         }
+
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
 
         _resourceId = resourceId;
         _remoteFilePathSanitized = remoteFilePath.trim();
@@ -204,6 +210,13 @@ public class AndroidFileUploader
 
         //00   file-uploader is the new improved way of performing the file upload   it makes use of the window uploading mechanism
         //     aka sending multiple packets without waiting for the response
+    }
+
+    public boolean trySetMinimumNativeLogLevel(final int minimumNativeLogLevelNumeric)
+    {
+        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
+
+        return true;
     }
 
     private void resetUploadState()
@@ -633,12 +646,18 @@ public class AndroidFileUploader
     private final String DefaultLogCategory = "FileUploader";
     private void logInBg(final String message, final EAndroidLoggingLevel level)
     {
+        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
+            return;
+
         String resourceIdSnapshot = _resourceId; //snapshot
         fireAndForgetInTheBg(() -> logMessageAdvertisement(message, DefaultLogCategory, level.toString(), resourceIdSnapshot));
     }
 
     public void log(final String message, final EAndroidLoggingLevel level)
     {
+        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
+            return;
+
         logMessageAdvertisement(message, DefaultLogCategory, level.toString(), _resourceId);
     }
 
@@ -659,7 +678,7 @@ public class AndroidFileUploader
             final String resourceIdSnapshot = _resourceId; //order
             final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized; //order
             fireAndForgetInTheBg(() -> {
-                int fileUploadProgressPercentage = (int) (totalBytesSentSoFar * 100.f / totalBytesToBeUploaded);
+                int fileUploadProgressPercentage = totalBytesToBeUploaded == 0 ? 100 : (int) (totalBytesSentSoFar * 100.f / totalBytesToBeUploaded);
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestampInMs);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestampInMs);
 

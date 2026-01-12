@@ -110,6 +110,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             private int _tryCounter;
             public override EFileDownloaderVerdict NativeBeginDownload(
                 string remoteFilePath,
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null //  android only
             )
             {
@@ -117,6 +118,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
 
                 base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,
+                    minimumNativeLogLevel: minimumNativeLogLevel,
                     initialMtuSize: initialMtuSize //   android only
                 );
                 

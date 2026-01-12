@@ -40,7 +40,7 @@ namespace Laerdal.McuMgr.FileUploading
                 OnFileUploadPaused(new(resourceId: resourceId, remoteFilePath: remoteFilePath)); //                                                  of the native layer
             }
         
-            await KeepGoing.WaitAsync(); //10
+            await KeepGoing.WaitAsync().ConfigureAwait(false); //10
             
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(FileUploader));
@@ -58,7 +58,7 @@ namespace Laerdal.McuMgr.FileUploading
             //    transfers so we will emit the paused/resumed events here to keep things consistent
             //
             //10  we just want to check if we are paused/cancelled   this will block if we are paused
-            //    immediately release again   we dont want to postpone this any longer than necessary
+            //    immediately   we dont want to postpone this any longer than necessary
         }
     }
 }

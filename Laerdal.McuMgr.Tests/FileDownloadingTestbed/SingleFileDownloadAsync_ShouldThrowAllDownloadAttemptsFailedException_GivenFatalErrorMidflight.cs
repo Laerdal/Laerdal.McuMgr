@@ -92,7 +92,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
                 _ = mockedFileData;
             }
 
-            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             {
                 base.NativeBeginDownload(
                     remoteFilePath: remoteFilePath,

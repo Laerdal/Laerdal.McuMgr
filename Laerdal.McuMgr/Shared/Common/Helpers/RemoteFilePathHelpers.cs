@@ -72,14 +72,14 @@ namespace Laerdal.McuMgr.Common.Helpers
             //00  we spot this very common mistake and stop it right here    otherwise it causes a very cryptic error
         }
         
-        //used by the uploader
+        //used by the uploader    it is absolutely vital to preserve the given insertion order here!
         static internal FrozenDictionary<string, T> SanitizeRemoteFilePathsWithData<T>(IDictionary<string, T> remoteFilePathsWithTheirDataBytes)
         {
             remoteFilePathsWithTheirDataBytes = remoteFilePathsWithTheirDataBytes ?? throw new ArgumentNullException(nameof(remoteFilePathsWithTheirDataBytes));
 
             var isAlreadySane = remoteFilePathsWithTheirDataBytes.Select(x => x.Key).All(path => path == SanitizeRemoteFilePath(path));
             if (isAlreadySane)
-                return remoteFilePathsWithTheirDataBytes.ToFrozenDictionary(); //optimization
+                return remoteFilePathsWithTheirDataBytes as FrozenDictionary<string, T> ?? remoteFilePathsWithTheirDataBytes.ToFrozenDictionary(); //optimization
 
             var results = new Dictionary<string, T>(remoteFilePathsWithTheirDataBytes.Count);
             foreach (var pathWithDataBytes in remoteFilePathsWithTheirDataBytes)

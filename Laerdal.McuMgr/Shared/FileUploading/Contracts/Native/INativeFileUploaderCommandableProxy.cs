@@ -1,4 +1,5 @@
-﻿using Laerdal.McuMgr.FileUploading.Contracts.Enums;
+﻿using Laerdal.McuMgr.Common.Enums;
+using Laerdal.McuMgr.FileUploading.Contracts.Enums;
 
 namespace Laerdal.McuMgr.FileUploading.Contracts.Native
 {
@@ -8,11 +9,13 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Native
         bool TryResume();
         bool TryCancel(string reason = "");
         bool TryDisconnect();
+        bool TrySetMinimumNativeLogLevel(ELogLevel level);
 
         EFileUploaderVerdict NativeBeginUpload(
             byte[] data,
             string resourceId,
             string remoteFilePath,
+            ELogLevel? minimumNativeLogLevel = null,
             int? initialMtuSize = null,
             int? pipelineDepth = null,
             int? byteAlignment = null,

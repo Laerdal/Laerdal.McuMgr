@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileDownloading.Contracts.Exceptions;
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts
@@ -30,6 +31,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <param name="remoteFilePaths">The remote files to download.</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="minimumNativeLogLevel">The minimum log level required for the native log messages emitted by the ongoing download operation to be actually advertised</param> 
         /// <param name="timeoutPerDownloadInMs">The amount of time to wait for each download to complete before skipping it.</param>
         /// <param name="maxTriesPerDownload">The maximum amount of tries per download before skipping and moving over to the next download.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
@@ -61,6 +63,8 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
             int maxTriesPerDownload              = Defaults.MaxTriesPerDownload,
             int sleepTimeBetweenRetriesInMs      = Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs  = Defaults.GracefulCancellationTimeoutInMs,
+            
+            ELogLevel? minimumNativeLogLevel     = null,
 
             int? initialMtuSize = null,
             int? windowCapacity = null,
@@ -77,6 +81,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <param name="maxTriesCount">The maximum amount of tries before bailing out with <see cref="AllFileDownloadAttemptsFailedException"/>.</param>
         /// <param name="sleepTimeBetweenRetriesInMs">The amount of time to sleep between retries.</param>
         /// <param name="gracefulCancellationTimeoutInMs">The time to wait (in milliseconds) for a cancellation request to be properly handled. If this timeout expires then the mechanism will bail out forcefully without waiting for the underlying native code to cleanup properly.</param>
+        /// <param name="minimumNativeLogLevel">The minimum log level required for the native log messages emitted by the ongoing download operation to be actually advertised</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -105,6 +110,8 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
             int sleepTimeBetweenRetriesInMs     = Defaults.SleepTimeBetweenRetriesInMs,
             int gracefulCancellationTimeoutInMs = Defaults.GracefulCancellationTimeoutInMs,
             
+            ELogLevel? minimumNativeLogLevel    = null,
+            
             int? initialMtuSize = null,
             int? windowCapacity = null
         ); //@formatter:on
@@ -115,6 +122,7 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         /// <param name="remoteFilePath">The remote file to download.</param>
         /// <param name="hostDeviceModel">The device-model of the host-device</param>
         /// <param name="hostDeviceManufacturer">The manufacturer of the host-device</param>
+        /// <param name="minimumNativeLogLevel">The minimum log level for the ongoing download operation</param>
         /// <param name="initialMtuSize">Set the initial MTU size for the connection employed by the firmware-installation (on Android this is useful to deal with
         ///     some problematic devices such as Samsung A8 tablets). On Android acceptable custom values must lay within the range [23, 517] and if the value provided
         ///     is null, zero or negative it will default to 498. Note that in quirky devices like Samsung Galaxy A8 the only value that works is 23 - anything else fails.
@@ -127,12 +135,20 @@ namespace Laerdal.McuMgr.FileDownloading.Contracts
         ///     before https://github.com/zephyrproject-rtos/zephyr/pull/41959 was merged, the device required data to be sent with memory alignment.
         ///     Otherwise, the device would ignore uneven bytes and reply with lower than expected offset
         ///     causing multiple packets to be sent again dropping the speed instead of increasing it.</param>
-        Task BeginDownloadAsync(string remoteFilePath,
+        Task BeginDownloadAsync(
+            string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            ELogLevel? minimumNativeLogLevel = null,
             int? initialMtuSize = null,
-            int? windowCapacity = null);
-
+            int? windowCapacity = null
+        );
+        
+        /// <summary>Sets the minimum native-log-level for the ongoing download operation</summary>
+        /// <param name="minimumNativeLogLevel">The minimum log level to set</param>
+        /// <returns>Always returns true</returns>
+        bool TrySetMinimumNativeLogLevel(ELogLevel minimumNativeLogLevel);
+        
         /// <summary>Pauses the file-uploading process</summary>
         /// <returns>True if the pausing request was successfully effectuated (or if the transfer was already paused) - False otherwise which typically means that the underlying transport has been dispoed</returns>
         bool TryPause();

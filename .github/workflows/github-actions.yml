@@ -60,14 +60,14 @@ jobs:
     steps:
 
       - name: '🔽 Checkout'
-        uses: 'actions/checkout@v5'
+        uses: 'actions/checkout@v6'
         with:
           fetch-tags: true # https://github.com/actions/checkout/issues/1471#issuecomment-1771231294
           fetch-depth: 0
 
       - name: '🗂️ Try Restore Dotnet NuGets from Cache'
         id: 'cache-dotnet-nugets'
-        uses: 'actions/cache@v4'
+        uses: 'actions/cache@v5'
         with:
           path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
             ~/.nuget/packages
@@ -78,7 +78,7 @@ jobs:
 
       - name: '🗂️ Try Restore Dotnet Workloads from Cache'
         id: 'cache-dotnet-workloads'
-        uses: 'actions/cache@v4'
+        uses: 'actions/cache@v5'
         with:
           path: | # the 1st directory is for macos/*nix and the 2nd one is for windows
             ~/.dotnet
@@ -142,7 +142,7 @@ jobs:
           rm   "./dependency_tracker_private_signing_key.ppk"    "./dependency_tracker_api_key.ppk"
 
       - name: '⬆️ Upload Artifacts' # to share with other workflows   https://stackoverflow.com/a/77663335/863651
-        uses: 'actions/upload-artifact@v4'
+        uses: 'actions/upload-artifact@v6'
         with:
           name: 'Artifacts'
           path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'

@@ -94,7 +94,7 @@ namespace Laerdal.McuMgr.Tests.FileDownloadingTestbed
             }
 
             private int _tryCount;
-            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, int? initialMtuSize = null)
+            public override EFileDownloaderVerdict NativeBeginDownload(string remoteFilePath, ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             {
                 _tryCount++;
 

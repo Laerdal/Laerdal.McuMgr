@@ -16,6 +16,7 @@ namespace Laerdal.McuMgr.FileUploading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            ELogLevel? minimumNativeLogLevel = null,
             int? initialMtuSize = null,
             int? pipelineDepth = null, //  ios
             int? byteAlignment = null, //  ios
@@ -38,6 +39,8 @@ namespace Laerdal.McuMgr.FileUploading
                     hostDeviceModel: hostDeviceModel,
                     hostDeviceManufacturer: hostDeviceManufacturer,
                     
+                    minimumNativeLogLevel: minimumNativeLogLevel,
+                    
                     initialMtuSize: initialMtuSize,
                     pipelineDepth: pipelineDepth,
                     byteAlignment: byteAlignment,
@@ -57,11 +60,14 @@ namespace Laerdal.McuMgr.FileUploading
             string remoteFilePath,
             string hostDeviceModel,
             string hostDeviceManufacturer,
+            ELogLevel? minimumNativeLogLevel,
             int? initialMtuSize,
             int? pipelineDepth, //  ios
             int? byteAlignment, //  ios
             int? windowCapacity, // android
-            int? memoryAlignment // android
+            int? memoryAlignment
+
+            // android
         )
         {
             if (string.IsNullOrWhiteSpace(hostDeviceModel))
@@ -109,6 +115,8 @@ namespace Laerdal.McuMgr.FileUploading
                 remoteFilePath: remoteFilePath,
 
                 initialMtuSize: initialMtuSize,
+                minimumNativeLogLevel: minimumNativeLogLevel,
+                
                 pipelineDepth: pipelineDepth,
                 byteAlignment: byteAlignment,
                 windowCapacity: windowCapacity,

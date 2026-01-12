@@ -5,6 +5,8 @@
 # -x: log all commands
 # -o pipefail: entire command fails if pipe fails. watch out for yes | ...
 # -o history: record shell history
+
+# set -xo pipefail -o history
 # set -exo pipefail -o history
 
 # This script is used to generate a version number for a release
@@ -98,7 +100,8 @@ function escape_regex_string() {
 }
 
 # Check if git branch -r contains develop
-git fetch --all
+git fetch --all --quiet >/dev/null 2>&1 || true
+
 if git branch -r | grep -q "^\s*$(escape_regex_string "$remote_name/develop")$"; then
     develop_branch="develop"
     info "develop_branch=$develop_branch (git branch -r)"
@@ -602,6 +605,7 @@ if [ "${GITHUB_STEP_SUMMARY}" != "" ]; then
     echo "</details>" >>"$GITHUB_STEP_SUMMARY"
 fi
 
+# the very last line printed on stdout *must* be the full-version otherwise the build-systems calling this sh-script will most definately break!
 echo "$version_full"
 
 exit 0

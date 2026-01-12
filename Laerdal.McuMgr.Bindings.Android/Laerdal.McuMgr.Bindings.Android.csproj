@@ -57,7 +57,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>2.53.34</Version>
+        <Version>9.0.150.0</Version>
 
         <FileVersion>$(Version)</FileVersion>
         <PackageVersion>$(Version)</PackageVersion>
@@ -137,7 +137,7 @@
 
         <!-- the mcumgr-file-uploading aspect KotlinX.Coroutines jars with version 1.7+ -->
         <!-- to work as intended otherwise we get missing symbols errors in runtime     -->
-        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.2.10" />
+        <PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.2.20" />
         <PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.10.2.1" />
     </ItemGroup>
 

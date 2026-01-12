@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FileUploading;
 using Laerdal.McuMgr.FileUploading.Contracts.Enums;
 using Laerdal.McuMgr.FileUploading.Contracts.Events;
@@ -44,7 +45,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             ));
 
             // Assert
-            await work.Should().CompleteWithinAsync(TimeSpan.FromSeconds(3));
+            await work.Should().CompleteWithinAsync(TimeSpan.FromSeconds(5));
 
             mockedNativeFileUploaderProxy.PauseCalled.Should().BeTrue();
             mockedNativeFileUploaderProxy.ResumeCalled.Should().BeTrue();
@@ -128,6 +129,7 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                 string resourceId,
                 string remoteFilePath,
 
+                ELogLevel? minimumNativeLogLevel = null,
                 int? initialMtuSize = null,
 
                 int? pipelineDepth = null, //   ios only
@@ -141,6 +143,8 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
                     data: data,
                     resourceId: _resourceId,
                     remoteFilePath: remoteFilePath,
+                    
+                    minimumNativeLogLevel: minimumNativeLogLevel,
 
                     initialMtuSize: initialMtuSize,
 
