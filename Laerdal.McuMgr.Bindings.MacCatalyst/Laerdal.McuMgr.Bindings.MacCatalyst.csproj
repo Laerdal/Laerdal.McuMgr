@@ -122,6 +122,12 @@
     <ItemGroup Condition=" '$(IsHostMachineOSX)' == 'true' ">
         <ObjcBindingCoreSource Include="iOS\ObjcBinding\Sharpie_Generated\StructsAndEnums.cs"/>
         <ObjcBindingApiDefinition Include="iOS\ObjcBinding\Sharpie_Generated\ApiDefinitions.cs"/>
+
+        <!--  maccatalyst does not need a reference to xamarin.ios.* nugets because it targets Swift 6.0 which is even newer Swift 5.1 at which point       -->
+        <!--  the language became abi-stable   this means the necessary Swift dynamic libraries (dylibs) are included in the macos operating system itself  -->
+        <!--                                                                                                                                                -->
+        <!--         <PackageReference   Condition=" '$(IsXamarinIos)' == 'true' "   Include="Xamarin.iOS.SwiftRuntimeSupport"   Version="0.2.1" />         -->
+        <!--                                                                                                                                                -->
     </ItemGroup>
 
     <Target Name="SpicNSpan" AfterTargets="Clean">
