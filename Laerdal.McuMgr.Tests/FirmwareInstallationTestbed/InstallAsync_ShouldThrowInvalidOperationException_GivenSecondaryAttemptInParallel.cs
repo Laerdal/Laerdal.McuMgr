@@ -1,3 +1,4 @@
+#pragma warning disable xUnit1026
 #pragma warning disable xUnit1030
 
 using FluentAssertions;
@@ -7,8 +8,6 @@ using Laerdal.McuMgr.FirmwareInstallation.Contracts.Events;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions;
 using Laerdal.McuMgr.FirmwareInstallation.Contracts.Native;
 using GenericNativeFirmwareInstallerCallbacksProxy_ = Laerdal.McuMgr.FirmwareInstallation.FirmwareInstaller.GenericNativeFirmwareInstallerCallbacksProxy;
-
-#pragma warning disable xUnit1026
 
 namespace Laerdal.McuMgr.Tests.FirmwareInstallationTestbed
 {
