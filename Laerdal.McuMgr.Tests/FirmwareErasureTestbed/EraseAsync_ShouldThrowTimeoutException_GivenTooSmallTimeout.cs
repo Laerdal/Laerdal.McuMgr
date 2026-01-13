@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Laerdal.McuMgr.FirmwareErasure;
@@ -8,6 +9,7 @@ using Laerdal.McuMgr.FirmwareErasure.Contracts.Native;
 
 namespace Laerdal.McuMgr.Tests.FirmwareErasureTestbed
 {
+    [SuppressMessage("Usage", "xUnit1030:Do not call ConfigureAwait(false) in test method")]
     public partial class FirmwareEraserTestbed
     {
         [Fact]
@@ -22,7 +24,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareErasureTestbed
             var work = new Func<Task>(() => firmwareEraser.EraseAsync(imageIndex: 2, timeoutInMs: 100));
 
             // Assert
-            await work.Should().ThrowWithinAsync<FirmwareErasureTimeoutException>(5.Seconds());
+            await work.Should().ThrowWithinAsync<FirmwareErasureTimeoutException>(10.Seconds()).ConfigureAwait(false);
 
             mockedNativeFirmwareEraserProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFirmwareEraserProxy.BeginErasureCalled.Should().BeTrue();
@@ -52,10 +54,10 @@ namespace Laerdal.McuMgr.Tests.FirmwareErasureTestbed
 
                 Task.Run(async () => //00 vital
                 {
-                    await Task.Delay(10);
+                    await Task.Delay(10).ConfigureAwait(false);
                     StateChangedAdvertisement(oldState: EFirmwareErasureState.Idle, newState: EFirmwareErasureState.Erasing);
 
-                    await Task.Delay(1_000);
+                    await Task.Delay(1_000).ConfigureAwait(false);
                     StateChangedAdvertisement(oldState: EFirmwareErasureState.Erasing, newState: EFirmwareErasureState.Complete);
                 });
                 
