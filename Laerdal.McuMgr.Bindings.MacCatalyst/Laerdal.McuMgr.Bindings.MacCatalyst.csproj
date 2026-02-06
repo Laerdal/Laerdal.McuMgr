@@ -45,7 +45,7 @@
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                                                                        -->
         <!-- <Laerdal_Bindings_MacCatalyst___Sdk_Version Condition="              '$(Laerdal_Bindings_MacCatalyst___Sdk_Version)'        == '' ">18.0</Laerdal_Bindings_MacCatalyst___Sdk_Version>                                                                -->
-        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath)' == '' ">/Applications/Xcode_16.1.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath>  -->
+        <!-- <Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath Condition=" '$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath)' == '' ">/Applications/Xcode_16.2.app/Contents/Developer</Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath>  -->
     </PropertyGroup>
 
     <PropertyGroup>

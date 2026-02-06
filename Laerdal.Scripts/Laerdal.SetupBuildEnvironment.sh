@@ -172,19 +172,18 @@ echo    "--------------------------------------------------"
 cat    Laerdal.McuMgr.Bindings.Android.Native/gradle.properties
 echo    "--------------------------------------------------"
 
-# this is vital in order to select ios 16.1+
-
 echo "** XCode Installations:"
-
 ls  -ld  /Applications/Xcode* || exit 90
 
-#sudo   xcode-select   -s   /Applications/Xcode.app/Contents/Developer
-#declare exitCode=$?
-#if [ $exitCode != 0 ]; then
-#  echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
-#  exit 90
-#fi
-#echo
+# this is vital in order to select ios 16.2+
+#
+# sudo   xcode-select   -s   /Applications/Xcode.app/Contents/Developer
+# declare exitCode=$?
+# if [ $exitCode != 0 ]; then
+#   echo "##vso[task.logissue type=error]Failed to apply 'xcode-select'."
+#   exit 90
+# fi
+# echo
 
 echo
 echo "** XCode SDKs:"
