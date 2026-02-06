@@ -50,7 +50,7 @@ jobs:
   
   build:
 
-    runs-on: 'macos-15' # need a macos image that supports xcode 16.1+
+    runs-on: 'macos-15' # need a macos image that supports xcode 16.2+
     
     #   variable substitution is not supported in github at all    so we cant do stuff like this
     #
