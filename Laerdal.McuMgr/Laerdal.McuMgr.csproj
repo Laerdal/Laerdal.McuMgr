@@ -71,53 +71,44 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <Summary>Pure C# High-Level API Around the 'Laerdal.McuMgr.Bindings.*' Family of Nugets</Summary>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
+
         <PackageId>Laerdal.McuMgr</PackageId>
         <PackageTags>Laerdal;MAUI;Nordic;McuMgr;Tools;Firmware;</PackageTags>
-        <PackageDescription>Managed wrapper around 'Laerdal.McuMgr.Bindings.*' for iOS, Android and NetStandard - MAUI ready</PackageDescription>
+        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageDescription>Pure C# High-Level API Around the 'Laerdal.McuMgr.Bindings.*' Family of Nugets for iOS, MacCatalyst and Android (and pure dotnetX too but only as a dummy)</PackageDescription>
+
+        <IncludeSource>True</IncludeSource>
+        <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>True</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>True</PublishRepositoryUrl>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
         <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
-        <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
-        <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
         <!-- sourcelink: Include PDB in the built .nupkg -->
+        <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
-        <!-- these versions are getting replaced by the build script in one swift pass -->
-        <Version>9.0.150.0</Version>
-
+        <Version>9.0.150.0</Version> <!-- @formatter:off these versions are getting replaced by the build script in one swift pass -->
         <FileVersion>$(Version)</FileVersion>
-        <PackageVersion>$(Version)</PackageVersion>
-        <AssemblyVersion>$(Version)</AssemblyVersion>
-        
-        <!-- keep this because it is needed to generate the *-force-dud nuget packages! -->
-        <PackageVersion>$(PackageVersion)$(PackageVersionPostfix)</PackageVersion>
+        <AssemblyVersion>$(Version)</AssemblyVersion> <!-- order -->
+        <PackageVersion>$(Version)$(PackageVersionPostfix)</PackageVersion> <!-- order    keep last   we need $(PackageVersionPostfix) to generate the *-force-dud nuget packages! @formatter:on -->
 
         <Title>$(PackageId)</Title>
         <Owners>$(Authors)</Owners>
-        <Summary>McuMgr Managed-Wrapper Library</Summary>
-        <Authors>François Raminosona, Kyriakos Sidiropoulos, Laerdal</Authors>
         <Copyright>$(Authors)</Copyright>
         <Description>$(PackageDescription)</Description>
-        <RepositoryType>git</RepositoryType>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</PackageProjectUrl>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-        <IncludeSource>True</IncludeSource>
-        <IncludeSymbols>True</IncludeSymbols>
-
-        <!-- see : https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-
-        <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-        <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
-        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources> <!-- @formatter:off   tells sourcelink to embed source files that are not tracked by the source control manager to the pdb -->        
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!--      per https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
+        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages> <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName.  @formatter:on -->
 
         <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
         <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->

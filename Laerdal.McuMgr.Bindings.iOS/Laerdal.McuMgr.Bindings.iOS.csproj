@@ -42,7 +42,7 @@
 
         <!-- set these explicitly here only for experimentation    as far as cicd is concerned these values should be set in the .yml file of the pipeline                                                                                -->
         <!-- <Laerdal_Bindings_iOS___Sdk_Version Condition="              '$(Laerdal_Bindings_iOS___Sdk_Version)'              == '' ">18.0</Laerdal_Bindings_iOS___Sdk_Version>                                                          -->
-        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath Condition=" '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath)' == '' ">/Applications/Xcode_16.1.app/Contents/Developer/</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath> -->
+        <!-- <Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath Condition=" '$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath)' == '' ">/Applications/Xcode_16.2.app/Contents/Developer/</Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath> -->
     </PropertyGroup>
 
     <PropertyGroup>
@@ -57,52 +57,50 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <Summary>C# McuMgr Bindings for iOS</Summary>
+        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
+
         <PackageId>Laerdal.McuMgr.Bindings.iOS</PackageId>
-        <PackageTags>MAUI;Nordic;McuMgr;Bindings;iOS;Mac;</PackageTags>
-        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageDescription>C# bindings around Nordic's McuMgr-related native libs for iOS.</PackageDescription>
-
+        <PackageTags>Laerdal;MAUI;Nordic;McuMgr;Tools;Firmware;Bindings;Net9;iOS;</PackageTags>
         <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">../Artifacts</PackageOutputPath>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageDescription>C# bindings around Nordic's McuMgr-related native-libs for iOS</PackageDescription>
 
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IncludeSource>True</IncludeSource>
+        <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>True</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>True</PublishRepositoryUrl>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Laerdal/Laerdal.McuMgr</PackageProjectUrl>
 
         <!-- sourcelink: Include PDB in the built .nupkg -->
-        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
         <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.pdb</AllowedReferenceRelatedFileExtensions>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- these versions are getting replaced by the build script in one swift pass -->
         <Version>9.0.150.0</Version>
-
         <FileVersion>$(Version)</FileVersion>
         <PackageVersion>$(Version)</PackageVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
 
         <Title>$(PackageId)</Title>
-        <Summary>McuMgr Bindings for iOS - MAUI ready</Summary>
-        <Description>$(PackageDescription)</Description>
-        <Authors>Kyriakos Sidiropoulos, François Raminosona, Laerdal</Authors>
         <Owners>$(Authors)</Owners>
         <Copyright>$(Authors)</Copyright>
+        <Description>$(PackageDescription)</Description>
 
-        <RepositoryUrl>https://github.com/Laerdal/Laerdal.McuMgr.git</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources> <!-- @formatter:off                             tells sourcelink to embed source files that are not tracked by the source control manager to the pdb -->
+        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages> <!--    warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!--                                per https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/   @formatter:on -->
 
-        <IncludeSource>true</IncludeSource>
-        <IncludeSymbols>true</IncludeSymbols>
-
-        <!-- see : https://cezarypiatek.github.io/post/managing-output-in-sdk-projects/ -->
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-
-        <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-        <!-- warning MSB9004: ManifestResourceWithNoCulture item type is deprecated. Emit EmbeddedResource items instead, with metadata WithCulture='false', Type='Resx', and optional LogicalName. -->
-        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB9004</MSBuildWarningsAsMessages>
+        <!-- WARN : SecureDFUServiceInitiator.g.cs: [CS0114] 'SecureDFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)' hides inherited member        -->
+        <!-- 'DFUServiceInitiator.StartWithTargetWithIdentifier(NSUuid)'. To make the current member override that implementation, add the override keyword. -->
+        <!-- Otherwise add the new keyword. Can be ignored.                                                                                                  -->
+        <NoWarn>$(NoWarn);CS0114;CS0618;CS0108;NETSDK1202;CA1008;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
