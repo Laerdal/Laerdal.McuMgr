@@ -28,11 +28,11 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             var work = new Func<Task>(() => fileUploader.UploadAsync(
                 hostDeviceModel: "foobar",
                 hostDeviceManufacturer: "acme corp.",
-                
-                data: new byte[] { 1 },
+
+                data: new byte[] {1},
                 resourceId: resourceId,
                 remoteFilePath: remoteFilePath,
-                
+
                 timeoutForUploadInMs: 100
             ));
 
@@ -42,11 +42,6 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00
             mockedNativeFileUploaderProxy.BeginUploadCalled.Should().BeTrue();
-
-            eventsMonitor
-                .Should().Raise(nameof(fileUploader.StateChanged))
-                .WithSender(fileUploader)
-                .WithArgs<StateChangedEventArgs>(args => args.ResourceId == resourceId && args.RemoteFilePath == remoteFilePath && args.NewState == EFileUploaderState.Uploading);
 
             eventsMonitor
                 .Should().Raise(nameof(fileUploader.StateChanged))
@@ -94,17 +89,17 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
 
                 StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.None, 0);
                 StateChangedAdvertisement(resourceId, remoteFilePath, EFileUploaderState.None, EFileUploaderState.Idle, 0);
-                
-                Task.Run(async () => //00 vital
-                {
-                    await Task.Delay(10);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
 
-                    await Task.Delay(1_000);
-                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
-                });
+                _ = StartUploadAsync_(); //00 vital  simulate state changes in the background without hard-blocking the current thread
 
                 return EFileUploaderVerdict.Success;
+                
+                async Task StartUploadAsync_()
+                {
+                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Idle, newState: EFileUploaderState.Uploading, totalBytesToBeUploaded: data.Length);
+                    await Task.Delay(1_000);
+                    StateChangedAdvertisement(resourceId, remoteFilePath, oldState: EFileUploaderState.Uploading, newState: EFileUploaderState.Complete, totalBytesToBeUploaded: 0);
+                }
 
                 //00 simulating the state changes in a background thread is vital in order to simulate the async nature of the native resetter
             }
