@@ -274,9 +274,9 @@ namespace Laerdal.McuMgr.FileDownloading
                 {
                     taskCompletionSource.TrySetException(ea_.GlobalErrorCode switch
                     {
-                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileDownloadErroredOutRemoteFileNotFoundException(remoteFilePath), // remote file not found
+                        EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileDownloadErroredOutRemoteFileNotFoundException(remoteFilePath), //             remote file not found
                         EGlobalErrorCode.SubSystemFilesystem_IsDirectory => new FileDownloadErroredOutRemotePathPointsToDirectoryException(remoteFilePath), // remote filepath points to a directory
-                        EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UnauthorizedException(remoteFilePath, ea_.ErrorMessage), // unauthorized
+                        EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new UnauthorizedException(remoteFilePath, ea_.ErrorMessage), //                unauthorized
                         _ => new FileDownloadErroredOutException(remoteFilePath, ea_.GlobalErrorCode)
                     });
                 }
