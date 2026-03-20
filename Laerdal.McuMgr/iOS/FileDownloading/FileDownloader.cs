@@ -225,7 +225,6 @@ namespace Laerdal.McuMgr.FileDownloading
             
             #endregion
 
-                        
             static private EFileDownloaderVerdict TranslateFileDownloaderVerdict(EIOSFileDownloadingInitializationVerdict verdict)
             {
                 if (verdict == EIOSFileDownloadingInitializationVerdict.Success) //0

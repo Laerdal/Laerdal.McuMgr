@@ -3,7 +3,7 @@ namespace Laerdal.McuMgr.Common.Enums
     public enum EGlobalErrorCode //@formatter:off https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager/issues/201#issuecomment-2440126159
     {
         Unset   = -99, //this is our own to mark that we haven't received any error code from the device
-        Generic =  -1, //in case the underlying native code receives an exception other than io.runtime.mcumgr.exception.McuMgrErrorException
+        Generic =  -1, //in case the underlying native code receives an exception other than io.runtime.mcumgr.exception.*Error
         
         // must mirror  mcumgr-core/src/main/java/io/runtime/mcumgr/exception/McuMgrErrorException.java
         McuMgrErrorBeforeSmpV2_Ok                       =  000,
@@ -86,7 +86,7 @@ namespace Laerdal.McuMgr.Common.Enums
         SubSystemFilesystem_Ok                          = 9000,
         SubSystemFilesystem_Unknown                     = 9001,
         SubSystemFilesystem_InvalidName                 = 9002,
-        SubSystemFilesystem_NotFound                    = 9003,
+        SubSystemFilesystem_NotFound                    = 9003, //when trying to download a file that doesnt exist on the remote device
         SubSystemFilesystem_IsDirectory                 = 9004,
         SubSystemFilesystem_OpenFailed                  = 9005,
         SubSystemFilesystem_SeekFailed                  = 9006,
@@ -105,5 +105,10 @@ namespace Laerdal.McuMgr.Common.Enums
         SubSystemShell_Unknown                          = 10001,
         SubSystemShell_CommandTooLong                   = 10002,
         SubSystemShell_EmptyCommand                     = 10003,
+        
+        SubSystemFileTransporter_GenericError                = 200 * 1000 + 0, //this is for the legacy FileTransferError in iOS that doesnt derive from zephyr
+        SubSystemFileTransporter_InvalidData                 = 200 * 1000 + 1,
+        SubSystemFileTransporter_InvalidPayload              = 200 * 1000 + 2,
+        SubSystemFileTransporter_MissingUploadConfiguration  = 200 * 1000 + 3,
     }
 }
