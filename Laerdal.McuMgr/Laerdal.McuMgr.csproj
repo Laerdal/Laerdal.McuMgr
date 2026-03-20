@@ -26,9 +26,9 @@
         <PackageVersionPostfix Condition=" '$(BuildOnlyDudNet8)' == 'true' ">-force-dud</PackageVersionPostfix>
 
         <TargetFrameworks>$(TargetFrameworks)net8.0;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true'                                                                                ">$(TargetFrameworks)net8.0-android;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(IsHostMachineOSX)' == 'true'                                            ">$(TargetFrameworks)net8.0-ios;</TargetFrameworks>
-        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(IsHostMachineOSX)' == 'true' and '$(Should_Skip_MacCatalyst)' != 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(Should_Skip_Android)'     != 'true'                                     ">$(TargetFrameworks)net8.0-android;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(Should_Skip_iOS)'         != 'true' and '$(IsHostMachineOSX)' == 'true' ">$(TargetFrameworks)net8.0-ios;</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(BuildOnlyDudNet8)' != 'true' and '$(Should_Skip_MacCatalyst)' != 'true' and '$(IsHostMachineOSX)' == 'true' ">$(TargetFrameworks)net8.0-maccatalyst</TargetFrameworks>
 
         <IsDudNet8_0 Condition="       '$(TargetFramework)'                                            == 'net8.0' ">true</IsDudNet8_0>
         <IsNet8 Condition="            '$(TargetFramework.ToLower().StartsWith(net8))'                 == 'true'   ">true</IsNet8>
@@ -201,12 +201,12 @@
     <!-- NUGETS -->
     
     <!-- ANDROID -->
-    <ItemGroup Condition=" '$(IsAndroid)' == 'true' ">
+    <ItemGroup Condition=" '$(IsAndroid)' == 'true' and '$(Should_Skip_Android)' != 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="9.0.150.0"/>
     </ItemGroup>
 
     <!-- IOS -->
-    <ItemGroup Condition=" '$(IsIOS)' == 'true' ">
+    <ItemGroup Condition=" '$(IsIOS)' == 'true' and '$(Should_Skip_iOS)' != 'true' ">
         <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="9.0.150.0"/>
     </ItemGroup>
 
