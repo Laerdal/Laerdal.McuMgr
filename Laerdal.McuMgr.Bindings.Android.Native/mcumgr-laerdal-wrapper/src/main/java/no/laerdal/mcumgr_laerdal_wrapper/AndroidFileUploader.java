@@ -593,7 +593,7 @@ public class AndroidFileUploader
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(
                 resourceIdSnapshot,
                 remoteFilePathSanitizedSnapshot,
-                errorMessage,
+                McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, exception),
                 McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
         ));
     }

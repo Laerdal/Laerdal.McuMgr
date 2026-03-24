@@ -4,13 +4,36 @@ import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.exception.McuMgrErrorException;
 import io.runtime.mcumgr.response.HasReturnCode;
 
+import java.util.Objects;
+
 final class McuMgrExceptionHelpers
 {
+    public static String FormatErrorMessageWithExceptionTypeAndMessage(final String errorMessage, final Exception exception) {
+        if (exception == null) {
+            return String.format("[NativeErrorType: nil] %s", errorMessage);
+        }
+
+        if (!Objects.equals(errorMessage, exception.getLocalizedMessage())) {
+            return String.format(
+                    "[NativeErrorType: %s] %s: %s",
+                    exception.getClass().getSimpleName(),
+                    errorMessage,
+                    exception.getLocalizedMessage()
+            );
+        }
+
+        return String.format("[NativeErrorType: %s] %s", exception.getClass().getSimpleName(), errorMessage);
+    }
+
+    public static String FormatErrorMessageWithErrorCodes(final String errorMessage, final McuMgrErrorCode mcumgrErrorCode, final HasReturnCode.GroupReturnCode groupReturnCode) {
+        return String.format("[McuMgrErrorCode: %s] [GroupReturnCode: %s] %s", mcumgrErrorCode, groupReturnCode, errorMessage);
+    }
+
     // this method must be kept aligned between our ios lib and our android lib
     public static int DeduceGlobalErrorCodeFromException(final Exception exception)
     {
         if (!(exception instanceof McuMgrErrorException))
-            return -99; //aka "unset / unknown error"
+            return -99; // aka "unset / unknown error"
 
         McuMgrErrorException mcuMgrErrorException = (McuMgrErrorException) exception;
         McuMgrErrorCode exceptionCodeSpecs = mcuMgrErrorException.getCode();

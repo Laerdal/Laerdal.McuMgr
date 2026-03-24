@@ -319,7 +319,7 @@ public class AndroidFirmwareInstaller
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement( //                order
                 currentStateSnapshot,
                 fatalErrorType,
-                errorMessage,
+                McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, ex),
                 McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
         ));
 

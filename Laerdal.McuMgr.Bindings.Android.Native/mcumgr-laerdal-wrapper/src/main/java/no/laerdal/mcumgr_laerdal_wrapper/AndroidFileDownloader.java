@@ -553,12 +553,18 @@ public class AndroidFileDownloader
 
     private void onError(final String errorMessage, final Exception exception)
     {
-        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception));
+        onErrorImpl(
+                McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, exception),
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
+        );
     }
 
     private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs)
     {
-        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs));
+        onErrorImpl(
+                McuMgrExceptionHelpers.FormatErrorMessageWithErrorCodes(errorMessage, exceptionCodeSpecs, groupReturnCodeSpecs),
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs)
+        );
     }
 
     private void onErrorImpl(final String errorMessage, final int globalErrorCode)

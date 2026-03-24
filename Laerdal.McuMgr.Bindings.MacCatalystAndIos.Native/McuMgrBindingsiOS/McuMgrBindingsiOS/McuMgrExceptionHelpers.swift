@@ -2,6 +2,7 @@ import Foundation
 import iOSMcuManagerLibrary
 
 internal class McuMgrExceptionHelpers {
+
     internal static func formatErrorMessageWithExceptionTypeAndMessage(_ errorMessage: String, _ error: Error? = nil, _ transporterState: PeripheralState? = nil) -> String {
         let transporterStateDescription: String = {
             if let state = transporterState {
