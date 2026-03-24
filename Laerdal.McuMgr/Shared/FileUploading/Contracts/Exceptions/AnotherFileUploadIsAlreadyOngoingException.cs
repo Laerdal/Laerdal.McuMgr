@@ -7,7 +7,7 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
         public AnotherFileUploadIsAlreadyOngoingException( //@formatter:off
             string remoteFilePath,
             string nativeErrorMessage = ""
-        ) : base(remoteFilePath, ProperlyFormatErrorMessage(nativeErrorMessage)) //@formatter:on
+        ) : base(nativeErrorMessage: ProperlyFormatErrorMessage(nativeErrorMessage), remoteFilePath: remoteFilePath) //@formatter:on
         {
         }
 

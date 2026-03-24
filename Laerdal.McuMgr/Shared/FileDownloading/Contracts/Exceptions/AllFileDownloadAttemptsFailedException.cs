@@ -2,6 +2,7 @@ using System;
 
 namespace Laerdal.McuMgr.FileDownloading.Contracts.Exceptions
 {
+    // ReSharper disable once RedundantExtendsListEntry
     public class AllFileDownloadAttemptsFailedException : FileDownloadErroredOutException, IDownloadException
     {
         public AllFileDownloadAttemptsFailedException(string remoteFilePath, int triesCount, Exception innerException = null)
