@@ -160,7 +160,10 @@ namespace Laerdal.McuMgr.FileDownloading
                 }
                 catch (FileDownloadErroredOutException ex)
                 {
-                    if (ex is FileDownloadErroredOutRemoteFileNotFoundException or FileDownloadErroredOutRemotePathPointsToDirectoryException) //order   no point to retry if the filepath is problematic
+                    if (ex //order
+                        is FileDownloadErroredOutRemoteFileNotFoundException //         no point to retry if the filepath is problematic 
+                        or FileDownloadErroredOutAbruptlyDisconnectedException //       or if the device got abruptly disconnected because
+                        or FileDownloadErroredOutRemotePathPointsToDirectoryException)
                     {
                         //OnStateChanged(new StateChangedEventArgs(newState: EFileDownloaderState.Error)); //noneed   already done in native code
                         throw;

@@ -205,8 +205,12 @@ namespace Laerdal.McuMgr.FileUploading
                 }
                 catch (FileUploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
                 {
-                    if (ex is FileUploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
+                    if (ex is FileUploadErroredOutRemoteFolderNotFoundException //order    no point to retry if any of the remote parent folders
+                        || ex is FileUploadErroredOutAbruptlyDisconnectedException) //     are not there or if the device got abruptly disconnected
+                    {
+                        //OnStateChanged(new StateChangedEventArgs(newState: EFileUploaderState.Error)); //noneed   already done in native code
                         throw;
+                    }
 
                     if (++triesCount > maxTriesCount) //order
                         throw new AllFileUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
