@@ -315,12 +315,14 @@ public class AndroidFirmwareInstaller
         setState(EAndroidFirmwareInstallationState.ERROR); //                         order
         setBusyState(false); //                                                       order
 
+        boolean isConnectedNow = _transport != null && _transport.isConnected();
+
         _lastFatalErrorMessage = errorMessage; //                                     order
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement( //                order
                 currentStateSnapshot,
                 fatalErrorType,
                 McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, ex),
-                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex)
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(ex, isConnectedNow)
         ));
 
         //00   we want to let the calling environment know in which exact state the fatal error happened in
