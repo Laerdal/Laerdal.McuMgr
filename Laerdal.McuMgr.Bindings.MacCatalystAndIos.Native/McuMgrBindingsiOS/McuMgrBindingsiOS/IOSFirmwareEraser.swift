@@ -66,7 +66,11 @@ public class IOSFirmwareEraser: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         setState(.failed)
         busyStateChangedAdvertisement(false)
-        fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
+
+        fatalErrorOccurredAdvertisement(
+                McuMgrExceptionHelpers.formatErrorMessageWithExceptionTypeAndMessage(errorMessage, error, _transporter?.state),
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+        )
     }
 
     private var _lastFatalErrorMessage: String = ""

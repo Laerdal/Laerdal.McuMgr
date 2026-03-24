@@ -63,7 +63,10 @@ public class IOSDeviceResetter: NSObject {
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         setState(.failed)
 
-        fatalErrorOccurredAdvertisement(errorMessage, McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error))
+        fatalErrorOccurredAdvertisement(
+                McuMgrExceptionHelpers.formatErrorMessageWithExceptionTypeAndMessage(errorMessage, error, _transporter?.state),
+                McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
+        )
     }
 
     @objc
