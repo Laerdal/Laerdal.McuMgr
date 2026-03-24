@@ -321,7 +321,8 @@ namespace Laerdal.McuMgr.FileUploading
                     {
                         EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileUploadErroredOutRemoteFolderNotFoundException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
                         EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new FileUploadUnauthorizedException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
-                        _ => new FileUploadErroredOutException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage)
+
+                        _ => new FileUploadErroredOutException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode)
                     });
                 }
             }
@@ -345,11 +346,11 @@ namespace Laerdal.McuMgr.FileUploading
 
             static async Task<byte[]> GetDataAsByteArray_<TD>(TD dataObject_, bool autodisposeStream_) => dataObject_ switch
             {
-                Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_),
+                Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
 
-                Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_),
-                Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
-                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
+                Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
+                Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
+                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
 
                 byte[] dataByteArray => dataByteArray,
                 IEnumerable<byte> dataEnumerableBytes => dataEnumerableBytes.ToArray(), //just in case
