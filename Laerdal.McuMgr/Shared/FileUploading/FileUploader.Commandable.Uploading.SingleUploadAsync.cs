@@ -321,6 +321,7 @@ namespace Laerdal.McuMgr.FileUploading
                     {
                         EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileUploadErroredOutRemoteFolderNotFoundException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
                         EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new FileUploadUnauthorizedException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
+                        EGlobalErrorCode.SubSystemMcuMgrTransport_Disconnected => new FileUploadErroredOutAbruptlyDisconnectedException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode),
 
                         _ => new FileUploadErroredOutException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode)
                     });
