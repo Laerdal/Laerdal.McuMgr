@@ -425,6 +425,7 @@ public class IOSFileUploader: NSObject {
         setState(.error) //       order
         setBusyState(false) //    order
 
+        let transporterState = _transporter?.state
         let resourceIdSnapshot = _resourceId
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
@@ -434,7 +435,7 @@ public class IOSFileUploader: NSObject {
             self._listener.fatalErrorOccurredAdvertisement( // order
                     resourceIdSnapshot,
                     remoteFilePathSanitizedSnapshot,
-                    errorMessage,
+                    McuMgrExceptionHelpers.formatErrorMessageWithExceptionTypeAndMessage(errorMessage, error, transporterState),
                     McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
             )
         }
@@ -638,3 +639,4 @@ extension IOSFileUploader: McuMgrLogDelegate {
         logInBg(msg, level, category.rawValue)
     }
 }
+

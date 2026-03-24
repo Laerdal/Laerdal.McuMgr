@@ -588,13 +588,15 @@ public class AndroidFileUploader
 
         _lastFatalErrorMessage = errorMessage;
 
+        boolean isConnectedNow = _transport != null && _transport.isConnected();
+
         final String resourceIdSnapshot = _resourceId;
         final String remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized;
         fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(
                 resourceIdSnapshot,
                 remoteFilePathSanitizedSnapshot,
-                errorMessage,
-                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception)
+                McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, exception),
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception, isConnectedNow)
         ));
     }
 
