@@ -22,7 +22,7 @@ internal class McuMgrExceptionHelpers {
         return "[NativeErrorType: \(type(of: error))] [NativeTransporterState: \(transporterStateDescription)] \(errorMessage)"
     }
 
-    internal static func deduceGlobalErrorCodeFromException(_ error: Error? = nil) -> Int { //00
+    internal static func deduceGlobalErrorCodeFromException(_ error: Error? = nil, _ transporterState: PeripheralState? = nil) -> Int { //00
         // if let error {
         //     logInBg("[IOSFD.DGECFE.010] Error: '\(error.localizedDescription)' - type: \(type(of: error))", McuMgrLogLevel.error)
         // } else {
@@ -45,22 +45,30 @@ internal class McuMgrExceptionHelpers {
 
         } else if let mcuMgrTransportError = error as? McuMgrTransportError { //20 logInBg("[IOSFD.DGECFE.012] Detected McuMgrTransportError", McuMgrLogLevel.error)
 
-            groupSubsystemId = 300 // SubSystemMcuMgrTransport_*    must match the base-error-code used in EGlobalErrorCode.cs
-
             groupErrorCode = 0 // generic error
-            switch mcuMgrTransportError { //@formatter:off    unfortunately nordic forgot to underpin this error with numeric values for easy analysis so we have to map it manually
-            case .badHeader:                                     groupErrorCode =  1
-            case .sendFailed:                                    groupErrorCode =  2
-            case .sendTimeout:                                   groupErrorCode =  3 // we get a send-timeout on abrupt disconnection due to the remote device going out of range or out of battery
-            case .badChunking:                                   groupErrorCode =  4
-            case .badResponse:                                   groupErrorCode =  5
-            case .disconnected:                                  groupErrorCode =  6 // we would expect to get this but upon abrupt disconnection but we dont get it at all   we get SubSystemMcuMgrTransport_SendTimeout instead
-            case .waitAndRetry:                                  groupErrorCode =  7
-            case .insufficientMtu(mtu: let mtu):                 groupErrorCode =  8
-            case .connectionFailed:                              groupErrorCode =  9
-            case .connectionTimeout:                             groupErrorCode = 10
-            case .peripheralNotReadyForWriteWithoutResponse:     groupErrorCode = 11
-            } //@formatter:on
+            groupSubsystemId = 300 // SubSystemMcuMgrTransport_*    must match the base-error-code used in EGlobalErrorCode.cs
+            
+            if (transporterState == .disconnected || transporterState == .disconnecting) {
+                // this is to workaround to force the correct error-reporting (disconnected) when a device is abruptly disconnecting
+                // pe due to running out of battery or going out of range for good (we typically get .sendTimeout in iOS which sucks
+                // and doesnt help at all figuring out what has actually happened under the hood!)
+                groupErrorCode = 6
+
+            } else {
+                switch mcuMgrTransportError { //@formatter:off    unfortunately nordic forgot to underpin this error with numeric values for easy analysis so we have to map it manually
+                case .badHeader:                                     groupErrorCode =  1
+                case .sendFailed:                                    groupErrorCode =  2
+                case .sendTimeout:                                   groupErrorCode =  3 // we get a send-timeout on abrupt disconnection due to the remote device going out of range or out of battery
+                case .badChunking:                                   groupErrorCode =  4
+                case .badResponse:                                   groupErrorCode =  5
+                case .disconnected:                                  groupErrorCode =  6 // we would expect to get this but upon abrupt disconnection but we dont get it at all   we get SubSystemMcuMgrTransport_SendTimeout instead
+                case .waitAndRetry:                                  groupErrorCode =  7
+                case .insufficientMtu(mtu: _):                       groupErrorCode =  8
+                case .connectionFailed:                              groupErrorCode =  9
+                case .connectionTimeout:                             groupErrorCode = 10
+                case .peripheralNotReadyForWriteWithoutResponse:     groupErrorCode = 11
+                } //@formatter:on
+            }
 
         } else if let fileSystemManagerError = error as? FileSystemManagerError { //20 logInBg("[IOSFD.DGECFE.012] Detected FileSystemManagerError", McuMgrLogLevel.error)
             groupErrorCode = Int(fileSystemManagerError.rawValue)
