@@ -49,9 +49,9 @@ namespace Laerdal.McuMgr.Tests.FileUploadingTestbed
             });
 
             // Assert
-            await work.Should()
-                .ThrowWithinAsync<AllFileUploadAttemptsFailedException>(((maxTriesCount + 1) * 3).Seconds())
-                .WithMessage("*failed to upload*");
+            var exceptionSpecs = await work.Should().ThrowWithinAsync<AllFileUploadAttemptsFailedException>(((maxTriesCount + 1) * 3).Seconds()).WithMessage("*failed to upload*");
+
+            exceptionSpecs.Which.RemoteFilePath.Should().Be(remoteFilePath);
 
             mockedNativeFileUploaderProxy.CancelCalled.Should().BeFalse();
             mockedNativeFileUploaderProxy.DisconnectCalled.Should().BeFalse(); //00

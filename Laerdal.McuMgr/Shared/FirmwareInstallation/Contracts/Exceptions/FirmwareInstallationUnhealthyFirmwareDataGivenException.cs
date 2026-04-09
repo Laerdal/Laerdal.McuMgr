@@ -20,7 +20,7 @@ namespace Laerdal.McuMgr.FirmwareInstallation.Contracts.Exceptions
 
         static private string ProperlyFormatErrorMessage(string nativeErrorMessage)
         {
-            const string prefix = "Another firmware-installation is already ongoing";
+            const string prefix = "Firmware installation failed because the firmware-data passed to the installer were unhealthy (failed crc checks etc)";
 
             return string.IsNullOrWhiteSpace(nativeErrorMessage)
                 ? prefix

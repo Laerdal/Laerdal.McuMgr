@@ -121,8 +121,8 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     }
                     catch (TimeoutException ex)
                     {
-                        OnStateChanged(new StateChangedEventArgs( //for consistency
-                            oldState: EFirmwareInstallationState.None, //better not use this.State here because the native call might fail
+                        OnStateChanged(new StateChangedEventArgs( //      for consistency
+                            oldState: EFirmwareInstallationState.None, // better not use this.State here because the native call might fail
                             newState: EFirmwareInstallationState.Error
                         ));
 
@@ -130,6 +130,9 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     }
                     catch (FirmwareInstallationUploadingStageErroredOutException ex) //we only want to retry if the errors are related to the upload part of the process
                     {
+                        if (ex is FirmwareInstallationAbruptlyDisconnectedException)
+                            throw; //no point to retry if the device is gone ...
+
                         if (++triesCount > maxTriesCount) //order
                             throw new AllFirmwareInstallationAttemptsFailedException(maxTriesCount, innerException: ex);
 
@@ -215,6 +218,9 @@ namespace Laerdal.McuMgr.FirmwareInstallation
                     {
                         taskCompletionSource.TrySetException(ea_ switch
                         {
+                            {GlobalErrorCode: EGlobalErrorCode.SubSystemMcuMgrTransport_Disconnected}
+                                => new FirmwareInstallationAbruptlyDisconnectedException(ea_.ErrorMessage, ea_.GlobalErrorCode),
+                            
                             {GlobalErrorCode: EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied}
                                 => new UnauthorizedException(ea_.ErrorMessage, ea_.GlobalErrorCode), // no point to pass ea_.FatalErrorType here
 

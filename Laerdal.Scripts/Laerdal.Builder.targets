@@ -40,7 +40,10 @@
 
         <Configuration Condition="           '$(Configuration)'           == '' ">Release</Configuration>
         <Should_Skip_Tests Condition="       '$(Should_Skip_Tests)'       == '' ">false</Should_Skip_Tests>
+        <Should_Skip_iOS Condition="         '$(Should_Skip_iOS)'         == '' ">false</Should_Skip_iOS>
+        <Should_Skip_Android Condition="     '$(Should_Skip_Android)'     == '' ">false</Should_Skip_Android>
         <Should_Skip_MacCatalyst Condition=" '$(Should_Skip_MacCatalyst)' == '' ">false</Should_Skip_MacCatalyst>
+        
 
         <Laerdal_Script_FolderPath>$(MSBuildThisFileDirectory)</Laerdal_Script_FolderPath>
 
@@ -108,7 +111,6 @@
     <Target Name="DeduceVersion" DependsOnTargets="PrintConfiguration">
 
         <PropertyGroup>
-
             <Laerdal_Version_Script_Filepath Condition="   '$(Laerdal_Version_Script_Filepath)'  == '' ">$([System.IO.Path]::Combine($(Laerdal_Script_FolderPath), `Laerdal.Version.sh`))</Laerdal_Version_Script_Filepath>
             <Laerdal_Version_Details_Filepath Condition="  '$(Laerdal_Version_Details_Filepath)' == '' ">$([System.IO.Path]::Combine($(PackageOutputPath), `version.txt`))</Laerdal_Version_Details_Filepath>
 
@@ -229,6 +231,8 @@
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Configuration=$(Configuration);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)PackageOutputPath=$(PackageOutputPath);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)ContinuousIntegrationBuild=$(Is_CI_Build);</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Should_Skip_iOS=$(Should_Skip_iOS);</_Laerdal_Build_Parameters>
+            <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Should_Skip_Android=$(Should_Skip_Android);</_Laerdal_Build_Parameters>
             <_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst);</_Laerdal_Build_Parameters>
             <!--<_Laerdal_Build_Parameters>$(_Laerdal_Build_Parameters)DeterministicSourcePaths=False;</_Laerdal_Build_Parameters>-->
         </PropertyGroup>
@@ -241,65 +245,22 @@
                  Properties="$(_Laerdal_Build_Parameters);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.NetStandard/;" Targets="Restore;Rebuild"/>
 
         <!-- ANDROID BINDINGS -->
-        
-        <Message Importance="High" Text="** Building Android Bindings"/>
-        
-        <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
-        <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
-        <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
-        <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
-        <Message Importance="High" Text="**** Building Android Bindings [0/3 Clean]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Clean" Properties="$(_Laerdal_Build_Parameters)" />
-        <Message Importance="High" Text="**** Building Android Bindings [1/3 Restore Nugets]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Restore" Properties="$(_Laerdal_Build_Parameters)" />
-        <Message Importance="High" Text="**** Building Android Bindings [2/3 Build Native Libs]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="CompileMcuMgrLaerdalWrapper" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" />
-        <Message Importance="High" Text="**** Building Android Bindings [3/3 Build Nuget]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Build" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;Skip_CompileMcuMgrLaerdalWrapper=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" />
+        <MSBuild Condition=" '$(Should_Skip_Android)' != 'true' "
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_McuMgrBindings_ProjectFile_Android=$(Laerdal_McuMgrBindings_ProjectFile_Android);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);Laerdal_RootDirectory_Folderpath=$(Laerdal_RootDirectory_Folderpath);"
+                 Targets="BuildBindingsFor_Android"
+                 Projects="$(MSBuildProjectFullPath)" />
 
         <!-- IOS BINDINGS -->
+        <MSBuild Condition=" '$(Should_Skip_iOS)' != 'true' "
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_McuMgrBindings_ProjectFile_iOS=$(Laerdal_McuMgrBindings_ProjectFile_iOS);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);Laerdal_RootDirectory_Folderpath=$(Laerdal_RootDirectory_Folderpath);"
+                 Targets="BuildBindingsFor_iOS"
+                 Projects="$(MSBuildProjectFullPath)" />
         
-        <Message Importance="High" Text="** Building iOS Bindings"/>
-
-        <Message Importance="High" Text="**** Building iOS Bindings [0/3 Clean]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="Clean" />
-        
-        <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main          -->
-        <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols   -->
-        <Message Importance="High" Text="**** Building iOS Bindings [1/3 EnsureFrameworkFolderIsCreated]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated"/>
-
-        <Message Importance="High" Text="**** Building iOS Bindings [2/3 Nuget Restore]"/>
-        <MSBuild Targets="Restore"
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=false;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" />
-
-        <Message Importance="High" Text="**** Building iOS Bindings [3/3 Build Native Libs + Nuget]"/>
-        <MSBuild Targets="Rebuild"
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" />
-
         <!-- MACCATALYST BINDINGS -->
-        
-        <Message Importance="High" Text="** Building MacCatalyst Bindings"/>
-
-        <Message Importance="High" Text="**** Building MacCatalyst Bindings [0/3 Clean]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="Clean" />
-
-        <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main         -->
-        <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols  -->
-        <Message Importance="High" Text="**** Building MacCatalyst Bindings [1/3 EnsureFrameworkFolderIsCreated]"/>
-        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "/>
-        
-        <Message Importance="High" Text="**** Building MacCatalyst Bindings [2/3 Nuget Restore]"/>
-        <MSBuild Targets="Restore" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=false;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
-
-        <Message Importance="High" Text="**** Building MacCatalyst Bindings [3/3 Build Native Libs + Nuget]"/>
-        <MSBuild Targets="Rebuild" Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
-                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
-                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+        <MSBuild Condition=" '$(Should_Skip_MacCatalyst)' != 'true' "
+                 Properties="$(_Laerdal_Build_Parameters);Laerdal_McuMgrBindings_ProjectFile_MacCatalyst=$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst);Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);Laerdal_RootDirectory_Folderpath=$(Laerdal_RootDirectory_Folderpath);"
+                 Targets="BuildBindingsFor_MacCatalyst"
+                 Projects="$(MSBuildProjectFullPath)" />
 
         <!-- MCUMGR CORE -->
         
@@ -318,6 +279,70 @@
                  Targets="Restore;Rebuild"/>
     </Target>
 
+    <Target Name="BuildBindingsFor_Android">
+        <Message Importance="High" Text="** Building Android Bindings"/>
+
+        <!-- 1. notice that we are actually rebuilding bindings   merely building the project doesnt really cut it     -->
+        <!-- 2. also notice that the ios and android builds are deliberately getting built with parallelization turned -->
+        <!--    off because if parallelization gets turned on their builds fail with random errors   unfortunately     -->
+        <!--    BuildInParallel=false doesnt work for dotnet   we have to use the /m:1 flag on the command line        -->
+        <Message Importance="High" Text="**** Building Android Bindings [0/3 Clean]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Clean" Properties="$(_Laerdal_Build_Parameters)" />
+
+        <Message Importance="High" Text="**** Building Android Bindings [1/3 Restore Nugets]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Restore" Properties="$(_Laerdal_Build_Parameters)" />
+
+        <Message Importance="High" Text="**** Building Android Bindings [2/3 Build Native Libs]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="CompileMcuMgrLaerdalWrapper" Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;" />
+
+        <Message Importance="High" Text="**** Building Android Bindings [3/3 Build Nuget]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_Android)" Targets="Build" Properties="$(_Laerdal_Build_Parameters);Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion);BuildingProject=true;Skip_CompileMcuMgrLaerdalWrapper=true;SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.Android/;" />
+    </Target>
+    
+    <Target Name="BuildBindingsFor_iOS">
+        <Message Importance="High" Text="** Building iOS Bindings"/>
+
+        <Message Importance="High" Text="**** Building iOS Bindings [0/3 Clean]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="Clean" />
+
+        <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main         -->
+        <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols  -->
+        <Message Importance="High" Text="**** Building iOS Bindings [1/3 EnsureFrameworkFolderIsCreated]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)" Targets="EnsureFrameworkFolderIsCreated" />
+
+        <Message Importance="High" Text="**** Building iOS Bindings [2/3 Nuget Restore]"/>
+        <MSBuild Targets="Restore"
+                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
+                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=false;Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" />
+
+        <Message Importance="High" Text="**** Building iOS Bindings [3/3 Build Native Libs + Nuget]"/>
+        <MSBuild Targets="Rebuild"
+                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_iOS)"
+                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion);Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_iOS___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_iOS___Sdk_Version=$(Laerdal_Bindings_iOS___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.iOS/;" />
+    </Target>
+    
+    <Target Name="BuildBindingsFor_MacCatalyst">
+        <Message Importance="High" Text="** Building MacCatalyst Bindings"/>
+
+        <Message Importance="High" Text="**** Building MacCatalyst Bindings [0/3 Clean]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="Clean" />
+
+        <!-- [warning] its absolute vital to call the EnsureFrameworkFolderIsCreated target first explicitly and separately from the main         -->
+        <!-- [warning] build otherwise the resulting nugets will be poisoned and will not work in maui apps at all due to missing native symbols  -->
+        <Message Importance="High" Text="**** Building MacCatalyst Bindings [1/3 EnsureFrameworkFolderIsCreated]"/>
+        <MSBuild Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)" Targets="EnsureFrameworkFolderIsCreated" />
+
+        <Message Importance="High" Text="**** Building MacCatalyst Bindings [2/3 Nuget Restore]"/>
+        <MSBuild Targets="Restore"
+                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
+                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=false;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+
+        <Message Importance="High" Text="**** Building MacCatalyst Bindings [3/3 Build Native Libs + Nuget]"/>
+        <MSBuild Targets="Rebuild"
+                 Projects="$(Laerdal_McuMgrBindings_ProjectFile_MacCatalyst)"
+                 Properties="$(_Laerdal_Build_Parameters);BuildingProject=true;Laerdal_Bindings_MacCatalyst___Min_Supported_Version=$(Laerdal_Bindings_MacCatalyst___Min_Supported_Version);Laerdal_Bindings_iOS___Min_Supported_Version=$(Laerdal_Bindings_iOS___Min_Supported_Version);Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion);Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath=$(Laerdal_Bindings_MacCatalyst___Xcode_Ide_Dev_Folderpath);Laerdal_Bindings_MacCatalyst___Sdk_Version=$(Laerdal_Bindings_MacCatalyst___Sdk_Version);SourceRoot=$(Laerdal_RootDirectory_Folderpath)/Laerdal.McuMgr.Bindings.MacCatalyst/;" />
+    </Target>
+
     <!-- TESTS -->
     <Target Name="RunTests"
             Condition=" '$(Should_Skip_Tests)' == 'false' "
@@ -325,17 +350,15 @@
 
         <PropertyGroup> <!-- @formatter:off -->
             <_DotnetTestCommand> </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand) dotnet  test</_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand) &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot;                                                                   </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --logger               &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;                                            </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity            &quot;normal&quot;                                                                                             </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration        &quot;$(Configuration)&quot;                                                                                   </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory    &quot;$(Laerdal_Test_Results_Folderpath)&quot;                                                                 </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -m:1                                                                                                                        </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=$(Should_Skip_MacCatalyst)                                                                       </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_iOS___DotnetTargetPlatformVersion=$(Laerdal_Bindings_iOS___DotnetTargetPlatformVersion)                 </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_Android___DotnetTargetPlatformVersion=$(Laerdal_Bindings_Android___DotnetTargetPlatformVersion)         </_DotnetTestCommand>
-            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion=$(Laerdal_Bindings_MacCatalyst___DotnetTargetPlatformVersion) </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)  dotnet  test   &quot;Laerdal.McuMgr.Tests/Laerdal.McuMgr.Tests.csproj&quot; </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --logger               &quot;trx;LogFileName=TEST-Laerdal.McuMgr.Tests.xml&quot;    </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --verbosity            &quot;normal&quot;                                           </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --configuration        &quot;$(Configuration)&quot;                                 </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    --results-directory    &quot;$(Laerdal_Test_Results_Folderpath)&quot;               </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -m:1                                                                      </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_iOS=true                                                   </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_Android=true                                               </_DotnetTestCommand>
+            <_DotnetTestCommand>$(_DotnetTestCommand)    -p:Should_Skip_MacCatalyst=true                                           </_DotnetTestCommand>
         </PropertyGroup> <!-- @formatter:on -->
 
         <Exec Command=" bash  -c  '$(_DotnetTestCommand)' "

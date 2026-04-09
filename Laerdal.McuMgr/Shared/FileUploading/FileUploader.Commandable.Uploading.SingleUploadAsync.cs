@@ -205,8 +205,12 @@ namespace Laerdal.McuMgr.FileUploading
                 }
                 catch (FileUploadErroredOutException ex) //errors with code in_value(3) and even UnauthorizedException happen all the time in android when multiuploading files
                 {
-                    if (ex is FileUploadErroredOutRemoteFolderNotFoundException) //order    no point to retry if any of the remote parent folders are not there
+                    if (ex is FileUploadErroredOutRemoteFolderNotFoundException //order    no point to retry if any of the remote parent folders
+                        || ex is FileUploadErroredOutAbruptlyDisconnectedException) //     are not there or if the device got abruptly disconnected
+                    {
+                        //OnStateChanged(new StateChangedEventArgs(newState: EFileUploaderState.Error)); //noneed   already done in native code
                         throw;
+                    }
 
                     if (++triesCount > maxTriesCount) //order
                         throw new AllFileUploadAttemptsFailedException(remoteFilePath, maxTriesCount, innerException: ex);
@@ -321,7 +325,9 @@ namespace Laerdal.McuMgr.FileUploading
                     {
                         EGlobalErrorCode.SubSystemFilesystem_NotFound => new FileUploadErroredOutRemoteFolderNotFoundException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
                         EGlobalErrorCode.McuMgrErrorBeforeSmpV2_AccessDenied => new FileUploadUnauthorizedException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode),
-                        _ => new FileUploadErroredOutException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode, nativeErrorMessage: ea_.ErrorMessage)
+                        EGlobalErrorCode.SubSystemMcuMgrTransport_Disconnected => new FileUploadErroredOutAbruptlyDisconnectedException(remoteFilePath: remoteFilePath, globalErrorCode: ea_.GlobalErrorCode),
+
+                        _ => new FileUploadErroredOutException(remoteFilePath: remoteFilePath, nativeErrorMessage: ea_.ErrorMessage, globalErrorCode: ea_.GlobalErrorCode)
                     });
                 }
             }
@@ -345,11 +351,11 @@ namespace Laerdal.McuMgr.FileUploading
 
             static async Task<byte[]> GetDataAsByteArray_<TD>(TD dataObject_, bool autodisposeStream_) => dataObject_ switch
             {
-                Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_),
+                Stream dataStream => await dataStream.ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
 
-                Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_),
-                Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
-                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_),
+                Func<Stream> openCallback => await openCallback().ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
+                Func<Task<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
+                Func<ValueTask<Stream>> openAsyncCallback => await (await openAsyncCallback()).ReadBytesAsync(disposeStream: autodisposeStream_).ConfigureAwait(false),
 
                 byte[] dataByteArray => dataByteArray,
                 IEnumerable<byte> dataEnumerableBytes => dataEnumerableBytes.ToArray(), //just in case

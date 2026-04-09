@@ -271,13 +271,15 @@ public class IOSFirmwareInstaller: NSObject {
 
         _lastFatalErrorMessage = errorMessage //order
 
+        let transporterState = _transporter?.state
+
         Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
             guard let self else { return }
 
             self.fatalErrorOccurredAdvertisement(
                     currentStateSnapshot,
                     fatalErrorType,
-                    errorMessage,
+                    McuMgrExceptionHelpers.formatErrorMessageWithExceptionTypeAndMessage(errorMessage, error, transporterState),
                     McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
             )
         }

@@ -4,8 +4,11 @@ namespace Laerdal.McuMgr.FileUploading.Contracts.Exceptions
 {
     public class FileUploadUnauthorizedException : FileUploadErroredOutException
     {
-        public FileUploadUnauthorizedException(string nativeErrorMessage, string remoteFilePath, EGlobalErrorCode globalErrorCode)
-            : base(remoteFilePath, $"{nativeErrorMessage}", globalErrorCode)
+        public FileUploadUnauthorizedException(string nativeErrorMessage, string remoteFilePath, EGlobalErrorCode globalErrorCode) : base(
+            remoteFilePath: remoteFilePath,
+            globalErrorCode: globalErrorCode,
+            nativeErrorMessage: nativeErrorMessage
+        )
         {
         }
     }

@@ -19,7 +19,7 @@ public class AndroidDeviceResetter
 {
 
     private DefaultManager _manager;
-    private final McuMgrTransport _transport;
+    private final McuMgrBleTransport _transport;
 
     /**
      * Constructs a firmware installer for a specific android-context and bluetooth-device.
@@ -133,12 +133,20 @@ public class AndroidDeviceResetter
 
     private void onError(final String errorMessage, final Exception exception)
     {
-        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception));
+        boolean isConnectedNow = _transport.isConnected();
+
+        onErrorImpl(
+                McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, exception),
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception, isConnectedNow)
+        );
     }
 
     private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs)
     {
-        onErrorImpl(errorMessage, McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exceptionCodeSpecs, groupReturnCodeSpecs));
+        onErrorImpl(
+                McuMgrExceptionHelpers.FormatErrorMessageWithErrorCodes(errorMessage, exceptionCodeSpecs, groupReturnCodeSpecs),
+                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(groupReturnCodeSpecs, exceptionCodeSpecs)
+        );
     }
 
     private void onErrorImpl(final String errorMessage, final int globalErrorCode)

@@ -338,6 +338,7 @@ public class IOSFileDownloader: NSObject {
         setState(.error) //                            order
         setBusyState(false) //                         order
 
+        let transporterState = _transporter?.state
         let remoteFilePathSanitizedSnapshot = _remoteFilePathSanitized
 
         Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
@@ -345,7 +346,7 @@ public class IOSFileDownloader: NSObject {
 
             self._listener.fatalErrorOccurredAdvertisement( //  order
                     remoteFilePathSanitizedSnapshot,
-                    errorMessage,
+                    McuMgrExceptionHelpers.formatErrorMessageWithExceptionTypeAndMessage(errorMessage, error, transporterState),
                     McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
             )
         }
@@ -467,13 +468,13 @@ extension IOSFileDownloader: FileDownloadDelegate {
     }
 
     public func downloadDidCancel() {
-        setState(.cancelled) //                                                                                    order
+        setState(.cancelled) //                                                                            order
         Task.fireAndForgetInTheBg { [weak self] in //fire and forget to boost performance                  order
             guard let self else { return }
 
             self.cancelledAdvertisement(self._cancellationReason)
         }
-        setBusyState(false) //                                                                                     order
+        setBusyState(false) //                                                                             order
     }
 
     public func download(of name: String, didFinish data: Data) {
