@@ -1143,7 +1143,7 @@ We welcome contributions to this project in the form of bug reports, feature req
 
 ## Lead Maintainers
 
-- [Kyriakos Sidiropoulos (@dsidirop)](https://github.com/dsidirop)
+- [Kyriakos Sidiropoulos (@dsidirop, @ksidirop-laerdal)](https://github.com/dsidirop)
 
 - [Francois Raminosona (@framinosona)](https://github.com/framinosona)
 
