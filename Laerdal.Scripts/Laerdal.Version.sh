@@ -175,6 +175,21 @@ function getCommitDate() {
     git show -s --format=%ct "$*"
 }
 
+# Resolve a stable branch fork point. --fork-point can be empty (e.g. shallow clones),
+# so we fall back to plain merge-base.
+function resolveForkPoint() {
+    local base_ref="$1"
+    local target_ref="$2"
+    local point=""
+
+    point=$(git merge-base --fork-point "$base_ref" "$target_ref" 2>/dev/null || true)
+    if [ -z "$point" ]; then
+        point=$(git merge-base "$base_ref" "$target_ref" 2>/dev/null || true)
+    fi
+
+    echo "$point"
+}
+
 ######################
 # OVERRIDING VALUES WITH ENVIRONMENT VARIABLES
 ######################
@@ -355,7 +370,7 @@ elif [ "$branch_name" == "$develop_branch" ]; then
     debug "commit_date=$commit_date"
     develop_master_point=$(git rev-list "$remote_name/$master_branch..$commit_sha" --merges --before="$commit_date" --first-parent --max-count=1)
     if [ -z "$develop_master_point" ]; then # has never been merged
-        develop_master_point=$(git merge-base "$remote_name/$master_branch" "$commit_sha" --fork-point)
+        develop_master_point=$(resolveForkPoint "$remote_name/$master_branch" "$commit_sha")
     fi
     info "develop_master_point=$develop_master_point"
 else
@@ -364,14 +379,14 @@ else
     debug "commit_date=$commit_date"
     head_develop_point=$(git rev-list "$remote_name/$develop_branch..$commit_sha" --merges --before="$commit_date" --first-parent --max-count=1)
     if [ -z "$head_develop_point" ]; then # has never been merged
-        head_develop_point=$(git merge-base "$remote_name/$develop_branch" "$commit_sha" --fork-point)
+        head_develop_point=$(resolveForkPoint "$remote_name/$develop_branch" "$commit_sha")
     fi
     info "head_develop_point=$head_develop_point"
     head_develop_date=$(getCommitDate "$head_develop_point")
     debug "head_develop_date=$head_develop_date"
     develop_master_point=$(git rev-list "$remote_name/$master_branch" --merges --before="$head_develop_date" --first-parent --max-count=1)
     if [ -z "$develop_master_point" ]; then # has never been merged
-        develop_master_point=$(git merge-base "$remote_name/$master_branch" "$head_develop_point" --fork-point)
+        develop_master_point=$(resolveForkPoint "$remote_name/$master_branch" "$head_develop_point")
     fi
     info "develop_master_point=$develop_master_point"
 fi
@@ -396,6 +411,14 @@ fi
 if [ "$first_commit" == "" ]; then
     error "First commit is empty"
     exit 23
+fi
+if [ "$branch_name" != "$master_branch" ] && [ "$develop_master_point" == "" ]; then
+    error "develop_master_point is empty"
+    exit 24
+fi
+if [ "$branch_name" != "$master_branch" ] && [ "$branch_name" != "$develop_branch" ] && [ "$head_develop_point" == "" ]; then
+    error "head_develop_point is empty"
+    exit 25
 fi
 
 
