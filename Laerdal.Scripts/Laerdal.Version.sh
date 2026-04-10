@@ -418,9 +418,7 @@ if [ "$minor_version" == "" ]; then
     elif [ "$branch_name" == "$develop_branch" ]; then
         minor_version=$(git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path)
 
-        if [[ "$minor_version" -gt 0 ]]; then
-            minor_version=$((minor_version + 1)) # vital to increment by one (to account for the merge-commit on the master branch) otherwise the non-master-tags will be lagging behind the latest master-tag in terms of version
-        fi
+        # Removed +1 increment to ensure develop minor version does not overtake main
     else
         minor_version=$(git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path)
 
@@ -451,6 +449,7 @@ if [ "$patch_version" == "" ]; then
         comm -13 "$temp_folder/not.txt" "$temp_folder/all.txt" > "$temp_folder/patch.txt"
 
         patch_version=$(sed -n '$=' $temp_folder/patch.txt)
+        patch_version=$((patch_version + 1)) # Always increment patch version by one on develop
         rm -rf "$temp_folder"
     else
         mkdir -p "$temp_folder"
