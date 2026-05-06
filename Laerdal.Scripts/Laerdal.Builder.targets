@@ -61,7 +61,7 @@
         <!-- https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables                                             -->
         <!-- https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml&WT.mc_id=DT-MVP-5003978#system-variables -->
         <Is_CI_Build Condition="     '$(TF_BUILD)' == 'true'  or  '$(GITHUB_ACTIONS)' == 'true'  or  '$(GITLAB_CI)' == 'true' ">true</Is_CI_Build>
-        <Is_Core_Branch Condition="  '$(Laerdal_Source_Branch)' == 'refs/heads/main'  or  '$(Laerdal_Source_Branch)' == 'refs/heads/master'  or  '$(Laerdal_Source_Branch)' == 'refs/heads/develop' ">true</Is_Core_Branch>
+        <Is_Core_Branch Condition="  '$(Laerdal_Source_Branch)' == 'refs/heads/main'  or  '$(Laerdal_Source_Branch)' == 'refs/heads/master' ">true</Is_Core_Branch>
         <Is_Pull_Request Condition=" '$(Laerdal_Source_Branch.StartsWith(refs/pull))' == 'true'  and  '$(Laerdal_Source_Branch.EndsWith(/merge))' == 'true' ">true</Is_Pull_Request>
 
         <!-- in github-ci these variables are provided by the .yml file   in localdev you can set them here if you want to experiment  just dont commit them                                                                              -->
@@ -116,12 +116,10 @@
 
             <Laerdal_Version_Major Condition="       '$(Laerdal_Version_Major)'       == '' ">4</Laerdal_Version_Major>
             <Laerdal_Master_Branch_Name Condition="  '$(Laerdal_Master_Branch_Name)'  == '' ">main</Laerdal_Master_Branch_Name>
-            <Laerdal_Develop_Branch_Name Condition=" '$(Laerdal_Develop_Branch_Name)' == '' ">develop</Laerdal_Develop_Branch_Name>
 
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --output-txt '$(Laerdal_Version_Details_Filepath)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --major-version '$(Laerdal_Version_Major)'</_Laerdal_Version_Script_Parameters>
             <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --master-branch '$(Laerdal_Master_Branch_Name)'</_Laerdal_Version_Script_Parameters>
-            <_Laerdal_Version_Script_Parameters>$(_Laerdal_Version_Script_Parameters) --develop-branch '$(Laerdal_Develop_Branch_Name)'</_Laerdal_Version_Script_Parameters>
         </PropertyGroup>
 
         <Message Importance="High" Text="  bash '$(Laerdal_Version_Script_Filepath)' $(_Laerdal_Version_Script_Parameters)  "/>

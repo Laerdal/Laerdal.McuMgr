@@ -73,7 +73,6 @@ verbose=""
 remote_name="origin"
 
 master_branch=""
-develop_branch=""
 major_version=""
 minor_version=""
 patch_version=""
@@ -99,16 +98,7 @@ function escape_regex_string() {
     sed 's/[][\.|$(){}?+*^]/\\&/g' <<< "$*"
 }
 
-# Check if git branch -r contains develop
 git fetch --all --quiet >/dev/null 2>&1 || true
-
-if git branch -r | grep -q "^\s*$(escape_regex_string "$remote_name/develop")$"; then
-    develop_branch="develop"
-    info "develop_branch=$develop_branch (git branch -r)"
-#else
-#    error "Branch develop not found in remote repository"
-#    exit 10
-fi
 
 # Check if git branch -r contains main or master
 if git branch -r | grep -q "^\s*$(escape_regex_string "$remote_name/main")$"; then
@@ -153,12 +143,11 @@ fi
 # USAGE
 ######################
 function usage() {
-    echo "usage: ./Laerdal.Version.sh [--verbose] [--remote name] [--master-branch master] [--develop-branch develop] [--major-version 1] [--minor-version 0] [--patch-version 0] [--revision-version 0] [--build-id 0] [--commit-sha HEAD] [--branch-name branchname] [--output-txt version.txt] [--output-props Laerdal.Version.props] [-h | --help]"
+    echo "usage: ./Laerdal.Version.sh [--verbose] [--remote name] [--master-branch master] [--major-version 1] [--minor-version 0] [--patch-version 0] [--revision-version 0] [--build-id 0] [--commit-sha HEAD] [--branch-name branchname] [--output-txt version.txt] [--output-props Laerdal.Version.props] [-h | --help]"
     echo "parameters:"
     echo "  --verbose                          Enables verbose output on stderr"
     echo "  --remote [name]                    Name of the remove git server (default is '$remote_name')"
     echo "  --master-branch [branch]           Name of the master branch (default is '$master_branch')"
-    echo "  --develop-branch [branch]          Name of the develop branch (default is '$develop_branch')"
     echo "  --major-version [number]           Major version override"
     echo "  --minor-version [number]           Minor version override"
     echo "  --patch-version [number]           Patch version override"
@@ -210,12 +199,6 @@ fi
 if [ "$INPUTS_MASTER_BRANCH" != "" ]; then
     master_branch="$INPUTS_MASTER_BRANCH"
     info "master_branch=$master_branch (INPUTS_MASTER_BRANCH)"
-fi
-
-# if INPUTS_DEVELOP_BRANCH is set, then override the develop_branch
-if [ "$INPUTS_DEVELOP_BRANCH" != "" ]; then
-    develop_branch="$INPUTS_DEVELOP_BRANCH"
-    info "develop_branch=$develop_branch (INPUTS_DEVELOP_BRANCH)"
 fi
 
 # if INPUTS_MAJOR is set, then override the major
@@ -290,8 +273,8 @@ while [ "$1" != "" ]; do
         master_branch="$1"
         ;;
     --develop-branch)
+        # kept for backwards compatibility but ignored
         shift
-        develop_branch="$1"
         ;;
     --major-version)
         shift
@@ -360,35 +343,18 @@ fi
 first_commit=$(git rev-list --max-parents=0 "$commit_sha")
 info "first_commit=$first_commit"
 
-#head_develop_point
-#develop_master_point
+#head_master_point
 if [ "$branch_name" == "$master_branch" ]; then
     info "Will apply master branch process"
-elif [ "$branch_name" == "$develop_branch" ]; then
-    info "Will apply develop branch process"
-    commit_date=$(getCommitDate "$commit_sha")
-    debug "commit_date=$commit_date"
-    develop_master_point=$(git rev-list "$remote_name/$master_branch..$commit_sha" --merges --before="$commit_date" --first-parent --max-count=1)
-    if [ -z "$develop_master_point" ]; then # has never been merged
-        develop_master_point=$(resolveForkPoint "$remote_name/$master_branch" "$commit_sha")
-    fi
-    info "develop_master_point=$develop_master_point"
 else
     info "Will apply feature branch process"
     commit_date=$(getCommitDate "$commit_sha")
     debug "commit_date=$commit_date"
-    head_develop_point=$(git rev-list "$remote_name/$develop_branch..$commit_sha" --merges --before="$commit_date" --first-parent --max-count=1)
-    if [ -z "$head_develop_point" ]; then # has never been merged
-        head_develop_point=$(resolveForkPoint "$remote_name/$develop_branch" "$commit_sha")
+    head_master_point=$(git rev-list "$remote_name/$master_branch..$commit_sha" --merges --before="$commit_date" --first-parent --max-count=1)
+    if [ -z "$head_master_point" ]; then # has never been merged
+        head_master_point=$(resolveForkPoint "$remote_name/$master_branch" "$commit_sha")
     fi
-    info "head_develop_point=$head_develop_point"
-    head_develop_date=$(getCommitDate "$head_develop_point")
-    debug "head_develop_date=$head_develop_date"
-    develop_master_point=$(git rev-list "$remote_name/$master_branch" --merges --before="$head_develop_date" --first-parent --max-count=1)
-    if [ -z "$develop_master_point" ]; then # has never been merged
-        develop_master_point=$(resolveForkPoint "$remote_name/$master_branch" "$head_develop_point")
-    fi
-    info "develop_master_point=$develop_master_point"
+    info "head_master_point=$head_master_point"
 fi
 
 
@@ -412,12 +378,8 @@ if [ "$first_commit" == "" ]; then
     error "First commit is empty"
     exit 23
 fi
-if [ "$branch_name" != "$master_branch" ] && [ "$develop_master_point" == "" ]; then
-    error "develop_master_point is empty"
-    exit 24
-fi
-if [ "$branch_name" != "$master_branch" ] && [ "$branch_name" != "$develop_branch" ] && [ "$head_develop_point" == "" ]; then
-    error "head_develop_point is empty"
+if [ "$branch_name" != "$master_branch" ] && [ "$head_master_point" == "" ]; then
+    error "head_master_point is empty"
     exit 25
 fi
 
@@ -438,12 +400,8 @@ info "suffix=$suffix"
 if [ "$minor_version" == "" ]; then
     if [ "$branch_name" == "$master_branch" ]; then
         minor_version=$(git rev-list "$first_commit..$commit_sha" --count --first-parent --ancestry-path)
-    elif [ "$branch_name" == "$develop_branch" ]; then
-        minor_version=$(git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path)
-
-        # Removed +1 increment to ensure develop minor version does not overtake main
     else
-        minor_version=$(git rev-list "$first_commit..$develop_master_point" --count --first-parent --ancestry-path)
+        minor_version=$(git rev-list "$first_commit..$head_master_point" --count --first-parent --ancestry-path)
 
         if [[ "$minor_version" -gt 0 ]]; then
             minor_version=$((minor_version + 1)) # vital to increment by one (to account for the merge-commit on the master branch) otherwise the non-master-tags will be lagging behind the latest master-tag in terms of version
@@ -461,24 +419,11 @@ fi
 if [ "$patch_version" == "" ]; then
     if [ "$branch_name" == "$master_branch" ]; then
         patch_version=0
-    elif [ "$branch_name" == "$develop_branch" ]; then
-        mkdir -p "$temp_folder"
-        before_date=$(git show -s --format=%ct "$develop_master_point" --first-parent --ancestry-path)
-        git rev-list "$first_commit..$commit_sha" --before="$before_date" > "$temp_folder/not.txt"
-        git rev-list "$first_commit..$commit_sha" --first-parent --ancestry-path > "$temp_folder/all.txt"
-
-        sort -o "$temp_folder/not.txt" "$temp_folder/not.txt"
-        sort -o "$temp_folder/all.txt" "$temp_folder/all.txt"
-        comm -13 "$temp_folder/not.txt" "$temp_folder/all.txt" > "$temp_folder/patch.txt"
-
-        patch_version=$(sed -n '$=' $temp_folder/patch.txt)
-        patch_version=$((patch_version + 1)) # Always increment patch version by one on develop
-        rm -rf "$temp_folder"
     else
         mkdir -p "$temp_folder"
-        before_date=$(git show -s --format=%ct "$develop_master_point" --first-parent --ancestry-path)
-        git rev-list "$first_commit..$head_develop_point" --before="$before_date" > "$temp_folder/not.txt"
-        git rev-list "$first_commit..$head_develop_point" --first-parent --ancestry-path > "$temp_folder/all.txt"
+        before_date=$(git show -s --format=%ct "$head_master_point" --first-parent --ancestry-path)
+        git rev-list "$first_commit..$head_master_point" --before="$before_date" > "$temp_folder/not.txt"
+        git rev-list "$first_commit..$head_master_point" --first-parent --ancestry-path > "$temp_folder/all.txt"
 
         sort -o "$temp_folder/not.txt" "$temp_folder/not.txt"
         sort -o "$temp_folder/all.txt" "$temp_folder/all.txt"
@@ -499,10 +444,8 @@ fi
 if [ "$revision_version" == "" ]; then
     if [ "$branch_name" == "$master_branch" ]; then
         revision_version=0
-    elif [ "$branch_name" == "$develop_branch" ]; then
-        revision_version=0
     else
-        revision_version=$(git rev-list "$head_develop_point..$commit_sha" --count)
+        revision_version=$(git rev-list "$head_master_point..$commit_sha" --count)
     fi
     info "revision_version=$revision_version"
 else
@@ -514,8 +457,6 @@ fi
 
 # Version extension
 if [ "$branch_name" == "$master_branch" ]; then
-    version_extension=
-elif [ "$branch_name" == "$develop_branch" ]; then
     version_extension=
 else
     version_extension="-$suffix-$revision_version.$build_id"
