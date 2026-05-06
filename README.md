@@ -8,10 +8,6 @@
 
   [![Main: Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
 
-- Beta Build Status (develop branch):
-
-  [![Develop: Build, Pack & Deploy Nugets](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml/badge.svg?branch=develop)](https://github.com/Laerdal/Laerdal.McuMgr/actions/workflows/github-actions.yml)
-
 
 # Forward Licensing Disclaimer
 
@@ -985,10 +981,6 @@ To build the nugets from source follow these instructions:
 
 ```bash
 git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    mcumgr.mst
-
-# or for develop
-
-git   clone   git@github.com:Laerdal-Medical/Laerdal.McuMgr.git    --branch develop      mcumgr.dev
 ```
 
 #### 2) Make sure you have .Net8 and .Net-Framework 4.8+ installed on your machine along with the workloads for maui, android and ios
@@ -1135,9 +1127,9 @@ We welcome contributions to this project in the form of bug reports, feature req
 
 - Before working on a branch or submitting a pull request, please open an issue describing the bug or feature request so as to expedite brainstorming.
 - Commits should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
-- Pull requests should be made against the `develop` branch.
+- Pull requests should be made against the `main` branch (no `develop` branch exists).
 - Pull requests should be made from a fork of the repository, not a clone.
-- Pull requests should have a descriptive title and include a link to the relevant issue.
+- Pull requests should have a descriptive title and include a link to a single issue each time.
 - Pull requests affecting Laerdal.McuMgr.csproj should try (to the extent possible) to preserve API backwards-compatibility and be accompanied by appropriate tests, pertinent to
   the aspects being affected.
 
