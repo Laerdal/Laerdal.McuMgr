@@ -133,6 +133,7 @@ public class AndroidFirmwareEraser
 
     private void onError(final String errorMessage, final Exception exception)
     {
+        //noinspection ConstantValue
         boolean isConnectedNow = _transport != null && _transport.isConnected();
 
         onErrorImpl(

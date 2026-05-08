@@ -334,6 +334,7 @@ public class AndroidFirmwareInstaller
     }
 
     //@Contract(pure = true) //dont
+    @SuppressWarnings("SameParameterValue")
     private void emitLogEntry(final String message, final String category, final EAndroidLoggingLevel level)
     {
         fireAndForgetInTheBg(() -> logMessageAdvertisement(message, category, level.toString()));
@@ -515,7 +516,7 @@ public class AndroidFirmwareInstaller
             if (imageSize == 0)
                 return;
 
-            fireAndForgetInTheBg(() -> {
+            fireAndForgetInTheBg(() -> { //noinspection ConstantValue
                 int lastProgress = imageSize == 0 ? 100 : (int) (totalBytesSentSoFar * 100.f /* % */ / imageSize);
                 float currentThroughputInKBps = calculateCurrentThroughputInKBps(totalBytesSentSoFar, timestamp);
                 float totalAverageThroughputInKBps = calculateTotalAverageThroughputInKBps(totalBytesSentSoFar, timestamp);
