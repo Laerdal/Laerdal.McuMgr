@@ -1,4 +1,5 @@
 using System;
+using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.DeviceInformation.Contracts;
 using Laerdal.McuMgr.DeviceInformation.Contracts.Native;
 
@@ -8,6 +9,18 @@ namespace Laerdal.McuMgr.DeviceInformation
     {
         private bool _disposed;
         protected readonly INativeDeviceInformationDownloaderProxy NativeDeviceInformationDownloaderProxy;
+
+        public DeviceInformationDownloader(INativeDeviceInformationDownloaderProxy nativeDeviceInformationDownloaderProxy)
+        {
+            NativeDeviceInformationDownloaderProxy = nativeDeviceInformationDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeDeviceInformationDownloaderProxy));
+        }
+
+        public string DownloadAsync(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
+            => NativeDeviceInformationDownloaderProxy.DownloadDeviceInformation(
+                initialMtuSize: initialMtuSize ?? -1,
+                minimumNativeLogLevel: minimumNativeLogLevel ?? ELogLevel.Error
+            );
+
         public void Dispose()
         {
             Dispose(isDisposing: true);
@@ -25,6 +38,5 @@ namespace Laerdal.McuMgr.DeviceInformation
             
             _disposed = true;
         }
-
     }
 }
