@@ -6,6 +6,9 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Contract;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,8 +30,7 @@ public class AndroidFirmwareListDownloader {
 
     private final ExecutorService _backgroundExecutor = Executors.newCachedThreadPool();
 
-    public AndroidFirmwareListDownloader()
-    {
+    public AndroidFirmwareListDownloader() {
     }
 
     public AndroidFirmwareListDownloader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
@@ -94,19 +96,26 @@ public class AndroidFirmwareListDownloader {
 
     @NonNull
     private static String parseInformation(McuMgrImageStateResponse response) {
-        StringBuilder builder = new StringBuilder();
-        for (McuMgrImageStateResponse.ImageSlot image : response.images) {
-            builder.append("\n-------------------------------------------");
-            builder.append("\nVersion: ").append(image.version);
-            builder.append("\nSlot #").append(image.slot);
-            builder.append("\nActive: ").append(image.active);
-            builder.append("\nBootable: ").append(image.bootable);
-            builder.append("\nCompressed: ").append(image.compressed);
-            builder.append("\nConfirmed: ").append(image.confirmed);
-            builder.append("\nImage number: ").append(image.image);
-            builder.append("\nPermanent: ").append(image.permanent);
+        try {
+            JSONArray firmwareArray = new JSONArray();
+            for (McuMgrImageStateResponse.ImageSlot image : response.images) {
+                JSONObject firmwareObject = new JSONObject();
+                firmwareObject.put("version", image.version);
+                firmwareObject.put("slot", image.slot);
+                firmwareObject.put("active", image.active);
+                firmwareObject.put("bootable", image.bootable);
+                firmwareObject.put("compressed", image.compressed);
+                firmwareObject.put("confirmed", image.confirmed);
+                firmwareObject.put("image_number", image.image);
+                firmwareObject.put("permanent", image.permanent);
+                firmwareObject.put("pending", image.pending);
+                firmwareObject.put("hash", image.hash);
+                firmwareArray.put(firmwareObject);
+            }
+            return firmwareArray.toString(4);
+        } catch (JSONException e) {
+            return "Failed to package McuMgrImageStateResponse as json\n" + e.getLocalizedMessage();
         }
-        return builder.toString();
     }
 
     @SuppressWarnings("UnusedReturnValue")

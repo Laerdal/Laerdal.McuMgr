@@ -129,19 +129,28 @@ public class IOSFirmwareListDownloader: NSObject {
     // MARK: - Private helpers
 
     private static func parseInformation(_ response: McuMgrImageStateResponse) -> String {
-        var builder = ""
-        for image in response.images ?? [] {
-            builder += "\n-------------------------------------------"
-            builder += "\nVersion: \(image.version ?? "N/A")"
-            builder += "\nSlot #\(image.slot)"
-            builder += "\nActive: \(image.active)"
-            builder += "\nBootable: \(image.bootable)"
-            builder += "\nCompressed: \(image.compressed)"
-            builder += "\nConfirmed: \(image.confirmed)"
-            builder += "\nImage number: \(image.image)"
-            builder += "\nPermanent: \(image.permanent)"
+        do {
+            var firmwareArray: [[String: Any]] = []
+            for image in response.images ?? [] {
+                let firmwareObject: [String: Any] = [
+                    "version": image.version as Any,
+                    "slot": image.slot,
+                    "active": image.active,
+                    "bootable": image.bootable,
+                    "compressed": image.compressed,
+                    "confirmed": image.confirmed,
+                    "image_number": image.image,
+                    "permanent": image.permanent,
+                    "pending": image.pending,
+                    "hash": image.hash as Any,
+                ]
+                firmwareArray.append(firmwareObject)
+            }
+            let jsonData = try JSONSerialization.data(withJSONObject: firmwareArray, options: [.prettyPrinted])
+            return String(data: jsonData, encoding: .utf8) ?? "Failed to encode JSON"
+        } catch {
+            return "Failed to package McuMgrImageStateResponse as json\n\(error.localizedDescription)"
         }
-        return builder
     }
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
