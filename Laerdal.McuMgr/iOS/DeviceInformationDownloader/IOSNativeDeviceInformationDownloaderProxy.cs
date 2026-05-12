@@ -32,5 +32,9 @@ namespace Laerdal.McuMgr.DeviceInformation
 
             GC.SuppressFinalize(this);
         }
+
+        public override void LogMessageAdvertisement(string message, string category, string level) { }
+        public override void FatalErrorOccurredAdvertisement(string errorMessage, nint globalErrorCode) { }
+        public override void BusyStateChangedAdvertisement(bool busyNotIdle) { }
     }
 }
