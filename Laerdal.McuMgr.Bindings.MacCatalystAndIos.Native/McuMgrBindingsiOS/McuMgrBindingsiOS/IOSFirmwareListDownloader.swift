@@ -10,8 +10,6 @@ public class IOSFirmwareListDownloader: NSObject {
     private var _cbPeripheral: CBPeripheral!
     private var _manager: ImageManager!
     private var _transporter: McuMgrBleTransport!
-    private var _currentBusyState: Bool = false
-    private var _lastFatalErrorMessage: String = ""
 
     @objc
     public init(_ listener: IOSListenerForFirmwareListDownloader!) {
@@ -88,8 +86,6 @@ public class IOSFirmwareListDownloader: NSObject {
             _manager = ImageManager(transport: _transporter)
             _manager.logDelegate = self
 
-            setBusyState(true) //order
-
             let semaphore = DispatchSemaphore(value: 0)
             var result: String = "FAILED__INVALID_DATA"
 
@@ -112,18 +108,13 @@ public class IOSFirmwareListDownloader: NSObject {
             }
 
             semaphore.wait()
-            setBusyState(false)
+            tryDisconnect();
             return result
 
         } catch let ex {
             onError("[IOSDI.BD.060] Failed to initialize the download operation", ex)
             return "FAILED__INVALID_DATA"
         }
-    }
-
-    @objc
-    public func getLastFatalErrorMessage() -> String {
-        _lastFatalErrorMessage
     }
 
     // MARK: - Private helpers
@@ -183,19 +174,10 @@ public class IOSFirmwareListDownloader: NSObject {
         return true
     }
 
-    private func setBusyState(_ newBusyState: Bool) {
-        if _currentBusyState == newBusyState {
-            return
-        }
-        _currentBusyState = newBusyState
-        _listener?.busyStateChangedAdvertisement(newBusyState)
-    }
-
     private func onError(_ errorMessage: String, _ error: Error? = nil) {
         let formattedMessage = McuMgrExceptionHelpers.formatErrorMessageWithExceptionTypeAndMessage(errorMessage, error, _transporter?.state)
         let globalErrorCode = McuMgrExceptionHelpers.deduceGlobalErrorCodeFromException(error)
 
-        _lastFatalErrorMessage = formattedMessage
         _listener?.fatalErrorOccurredAdvertisement(formattedMessage, globalErrorCode)
     }
 

@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FirmwareList.Contracts
     public interface IFirmwareListDownloader :
         IDisposable
     {
-        string DownloadAsync(
+        string Download(
             ELogLevel? minimumNativeLogLevel = null,
             int? initialMtuSize = null
         );

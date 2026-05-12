@@ -88,7 +88,9 @@ public class AndroidFirmwareListDownloader {
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
-            return parseInformation(_imageManager.list());
+            String data = parseInformation(_imageManager.list());
+            tryDisconnect();
+            return data;
         } catch (final Exception ex) {
             return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA.name();
         }
