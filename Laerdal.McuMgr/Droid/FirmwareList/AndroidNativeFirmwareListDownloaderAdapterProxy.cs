@@ -1,5 +1,6 @@
 
 using System;
+using Laerdal.McuMgr.Bindings.Android;
 using Laerdal.McuMgr.FirmwareList.Contracts.Native;
 using Android.Bluetooth;
 using Android.Content;
