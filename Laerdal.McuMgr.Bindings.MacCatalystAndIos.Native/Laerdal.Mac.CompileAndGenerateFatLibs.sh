@@ -341,7 +341,7 @@ function create_fat_binaries() {
   find                                         \
     "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"     \
     -type f                                    \
-    -exec sed -i.bak 's/interface IOSDeviceInformationDownloader/[Protocol] interface IOSDeviceInformationDownloader/gi' {} \;
+    -exec sed -i.bak 's/interface IOSFirmwareListDownloader/[Protocol] interface IOSFirmwareListDownloader/gi' {} \;
   find                                         \
     "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"     \
     -type f                                    \
@@ -369,7 +369,7 @@ function create_fat_binaries() {
   find                                         \
     "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"     \
     -type f                                    \
-    -exec sed -i.bak 's/interface IOSListenerForDeviceInformationDownloader/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForDeviceInformationDownloader/gi' {} \;
+    -exec sed -i.bak 's/interface IOSListenerForFirmwareListDownloader/[BaseType(typeof(NSObject))] [Model] interface IOSListenerForFirmwareListDownloader/gi' {} \;
   find                                         \
     "${OUTPUT_SHARPIE_HEADER_FILES_PATH}/"     \
     -type f                                    \

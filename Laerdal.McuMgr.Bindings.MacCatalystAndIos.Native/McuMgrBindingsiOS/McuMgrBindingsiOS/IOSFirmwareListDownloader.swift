@@ -1,12 +1,12 @@
 import iOSMcuManagerLibrary
 import CoreBluetooth
 
-// @objc(IOSDeviceInformationDownloader)
-public class IOSDeviceInformationDownloader: NSObject {
+// @objc(IOSFirmwareListDownloader)
+public class IOSFirmwareListDownloader: NSObject {
 
     private var _minimumNativeLogLevel: McuMgrLogLevel = .error
 
-    private var _listener: IOSListenerForDeviceInformationDownloader!
+    private var _listener: IOSListenerForFirmwareListDownloader!
     private var _cbPeripheral: CBPeripheral!
     private var _manager: ImageManager!
     private var _transporter: McuMgrBleTransport!
@@ -14,12 +14,12 @@ public class IOSDeviceInformationDownloader: NSObject {
     private var _lastFatalErrorMessage: String = ""
 
     @objc
-    public init(_ listener: IOSListenerForDeviceInformationDownloader!) {
+    public init(_ listener: IOSListenerForFirmwareListDownloader!) {
         _listener = listener
     }
 
     @objc
-    public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForDeviceInformationDownloader!) {
+    public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareListDownloader!) {
         _listener = listener
         _cbPeripheral = cbPeripheral
     }
@@ -108,7 +108,7 @@ public class IOSDeviceInformationDownloader: NSObject {
                     return
                 }
 
-                result = IOSDeviceInformationDownloader.parseInformation(response)
+                result = IOSFirmwareListDownloader.parseInformation(response)
             }
 
             semaphore.wait()
@@ -190,7 +190,7 @@ public class IOSDeviceInformationDownloader: NSObject {
         _listener?.fatalErrorOccurredAdvertisement(formattedMessage, globalErrorCode)
     }
 
-    private static let DefaultLogCategory = "DeviceInformationDownloader"
+    private static let DefaultLogCategory = "FirmwareListDownloader"
 
     private func logInBg(_ message: String, _ level: McuMgrLogLevel) {
         if level < _minimumNativeLogLevel {
@@ -199,12 +199,12 @@ public class IOSDeviceInformationDownloader: NSObject {
 
         Task.fireAndForgetInTheBg { [weak self] in
             guard let self else { return }
-            self._listener?.logMessageAdvertisement(message, IOSDeviceInformationDownloader.DefaultLogCategory, level.name)
+            self._listener?.logMessageAdvertisement(message, IOSFirmwareListDownloader.DefaultLogCategory, level.name)
         }
     }
 }
 
-extension IOSDeviceInformationDownloader: McuMgrLogDelegate {
+extension IOSFirmwareListDownloader: McuMgrLogDelegate {
     public func log(
             _ msg: String,
             ofCategory category: iOSMcuManagerLibrary.McuMgrLogCategory,

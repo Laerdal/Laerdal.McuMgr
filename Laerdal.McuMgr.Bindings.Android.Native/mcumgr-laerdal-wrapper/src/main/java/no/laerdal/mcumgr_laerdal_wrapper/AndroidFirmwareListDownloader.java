@@ -16,7 +16,7 @@ import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 
 @SuppressWarnings({"unused", "DuplicatedCode"})
-public class AndroidDeviceInformationDownloader {
+public class AndroidFirmwareListDownloader {
     private EAndroidLoggingLevel _minimumNativeLogLevel = EAndroidLoggingLevel.Error;
 
     private Context _context;
@@ -27,11 +27,11 @@ public class AndroidDeviceInformationDownloader {
 
     private final ExecutorService _backgroundExecutor = Executors.newCachedThreadPool();
 
-    public AndroidDeviceInformationDownloader()
+    public AndroidFirmwareListDownloader()
     {
     }
 
-    public AndroidDeviceInformationDownloader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
+    public AndroidFirmwareListDownloader(@NonNull final Context context, @NonNull final BluetoothDevice bluetoothDevice) {
         _context = context;
         _bluetoothDevice = bluetoothDevice;
     }
@@ -67,11 +67,11 @@ public class AndroidDeviceInformationDownloader {
             final int minimumNativeLogLevelNumeric
     ) {
         if (_context == null) {
-            return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
+            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
         }
 
         if (_bluetoothDevice == null) {
-            return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
+            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
@@ -80,15 +80,15 @@ public class AndroidDeviceInformationDownloader {
             ensureTransportIsInitializedExactlyOnce(initialMtuSize); //order
             setLoggingEnabledOnTransport(false); //order
 
-            final EAndroidDeviceInformationDownloaderVerdict verdict = ensureImageManagerIsInitializedExactlyOnce(); //order
-            if (verdict != EAndroidDeviceInformationDownloaderVerdict.SUCCESS)
+            final EAndroidFirmwareListDownloaderVerdict verdict = ensureImageManagerIsInitializedExactlyOnce(); //order
+            if (verdict != EAndroidFirmwareListDownloaderVerdict.SUCCESS)
                 return verdict.name();
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
             return parseInformation(_imageManager.list());
         } catch (final Exception ex) {
-            return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_DATA.name();
+            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA.name();
         }
     }
 
@@ -156,19 +156,19 @@ public class AndroidDeviceInformationDownloader {
         }
     }
 
-    private EAndroidDeviceInformationDownloaderVerdict ensureImageManagerIsInitializedExactlyOnce() {
+    private EAndroidFirmwareListDownloaderVerdict ensureImageManagerIsInitializedExactlyOnce() {
         if (_imageManager != null) //already initialized
-            return EAndroidDeviceInformationDownloaderVerdict.SUCCESS;
+            return EAndroidFirmwareListDownloaderVerdict.SUCCESS;
 
         logInBg("[AFD.EFMIIEO.010] (Re)Initializing image-manager", EAndroidLoggingLevel.Trace);
 
         try {
             _imageManager = new ImageManager(_transport); //order
         } catch (final Exception ex) {
-            return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_SETTINGS;
+            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
-        return EAndroidDeviceInformationDownloaderVerdict.SUCCESS;
+        return EAndroidFirmwareListDownloaderVerdict.SUCCESS;
     }
 
     private void tryEnsureConnectionPriorityOnTransport() {

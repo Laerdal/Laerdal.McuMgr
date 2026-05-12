@@ -1,22 +1,22 @@
 using System;
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.DeviceInformation.Contracts;
-using Laerdal.McuMgr.DeviceInformation.Contracts.Native;
+using Laerdal.McuMgr.FirmwareList.Contracts;
+using Laerdal.McuMgr.FirmwareList.Contracts.Native;
 
-namespace Laerdal.McuMgr.DeviceInformation
+namespace Laerdal.McuMgr.FirmwareList
 {
-    public partial class DeviceInformationDownloader : IDeviceInformationDownloader
+    public partial class FirmwareListDownloader : IFirmwareListDownloader
     {
         private bool _disposed;
-        protected readonly INativeDeviceInformationDownloaderProxy NativeDeviceInformationDownloaderProxy;
+        protected readonly INativeFirmwareListDownloaderProxy NativeFirmwareListDownloaderProxy;
 
-        public DeviceInformationDownloader(INativeDeviceInformationDownloaderProxy nativeDeviceInformationDownloaderProxy)
+        public FirmwareListDownloader(INativeFirmwareListDownloaderProxy nativeFirmwareListDownloaderProxy)
         {
-            NativeDeviceInformationDownloaderProxy = nativeDeviceInformationDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeDeviceInformationDownloaderProxy));
+            NativeFirmwareListDownloaderProxy = nativeFirmwareListDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareListDownloaderProxy));
         }
 
         public string DownloadAsync(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
-            => NativeDeviceInformationDownloaderProxy.DownloadDeviceInformation(
+            => NativeFirmwareListDownloaderProxy.DownloadFirmwareList(
                 initialMtuSize: initialMtuSize ?? -1,
                 minimumNativeLogLevel: minimumNativeLogLevel ?? ELogLevel.Error
             );

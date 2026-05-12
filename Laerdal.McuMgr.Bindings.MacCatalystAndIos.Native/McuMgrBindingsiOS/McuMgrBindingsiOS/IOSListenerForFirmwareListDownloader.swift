@@ -7,8 +7,9 @@ import Foundation
 // to be created properly by sharpie
 //
 @objc
-public protocol IOSListenerForDeviceInformationDownloader {
+public protocol IOSListenerForFirmwareListDownloader {
     func logMessageAdvertisement(_ message: String, _ category: String, _ level: String)
     func fatalErrorOccurredAdvertisement(_ errorMessage: String, _ globalErrorCode: Int)
     func busyStateChangedAdvertisement(_ busyNotIdle: Bool)
 }
+

@@ -2,24 +2,24 @@ using System;
 using CoreBluetooth;
 using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
-using Laerdal.McuMgr.DeviceInformation.Contracts.Native;
+using Laerdal.McuMgr.FirmwareList.Contracts.Native;
 using McuMgrBindingsiOS;
 
-namespace Laerdal.McuMgr.DeviceInformation
+namespace Laerdal.McuMgr.FirmwareList
 {
     // ReSharper disable once InconsistentNaming
-    internal sealed class IOSNativeDeviceInformationDownloaderProxy : IOSListenerForDeviceInformationDownloader, INativeDeviceInformationDownloaderProxy
+    internal sealed class IOSNativeFirmwareListDownloaderProxy : IOSListenerForFirmwareListDownloader, INativeFirmwareListDownloaderProxy
     {
-        private readonly IOSDeviceInformationDownloader _nativeDownloader;
+        private readonly IOSFirmwareListDownloader _nativeDownloader;
 
-        internal IOSNativeDeviceInformationDownloaderProxy(CBPeripheral bluetoothDevice)
+        internal IOSNativeFirmwareListDownloaderProxy(CBPeripheral bluetoothDevice)
         {
             bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
 
-            _nativeDownloader = new IOSDeviceInformationDownloader(cbPeripheral: bluetoothDevice, listener: this);
+            _nativeDownloader = new IOSFirmwareListDownloader(cbPeripheral: bluetoothDevice, listener: this);
         }
 
-        public string DownloadDeviceInformation(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+        public string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             => _nativeDownloader.BeginDownload(
                 initialMtuSize: initialMtuSize,
                 minimumNativeLogLevelNumeric: (nint)(int)minimumNativeLogLevel

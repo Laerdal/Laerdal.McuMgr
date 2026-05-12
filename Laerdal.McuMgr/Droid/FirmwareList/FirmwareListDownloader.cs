@@ -6,31 +6,31 @@ using Android.Bluetooth;
 using Android.Content;
 using Android.App;
 using Laerdal.McuMgr.Common.Helpers;
-using Laerdal.McuMgr.DeviceInformation.Contracts.Native;
+using Laerdal.McuMgr.FirmwareList.Contracts.Native;
 
-namespace Laerdal.McuMgr.DeviceInformation
+namespace Laerdal.McuMgr.FirmwareList
 {
-    public partial class DeviceInformationDownloader
+    public partial class FirmwareListDownloader
     {
 
-        public DeviceInformationDownloader(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
+        public FirmwareListDownloader(object nativeBluetoothDevice, object androidContext = null) : this( // platform independent utility constructor to make life easier in terms of qol/dx in MAUI
             androidContext: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<Context>(obj: androidContext, parameterName: nameof(androidContext), allowNulls: true),
             bluetoothDevice: NativeBluetoothDeviceHelpers.EnsureObjectIsCastableToType<BluetoothDevice>(obj: nativeBluetoothDevice, parameterName: nameof(nativeBluetoothDevice))
         )
         {
         }
 
-        public DeviceInformationDownloader(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
+        public FirmwareListDownloader(BluetoothDevice bluetoothDevice, Context androidContext = null) : this(ValidateArgumentsAndConstructProxy(bluetoothDevice, androidContext))
         {
         }
 
-        static private INativeDeviceInformationDownloaderProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
+        static private INativeFirmwareListDownloaderProxy ValidateArgumentsAndConstructProxy(BluetoothDevice bluetoothDevice, Context androidContext = null)
         {
             bluetoothDevice = bluetoothDevice ?? throw new ArgumentNullException(nameof(bluetoothDevice));
             
             androidContext ??= Application.Context;
 
-            return new AndroidNativeDeviceInformationDownloaderAdapterProxy(
+            return new AndroidNativeFirmwareListDownloaderAdapterProxy(
                 context: androidContext,
                 bluetoothDevice: bluetoothDevice
             );

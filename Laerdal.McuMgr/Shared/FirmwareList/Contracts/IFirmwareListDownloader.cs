@@ -4,9 +4,9 @@
 using System;
 using Laerdal.McuMgr.Common.Enums;
 
-namespace Laerdal.McuMgr.DeviceInformation.Contracts
+namespace Laerdal.McuMgr.FirmwareList.Contracts
 {
-    public interface IDeviceInformationDownloader :
+    public interface IFirmwareListDownloader :
         IDisposable
     {
         string DownloadAsync(
