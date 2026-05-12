@@ -97,6 +97,14 @@ public class AndroidFirmwareListDownloader {
     }
 
     @NonNull
+    private static String bytesToHex(byte[] bytes) {
+        if (bytes == null) return "";
+        final StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) sb.append(String.format("%02x", b));
+        return sb.toString();
+    }
+
+    @NonNull
     private static String parseInformation(McuMgrImageStateResponse response) {
         try {
             JSONArray firmwareArray = new JSONArray();
@@ -111,7 +119,7 @@ public class AndroidFirmwareListDownloader {
                 firmwareObject.put("image_number", image.image);
                 firmwareObject.put("permanent", image.permanent);
                 firmwareObject.put("pending", image.pending);
-                firmwareObject.put("hash", image.hash);
+                firmwareObject.put("hash", bytesToHex(image.hash));
                 firmwareArray.put(firmwareObject);
             }
             return firmwareArray.toString(4);
