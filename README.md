@@ -662,6 +662,35 @@ private void CleanupDeviceResetter()
     }
 ```
 
+- To retrieve a list of installed firmwares from the device:
+
+         Note:
+
+         1. This method is synchronous
+         2. The data returned will be in json format.
+
+```csharp
+    private async Task DownloadSingleFileButtonClickedAsync()
+    {
+        try
+        {
+            _fwDownloader_ = new FirmwareListDownloader(/*native ble-device*/);
+
+            var jsonData = firmwareListDownloader.Download(
+                minimumNativeLogLevel: minimumNativeLogLevel,
+                initialMtuSize: initialMtuSize
+            );
+        }
+        catch (Exception ex) //order
+        {
+            App.DisplayAlert(
+                title: "[BUG] Image-List Download Failed",
+                message: $"An unexpected error occurred:{S.nl2}{ex}"
+            );
+            return;
+        }
+    }
+```
 - To perform file-downloading from the device:
 
          Note:
