@@ -7,15 +7,11 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Contract;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.runtime.mcumgr.McuMgrErrorCode;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.managers.ImageManager;
-import io.runtime.mcumgr.response.HasReturnCode;
 import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 
@@ -28,11 +24,10 @@ public class AndroidDeviceInformationDownloader {
 
     private ImageManager _imageManager;
     private McuMgrBleTransport _transport;
-    private Boolean _currentBusyState = false;
 
     private final ExecutorService _backgroundExecutor = Executors.newCachedThreadPool();
 
-    public AndroidDeviceInformationDownloader() //this flavour is meant to be used in conjunction with trySetBluetoothDevice() and trySetContext()
+    public AndroidDeviceInformationDownloader()
     {
     }
 
@@ -72,14 +67,10 @@ public class AndroidDeviceInformationDownloader {
             final int minimumNativeLogLevelNumeric
     ) {
         if (_context == null) {
-            onError("[AFD.BD.040] No context specified - call trySetContext() first");
-
             return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
         }
 
         if (_bluetoothDevice == null) {
-            onError("[AFD.BD.050] No bluetooth-device specified - call trySetBluetoothDevice() first");
-
             return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
         }
 
@@ -95,11 +86,8 @@ public class AndroidDeviceInformationDownloader {
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
-            setBusyState(true); //                         order
             return parseInformation(_imageManager.list());
         } catch (final Exception ex) {
-            onError("[AFD.BD.060] Failed to initialize the download operation:\n\n" + ex, ex);
-
             return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_DATA.name();
         }
     }
@@ -119,13 +107,6 @@ public class AndroidDeviceInformationDownloader {
             builder.append("\nPermanent: ").append(image.permanent);
         }
         return builder.toString();
-    }
-
-    public void nativeDispose() {
-        logInBg("[AFD.ND.010] Disposing the native-file-downloader", EAndroidLoggingLevel.Trace);
-
-        tryInvalidateCachedInfrastructure(); //  doesnt throw
-        tryShutdownBackgroundExecutor(); //      doesnt throw
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -160,12 +141,6 @@ public class AndroidDeviceInformationDownloader {
         }
     }
 
-    public boolean trySetMinimumNativeLogLevel(final int minimumNativeLogLevelNumeric) {
-        _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
-
-        return true;
-    }
-
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize) {
         if (_transport == null) {
             logInBg("[AFD.ETIIEO.000] Transport is null - instantiating it now", EAndroidLoggingLevel.Warning);
@@ -190,7 +165,6 @@ public class AndroidDeviceInformationDownloader {
         try {
             _imageManager = new ImageManager(_transport); //order
         } catch (final Exception ex) {
-            onError("[AFD.EFMIIEO.020] Failed to initialize the native image-manager", ex); //sets the state to ERROR too!
             return EAndroidDeviceInformationDownloaderVerdict.FAILED__INVALID_SETTINGS;
         }
 
@@ -226,15 +200,6 @@ public class AndroidDeviceInformationDownloader {
         _transport.setLoggingEnabled(enabled);
     }
 
-    private void setBusyState(final boolean newBusyState) {
-        if (_currentBusyState == newBusyState)
-            return;
-
-        _currentBusyState = newBusyState;
-
-        fireAndForgetInTheBg(() -> busyStateChangedAdvertisement(newBusyState));
-    }
-
     private void fireAndForgetInTheBg(Runnable func) {
         if (func == null)
             return;
@@ -248,79 +213,6 @@ public class AndroidDeviceInformationDownloader {
         });
     }
 
-    private String _lastFatalErrorMessage;
-
-    @Contract(pure = true)
-    public String getLastFatalErrorMessage() {
-        return _lastFatalErrorMessage;
-    }
-
-    private void onError(final String errorMessage) {
-        onError(errorMessage, /*exception*/ null);
-    }
-
-    private void onError(final String errorMessage, final Exception exception) {
-        boolean isConnectedNow = _transport != null && _transport.isConnected();
-
-        onErrorImpl(
-                McuMgrExceptionHelpers.FormatErrorMessageWithExceptionTypeAndMessage(errorMessage, exception),
-                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(exception, isConnectedNow)
-        );
-    }
-
-    private void onError(final String errorMessage, final McuMgrErrorCode exceptionCodeSpecs, final HasReturnCode.GroupReturnCode groupReturnCodeSpecs) {
-        onErrorImpl(
-                McuMgrExceptionHelpers.FormatErrorMessageWithErrorCodes(errorMessage, exceptionCodeSpecs, groupReturnCodeSpecs),
-                McuMgrExceptionHelpers.DeduceGlobalErrorCodeFromException(groupReturnCodeSpecs, exceptionCodeSpecs)
-        );
-    }
-
-    private void onErrorImpl(final String errorMessage, final int globalErrorCode) {
-        _lastFatalErrorMessage = errorMessage; //better set this directly in here considering that fatalErrorOccurredAdvertisement() is called only through onErrorImpl()
-
-        fireAndForgetInTheBg(() -> fatalErrorOccurredAdvertisement(
-                errorMessage,
-                globalErrorCode
-        ));
-    }
-
-    public void fatalErrorOccurredAdvertisement(
-            final String errorMessage,
-            final int globalErrorCode // have a look at EGlobalErrorCode.cs in csharp
-    ) {
-    }
-
-    @Contract(pure = true)
-    public void cancellingAdvertisement(final String reason) {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void busyStateChangedAdvertisement(final boolean busyNotIdle) {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void cancelledAdvertisement(final String reason) {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void stateChangedAdvertisement(
-            final String remoteFilePath,
-            final EAndroidFileDownloaderState oldState,
-            final EAndroidFileDownloaderState newState,
-            long totalBytesToBeDownloaded,
-            byte[] finalDataSnapshot
-    ) {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
-    @Contract(pure = true)
-    public void fileDownloadProgressPercentageAndDataThroughputChangedAdvertisement(final String resourceId, final int progressPercentage, final float currentThroughputInKBps, final float totalAverageThroughputInKBps) {
-        //this method is intentionally empty   its meant to be overridden by csharp binding libraries to intercept updates
-    }
-
     private final String DefaultLogCategory = "FileDownloader";
 
     private void logInBg(final String message, final EAndroidLoggingLevel level) {
@@ -328,15 +220,6 @@ public class AndroidDeviceInformationDownloader {
             return;
 
         fireAndForgetInTheBg(() -> logMessageAdvertisement(message, DefaultLogCategory, level.toString()));
-    }
-
-    @Contract(pure = true)
-    //wrapper utility method so that we will not have to constantly pass remoteFilePathSanitized as the fourth argument    currently unused but should be handy in the future
-    private void log(final String message, final EAndroidLoggingLevel level) {
-        if (level.ordinal() < _minimumNativeLogLevel.ordinal())
-            return;
-
-        logMessageAdvertisement(message, DefaultLogCategory, level.toString());
     }
 
     @Contract(pure = true)
