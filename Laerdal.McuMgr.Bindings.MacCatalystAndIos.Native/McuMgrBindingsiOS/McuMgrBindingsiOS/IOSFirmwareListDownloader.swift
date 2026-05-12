@@ -133,7 +133,7 @@ public class IOSFirmwareListDownloader: NSObject {
                     "image_number": image.image,
                     "permanent": image.permanent,
                     "pending": image.pending,
-                    "hash": image.hash?.map { String(format: "%02x", $0) }.joined() as Any,
+                    "hash": image.hash.map { String(format: "%02x", $0) }.joined() as Any,
                 ]
                 firmwareArray.append(firmwareObject)
             }
