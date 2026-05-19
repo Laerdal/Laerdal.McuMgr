@@ -75,8 +75,9 @@ public class IOSFirmwareListDownloader: NSObject {
     @objc
     public func getImageListJson(_ initialMtuSize: Int, _ minimumNativeLogLevelNumeric: Int) -> IOSFirmwareListDownloaderResult {
         if _cbPeripheral == nil {
-            onError("[IOSDI.BD.040] No bluetooth-device specified - call trySetBluetoothDevice() first")
-            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidSettings, data: "")
+            let data = "[IOSDI.BD.040] No bluetooth-device specified - call trySetBluetoothDevice() first"
+            onError(data)
+            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidSettings, data: data)
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
@@ -97,16 +98,16 @@ public class IOSFirmwareListDownloader: NSObject {
                 defer { semaphore.signal() }
 
                 if let error = error {
-                    self.onError("[IOSDI.BD.050] Failed to read device information: '\(error.localizedDescription)'", error)
+                    data = "[IOSDI.BD.050] Failed to read device information: '\(error.localizedDescription)'"
+                    self.onError(data, error)
                     verdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
-                    data = ""
                     return
                 }
 
                 guard let response = response else {
-                    self.onError("[IOSDI.BD.055] Received nil response from device")
+                    data = "[IOSDI.BD.055] Received nil response from device"
+                    self.onError(data)
                     verdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
-                    data = ""
                     return
                 }
 
