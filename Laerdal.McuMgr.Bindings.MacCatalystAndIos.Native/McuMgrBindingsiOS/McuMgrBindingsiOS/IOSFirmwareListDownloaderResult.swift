@@ -1,3 +1,5 @@
+import Foundation
+
 @objc
 public class IOSFirmwareListDownloaderResult: NSObject {
 
