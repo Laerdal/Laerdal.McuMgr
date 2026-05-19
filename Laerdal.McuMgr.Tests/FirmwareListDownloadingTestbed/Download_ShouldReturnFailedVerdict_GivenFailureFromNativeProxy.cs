@@ -7,32 +7,32 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
     public partial class FirmwareListDownloaderTestbed
     {
         [Fact]
-        public void Download_ShouldReturnFailedVerdict_GivenInvalidSettingsFromNativeProxy()
+        public void Download_ShouldThrowException_GivenInvalidSettingsFromNativeProxy()
         {
             // Arrange
             var mockedNativeFirmwareListDownloaderProxy = new MockedInvalidSettingsNativeFirmwareListDownloaderProxySpy();
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
 
             // Act
-            var result = firmwareListDownloader.Download();
+            var work = new Action(() => firmwareListDownloader.Get());
 
             // Assert
-            result.Should().Be("FAILED__INVALID_SETTINGS");
+            work.Should().ThrowExactly<InvalidOperationException>().WithMessage("*FailedInvalidSettings*");
             mockedNativeFirmwareListDownloaderProxy.DownloadFirmwareListCalled.Should().BeTrue();
         }
 
         [Fact]
-        public void Download_ShouldReturnFailedVerdict_GivenInvalidDataFromNativeProxy()
+        public void Download_ShouldThrowException_GivenInvalidDataFromNativeProxy()
         {
             // Arrange
             var mockedNativeFirmwareListDownloaderProxy = new MockedInvalidDataNativeFirmwareListDownloaderProxySpy();
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
 
             // Act
-            var result = firmwareListDownloader.Download();
+            var work = new Action(() => firmwareListDownloader.Get());
 
             // Assert
-            result.Should().Be("FAILED__INVALID_DATA");
+            work.Should().ThrowExactly<InvalidOperationException>().WithMessage("*FailedInvalidData*");
             mockedNativeFirmwareListDownloaderProxy.DownloadFirmwareListCalled.Should().BeTrue();
         }
 
@@ -42,7 +42,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             {
                 base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
 
-                return "FAILED__INVALID_SETTINGS";
+                throw new InvalidOperationException("Native call failed with verdict 'FailedInvalidSettings'");
             }
         }
 
@@ -52,7 +52,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             {
                 base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
 
-                return "FAILED__INVALID_DATA";
+                throw new InvalidOperationException("Native call failed with verdict 'FailedInvalidData'");
             }
         }
     }

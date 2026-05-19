@@ -15,7 +15,7 @@ namespace Laerdal.McuMgr.FirmwareList
             NativeFirmwareListDownloaderProxy = nativeFirmwareListDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareListDownloaderProxy));
         }
 
-        public string Download(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
+        public string Get(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
             => NativeFirmwareListDownloaderProxy.DownloadFirmwareList(
                 initialMtuSize: initialMtuSize ?? -1,
                 minimumNativeLogLevel: minimumNativeLogLevel ?? ELogLevel.Error

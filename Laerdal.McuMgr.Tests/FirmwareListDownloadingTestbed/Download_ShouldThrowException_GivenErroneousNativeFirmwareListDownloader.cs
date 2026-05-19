@@ -14,7 +14,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
 
             // Act
-            var work = new Action(() => firmwareListDownloader.Download());
+            var work = new Action(() => firmwareListDownloader.Get());
 
             // Assert
             work.Should().ThrowExactly<Exception>().WithMessage("native symbols not loaded blah blah");

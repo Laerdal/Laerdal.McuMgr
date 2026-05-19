@@ -20,10 +20,17 @@ namespace Laerdal.McuMgr.FirmwareList
         }
 
         public string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
-            => _nativeDownloader.BeginDownload(
+        {
+            var result = _nativeDownloader.GetImageListJson(
                 initialMtuSize: initialMtuSize,
                 minimumNativeLogLevelNumeric: (nint)(int)minimumNativeLogLevel
             );
+
+            if (result.Verdict != EIOSFirmwareListDownloaderVerdict.Success)
+                throw new InvalidOperationException($"[IOSNativeFirmwareListDownloaderProxy.DownloadFirmwareList] Native call failed with verdict '{result.Verdict}'");
+
+            return result.Data;
+        }
 
         public new void Dispose()
         {

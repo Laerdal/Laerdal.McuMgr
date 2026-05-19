@@ -14,7 +14,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
 
             // Act
-            firmwareListDownloader.Download();
+            firmwareListDownloader.Get();
 
             // Assert
             mockedNativeFirmwareListDownloaderProxy.DownloadFirmwareListCalled.Should().BeTrue();
@@ -30,7 +30,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
 
             // Act
-            firmwareListDownloader.Download(
+            firmwareListDownloader.Get(
                 minimumNativeLogLevel: ELogLevel.Trace,
                 initialMtuSize: 256
             );

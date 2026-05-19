@@ -40,6 +40,8 @@
 		E769DCC9F1B68E50C28DDDB6 /* EIOSDeviceResetterState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DD0EF706588EF75704AE /* EIOSDeviceResetterState.swift */; };
 		E769DE09776F3B7B4ADA00B5 /* IOSDeviceResetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */; };
 		E769DEB3EFF58D41D88197C4 /* EIOSFileUploadingInitializationVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */; };
+		AA000002000000000000AA01 /* EIOSFirmwareListDownloaderVerdict.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA01 /* EIOSFirmwareListDownloaderVerdict.swift */; };
+		AA000002000000000000AA02 /* IOSFirmwareListDownloaderResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA02 /* IOSFirmwareListDownloaderResult.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -78,6 +80,8 @@
 		E769DD92BBBF9A69EAF334F4 /* EIOSFirmwareInstallationFatalError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareInstallationFatalError.swift; sourceTree = "<group>"; };
 		E769DE03C73A46ADFF350E43 /* package.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
 		E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOSDeviceResetter.swift; sourceTree = "<group>"; };
+		AA000001000000000000AA01 /* EIOSFirmwareListDownloaderVerdict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EIOSFirmwareListDownloaderVerdict.swift; sourceTree = "<group>"; };
+		AA000001000000000000AA02 /* IOSFirmwareListDownloaderResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSFirmwareListDownloaderResult.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +129,8 @@
 				E769D797570DEED2DFC21B70 /* EIOSFileUploadingInitializationVerdict.swift */,
 				E769D8C352CB06D01D5C1EC7 /* EIOSFileDownloadingInitializationVerdict.swift */,
 				B04DC3662CD3E1A20048B553 /* EIOSFirmwareErasureInitializationVerdict.swift */,
+				AA000001000000000000AA01 /* EIOSFirmwareListDownloaderVerdict.swift */,
+				AA000001000000000000AA02 /* IOSFirmwareListDownloaderResult.swift */,
 				E769DB7090742CC7D6AFD01D /* InvalidFirmwareInstallationModeError.swift */,
 				E769D417A16B8DCE9D59165A /* IOSFileUploader.swift */,
 				E769DF03E263D02C508247AA /* IOSDeviceResetter.swift */,
@@ -273,6 +279,8 @@
 				B04DC3672CD3E1A20048B553 /* EIOSFirmwareErasureInitializationVerdict.swift in Sources */,
 				E769D54A54C788CCE8488B9B /* EIOSFileDownloadingInitializationVerdict.swift in Sources */,
 				E769D5AE4CFECFEA0B509626 /* EIOSFirmwareInstallationFatalError.swift in Sources */,
+				AA000002000000000000AA01 /* EIOSFirmwareListDownloaderVerdict.swift in Sources */,
+				AA000002000000000000AA02 /* IOSFirmwareListDownloaderResult.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

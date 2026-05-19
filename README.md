@@ -674,7 +674,7 @@ private void CleanupDeviceResetter()
     {
         try
         {
-            _fwDownloader_ = new FirmwareListDownloader(/*native ble-device*/);
+            using var firmwareListDownloader = new FirmwareListDownloader(/*native ble-device*/);
 
             var jsonData = firmwareListDownloader.Download(
                 minimumNativeLogLevel: minimumNativeLogLevel,

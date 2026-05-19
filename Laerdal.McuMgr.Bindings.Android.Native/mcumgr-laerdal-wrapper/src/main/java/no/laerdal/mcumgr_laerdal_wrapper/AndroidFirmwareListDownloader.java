@@ -64,16 +64,16 @@ public class AndroidFirmwareListDownloader {
         return tryDisposeTransport(); //         order
     }
 
-    public String beginDownload(
+    public AndroidFirmwareListDownloaderResult getImageListJson(
             final int initialMtuSize,
             final int minimumNativeLogLevelNumeric
     ) {
         if (_context == null) {
-            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
+            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "");
         }
 
         if (_bluetoothDevice == null) {
-            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS.name();
+            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "");
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
@@ -84,15 +84,16 @@ public class AndroidFirmwareListDownloader {
 
             final EAndroidFirmwareListDownloaderVerdict verdict = ensureImageManagerIsInitializedExactlyOnce(); //order
             if (verdict != EAndroidFirmwareListDownloaderVerdict.SUCCESS)
-                return verdict.name();
+                return new AndroidFirmwareListDownloaderResult(verdict, "");
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
-            String data = parseInformation(_imageManager.list());
-            tryDisconnect();
-            return data;
+            final String data = parseInformation(_imageManager.list());
+            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.SUCCESS, data);
         } catch (final Exception ex) {
-            return EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA.name();
+            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA, "");
+        } finally {
+            tryDisconnect();
         }
     }
 
@@ -232,7 +233,7 @@ public class AndroidFirmwareListDownloader {
         });
     }
 
-    private final String DefaultLogCategory = "FileDownloader";
+    private final String DefaultLogCategory = "FirmwareListDownloader";
 
     private void logInBg(final String message, final EAndroidLoggingLevel level) {
         if (level.ordinal() < _minimumNativeLogLevel.ordinal())

@@ -73,47 +73,54 @@ public class IOSFirmwareListDownloader: NSObject {
     }
 
     @objc
-    public func beginDownload(_ initialMtuSize: Int, _ minimumNativeLogLevelNumeric: Int) -> String {
+    public func getImageListJson(_ initialMtuSize: Int, _ minimumNativeLogLevelNumeric: Int) -> IOSFirmwareListDownloaderResult {
         if _cbPeripheral == nil {
             onError("[IOSDI.BD.040] No bluetooth-device specified - call trySetBluetoothDevice() first")
-            return "FAILED__INVALID_SETTINGS"
+            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidSettings, data: "")
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
 
         do {
             ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
+            defer {
+                tryDisconnect()
+            }
             _manager = ImageManager(transport: _transporter)
             _manager.logDelegate = self
 
             let semaphore = DispatchSemaphore(value: 0)
-            var result: String = "FAILED__INVALID_DATA"
+            var verdict: EIOSFirmwareListDownloaderVerdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
+            var data: String = ""
 
             _manager.list { response, error in
                 defer { semaphore.signal() }
 
                 if let error = error {
                     self.onError("[IOSDI.BD.050] Failed to read device information: '\(error.localizedDescription)'", error)
-                    result = "FAILED__INVALID_DATA"
+                    verdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
+                    data = ""
                     return
                 }
 
                 guard let response = response else {
                     self.onError("[IOSDI.BD.055] Received nil response from device")
-                    result = "FAILED__INVALID_DATA"
+                    verdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
+                    data = ""
                     return
                 }
 
-                result = IOSFirmwareListDownloader.parseInformation(response)
+                verdict = EIOSFirmwareListDownloaderVerdict.success
+                data = IOSFirmwareListDownloader.parseInformation(response)
             }
 
             semaphore.wait()
-            tryDisconnect();
-            return result
+            return IOSFirmwareListDownloaderResult(verdict: verdict, data: data)
 
         } catch let ex {
-            onError("[IOSDI.BD.060] Failed to initialize the download operation", ex)
-            return "FAILED__INVALID_DATA"
+            let error = "[IOSDI.BD.060] Failed to initialize the download operation"
+            onError(error, ex)
+            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidData, data: error)
         }
     }
 
@@ -204,4 +211,3 @@ extension IOSFirmwareListDownloader: McuMgrLogDelegate {
         _listener?.logMessageAdvertisement(msg, category.rawValue, level.name)
     }
 }
-

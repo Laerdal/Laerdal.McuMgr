@@ -1,4 +1,3 @@
-
 using System;
 using Laerdal.McuMgr.Bindings.Android;
 using Laerdal.McuMgr.FirmwareList.Contracts.Native;
@@ -24,7 +23,12 @@ namespace Laerdal.McuMgr.FirmwareList
 
         public string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
         {
-            return this.BeginDownload(initialMtuSize, (int)minimumNativeLogLevel);
+            var result = this.GetImageListJson(initialMtuSize, (int)minimumNativeLogLevel);
+
+            if (result.Verdict != EAndroidFirmwareListDownloaderVerdict.Success)
+                throw new InvalidOperationException($"[AndroidNativeFirmwareListDownloaderAdapterProxy.DownloadFirmwareList] Native call failed with verdict '{result.Verdict}'");
+
+            return result.Data;
         }
     }
 }
