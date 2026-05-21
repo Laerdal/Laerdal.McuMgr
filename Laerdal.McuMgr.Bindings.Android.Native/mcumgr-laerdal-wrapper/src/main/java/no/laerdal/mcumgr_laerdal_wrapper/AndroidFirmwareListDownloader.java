@@ -216,8 +216,10 @@ public class AndroidFirmwareListDownloader {
         boolean success = true;
         try {
             _transport.release();
-        } catch (final Exception ex) // suppress
-        {
+
+            _imageManager = null; //no point to keep it around    the transport has been trashed
+
+        } catch (final Exception ex) {
             success = false;
             logInBg("[AFLD.TDT.010] Failed to release the transport:\n\n" + ex, EAndroidLoggingLevel.Error);
         }
