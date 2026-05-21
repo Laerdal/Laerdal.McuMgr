@@ -73,7 +73,7 @@ public class IOSFirmwareListDownloader: NSObject {
     }
 
     @objc
-    public func getImageListJson(_ initialMtuSize: Int, _ minimumNativeLogLevelNumeric: Int) -> IOSFirmwareListDownloaderResult {
+    public func tryGetImageListJson(_ initialMtuSize: Int, _ minimumNativeLogLevelNumeric: Int) -> IOSFirmwareListDownloaderResult {
         if _cbPeripheral == nil {
             logInBg("[IOSFLD.BD.010] No bluetooth-device specified - call trySetBluetoothDevice() first", .error)
 

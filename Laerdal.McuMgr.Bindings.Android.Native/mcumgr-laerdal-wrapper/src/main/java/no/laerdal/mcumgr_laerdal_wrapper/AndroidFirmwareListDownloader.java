@@ -64,7 +64,7 @@ public class AndroidFirmwareListDownloader {
         return tryDisposeTransport(); //         order
     }
 
-    public AndroidFirmwareListDownloaderResult getImageListJson(
+    public AndroidFirmwareListDownloaderResult tryGetImageListJson(
             final int initialMtuSize,
             final int minimumNativeLogLevelNumeric
     ) {
@@ -92,9 +92,7 @@ public class AndroidFirmwareListDownloader {
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
-            final String jsonData = tryParseInformation(_imageManager.list());
-
-            return AndroidFirmwareListDownloaderResult.ForSuccess(jsonData);
+            return tryParseInformation(_imageManager.list());
 
         } catch (final Exception ex) {
             return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA, "An unexpected error occurred:\n\n" + ex);
@@ -107,8 +105,10 @@ public class AndroidFirmwareListDownloader {
     @NonNull
     private static String bytesToHex(byte[] bytes) {
         if (bytes == null) return "";
+
         final StringBuilder sb = new StringBuilder(bytes.length * 2);
         for (byte b : bytes) sb.append(String.format("%02x", b));
+
         return sb.toString();
     }
 
