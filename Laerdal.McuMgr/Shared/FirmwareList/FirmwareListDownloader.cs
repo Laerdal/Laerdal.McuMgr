@@ -10,7 +10,7 @@ namespace Laerdal.McuMgr.FirmwareList
         private bool _disposed;
         protected readonly INativeFirmwareListDownloaderProxy NativeFirmwareListDownloaderProxy;
 
-        public FirmwareListDownloader(INativeFirmwareListDownloaderProxy nativeFirmwareListDownloaderProxy)
+        internal FirmwareListDownloader(INativeFirmwareListDownloaderProxy nativeFirmwareListDownloaderProxy)
         {
             NativeFirmwareListDownloaderProxy = nativeFirmwareListDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareListDownloaderProxy));
         }
