@@ -153,6 +153,31 @@ public class AndroidFirmwareListDownloader {
         return true;
     }
 
+    public void nativeDispose()
+    {
+        logInBg("[AFLD.ND.010] Disposing the native-firmware-list-downloader", EAndroidLoggingLevel.Trace);
+
+        tryInvalidateCachedInfrastructure(); //  doesnt throw
+        tryShutdownBackgroundExecutor(); //      doesnt throw
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    private boolean tryShutdownBackgroundExecutor()
+    {
+        logInBg("[AFLD.TSBE.010] Shutting down the background-executor ...", EAndroidLoggingLevel.Trace);
+
+        try
+        {
+            _backgroundExecutor.shutdown();
+            return true;
+        }
+        catch (final Exception ex)
+        {
+            logInBg("[AFLD.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, EAndroidLoggingLevel.Warning);
+            return false;
+        }
+    }
+
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize) {
         if (_transport == null) {
             logInBg("[AFLD.ETIIEO.000] Transport is null - instantiating it now", EAndroidLoggingLevel.Warning);
