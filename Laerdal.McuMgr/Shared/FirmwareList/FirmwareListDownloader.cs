@@ -36,6 +36,16 @@ namespace Laerdal.McuMgr.FirmwareList
             if (!isDisposing)
                 return;
             
+            
+            try
+            {
+                NativeFirmwareListDownloaderProxy?.Dispose();
+            }
+            catch
+            {
+                //ignored
+            }
+
             _disposed = true;
         }
     }
