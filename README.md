@@ -670,13 +670,13 @@ private void CleanupDeviceResetter()
          2. The data returned will be in json format.
 
 ```csharp
-    private async Task DownloadSingleFileButtonClickedAsync()
+    private void DownloadSingleFileButtonClicked()
     {
         try
         {
             using var firmwareListDownloader = new FirmwareListDownloader(/*native ble-device*/);
 
-            var jsonData = firmwareListDownloader.Download(
+            var jsonData = firmwareListDownloader.Get(
                 minimumNativeLogLevel: minimumNativeLogLevel,
                 initialMtuSize: initialMtuSize
             );
