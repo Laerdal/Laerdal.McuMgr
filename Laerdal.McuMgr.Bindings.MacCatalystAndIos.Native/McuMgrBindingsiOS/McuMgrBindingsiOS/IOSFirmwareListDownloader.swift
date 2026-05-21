@@ -114,9 +114,7 @@ public class IOSFirmwareListDownloader: NSObject {
                     return
                 }
 
-                let jsonData = IOSFirmwareListDownloader.parseInformation(response) //todo  this should return a result instance directly
-
-                result = IOSFirmwareListDownloaderResult.forSuccess(jsonData: jsonData)
+                result = IOSFirmwareListDownloader.tryParseInformation(response)
             }
 
             semaphore.wait()
@@ -132,7 +130,7 @@ public class IOSFirmwareListDownloader: NSObject {
 
     // MARK: - Private helpers
 
-    private static func parseInformation(_ response: McuMgrImageStateResponse) -> String {
+    private static func tryParseInformation(_ response: McuMgrImageStateResponse) -> IOSFirmwareListDownloaderResult {
         do {
             var firmwareArray: [[String: Any]] = []
             for image in response.images ?? [] {
@@ -150,10 +148,18 @@ public class IOSFirmwareListDownloader: NSObject {
                 ]
                 firmwareArray.append(firmwareObject)
             }
+
             let jsonData = try JSONSerialization.data(withJSONObject: firmwareArray, options: [.prettyPrinted])
-            return String(data: jsonData, encoding: .utf8) ?? "Failed to encode JSON"
+
+            let jsonDataString = String(data: jsonData, encoding: .utf8)
+            if jsonDataString == nil { //impossible but just in case
+                return IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Unexpected error while trying to serialize data to a json-string (how did this even happen?)")
+            }
+
+            return IOSFirmwareListDownloaderResult.forSuccess(jsonData: jsonDataString!)
+
         } catch {
-            return "Failed to package McuMgrImageStateResponse as json\n\(error.localizedDescription)"
+            return IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Failed to package McuMgrImageStateResponse as json:\n\n\(error.localizedDescription)")
         }
     }
 

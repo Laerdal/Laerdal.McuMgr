@@ -17,9 +17,9 @@ public class AndroidFirmwareListDownloaderResult {
         return new AndroidFirmwareListDownloaderResult(verdict, "", possibleErrorMessage);
     }
 
-    public static AndroidFirmwareListDownloaderResult ForSuccess(final EAndroidFirmwareListDownloaderVerdict verdict, final String jsonData)
+    public static AndroidFirmwareListDownloaderResult ForSuccess(final String jsonData)
     {
-        return new AndroidFirmwareListDownloaderResult(verdict, jsonData, "");
+        return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.SUCCESS, jsonData, "");
     }
 
     public EAndroidFirmwareListDownloaderVerdict getVerdict() {

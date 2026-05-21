@@ -92,9 +92,9 @@ public class AndroidFirmwareListDownloader {
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
-            final String jsonData = parseInformation(_imageManager.list());
+            final String jsonData = tryParseInformation(_imageManager.list());
 
-            return AndroidFirmwareListDownloaderResult.ForSuccess(EAndroidFirmwareListDownloaderVerdict.SUCCESS, jsonData);
+            return AndroidFirmwareListDownloaderResult.ForSuccess(jsonData);
 
         } catch (final Exception ex) {
             return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA, "An unexpected error occurred:\n\n" + ex);
@@ -113,7 +113,7 @@ public class AndroidFirmwareListDownloader {
     }
 
     @NonNull
-    private static String parseInformation(McuMgrImageStateResponse response) {
+    private static AndroidFirmwareListDownloaderResult tryParseInformation(McuMgrImageStateResponse response) {
         try {
             JSONArray firmwareArray = new JSONArray();
             for (McuMgrImageStateResponse.ImageSlot image : response.images) {
@@ -130,9 +130,10 @@ public class AndroidFirmwareListDownloader {
                 firmwareObject.put("hash", bytesToHex(image.hash));
                 firmwareArray.put(firmwareObject);
             }
-            return firmwareArray.toString(4);
-        } catch (JSONException e) {
-            return "Failed to package McuMgrImageStateResponse as json\n" + e.getLocalizedMessage();
+
+            return AndroidFirmwareListDownloaderResult.ForSuccess(firmwareArray.toString(4));
+        } catch (JSONException ex) {
+            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA, "Failed to package McuMgrImageStateResponse as json:\n\n" + ex);
         }
     }
 
