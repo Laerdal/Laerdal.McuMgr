@@ -27,9 +27,9 @@ namespace Laerdal.McuMgr.FirmwareList
             );
 
             if (result.Verdict != EIOSFirmwareListDownloaderVerdict.Success)
-                throw new InvalidOperationException($"[IOSNativeFirmwareListDownloaderProxy.DownloadFirmwareList] Native call failed with verdict '{result.Verdict}'");
+                throw new InvalidOperationException($"[IOSNativeFirmwareListDownloaderProxy.DownloadFirmwareList] Native call failed with verdict '{result.Verdict}':\n\n{result.PossibleErrorMessage}");
 
-            return result.Data;
+            return result.JsonData;
         }
 
         public new void Dispose()

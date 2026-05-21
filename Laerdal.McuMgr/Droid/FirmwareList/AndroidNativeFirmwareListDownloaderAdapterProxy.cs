@@ -23,12 +23,12 @@ namespace Laerdal.McuMgr.FirmwareList
 
         public string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
         {
-            var result = this.GetImageListJson(initialMtuSize, (int)minimumNativeLogLevel);
+            var result = GetImageListJson(initialMtuSize, (int)minimumNativeLogLevel);
 
             if (result.Verdict != EAndroidFirmwareListDownloaderVerdict.Success)
-                throw new InvalidOperationException($"[AndroidNativeFirmwareListDownloaderAdapterProxy.DownloadFirmwareList] Native call failed with verdict '{result.Verdict}'");
+                throw new InvalidOperationException($"[AndroidNativeFirmwareListDownloaderAdapterProxy.DownloadFirmwareList] Native call failed with verdict '{result.Verdict}':\n\n{result.PossibleErrorMessage}");
 
-            return result.Data;
+            return result.JsonData;
         }
     }
 }

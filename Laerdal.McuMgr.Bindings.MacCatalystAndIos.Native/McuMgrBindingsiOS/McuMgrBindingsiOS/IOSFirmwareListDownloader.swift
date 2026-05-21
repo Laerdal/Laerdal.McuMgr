@@ -75,9 +75,12 @@ public class IOSFirmwareListDownloader: NSObject {
     @objc
     public func getImageListJson(_ initialMtuSize: Int, _ minimumNativeLogLevelNumeric: Int) -> IOSFirmwareListDownloaderResult {
         if _cbPeripheral == nil {
-            let data = "[IOSDI.BD.040] No bluetooth-device specified - call trySetBluetoothDevice() first"
-            onError(data)
-            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidSettings, data: data)
+            logInBg("[IOSFLD.BD.010] No bluetooth-device specified - call trySetBluetoothDevice() first", .error)
+
+            return IOSFirmwareListDownloaderResult.forError(
+                    verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidSettings,
+                    possibleErrorMessage: "No bluetooth-device specified - call trySetBluetoothDevice() first"
+            )
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric)
@@ -85,43 +88,45 @@ public class IOSFirmwareListDownloader: NSObject {
         do {
             ensureTransportIsInitializedExactlyOnce(initialMtuSize) //order
             defer {
-                tryDisconnect()
+                _ = tryDisconnect()
             }
+
             _manager = ImageManager(transport: _transporter)
             _manager.logDelegate = self
 
-            let semaphore = DispatchSemaphore(value: 0)
-            var verdict: EIOSFirmwareListDownloaderVerdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
-            var data: String = ""
+            var result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Invalid data")
 
+            let semaphore = DispatchSemaphore(value: 0)
             _manager.list { response, error in
                 defer { semaphore.signal() }
 
                 if let error = error {
-                    data = "[IOSDI.BD.050] Failed to read device information: '\(error.localizedDescription)'"
-                    self.onError(data, error)
-                    verdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
+                    self.onError("[IOSDI.BD.050] Failed to read device information: '\(error.localizedDescription)'", error)
+
+                    result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Failed to read device information: '\(error.localizedDescription)'")
                     return
                 }
 
                 guard let response = response else {
-                    data = "[IOSDI.BD.055] Received nil response from device"
-                    self.onError(data)
-                    verdict = EIOSFirmwareListDownloaderVerdict.failedInvalidData
+                    self.onError("[IOSDI.BD.055] Received nil response from device")
+
+                    result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Received nil response from device")
                     return
                 }
 
-                verdict = EIOSFirmwareListDownloaderVerdict.success
-                data = IOSFirmwareListDownloader.parseInformation(response)
+                let jsonData = IOSFirmwareListDownloader.parseInformation(response) //todo  this should return a result instance directly
+
+                result = IOSFirmwareListDownloaderResult.forSuccess(jsonData: jsonData)
             }
 
             semaphore.wait()
-            return IOSFirmwareListDownloaderResult(verdict: verdict, data: data)
+
+            return result
 
         } catch let ex {
-            let error = "[IOSDI.BD.060] Failed to initialize the download operation"
-            onError(error, ex)
-            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidData, data: error)
+            onError("[IOSDI.BD.060] Failed to initialize the download operation", ex)
+            
+            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidData, jsonData: "", possibleErrorMessage: "Failed to initialize the download operation")
         }
     }
 

@@ -69,11 +69,15 @@ public class AndroidFirmwareListDownloader {
             final int minimumNativeLogLevelNumeric
     ) {
         if (_context == null) {
-            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "");
+            logInBg("[AFLD.GILJ.010] Provided context is null", EAndroidLoggingLevel.Error);
+
+            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "provided context is null");
         }
 
         if (_bluetoothDevice == null) {
-            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "");
+            logInBg("[AFLD.GILJ.020] Provided bluetooth-device is null", EAndroidLoggingLevel.Error);
+
+            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "provided native-bluetooth-device is null");
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
@@ -84,14 +88,17 @@ public class AndroidFirmwareListDownloader {
 
             final EAndroidFirmwareListDownloaderVerdict verdict = ensureImageManagerIsInitializedExactlyOnce(); //order
             if (verdict != EAndroidFirmwareListDownloaderVerdict.SUCCESS)
-                return new AndroidFirmwareListDownloaderResult(verdict, "");
+                return AndroidFirmwareListDownloaderResult.ForError(verdict, "Failed to initialize mcumgr-image-manager with the given settings");
 
             tryEnsureConnectionPriorityOnTransport(); //order
 
-            final String data = parseInformation(_imageManager.list());
-            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.SUCCESS, data);
+            final String jsonData = parseInformation(_imageManager.list());
+
+            return AndroidFirmwareListDownloaderResult.ForSuccess(EAndroidFirmwareListDownloaderVerdict.SUCCESS, jsonData);
+
         } catch (final Exception ex) {
-            return new AndroidFirmwareListDownloaderResult(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA, "");
+            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_DATA, "An unexpected error occurred:\n\n" + ex);
+
         } finally {
             tryDisconnect();
         }
@@ -213,6 +220,7 @@ public class AndroidFirmwareListDownloader {
         return success;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void setLoggingEnabledOnTransport(final boolean enabled) {
         if (_transport == null)
             return;
