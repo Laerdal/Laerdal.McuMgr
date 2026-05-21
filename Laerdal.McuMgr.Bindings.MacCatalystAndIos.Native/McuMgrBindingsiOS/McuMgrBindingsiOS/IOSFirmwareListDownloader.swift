@@ -25,13 +25,13 @@ public class IOSFirmwareListDownloader: NSObject {
     @objc
     public func trySetBluetoothDevice(_ cbPeripheral: CBPeripheral!) -> Bool {
         if !tryInvalidateCachedInfrastructure() {
-            logInBg("[IOSDI.TSBD.020] Failed to invalidate the cached-transport instance", .error)
+            logInBg("[IOSFLD.TSBD.020] Failed to invalidate the cached-transport instance", .error)
             return false
         }
 
         _cbPeripheral = cbPeripheral //order
 
-        logInBg("[IOSDI.TSBD.030] Successfully set the bluetooth-device to the given value", .verbose)
+        logInBg("[IOSFLD.TSBD.030] Successfully set the bluetooth-device to the given value", .verbose)
 
         return true
     }
@@ -43,17 +43,17 @@ public class IOSFirmwareListDownloader: NSObject {
 
     @objc
     public func nativeDispose() {
-        logInBg("[IOSDI.ND.010] Disposing the native device-information-downloader", .verbose)
+        logInBg("[IOSFLD.ND.010] Disposing the native device-information-downloader", .verbose)
 
         _ = tryInvalidateCachedInfrastructure() //doesnt throw
     }
 
     @objc
     public func tryDisconnect() -> Bool {
-        logInBg("[IOSDI.TDISC.010] Will try to disconnect now ...", .verbose)
+        logInBg("[IOSFLD.TDISC.010] Will try to disconnect now ...", .verbose)
 
         guard _transporter != nil else {
-            logInBg("[IOSDI.TDISC.020] Transport is null so nothing to disconnect from", .verbose)
+            logInBg("[IOSFLD.TDISC.020] Transport is null so nothing to disconnect from", .verbose)
             return true
         }
 
@@ -61,7 +61,7 @@ public class IOSFirmwareListDownloader: NSObject {
             _transporter?.close()
             return true
         } catch let ex {
-            logInBg("[IOSDI.TDISC.030] Failed to disconnect: '\(ex.localizedDescription)'", .error)
+            logInBg("[IOSFLD.TDISC.030] Failed to disconnect: '\(ex.localizedDescription)'", .error)
             return false
         }
     }
@@ -101,14 +101,14 @@ public class IOSFirmwareListDownloader: NSObject {
                 defer { semaphore.signal() }
 
                 if let error = error {
-                    self.onError("[IOSDI.BD.050] Failed to read device information: '\(error.localizedDescription)'", error)
+                    self.onError("[IOSFLD.BD.050] Failed to read device information: '\(error.localizedDescription)'", error)
 
                     result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Failed to read device information: '\(error.localizedDescription)'")
                     return
                 }
 
                 guard let response = response else {
-                    self.onError("[IOSDI.BD.055] Received nil response from device")
+                    self.onError("[IOSFLD.BD.055] Received nil response from device")
 
                     result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Received nil response from device")
                     return
@@ -122,7 +122,7 @@ public class IOSFirmwareListDownloader: NSObject {
             return result
 
         } catch let ex {
-            onError("[IOSDI.BD.060] Failed to initialize the download operation", ex)
+            onError("[IOSFLD.BD.060] Failed to initialize the download operation", ex)
             
             return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidData, jsonData: "", possibleErrorMessage: "Failed to initialize the download operation")
         }
@@ -165,15 +165,15 @@ public class IOSFirmwareListDownloader: NSObject {
 
     private func ensureTransportIsInitializedExactlyOnce(_ initialMtuSize: Int) {
         if _transporter == nil {
-            logInBg("[IOSDI.ETIIEO.000] Transport is null - instantiating it now", .warning)
+            logInBg("[IOSFLD.ETIIEO.000] Transport is null - instantiating it now", .warning)
             _transporter = McuMgrBleTransport(_cbPeripheral)
         }
 
         if initialMtuSize > 0 {
             _transporter.mtu = initialMtuSize
-            logInBg("[IOSDI.ETIIEO.010] Initial-MTU-size set explicitly to '\(initialMtuSize)'", .info)
+            logInBg("[IOSFLD.ETIIEO.010] Initial-MTU-size set explicitly to '\(initialMtuSize)'", .info)
         } else {
-            logInBg("[IOSDI.ETIIEO.020] Initial-MTU-size left to its nordic-default-value", .info)
+            logInBg("[IOSFLD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value", .info)
         }
     }
 
@@ -185,7 +185,7 @@ public class IOSFirmwareListDownloader: NSObject {
         do {
             _transporter?.close()
         } catch let ex {
-            logInBg("[IOSDI.TDT.010] Failed to release the transport:\n\n\(ex)", .error)
+            logInBg("[IOSFLD.TDT.010] Failed to release the transport:\n\n\(ex)", .error)
         }
 
         _manager = nil

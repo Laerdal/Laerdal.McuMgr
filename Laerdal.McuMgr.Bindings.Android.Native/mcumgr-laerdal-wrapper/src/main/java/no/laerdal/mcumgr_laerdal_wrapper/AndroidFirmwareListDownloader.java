@@ -49,13 +49,13 @@ public class AndroidFirmwareListDownloader {
     public boolean trySetBluetoothDevice(@NonNull final BluetoothDevice bluetoothDevice) {
         if (!tryInvalidateCachedInfrastructure()) //order
         {
-            logInBg("[AFD.TSBD.020] Failed to invalidate the cached-transport instance", EAndroidLoggingLevel.Error);
+            logInBg("[AFLD.TSBD.020] Failed to invalidate the cached-transport instance", EAndroidLoggingLevel.Error);
             return false;
         }
 
         _bluetoothDevice = bluetoothDevice; //order
 
-        logInBg("[AFD.TSBD.030] Successfully set the android-bluetooth-device to the given value", EAndroidLoggingLevel.Trace);
+        logInBg("[AFLD.TSBD.030] Successfully set the android-bluetooth-device to the given value", EAndroidLoggingLevel.Trace);
 
         return true;
     }
@@ -71,13 +71,13 @@ public class AndroidFirmwareListDownloader {
         if (_context == null) {
             logInBg("[AFLD.GILJ.010] Provided context is null", EAndroidLoggingLevel.Error);
 
-            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "provided context is null");
+            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "Provided context is null");
         }
 
         if (_bluetoothDevice == null) {
             logInBg("[AFLD.GILJ.020] Provided bluetooth-device is null", EAndroidLoggingLevel.Error);
 
-            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "provided native-bluetooth-device is null");
+            return AndroidFirmwareListDownloaderResult.ForError(EAndroidFirmwareListDownloaderVerdict.FAILED__INVALID_SETTINGS, "Provided native-bluetooth-device is null");
         }
 
         _minimumNativeLogLevel = McuMgrLogLevelHelpers.translateLogLevel(minimumNativeLogLevelNumeric);
@@ -139,17 +139,17 @@ public class AndroidFirmwareListDownloader {
 
     @SuppressWarnings("UnusedReturnValue")
     public boolean tryDisconnect() {
-        logInBg("[AFD.TDISC.010] Will try to disconnect now ...", EAndroidLoggingLevel.Trace);
+        logInBg("[AFLD.TDISC.010] Will try to disconnect now ...", EAndroidLoggingLevel.Trace);
 
         if (_transport == null) {
-            logInBg("[AFD.TDISC.020] Transport is null so nothing to disconnect from", EAndroidLoggingLevel.Trace);
+            logInBg("[AFLD.TDISC.020] Transport is null so nothing to disconnect from", EAndroidLoggingLevel.Trace);
             return true;
         }
 
         try {
             _transport.release();
         } catch (Exception ex) {
-            logInBg("[AFD.TD.010] Failed to disconnect from the transport:\n\n" + ex, EAndroidLoggingLevel.Error);
+            logInBg("[AFLD.TD.030] Failed to disconnect from the transport:\n\n" + ex, EAndroidLoggingLevel.Error);
             return false;
         }
 
@@ -158,29 +158,29 @@ public class AndroidFirmwareListDownloader {
 
     @SuppressWarnings("UnusedReturnValue")
     private boolean tryShutdownBackgroundExecutor() {
-        logInBg("[AFD.TSBE.010] Shutting down the background-executor ...", EAndroidLoggingLevel.Trace);
+        logInBg("[AFLD.TSBE.010] Shutting down the background-executor ...", EAndroidLoggingLevel.Trace);
 
         try {
             _backgroundExecutor.shutdown();
             return true;
         } catch (final Exception ex) {
-            logInBg("[AFD.TBE.010] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, EAndroidLoggingLevel.Warning);
+            logInBg("[AFLD.TBE.020] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, EAndroidLoggingLevel.Warning);
             return false;
         }
     }
 
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize) {
         if (_transport == null) {
-            logInBg("[AFD.ETIIEO.000] Transport is null - instantiating it now", EAndroidLoggingLevel.Warning);
+            logInBg("[AFLD.ETIIEO.000] Transport is null - instantiating it now", EAndroidLoggingLevel.Warning);
 
             _transport = new McuMgrBleTransport(_context, _bluetoothDevice);
         }
 
         if (initialMtuSize > 0) {
             _transport.setInitialMtu(initialMtuSize);
-            logInBg("[AFD.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", EAndroidLoggingLevel.Info);
+            logInBg("[AFLD.ETIIEO.010] Initial-MTU-size set explicitly to '" + initialMtuSize + "'", EAndroidLoggingLevel.Info);
         } else {
-            logInBg("[AFD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", EAndroidLoggingLevel.Info);
+            logInBg("[AFLD.ETIIEO.020] Initial-MTU-size left to its nordic-default-value which is probably 498", EAndroidLoggingLevel.Info);
         }
     }
 
@@ -188,7 +188,7 @@ public class AndroidFirmwareListDownloader {
         if (_imageManager != null) //already initialized
             return EAndroidFirmwareListDownloaderVerdict.SUCCESS;
 
-        logInBg("[AFD.EFMIIEO.010] (Re)Initializing image-manager", EAndroidLoggingLevel.Trace);
+        logInBg("[AFLD.EFMIIEO.010] (Re)Initializing image-manager", EAndroidLoggingLevel.Trace);
 
         try {
             _imageManager = new ImageManager(_transport); //order
@@ -214,7 +214,7 @@ public class AndroidFirmwareListDownloader {
         } catch (final Exception ex) // suppress
         {
             success = false;
-            logInBg("[AFD.TDT.010] Failed to release the transport:\n\n" + ex, EAndroidLoggingLevel.Error);
+            logInBg("[AFLD.TDT.010] Failed to release the transport:\n\n" + ex, EAndroidLoggingLevel.Error);
         }
 
         _transport = null;
