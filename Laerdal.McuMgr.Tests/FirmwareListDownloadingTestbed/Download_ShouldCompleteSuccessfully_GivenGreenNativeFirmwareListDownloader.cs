@@ -17,7 +17,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
         public void Download_ShouldCompleteSuccessfully_GivenGreenNativeFirmwareListDownloader(string testcaseNickname, ELogLevel? minimumNativeLogLevel, int? initialMtuSize)
         {
             // Arrange
-            var expectedJson = "[{\"version\":\"1.0.0\",\"slot\":0,\"active\":true}]";
+            var expectedJson = """[{"version":"1.0.0","slot":0,"active":true}]""";
 
             var mockedNativeFirmwareListDownloaderProxy = new MockedGreenNativeFirmwareListDownloaderProxySpy(expectedJson);
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
@@ -42,9 +42,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
                 _mockedJsonResponse = mockedJsonResponse;
             }
 
-            public override string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+            public override string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             {
-                base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
+                base.Get(initialMtuSize, minimumNativeLogLevel);
 
                 return _mockedJsonResponse;
             }

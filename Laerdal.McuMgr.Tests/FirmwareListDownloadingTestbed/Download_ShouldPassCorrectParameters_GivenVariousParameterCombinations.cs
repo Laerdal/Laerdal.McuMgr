@@ -31,13 +31,13 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
 
             // Act
             firmwareListDownloader.Get(
-                minimumNativeLogLevel: ELogLevel.Trace,
-                initialMtuSize: 256
+                initialMtuSize: 256,
+                minimumNativeLogLevel: ELogLevel.Trace
             );
 
             // Assert
-            mockedNativeFirmwareListDownloaderProxy.DownloadFirmwareListCalled.Should().BeTrue();
             mockedNativeFirmwareListDownloaderProxy.CapturedInitialMtuSize.Should().Be(256);
+            mockedNativeFirmwareListDownloaderProxy.DownloadFirmwareListCalled.Should().BeTrue();
             mockedNativeFirmwareListDownloaderProxy.CapturedMinimumNativeLogLevel.Should().Be(ELogLevel.Trace);
         }
 
@@ -46,9 +46,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             public int CapturedInitialMtuSize { get; private set; }
             public ELogLevel CapturedMinimumNativeLogLevel { get; private set; }
 
-            public override string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+            public override string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             {
-                base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
+                base.Get(initialMtuSize, minimumNativeLogLevel);
 
                 CapturedInitialMtuSize = initialMtuSize;
                 CapturedMinimumNativeLogLevel = minimumNativeLogLevel;

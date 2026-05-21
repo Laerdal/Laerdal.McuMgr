@@ -38,9 +38,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
 
         private class MockedInvalidSettingsNativeFirmwareListDownloaderProxySpy : MockedNativeFirmwareListDownloaderProxySpy
         {
-            public override string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+            public override string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             {
-                base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
+                base.Get(initialMtuSize, minimumNativeLogLevel);
 
                 throw new InvalidOperationException("Native call failed with verdict 'FailedInvalidSettings'");
             }
@@ -48,9 +48,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
 
         private class MockedInvalidDataNativeFirmwareListDownloaderProxySpy : MockedNativeFirmwareListDownloaderProxySpy
         {
-            public override string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+            public override string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             {
-                base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
+                base.Get(initialMtuSize, minimumNativeLogLevel);
 
                 throw new InvalidOperationException("Native call failed with verdict 'FailedInvalidData'");
             }

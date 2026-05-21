@@ -13,7 +13,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             {
             }
 
-            public virtual string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+            public virtual string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             {
                 DownloadFirmwareListCalled = true;
 

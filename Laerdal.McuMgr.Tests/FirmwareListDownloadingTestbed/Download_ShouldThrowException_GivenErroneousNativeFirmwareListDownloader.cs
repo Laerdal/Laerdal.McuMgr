@@ -24,9 +24,9 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
 
         private class MockedErroneousNativeFirmwareListDownloaderProxySpy : MockedNativeFirmwareListDownloaderProxySpy
         {
-            public override string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+            public override string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
             {
-                base.DownloadFirmwareList(initialMtuSize, minimumNativeLogLevel);
+                base.Get(initialMtuSize, minimumNativeLogLevel);
 
                 throw new Exception("native symbols not loaded blah blah");
             }
