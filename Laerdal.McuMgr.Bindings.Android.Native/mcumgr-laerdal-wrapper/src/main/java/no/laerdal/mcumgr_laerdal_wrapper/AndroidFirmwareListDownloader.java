@@ -16,7 +16,6 @@ import java.util.concurrent.Executors;
 import io.runtime.mcumgr.ble.McuMgrBleTransport;
 import io.runtime.mcumgr.managers.ImageManager;
 import io.runtime.mcumgr.response.img.McuMgrImageStateResponse;
-import no.nordicsemi.android.ble.ConnectionPriorityRequest;
 
 @SuppressWarnings({"unused", "DuplicatedCode"})
 public class AndroidFirmwareListDownloader {
@@ -90,8 +89,6 @@ public class AndroidFirmwareListDownloader {
             if (verdict != EAndroidFirmwareListDownloaderVerdict.SUCCESS)
                 return AndroidFirmwareListDownloaderResult.ForError(verdict, "Failed to initialize mcumgr-image-manager with the given settings");
 
-            tryEnsureConnectionPriorityOnTransport(); //order
-
             return tryParseInformation(_imageManager.list());
 
         } catch (final Exception ex) {
@@ -156,19 +153,6 @@ public class AndroidFirmwareListDownloader {
         return true;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    private boolean tryShutdownBackgroundExecutor() {
-        logInBg("[AFLD.TSBE.010] Shutting down the background-executor ...", EAndroidLoggingLevel.Trace);
-
-        try {
-            _backgroundExecutor.shutdown();
-            return true;
-        } catch (final Exception ex) {
-            logInBg("[AFLD.TBE.020] [SUPPRESSED] Error while shutting down background executor:\n\n" + ex, EAndroidLoggingLevel.Warning);
-            return false;
-        }
-    }
-
     private void ensureTransportIsInitializedExactlyOnce(int initialMtuSize) {
         if (_transport == null) {
             logInBg("[AFLD.ETIIEO.000] Transport is null - instantiating it now", EAndroidLoggingLevel.Warning);
@@ -197,10 +181,6 @@ public class AndroidFirmwareListDownloader {
         }
 
         return EAndroidFirmwareListDownloaderVerdict.SUCCESS;
-    }
-
-    private void tryEnsureConnectionPriorityOnTransport() {
-        _transport.requestConnPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH);
     }
 
     @SuppressWarnings("UnusedReturnValue")
