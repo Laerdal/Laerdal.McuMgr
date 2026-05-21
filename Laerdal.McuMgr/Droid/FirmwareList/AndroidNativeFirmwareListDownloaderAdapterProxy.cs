@@ -21,7 +21,7 @@ namespace Laerdal.McuMgr.FirmwareList
         {
         }
 
-        public string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+        public string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
         {
             var result = GetImageListJson(initialMtuSize, (int)minimumNativeLogLevel);
 

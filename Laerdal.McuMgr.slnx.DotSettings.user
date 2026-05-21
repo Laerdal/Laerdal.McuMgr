@@ -18,6 +18,7 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003ADeviceResetting_002Ff_003ADeviceResetter_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003AFileDownloader_002Ff_003AFileDownloader_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003ADroid_002Fd_003AFileUploading_002Ff_003AFileUploader_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=94474637_002D1B5F_002D7EB0_002D8A7F_002D7E95AA6C0C0B_002Fd_003AiOS_002Fd_003AFirmwareList_002Ff_003AIOSNativeFirmwareListDownloaderProxy_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CustomTools/CustomToolsData/@EntryValue"></s:String>
 	
 	

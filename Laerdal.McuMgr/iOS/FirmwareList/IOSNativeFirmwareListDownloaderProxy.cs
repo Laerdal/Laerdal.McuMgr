@@ -1,6 +1,5 @@
 using System;
 using CoreBluetooth;
-using Laerdal.McuMgr.Common;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FirmwareList.Contracts.Native;
 using McuMgrBindingsiOS;
@@ -19,11 +18,11 @@ namespace Laerdal.McuMgr.FirmwareList
             _nativeDownloader = new IOSFirmwareListDownloader(cbPeripheral: bluetoothDevice, listener: this);
         }
 
-        public string DownloadFirmwareList(int initialMtuSize, ELogLevel minimumNativeLogLevel)
+        public string Get(int initialMtuSize, ELogLevel minimumNativeLogLevel)
         {
             var result = _nativeDownloader.GetImageListJson(
                 initialMtuSize: initialMtuSize,
-                minimumNativeLogLevelNumeric: (nint)(int)minimumNativeLogLevel
+                minimumNativeLogLevelNumeric: (int)minimumNativeLogLevel
             );
 
             if (result.Verdict != EIOSFirmwareListDownloaderVerdict.Success)

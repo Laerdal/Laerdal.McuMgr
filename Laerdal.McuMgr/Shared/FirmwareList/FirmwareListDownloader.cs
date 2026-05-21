@@ -16,7 +16,7 @@ namespace Laerdal.McuMgr.FirmwareList
         }
 
         public string Get(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
-            => NativeFirmwareListDownloaderProxy.DownloadFirmwareList(
+            => NativeFirmwareListDownloaderProxy.Get(
                 initialMtuSize: initialMtuSize ?? -1,
                 minimumNativeLogLevel: minimumNativeLogLevel ?? ELogLevel.Error
             );
