@@ -78,7 +78,7 @@ public class IOSFirmwareListDownloader: NSObject {
             logInBg("[IOSFLD.BD.010] No bluetooth-device specified - call trySetBluetoothDevice() first", .error)
 
             return IOSFirmwareListDownloaderResult.forError(
-                    verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidSettings,
+                    verdict: .failedInvalidSettings,
                     possibleErrorMessage: "No bluetooth-device specified - call trySetBluetoothDevice() first"
             )
         }
@@ -117,14 +117,19 @@ public class IOSFirmwareListDownloader: NSObject {
                 result = IOSFirmwareListDownloader.tryParseInformation(response)
             }
 
-            semaphore.wait()
+            let waitTimeout = DispatchTime.now() + .seconds(30)
+            if semaphore.wait(timeout: waitTimeout) == .timedOut {
+                onError("[IOSDI.BD.057] Timed out while reading device information")
+
+                return IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Timed out while reading device information")
+            }
 
             return result
 
         } catch let ex {
             onError("[IOSFLD.BD.060] Failed to initialize the download operation", ex)
             
-            return IOSFirmwareListDownloaderResult(verdict: EIOSFirmwareListDownloaderVerdict.failedInvalidData, jsonData: "", possibleErrorMessage: "Failed to initialize the download operation")
+            return IOSFirmwareListDownloaderResult(verdict: .failedInvalidData, jsonData: "", possibleErrorMessage: "Failed to initialize the download operation")
         }
     }
 
