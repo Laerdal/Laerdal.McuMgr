@@ -101,9 +101,9 @@ public class IOSFirmwareListDownloader: NSObject {
                 defer { semaphore.signal() }
 
                 if let error = error {
-                    self.onError("[IOSFLD.BD.050] Failed to read device information: '\(error.localizedDescription)'", error)
+                    self.onError("[IOSFLD.BD.050] Failed to read firmware list: '\(error.localizedDescription)'", error)
 
-                    result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Failed to read device information: '\(error.localizedDescription)'")
+                    result = IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Failed to read firmware list: '\(error.localizedDescription)'")
                     return
                 }
 
@@ -119,9 +119,9 @@ public class IOSFirmwareListDownloader: NSObject {
 
             let waitTimeout = DispatchTime.now() + .seconds(30)
             if semaphore.wait(timeout: waitTimeout) == .timedOut {
-                onError("[IOSFLD.BD.057] Timed out while reading device information")
+                onError("[IOSFLD.BD.057] Timed out while reading firmware list")
 
-                return IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Timed out while reading device information")
+                return IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Timed out while reading firmware list")
             }
 
             return result
