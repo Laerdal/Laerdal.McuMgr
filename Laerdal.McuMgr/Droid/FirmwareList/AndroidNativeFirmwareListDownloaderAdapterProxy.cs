@@ -26,7 +26,7 @@ namespace Laerdal.McuMgr.FirmwareList
             var result = TryGetImageListJson(initialMtuSize, (int)minimumNativeLogLevel);
 
             if (result.Verdict != EAndroidFirmwareListDownloaderVerdict.Success)
-                throw new InvalidOperationException($"[AndroidNativeFirmwareListDownloaderAdapterProxy.TryGetImageListJson] Native call failed with verdict '{result.Verdict}':\n\n{result.PossibleErrorMessage}");
+                throw new InvalidOperationException($"[AndroidNativeFirmwareListDownloaderAdapterProxy.Get] Native call failed with verdict '{result.Verdict}':\n\n{result.PossibleErrorMessage}");
 
             return result.JsonData;
         }

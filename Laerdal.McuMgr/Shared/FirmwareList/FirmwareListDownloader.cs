@@ -1,12 +1,19 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FirmwareList.Contracts;
 using Laerdal.McuMgr.FirmwareList.Contracts.Native;
+using Laerdal.McuMgr.FirmwareList.Model;
 
 namespace Laerdal.McuMgr.FirmwareList
 {
     public partial class FirmwareListDownloader : IFirmwareListDownloader
     {
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
         private bool _disposed;
         protected readonly INativeFirmwareListDownloaderProxy NativeFirmwareListDownloaderProxy;
 
@@ -15,11 +22,15 @@ namespace Laerdal.McuMgr.FirmwareList
             NativeFirmwareListDownloaderProxy = nativeFirmwareListDownloaderProxy ?? throw new ArgumentNullException(nameof(nativeFirmwareListDownloaderProxy));
         }
 
-        public string Get(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
-            => NativeFirmwareListDownloaderProxy.Get(
+        public List<InstalledFirmwareInformation> Get(ELogLevel? minimumNativeLogLevel = null, int? initialMtuSize = null)
+        {
+            var jsonData = NativeFirmwareListDownloaderProxy.Get(
                 initialMtuSize: initialMtuSize ?? -1,
                 minimumNativeLogLevel: minimumNativeLogLevel ?? ELogLevel.Error
             );
+
+            return JsonSerializer.Deserialize<List<InstalledFirmwareInformation>>(jsonData, _jsonSerializerOptions);
+        }
 
         public void Dispose()
         {
@@ -32,11 +43,11 @@ namespace Laerdal.McuMgr.FirmwareList
         {
             if (_disposed)
                 return;
-            
+
             if (!isDisposing)
                 return;
-            
-            
+
+
             try
             {
                 NativeFirmwareListDownloaderProxy?.Dispose();

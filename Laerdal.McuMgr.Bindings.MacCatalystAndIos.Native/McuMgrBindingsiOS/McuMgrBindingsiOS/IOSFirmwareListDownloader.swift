@@ -119,7 +119,7 @@ public class IOSFirmwareListDownloader: NSObject {
 
             let waitTimeout = DispatchTime.now() + .seconds(30)
             if semaphore.wait(timeout: waitTimeout) == .timedOut {
-                onError("[IOSDI.BD.057] Timed out while reading device information")
+                onError("[IOSFLD.BD.057] Timed out while reading device information")
 
                 return IOSFirmwareListDownloaderResult.forError(verdict: .failedInvalidData, possibleErrorMessage: "Timed out while reading device information")
             }

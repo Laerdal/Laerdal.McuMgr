@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Laerdal.McuMgr.Common.Enums;
 using Laerdal.McuMgr.FirmwareList;
+using Laerdal.McuMgr.FirmwareList.Model;
 
 #pragma warning disable xUnit1026
 
@@ -17,9 +18,25 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
         public void Download_ShouldCompleteSuccessfully_GivenGreenNativeFirmwareListDownloader(string testcaseNickname, ELogLevel? minimumNativeLogLevel, int? initialMtuSize)
         {
             // Arrange
-            var expectedJson = """[{"version":"1.0.0","slot":0,"active":true}]""";
+            const string expectedResult = """[{"version":"1.0.0","slot":0,"active":true,"bootable":false,"compressed":false,"confirmed":false,"imageNumber":0,"permanent":true,"pending":false,"hash":"abc"}]""";
+            List<InstalledFirmwareInformation> expectedList =
+            [
+                new InstalledFirmwareInformation(
+                    Version: "1.0.0",
+                    Slot: 0,
+                    IsActive: true,
+                    IsBootable: false,
+                    IsCompressed: false,
+                    IsConfirmed: false,
+                    ImageNumber: 0,
+                    IsPermanent: true,
+                    IsPending: false,
+                    Hash: "abc"
+                )
+            ];
 
-            var mockedNativeFirmwareListDownloaderProxy = new MockedGreenNativeFirmwareListDownloaderProxySpy(expectedJson);
+
+            var mockedNativeFirmwareListDownloaderProxy = new MockedGreenNativeFirmwareListDownloaderProxySpy(expectedResult);
             var firmwareListDownloader = new FirmwareListDownloader(mockedNativeFirmwareListDownloaderProxy);
 
             // Act
@@ -29,7 +46,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
             );
 
             // Assert
-            result.Should().Be(expectedJson);
+            result.Should().BeEquivalentTo(expectedList);
             mockedNativeFirmwareListDownloaderProxy.DownloadFirmwareListCalled.Should().BeTrue();
         }
 
