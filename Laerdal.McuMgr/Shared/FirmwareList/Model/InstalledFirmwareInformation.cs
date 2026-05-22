@@ -9,7 +9,7 @@ namespace Laerdal.McuMgr.FirmwareList.Model
         [property: JsonPropertyName("bootable")] bool IsBootable,
         [property: JsonPropertyName("compressed")] bool IsCompressed,
         [property: JsonPropertyName("confirmed")] bool IsConfirmed,
-        [property: JsonPropertyName("imageNumber")] int ImageNumber,
+        [property: JsonPropertyName("image_number")] int ImageNumber,
         [property: JsonPropertyName("permanent")] bool IsPermanent,
         [property: JsonPropertyName("pending")] bool IsPending,
         [property: JsonPropertyName("hash")] string Hash
