@@ -154,7 +154,7 @@ namespace Laerdal.McuMgr.FileDownloading
                 int? initialMtuSize = null //  android only
             )
             {
-                return TranslateFileDownloaderVerdict(base.BeginDownload(
+                return TranslateFileDownloaderVerdict(BeginDownload(
                     remoteFilePath: remoteFilePath,
                     initialMtuSize: initialMtuSize ?? -1,
                     minimumNativeLogLevelNumeric: (int) (minimumNativeLogLevel ?? ELogLevel.Error)

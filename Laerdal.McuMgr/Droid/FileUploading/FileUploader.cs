@@ -41,7 +41,7 @@ namespace Laerdal.McuMgr.FileUploading
             return new AndroidFileUploaderProxy(
                 context: androidContext,
                 bluetoothDevice: bluetoothDevice,
-                fileUploaderCallbacksProxy: new FileUploader.GenericNativeFileUploaderCallbacksProxy()
+                fileUploaderCallbacksProxy: new GenericNativeFileUploaderCallbacksProxy()
             );
         }
 

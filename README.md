@@ -662,6 +662,35 @@ private void CleanupDeviceResetter()
     }
 ```
 
+- To retrieve a list of installed firmware images from the device:
+
+         Note:
+
+         1. This method is synchronous
+         2. The data returned will be deserialized from JSON into a `List<InstalledFirmwareInformation>`.
+
+```csharp
+    private void DownloadFirmwareListButtonClicked()
+    {
+        try
+        {
+            using var firmwareListDownloader = new FirmwareListDownloader(/*native ble-device*/);
+
+            var installedFirmwares = firmwareListDownloader.Get(
+                minimumNativeLogLevel: minimumNativeLogLevel,
+                initialMtuSize: initialMtuSize
+            );
+        }
+        catch (Exception ex) //order
+        {
+            App.DisplayAlert(
+                title: "[BUG] Firmware-List Retrieval Failed",
+                message: $"An unexpected error occurred:{S.nl2}{ex}"
+            );
+            return;
+        }
+    }
+```
 - To perform file-downloading from the device:
 
          Note:

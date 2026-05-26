@@ -34,7 +34,7 @@ namespace Laerdal.McuMgr.FileDownloading
 
             return new IOSNativeFileDownloaderProxy(
                 bluetoothDevice: bluetoothDevice,
-                nativeFileDownloaderCallbacksProxy: new FileDownloader.GenericNativeFileDownloaderCallbacksProxy()
+                nativeFileDownloaderCallbacksProxy: new GenericNativeFileDownloaderCallbacksProxy()
             );
         }
 
