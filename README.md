@@ -684,7 +684,7 @@ private void CleanupDeviceResetter()
         catch (Exception ex) //order
         {
             App.DisplayAlert(
-                title: "[BUG] Image-List Download Failed",
+                title: "[BUG] Firmware-List Retrieval Failed",
                 message: $"An unexpected error occurred:{S.nl2}{ex}"
             );
             return;
