@@ -18,7 +18,7 @@ namespace Laerdal.McuMgr.Tests.FirmwareListDownloadingTestbed
         public void Download_ShouldCompleteSuccessfully_GivenGreenNativeFirmwareListDownloader(string testcaseNickname, ELogLevel? minimumNativeLogLevel, int? initialMtuSize)
         {
             // Arrange
-            const string expectedResult = """[{"version":"1.0.0","slot":0,"active":true,"bootable":false,"compressed":false,"confirmed":false,"imageNumber":0,"permanent":true,"pending":false,"hash":"abc"}]""";
+            const string expectedResult = """[{"version":"1.0.0","slot":0,"active":true,"bootable":false,"compressed":false,"confirmed":false,"image_number":0,"permanent":true,"pending":false,"hash":"abc"}]""";
             List<InstalledFirmwareInformation> expectedList =
             [
                 new InstalledFirmwareInformation(
