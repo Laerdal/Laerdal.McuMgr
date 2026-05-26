@@ -43,7 +43,7 @@ public class IOSFirmwareListDownloader: NSObject {
 
     @objc
     public func nativeDispose() {
-        logInBg("[IOSFLD.ND.010] Disposing the native device-information-downloader", .verbose)
+        logInBg("[IOSFLD.ND.010] Disposing the native firmware-list-downloader", .verbose)
 
         _ = tryInvalidateCachedInfrastructure() //doesnt throw
     }
