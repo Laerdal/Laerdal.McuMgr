@@ -662,21 +662,21 @@ private void CleanupDeviceResetter()
     }
 ```
 
-- To retrieve a list of installed firmwares from the device:
+- To retrieve a list of installed firmware images from the device:
 
          Note:
 
          1. This method is synchronous
-         2. The data returned will be in json format.
+         2. The data returned will be deserialized from JSON into a `List<InstalledFirmwareInformation>`.
 
 ```csharp
-    private void DownloadSingleFileButtonClicked()
+    private void DownloadFirmwareListButtonClicked()
     {
         try
         {
             using var firmwareListDownloader = new FirmwareListDownloader(/*native ble-device*/);
 
-            var jsonData = firmwareListDownloader.Get(
+            var installedFirmwares = firmwareListDownloader.Get(
                 minimumNativeLogLevel: minimumNativeLogLevel,
                 initialMtuSize: initialMtuSize
             );
