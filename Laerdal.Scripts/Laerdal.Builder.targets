@@ -53,6 +53,7 @@
         <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `Artifacts/`))</PackageOutputPath>
         <PackageOutputPath>$([System.IO.Path]::GetFullPath( '$(PackageOutputPath)' ))</PackageOutputPath>
 
+        <!-- notice that we are forced to target /api/api/v1/bom instead of /api/v1/bom due to an inherent misconfiguration of laerdal's dependency-track server -->
         <Laerdal_Dependency_Tracker_Server_Url Condition=" '$(Laerdal_Dependency_Tracker_Server_Url)' == '' ">https://dep-tracker.laerdal.com/api/api/v1/bom</Laerdal_Dependency_Tracker_Server_Url>
 
         <Laerdal_Test_Results_Folderpath Condition=" '$(Laerdal_Test_Results_Folderpath)' == '' ">$([System.IO.Path]::Combine($(Laerdal_RootDirectory_Folderpath), `TestResults`))</Laerdal_Test_Results_Folderpath>
