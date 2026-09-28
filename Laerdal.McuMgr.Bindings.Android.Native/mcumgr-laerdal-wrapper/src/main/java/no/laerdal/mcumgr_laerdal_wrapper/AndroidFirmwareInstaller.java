@@ -11,6 +11,7 @@ import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.Settings;
 import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.Settings.Builder;
 import io.runtime.mcumgr.dfu.mcuboot.FirmwareUpgradeManager.State;
 import io.runtime.mcumgr.dfu.mcuboot.model.ImageSet;
+import io.runtime.mcumgr.dfu.mcuboot.model.TargetImage;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.exception.McuMgrTimeoutException;
 import no.nordicsemi.android.ble.ConnectionPriorityRequest;
@@ -95,7 +96,10 @@ public class AndroidFirmwareInstaller
         {
             try
             {
-                images.add(new ZipPackage(data).getBinaries()); //the method healthchecks the bytes itself internally so we dont have to do it ourselves here manually
+                for (final TargetImage image : new ZipPackage(data).getTargetImages()) //the TargetImage ctor healthchecks the bytes itself internally so we dont have to do it ourselves here manually
+                {
+                    images.add(image); //keeps the slot specified in the manifest, direct-XIP packages contain one image per slot
+                }
             }
             catch (final Exception ex2)
             {
