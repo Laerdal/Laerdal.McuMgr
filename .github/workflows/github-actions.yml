@@ -10,11 +10,10 @@ env:
   LAERDAL_SOURCE_BRANCH: ${{           github.ref                            }}
   LAERDAL_REPOSITORY_PATH: ${{         github.repository                     }}
   
-  # note that we prefer to use our own token here instead of GITHUB_TOKEN    that is because if we
-  # ever need access to other nuget repos of Laerdal they will be inaccessible to the GITHUB_TOKEN
+  # note that we prefer to use our own token here instead of GITHUB_TOKEN    it is used by the
+  # build system to announce new releases on github
   SCL_GITHUB_ACCESS_TOKEN: ${{                    secrets.SCL_GITHUB_ACCESS_TOKEN                    }}
-  SCL_NUGET_ORG_FEED_API_KEY: ${{                 secrets.NUGET_ORG_FEED_API_KEY                     }}
-  SCL_GITHUB_NUGET_FEED_USERNAME: ${{             secrets.SCL_GITHUB_NUGET_FEED_USERNAME             }}
+  SCL_NUGET_ORG_FEED_USERNAME: ${{                secrets.SCL_NUGET_ORG_FEED_USERNAME                }}
 
   SCL_DEPENDENCY_TRACKER_API_KEY: ${{             secrets.SCL_DEPENDENCY_TRACKER_API_KEY             }}
   SCL_DEPENDENCY_TRACKER_SERVER_URL: ${{          secrets.SCL_DEPENDENCY_TRACKER_SERVER_URL          }}
@@ -51,6 +50,12 @@ jobs:
   build:
 
     runs-on: 'macos-15' # need a macos image that supports xcode 16.2+
+
+    permissions:
+      id-token: 'write' #       to mint the short-lived oidc token for the nuget.org trusted-publishing login
+      contents: 'read' #        for checkout
+      checks: 'write' #         for the publish-test-results action
+      pull-requests: 'write' #  for the publish-test-results action
     
     #   variable substitution is not supported in github at all    so we cant do stuff like this
     #
@@ -94,9 +99,6 @@ jobs:
                 &&                                                                                            \
                      "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Laerdal.Scripts/Laerdal.SetupBuildEnvironment.sh"  \
                              "${{env.DOTNET_TARGET_WORKLOAD_VERSION}}"                                        \
-                             "https://nuget.pkg.github.com/Laerdal/index.json"                                \
-                             "${{env.SCL_GITHUB_NUGET_FEED_USERNAME}}"                                        \
-                             "${{env.SCL_GITHUB_ACCESS_TOKEN}}"                                               \
                              "${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts"                                 \
                              "${{steps.cache-dotnet-workloads.outputs.cache-hit == 'true' && 'false' || 'true' }}" # if the cache was hit, we do not need to install the workloads again
 
@@ -147,6 +149,17 @@ jobs:
           name: 'Artifacts'
           path: '${{env.BUILD_REPOSITORY_FOLDERPATH}}/Artifacts/**/*'
 
+      # exchanges a short-lived github oidc token for a temporary (1-hour, single-use) nuget.org api key
+      # via the trusted-publishing policy configured on nuget.org   no long-lived api key is stored anymore
+      #
+      # https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing
+      - name: '🔐 NuGet.org Login (OIDC → Temp API Key)'
+        uses: 'NuGet/login@v1'
+        id: 'nuget_login'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        with:
+          user: '${{env.SCL_NUGET_ORG_FEED_USERNAME}}' # the nuget.org profile name (not email) that owns the trusted-publishing policy
+
       - name: '🚀 Publish Nugets over to Nuget.org'
         shell: 'bash'
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
@@ -159,7 +172,7 @@ jobs:
                   nuget                                                                           \
                   push                                                                            \
                   --source   "https://api.nuget.org/v3/index.json"                                \
-                  --api-key  "${{env.SCL_NUGET_ORG_FEED_API_KEY}}"                                \
+                  --api-key  "${{steps.nuget_login.outputs.NUGET_API_KEY}}"                       \
                   *.nupkg
 
       - name: '📡 Publish Test Results' # https://github.com/marketplace/actions/publish-test-results
