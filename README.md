@@ -1155,7 +1155,7 @@ dotnet                                              \
 We welcome contributions to this project in the form of bug reports, feature requests, and pull requests.
 
 - Before working on a branch or submitting a pull request, please open an issue describing the bug or feature request so as to expedite brainstorming.
-- Commits should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+- Commits should be *signed with your ssh-key* and must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
 - Pull requests should be made against the `main` branch (no `develop` branch exists).
 - Pull requests should be made from a fork of the repository, not a clone.
 - Pull requests should have a descriptive title and include a link to a single issue each time.
