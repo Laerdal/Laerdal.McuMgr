@@ -495,8 +495,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "http://github.com/Laerdal/IOS-nRF-Connect-Device-Manager.git";
 			requirement = {
-				branch = v1_13_with_dependencies_version_pinned;
-				kind = branch;
+				kind = exactVersion;
+				version = 1.14.9;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
