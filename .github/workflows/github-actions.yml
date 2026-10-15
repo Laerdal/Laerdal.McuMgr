@@ -10,7 +10,7 @@ env:
   LAERDAL_SOURCE_BRANCH: ${{           github.ref                            }}
   LAERDAL_REPOSITORY_PATH: ${{         github.repository                     }}
 
-  SCL_NUGET_ORG_FEED_USERNAME: ${{                vars.SCL_NUGET_ORG_FEED_USERNAME                   }}
+  SCL_NUGET_ORG_FEED_USERNAME: ${{                secrets.SCL_NUGET_ORG_FEED_USERNAME                }}
 
   # note that we prefer to use our own token here instead of GITHUB_TOKEN
   # it is used by the build system to announce new releases on github
