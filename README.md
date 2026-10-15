@@ -55,7 +55,6 @@ The following types of operations are supported on devices running on Nordic's n
 
 ```xml
 <PackageReference Include="Laerdal.McuMgr" Version="3.*" />
-
 <!-- not really needed   the appropriate version will be implicitly included by the build system -->
 <!-- <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="3.*"         Condition="$([MSBuild]::IsOSPlatform('iOS'))" />          -->
 <!-- <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="3.*"     Condition="$([MSBuild]::IsOSPlatform('Android'))" />      -->
@@ -67,8 +66,8 @@ The following types of operations are supported on devices running on Nordic's n
 Note that even though the Laerdal.McuMgr.Bindings.* have been built on dotnet8 using Android-SDK=34 and iPhoneOS-SDK=17.0 the generated nugets have been tested and they do work
 even on Dotnet10 MAUI-Apps that target Android-SDK=36 and iOS-SDK=18.5 in the csproj.
 
-| Stack     | Android                                                                   | iOS                                      | MacCatalyst (MacOS / iPad / iOS)                | Windows / UWP (NetStandard2.0) |
-|-----------|---------------------------------------------------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------|   
+| Stack     | Android                                                                    | iOS                                       | MacCatalyst (MacOS / iPad / iOS)                 | Windows / UWP (NetStandard2.0) |
+|-----------|----------------------------------------------------------------------------|-------------------------------------------|--------------------------------------------------|--------------------------------|   
 | DotNet 8+ | ✅ Min 5.0 / Recommended 11.0+ / Max 16.0 <br/> (api-levels: 20 / 30 / 36) | ✅ 14.5+ <br/> ( sdk: iphoneos-sdk 18.1 ) | ✅ 14.6+ <br/> ( MacOS: 14.6+, iOS/iPadOS: 13+ ) | 🚧 (Much much later ...)       | 
 
 (*) Note: Android16 with 16kb-mem-pages disabled should work just fine and it has been tested. Android16 with 16kb-mem-pages enabled should work but it hasn't been tested thoroughly enough just yet. If you face issues make sure to report them!
