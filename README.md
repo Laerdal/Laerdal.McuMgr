@@ -55,7 +55,6 @@ The following types of operations are supported on devices running on Nordic's n
 
 ```xml
 <PackageReference Include="Laerdal.McuMgr" Version="3.*" />
-
 <!-- not really needed   the appropriate version will be implicitly included by the build system -->
 <!-- <PackageReference Include="Laerdal.McuMgr.Bindings.iOS" Version="3.*"         Condition="$([MSBuild]::IsOSPlatform('iOS'))" />          -->
 <!-- <PackageReference Include="Laerdal.McuMgr.Bindings.Android" Version="3.*"     Condition="$([MSBuild]::IsOSPlatform('Android'))" />      -->
