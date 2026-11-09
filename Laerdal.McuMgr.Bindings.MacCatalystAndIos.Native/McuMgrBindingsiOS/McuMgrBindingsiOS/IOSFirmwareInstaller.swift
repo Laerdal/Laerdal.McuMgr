@@ -101,14 +101,7 @@ public class IOSFirmwareInstaller: NSObject {
         let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
             do {
                 try _manager.start(
-                        images: [
-                            ImageManager.Image( //20
-                                    image: 0,
-                                    slot: 1,
-                                    hash: try McuMgrImage(data: imageData).hash,
-                                    data: imageData
-                            )
-                        ],
+                        images: try resolveImagesToInstall(imageData), //30
                         using: firmwareUpgradeConfiguration!
                 )
 
@@ -127,6 +120,53 @@ public class IOSFirmwareInstaller: NSObject {
         //    kinda sad really considering that we fought against such an approach but to no avail
         //
         //20  the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+        //
+        //30  a zip package carries one image per core (image index and slot come from its manifest) whereas a raw .bin is a single image for the application core
+    }
+
+    /// A raw mcuboot .bin becomes the single application image (index 0, slot 1) and a zip package becomes every image its manifest lists.
+    private func resolveImagesToInstall(_ data: Data) throws -> [ImageManager.Image] {
+        if !isZipArchive(data) {
+            return [
+                ImageManager.Image( //20
+                        image: 0,
+                        slot: 1,
+                        hash: try McuMgrImage(data: data).hash,
+                        data: data
+                )
+            ]
+        }
+
+        return try extractImagesOfZipPackage(data)
+    }
+
+    private func isZipArchive(_ data: Data) -> Bool {
+        let zipLocalFileHeaderSignature: [UInt8] = [0x50, 0x4B, 0x03, 0x04] // "PK\u{03}\u{04}"
+
+        return data.count >= zipLocalFileHeaderSignature.count
+                && Array(data.prefix(zipLocalFileHeaderSignature.count)) == zipLocalFileHeaderSignature
+    }
+
+    private func extractImagesOfZipPackage(_ data: Data) throws -> [ImageManager.Image] {
+        let workingFolderUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: workingFolderUrl, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: workingFolderUrl) } // the package reads every image into memory so the folder can go right away
+
+        let zipFileUrl = workingFolderUrl.appendingPathComponent("package.zip") // the library tells the file type apart by its extension
+        try data.write(to: zipFileUrl, options: .atomic)
+
+        let package = try McuMgrPackage(from: zipFileUrl)
+        if package.images.isEmpty {
+            throw McuMgrPackage.Error.manifestImageNotFound
+        }
+
+        emitLogEntry(
+                "[IOSFI.EIOZP.010] the zip package carries \(package.images.count) image(s): \(package.images.map { "image \($0.image) slot \($0.slot)" }.joined(separator: ", "))",
+                "firmware-installer",
+                iOSMcuManagerLibrary.McuMgrLogLevel.info.name
+        )
+
+        return package.images
     }
 
     private func ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() {
