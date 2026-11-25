@@ -15,6 +15,7 @@ public class IOSFirmwareInstaller: NSObject {
     private var _lastBytesSent: Int = -1
     private var _uploadStartTimestamp: Date? = nil
     private var _lastBytesSentTimestamp: Date? = nil
+    private var _packageUploadProgress = PackageUploadProgress()
 
     @objc
     public init(_ cbPeripheral: CBPeripheral!, _ listener: IOSListenerForFirmwareInstaller!) {
@@ -46,6 +47,7 @@ public class IOSFirmwareInstaller: NSObject {
         _lastBytesSent = -1
         _uploadStartTimestamp = nil
         _lastBytesSentTimestamp = nil
+        _packageUploadProgress = PackageUploadProgress()
 
         if (imageData.isEmpty) {
             onError(.givenFirmwareIsUnhealthy, "[IOSFI.BI.010] The firmware data-bytes given are dud")
@@ -80,6 +82,15 @@ public class IOSFirmwareInstaller: NSObject {
             )
         }
 
+        let images: [ImageManager.Image]
+        do {
+            images = try resolveImagesToInstall(imageData) //30
+        } catch let ex {
+            onError(.givenFirmwareIsUnhealthy, "[IOSFI.BI.050] The firmware given is neither a valid image nor a valid package: '\(ex.localizedDescription)'", ex)
+
+            return .failedGivenFirmwareUnhealthy
+        }
+
         setState(.none) //                                         order
         setBusyState(false) //                                     order
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) // order
@@ -99,26 +110,11 @@ public class IOSFirmwareInstaller: NSObject {
         setState(.idle)
 
         let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            do {
-                try _manager.start(
-                        images: [
-                            ImageManager.Image( //20
-                                    image: 0,
-                                    slot: 1,
-                                    hash: try McuMgrImage(data: imageData).hash,
-                                    data: imageData
-                            )
-                        ],
-                        using: firmwareUpgradeConfiguration!
-                )
+            _packageUploadProgress = PackageUploadProgress(imageSizes: images.map { $0.data.count })
 
-                return .success
+            _manager.start(images: images, using: firmwareUpgradeConfiguration!)
 
-            } catch let ex {
-                onError(.installationInitializationFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
-
-                return .failedInstallationInitializationErroredOut
-            }
+            return .success
         })
 
         return verdict
@@ -127,6 +123,58 @@ public class IOSFirmwareInstaller: NSObject {
         //    kinda sad really considering that we fought against such an approach but to no avail
         //
         //20  the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
+        //
+        //30  a zip package carries one image per core (image index and slot come from its manifest) whereas a raw .bin is a single image for the application core
+        //    the images are prepared on the calling thread, before the main-ui-thread closure: unzipping and hashing can take a while and a bad package is the firmware's fault not the installer's
+    }
+
+    /// A raw mcuboot .bin becomes the single application image (index 0, slot 1) and a zip package becomes every image its manifest lists.
+    private func resolveImagesToInstall(_ data: Data) throws -> [ImageManager.Image] {
+        if !isZipArchive(data) {
+            return [
+                ImageManager.Image( //20
+                        image: 0,
+                        slot: 1,
+                        hash: try McuMgrImage(data: data).hash,
+                        data: data
+                )
+            ]
+        }
+
+        return try extractImagesOfZipPackage(data)
+    }
+
+    private func isZipArchive(_ data: Data) -> Bool {
+        let zipLocalFileHeaderSignature: [UInt8] = [0x50, 0x4B, 0x03, 0x04] // "PK\u{03}\u{04}"
+
+        return data.count >= zipLocalFileHeaderSignature.count
+                && Array(data.prefix(zipLocalFileHeaderSignature.count)) == zipLocalFileHeaderSignature
+    }
+
+    private func extractImagesOfZipPackage(_ data: Data) throws -> [ImageManager.Image] {
+        let workingFolderUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: workingFolderUrl, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: workingFolderUrl) } // the package reads every image into memory so the folder can go right away
+
+        let zipFileUrl = workingFolderUrl.appendingPathComponent("package.zip") // the library tells the file type apart by its extension
+        try data.write(to: zipFileUrl, options: .atomic)
+
+        let package = try McuMgrPackage(from: zipFileUrl) //10
+        if package.images.isEmpty {
+            throw McuMgrPackage.Error.manifestImageNotFound
+        }
+
+        try package.ensureIsSafeToInstall()
+
+        emitLogEntry(
+                "[IOSFI.EIOZP.010] the zip package carries \(package.images.count) image(s): \(package.images.map { "image \($0.image) slot \($0.slot)" }.joined(separator: ", "))",
+                "firmware-installer",
+                iOSMcuManagerLibrary.McuMgrLogLevel.info.name
+        )
+
+        return package.images
+
+        //10  the library unzips into a folder of its own under Caches and removes the files it read but never that folder: an unreadable package leaves its files there until the OS purges the cache
     }
 
     private func ensureFirmwareUpgradeManagerIsInitializedExactlyOnce() {
@@ -483,12 +531,14 @@ extension IOSFirmwareInstaller: FirmwareUpgradeDelegate { //todo   calculate thr
             return
         }
 
+        let progress = _packageUploadProgress.absorb(bytesSent: bytesSent, imageSize: imageSize) //order   on the library's thread so the callbacks are counted in the order they arrive
+
         Task.fireAndForgetInTheBg { [weak self] in //order   fire and forget to boost performance
             guard let self else { return }
 
-            let uploadProgressPercentage = imageSize == 0 ? 100 : ((bytesSent * 100) / imageSize)
-            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
-            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: bytesSent, timestamp: timestamp)
+            let uploadProgressPercentage = (progress.bytesSent * 100) / progress.totalBytes
+            let currentThroughputInKbps = self.calculateCurrentThroughputInKbps(bytesSent: progress.bytesSent, timestamp: timestamp)
+            let totalAverageThroughputInKbps = self.calculateTotalAverageThroughputInKbps(bytesSent: progress.bytesSent, timestamp: timestamp)
 
             self.firmwareUploadProgressPercentageAndDataThroughputChangedAdvertisement(uploadProgressPercentage, currentThroughputInKbps, totalAverageThroughputInKbps)
         }
@@ -542,5 +592,96 @@ extension IOSFirmwareInstaller: McuMgrLogDelegate {
                 category.rawValue,
                 level.name
         )
+    }
+}
+
+/// The library reports upload progress one image at a time and starts the next image again from zero.
+/// This keeps the running total of a whole package, so the percentage and the throughput never go backwards.
+/// An image the device already holds is not uploaded, so the total then stays above what is sent and the bar stops short of 100% (the library says nothing about which images it skips).
+struct PackageUploadProgress {
+    private let _imageSizes: [Int]
+    private let _totalBytes: Int
+    private var _bytesOfFinishedImages = 0
+    private var _sizeOfCurrentImage = 0
+    private var _currentImageIsFinished = false
+
+    init(imageSizes: [Int] = []) {
+        _imageSizes = imageSizes
+        _totalBytes = imageSizes.reduce(0, +)
+    }
+
+    mutating func absorb(bytesSent: Int, imageSize: Int) -> (bytesSent: Int, totalBytes: Int) {
+        if !_imageSizes.contains(imageSize) { // the library reports 100 of 100 when there is nothing to upload
+            return (bytesSent, imageSize)
+        }
+
+        if _currentImageIsFinished && bytesSent < imageSize { // the next image began
+            _bytesOfFinishedImages += _sizeOfCurrentImage
+        }
+
+        _sizeOfCurrentImage = imageSize
+        _currentImageIsFinished = bytesSent >= imageSize
+
+        return (_bytesOfFinishedImages + bytesSent, _totalBytes)
+    }
+}
+
+enum ZipPackageError: Error, LocalizedError {
+    case imageDoesNotMatchItsManifestEntry(file: String, expectedBytes: Int, foundBytes: Int)
+    case imagesShareTheSameTarget(image: Int, slot: Int)
+    case suitPackagesAreNotSupported
+    case imagesShareTheSameHash(image: Int, otherImage: Int)
+    case imageIndexIsNegative(image: Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .imageDoesNotMatchItsManifestEntry(let file, let expectedBytes, let foundBytes):
+            return "[IOSFI.EIOZP.020] the manifest says '\(file)' has \(expectedBytes) bytes but the image read for it has \(foundBytes)"
+        case .imagesShareTheSameTarget(let image, let slot):
+            return "[IOSFI.EIOZP.030] more than one image of the package targets image \(image) slot \(slot)"
+        case .suitPackagesAreNotSupported:
+            return "[IOSFI.EIOZP.040] SUIT packages are not supported: the installation lacks the upload-only mode, the settings-erasure restriction and the resource handling they need"
+        case .imagesShareTheSameHash(let image, let otherImage):
+            return "[IOSFI.EIOZP.050] the images for image \(image) and image \(otherImage) have the same hash: the upgrade manager tracks images by hash and could not tell them apart"
+        case .imageIndexIsNegative(let image):
+            return "[IOSFI.EIOZP.060] image index \(image) is negative: the uploader treats every index at or below zero as image 0"
+        }
+    }
+}
+
+extension McuMgrPackage {
+    /// The library finds each image file of a zip by a substring match on its name, and reads a manifest's image index and slot only when they are strings.
+    /// A package can therefore come back with the bytes of another file, or with two images aimed at the same core: neither may be installed.
+    /// The upgrade manager also tracks images by hash only and the uploader sends no image field for an index at or below zero, so packages that rely on either are refused too.
+    func ensureIsSafeToInstall() throws {
+        if isForSUIT { //the upload would go ahead without the upload-only mode and the settings-erasure restriction a suit package needs
+            throw ZipPackageError.suitPackagesAreNotSupported
+        }
+
+        for image in images where image.image < 0 {
+            throw ZipPackageError.imageIndexIsNegative(image: image.image)
+        }
+
+        var firstImageOfHash = [Data: Int]()
+        for image in images {
+            if let otherImage = firstImageOfHash[image.hash] {
+                throw ZipPackageError.imagesShareTheSameHash(image: image.image, otherImage: otherImage)
+            }
+
+            firstImageOfHash[image.hash] = image.image
+        }
+
+        guard let files = manifest?.files, files.count == images.count else {
+            return
+        }
+
+        for (file, image) in zip(files, images) where file.size != image.data.count {
+            throw ZipPackageError.imageDoesNotMatchItsManifestEntry(file: file.file, expectedBytes: file.size, foundBytes: image.data.count)
+        }
+
+        var targets = Set<String>()
+        for image in images where !targets.insert("\(image.image)/\(image.slot)").inserted {
+            throw ZipPackageError.imagesShareTheSameTarget(image: image.image, slot: image.slot)
+        }
     }
 }
