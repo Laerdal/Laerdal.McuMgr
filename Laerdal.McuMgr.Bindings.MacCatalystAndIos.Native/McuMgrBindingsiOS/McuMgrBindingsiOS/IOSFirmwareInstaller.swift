@@ -82,6 +82,15 @@ public class IOSFirmwareInstaller: NSObject {
             )
         }
 
+        let images: [ImageManager.Image]
+        do {
+            images = try resolveImagesToInstall(imageData) //30
+        } catch let ex {
+            onError(.givenFirmwareIsUnhealthy, "[IOSFI.BI.050] The firmware given is neither a valid image nor a valid package: '\(ex.localizedDescription)'", ex)
+
+            return .failedGivenFirmwareUnhealthy
+        }
+
         setState(.none) //                                         order
         setBusyState(false) //                                     order
         ensureTransportIsInitializedExactlyOnce(initialMtuSize) // order
@@ -101,19 +110,11 @@ public class IOSFirmwareInstaller: NSObject {
         setState(.idle)
 
         let verdict: EIOSFirmwareInstallationVerdict = ThreadExecutionHelpers.EnsureExecutionOnMainUiThreadSync(work: { //10
-            do {
-                let images = try resolveImagesToInstall(imageData) //30
-                _packageUploadProgress = PackageUploadProgress(imageSizes: images.map { $0.data.count })
+            _packageUploadProgress = PackageUploadProgress(imageSizes: images.map { $0.data.count })
 
-                try _manager.start(images: images, using: firmwareUpgradeConfiguration!)
+            _manager.start(images: images, using: firmwareUpgradeConfiguration!)
 
-                return .success
-
-            } catch let ex {
-                onError(.installationInitializationFailed, "[IOSFI.BI.060] Failed to launch the installation process: '\(ex.localizedDescription)")
-
-                return .failedInstallationInitializationErroredOut
-            }
+            return .success
         })
 
         return verdict
@@ -124,6 +125,7 @@ public class IOSFirmwareInstaller: NSObject {
         //20  the hashing algorithm is very specific to nordic   there is no practical way to go about getting it other than using the McuMgrImage utility class
         //
         //30  a zip package carries one image per core (image index and slot come from its manifest) whereas a raw .bin is a single image for the application core
+        //    the images are prepared on the calling thread, before the main-ui-thread closure: unzipping and hashing can take a while and a bad package is the firmware's fault not the installer's
     }
 
     /// A raw mcuboot .bin becomes the single application image (index 0, slot 1) and a zip package becomes every image its manifest lists.
@@ -162,7 +164,7 @@ public class IOSFirmwareInstaller: NSObject {
             throw McuMgrPackage.Error.manifestImageNotFound
         }
 
-        try package.ensureImagesAgreeWithManifest()
+        try package.ensureIsSafeToInstall()
 
         emitLogEntry(
                 "[IOSFI.EIOZP.010] the zip package carries \(package.images.count) image(s): \(package.images.map { "image \($0.image) slot \($0.slot)" }.joined(separator: ", "))",
@@ -627,6 +629,9 @@ struct PackageUploadProgress {
 enum ZipPackageError: Error, LocalizedError {
     case imageDoesNotMatchItsManifestEntry(file: String, expectedBytes: Int, foundBytes: Int)
     case imagesShareTheSameTarget(image: Int, slot: Int)
+    case suitPackagesAreNotSupported
+    case imagesShareTheSameHash(image: Int, otherImage: Int)
+    case imageIndexIsNegative(image: Int)
 
     var errorDescription: String? {
         switch self {
@@ -634,6 +639,12 @@ enum ZipPackageError: Error, LocalizedError {
             return "[IOSFI.EIOZP.020] the manifest says '\(file)' has \(expectedBytes) bytes but the image read for it has \(foundBytes)"
         case .imagesShareTheSameTarget(let image, let slot):
             return "[IOSFI.EIOZP.030] more than one image of the package targets image \(image) slot \(slot)"
+        case .suitPackagesAreNotSupported:
+            return "[IOSFI.EIOZP.040] SUIT packages are not supported: the installation lacks the upload-only mode, the settings-erasure restriction and the resource handling they need"
+        case .imagesShareTheSameHash(let image, let otherImage):
+            return "[IOSFI.EIOZP.050] the images for image \(image) and image \(otherImage) have the same hash: the upgrade manager tracks images by hash and could not tell them apart"
+        case .imageIndexIsNegative(let image):
+            return "[IOSFI.EIOZP.060] image index \(image) is negative: the uploader treats every index at or below zero as image 0"
         }
     }
 }
@@ -641,8 +652,26 @@ enum ZipPackageError: Error, LocalizedError {
 extension McuMgrPackage {
     /// The library finds each image file of a zip by a substring match on its name, and reads a manifest's image index and slot only when they are strings.
     /// A package can therefore come back with the bytes of another file, or with two images aimed at the same core: neither may be installed.
-    func ensureImagesAgreeWithManifest() throws {
-        guard !isForSUIT, let files = manifest?.files, files.count == images.count else { //suit packages hold an envelope and caches rather than one image per manifest entry
+    /// The upgrade manager also tracks images by hash only and the uploader sends no image field for an index at or below zero, so packages that rely on either are refused too.
+    func ensureIsSafeToInstall() throws {
+        if isForSUIT { //the upload would go ahead without the upload-only mode and the settings-erasure restriction a suit package needs
+            throw ZipPackageError.suitPackagesAreNotSupported
+        }
+
+        for image in images where image.image < 0 {
+            throw ZipPackageError.imageIndexIsNegative(image: image.image)
+        }
+
+        var firstImageOfHash = [Data: Int]()
+        for image in images {
+            if let otherImage = firstImageOfHash[image.hash] {
+                throw ZipPackageError.imagesShareTheSameHash(image: image.image, otherImage: otherImage)
+            }
+
+            firstImageOfHash[image.hash] = image.image
+        }
+
+        guard let files = manifest?.files, files.count == images.count else {
             return
         }
 
